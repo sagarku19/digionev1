@@ -14,7 +14,7 @@ export default function MarketingFooter() {
               The platform serious Indian creators use to build their business. Built for India, ready for the world.
             </p>
           </div>
-          
+
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Product</h3>
             <ul className="space-y-3">
@@ -24,6 +24,7 @@ export default function MarketingFooter() {
               <li><Link href="/integrations" className="text-sm text-slate-400 hover:text-white transition-colors">Integrations</Link></li>
             </ul>
           </div>
+
 
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Resources</h3>
@@ -45,7 +46,7 @@ export default function MarketingFooter() {
             </ul>
           </div>
         </div>
-        
+
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-slate-500">
             &copy; {new Date().getFullYear()} DigiOne Technologies. All rights reserved.
