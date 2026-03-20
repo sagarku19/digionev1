@@ -6,57 +6,67 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Package, Store, BarChart2, DollarSign,
   WalletCards, Megaphone, Settings, Menu, X, ExternalLink,
-  ChevronRight
+  ChevronRight, Users, Bell, GitBranch, BookOpen, Ticket, Network, Gift
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useSites } from '@/hooks/useSites';
+import { useNotifications } from '@/hooks/useNotifications';
 
 // ─── Nav structure ───────────────────────────────────────────
-type NavItem = { label: string; href: string; icon: React.ElementType };
+type NavItem = { label: string; href: string; icon: React.ElementType; badge?: () => React.ReactNode };
 type NavGroup = { group: string; items: NavItem[] };
 
-const NAV_GROUPS: NavGroup[] = [
-  {
-    group: 'Main',
-    items: [
-      { label: 'Overview',  href: '/dashboard',             icon: LayoutDashboard },
-      { label: 'Products',  href: '/dashboard/products',    icon: Package         },
-      { label: 'My Stores', href: '/dashboard/sites',       icon: Store           },
-    ],
-  },
-  {
-    group: 'Insights',
-    items: [
-      { label: 'Analytics', href: '/dashboard/analytics',   icon: BarChart2    },
-      { label: 'Earnings',  href: '/dashboard/earnings',    icon: DollarSign   },
-      { label: 'Payouts',   href: '/dashboard/payouts',     icon: WalletCards  },
-    ],
-  },
-  {
-    group: 'Growth',
-    items: [
-      { label: 'Marketing', href: '/dashboard/marketing',   icon: Megaphone  },
-    ],
-  },
-  {
-    group: 'Account',
-    items: [
-      { label: 'Settings',  href: '/dashboard/settings',    icon: Settings   },
-    ],
-  },
-];
+function buildNavGroups(): NavGroup[] {
+  return [
+    {
+      group: 'Main',
+      items: [
+        { label: 'Overview',    href: '/dashboard',             icon: LayoutDashboard },
+        { label: 'Products',    href: '/dashboard/products',    icon: Package         },
+        { label: 'My Stores',   href: '/dashboard/sites',       icon: Store           },
+        { label: 'Customers',   href: '/dashboard/customers',   icon: Users           },
+      ],
+    },
+    {
+      group: 'Insights',
+      items: [
+        { label: 'Analytics',   href: '/dashboard/analytics',   icon: BarChart2       },
+        { label: 'Earnings',    href: '/dashboard/earnings',    icon: DollarSign      },
+        { label: 'Payouts',     href: '/dashboard/payouts',     icon: WalletCards     },
+      ],
+    },
+    {
+      group: 'Growth',
+      items: [
+        { label: 'Marketing',   href: '/dashboard/marketing',   icon: Megaphone       },
+        { label: 'Coupons',     href: '/dashboard/coupons',     icon: Ticket          },
+        { label: 'Leads',       href: '/dashboard/leads',       icon: BookOpen        },
+        { label: 'Affiliates',  href: '/dashboard/affiliates',  icon: Network         },
+        { label: 'Referrals',   href: '/dashboard/referrals',   icon: Gift            },
+      ],
+    },
+    {
+      group: 'Account',
+      items: [
+        { label: 'Notifications', href: '/dashboard/notifications', icon: Bell        },
+        { label: 'Settings',    href: '/dashboard/settings',    icon: Settings        },
+      ],
+    },
+  ];
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const supabase = createClient();
   const { sites } = useSites();
+  const { unreadCount } = useNotifications();
 
-  // Find the creator's main store for the "Preview Store" link
   const mainSite = sites?.find(s => s.site_type === 'main' && s.is_active) ?? sites?.find(s => s.site_type === 'main');
   const mainStoreHref = mainSite?.slug ? `/${mainSite.slug}` : '/dashboard/sites';
 
   const close = () => setIsOpen(false);
+  const NAV_GROUPS = buildNavGroups();
 
   return (
     <>
@@ -107,6 +117,7 @@ export default function Sidebar() {
                   const isActive = link.href === '/dashboard'
                     ? pathname === '/dashboard'
                     : pathname?.startsWith(link.href);
+                  const isNotif = link.href === '/dashboard/notifications';
 
                   return (
                     <Link
@@ -121,11 +132,17 @@ export default function Sidebar() {
                         }
                       `}
                     >
-                      <link.icon className={`w-4.5 h-4.5 shrink-0 transition ${
+                      <link.icon className={`w-4 h-4 shrink-0 transition ${
                         isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'
                       }`} />
                       <span className="flex-1 truncate">{link.label}</span>
-                      {isActive && <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />}
+                      {/* Notification badge */}
+                      {isNotif && unreadCount > 0 && (
+                        <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                      {isActive && !isNotif && <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />}
                     </Link>
                   );
                 })}

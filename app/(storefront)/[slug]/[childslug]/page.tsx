@@ -55,7 +55,7 @@ export default async function ChildSlugPage({
         .single();
       const { data: posts } = await supabase
         .from('blog_posts')
-        .select('id, title, slug, excerpt, cover_image_url, tags, published_at, is_free')
+        .select('id, title, slug, description, thumbnail_url, tags, published_at, is_free')
         .eq('site_id', childSite.id)
         .eq('is_published', true)
         .order('published_at', { ascending: false });

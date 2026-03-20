@@ -8,16 +8,17 @@ import { createClient } from '@/lib/supabase/client';
 import {
   Settings, Globe, Search, Share2, FileText, AlertTriangle,
   Save, Loader2, CheckCircle2, ExternalLink, Copy, RefreshCw,
-  Trash2, EyeOff, Layers
+  Trash2, EyeOff, Layers, Navigation, Plus, X,
 } from 'lucide-react';
 
 const TABS = [
-  { id: 'general', label: 'General',     icon: Settings   },
-  { id: 'domain',  label: 'Domain',      icon: Globe      },
-  { id: 'seo',     label: 'SEO',         icon: Search     },
-  { id: 'social',  label: 'Social',      icon: Share2     },
-  { id: 'legal',   label: 'Legal',       icon: FileText   },
-  { id: 'danger',  label: 'Danger zone', icon: AlertTriangle },
+  { id: 'general',    label: 'General',     icon: Settings      },
+  { id: 'navigation', label: 'Navigation',  icon: Navigation    },
+  { id: 'domain',     label: 'Domain',      icon: Globe         },
+  { id: 'seo',        label: 'SEO',         icon: Search        },
+  { id: 'social',     label: 'Social',      icon: Share2        },
+  { id: 'legal',      label: 'Legal',       icon: FileText      },
+  { id: 'danger',     label: 'Danger zone', icon: AlertTriangle },
 ];
 
 const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
@@ -79,12 +80,16 @@ export default function SiteSettingsPage() {
   // Legal toggles
   const [legal, setLegal] = useState<Record<string, boolean>>({ about: false, terms: false, privacy: false, refund: false });
 
+  // Navigation
+  const [navItems, setNavItems] = useState<{ label: string; url: string }[]>([]);
+
   useEffect(() => {
     const load = async () => {
       try {
-        const [{ data: s }, { data: sm }] = await Promise.all([
+        const [{ data: s }, { data: sm }, { data: nav }] = await Promise.all([
           supabase.from('sites').select('*').eq('id', siteId).single(),
           supabase.from('site_main').select('*').eq('site_id', siteId).maybeSingle(),
+          supabase.from('site_navigation').select('*').eq('site_id', siteId).maybeSingle(),
         ]);
         setSite(s);
         setSiteMain(sm);
@@ -95,6 +100,7 @@ export default function SiteSettingsPage() {
         setMetaDesc(sm?.meta_description ?? '');
         setSocial((sm?.social_links as Record<string, string>) ?? { instagram: '', youtube: '', twitter: '', linkedin: '' });
         setLegal((sm?.legal_pages as Record<string, boolean>) ?? { about: false, terms: false, privacy: false, refund: false });
+        setNavItems((nav?.nav_items as { label: string; url: string }[]) ?? []);
       } finally {
         setLoading(false);
       }
@@ -122,6 +128,9 @@ export default function SiteSettingsPage() {
       if (customDomain !== site?.custom_domain) {
         await supabase.from('sites').update({ custom_domain: customDomain || null }).eq('id', siteId);
       }
+      await supabase
+        .from('site_navigation')
+        .upsert({ site_id: siteId, nav_items: navItems }, { onConflict: 'site_id' });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } finally {
@@ -215,6 +224,47 @@ export default function SiteSettingsPage() {
               <Field label="Contact email">
                 <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className={INPUT} placeholder="you@example.com" />
               </Field>
+            </Card>
+          )}
+
+          {/* NAVIGATION */}
+          {activeTab === 'navigation' && (
+            <Card title="Header Navigation" subtitle="Links shown in your storefront header">
+              <div className="space-y-2.5">
+                {navItems.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={item.label}
+                      onChange={e => setNavItems(prev => prev.map((n, idx) => idx === i ? { ...n, label: e.target.value } : n))}
+                      placeholder="Label (e.g. Products)"
+                      className={`${INPUT} flex-1`}
+                    />
+                    <input
+                      type="text"
+                      value={item.url}
+                      onChange={e => setNavItems(prev => prev.map((n, idx) => idx === i ? { ...n, url: e.target.value } : n))}
+                      placeholder="URL (e.g. /shop or #products)"
+                      className={`${INPUT} flex-1`}
+                    />
+                    <button
+                      onClick={() => setNavItems(prev => prev.filter((_, idx) => idx !== i))}
+                      className="p-2 text-gray-400 hover:text-red-500 transition shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setNavItems(prev => [...prev, { label: '', url: '' }])}
+                className="flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition mt-1"
+              >
+                <Plus className="w-4 h-4" /> Add nav link
+              </button>
+              {navItems.length === 0 && (
+                <p className="text-xs text-gray-400 mt-2">No nav links yet. Add links like "Home →", "Products → /shop", etc.</p>
+              )}
             </Card>
           )}
 

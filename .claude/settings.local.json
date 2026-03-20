@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/[slug]/[childslug]/[postSlug]/\")",
+      "Bash(command -v claude)",
+      "Read(//c/Users/sagar/AppData/Roaming/npm/**)",
+      "Read(//c/Users/sagar/AppData/Local/Programs/**)",
+      "Read(//c/Users/sagar/AppData/Local/**)"
+    ]
+  }
+}

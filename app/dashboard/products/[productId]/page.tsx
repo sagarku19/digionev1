@@ -8,7 +8,8 @@ import { useProducts } from '@/hooks/useProducts';
 import {
   FileText, DollarSign, HardDrive, Megaphone, Settings,
   ArrowLeft, Save, UploadCloud, Trash2, Image as ImageIcon,
-  CheckCircle2, AlertCircle, Eye, Globe, Lock, Zap
+  CheckCircle2, AlertCircle, Eye, Globe, Lock, Zap,
+  Plus, X, Package, TrendingUp
 } from 'lucide-react';
 
 function formatINR(n: number) {
@@ -16,11 +17,12 @@ function formatINR(n: number) {
 }
 
 const TABS = [
-  { id: 'basic', label: 'Basic Info', icon: FileText },
-  { id: 'pricing', label: 'Pricing', icon: DollarSign },
-  { id: 'content', label: 'Content Files', icon: HardDrive },
-  { id: 'marketing', label: 'Marketing', icon: Megaphone },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'basic',     label: 'Basic Info',    icon: FileText  },
+  { id: 'pricing',   label: 'Pricing',       icon: DollarSign },
+  { id: 'content',   label: 'Content Files', icon: HardDrive  },
+  { id: 'upsells',   label: 'Upsells',       icon: TrendingUp },
+  { id: 'marketing', label: 'Marketing',     icon: Megaphone  },
+  { id: 'settings',  label: 'Settings',      icon: Settings   },
 ];
 
 export default function ProductEditor({ params }: { params: Promise<{ productId: string }> }) {
@@ -279,7 +281,136 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
             </Card>
           )}
 
-          {/* ── TAB 4: MARKETING ───────────────────────────────── */}
+          {/* ── TAB 4: UPSELLS ─────────────────────────────────── */}
+          {activeTab === 'upsells' && (
+            <div className="space-y-5">
+              {/* Order Bump */}
+              <Card title="Order Bump" subtitle="A low-friction add-on shown at checkout — typically 20–40% take rate">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Enable Order Bump</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Show a checkbox add-on offer on the checkout page</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox" className="sr-only peer"
+                      checked={!!(formData.metadata as any)?.order_bump?.enabled}
+                      onChange={e => patch({ metadata: { ...(formData.metadata as any), order_bump: { ...((formData.metadata as any)?.order_bump ?? {}), enabled: e.target.checked } } })}
+                    />
+                    <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                  </label>
+                </div>
+                {(formData.metadata as any)?.order_bump?.enabled && (
+                  <div className="space-y-4 mt-2">
+                    <Field label="Bump Offer Headline">
+                      <input
+                        type="text"
+                        value={(formData.metadata as any)?.order_bump?.title || ''}
+                        onChange={e => patch({ metadata: { ...(formData.metadata as any), order_bump: { ...((formData.metadata as any)?.order_bump ?? {}), title: e.target.value } } })}
+                        placeholder="Add the Workbook for just ₹299 more!"
+                        className={INPUT}
+                      />
+                    </Field>
+                    <Field label="Bump Offer Description">
+                      <textarea
+                        rows={2}
+                        value={(formData.metadata as any)?.order_bump?.description || ''}
+                        onChange={e => patch({ metadata: { ...(formData.metadata as any), order_bump: { ...((formData.metadata as any)?.order_bump ?? {}), description: e.target.value } } })}
+                        placeholder="Explain what they get with this add-on..."
+                        className={`${INPUT} resize-none`}
+                      />
+                    </Field>
+                    <Field label="Bump Price (INR)">
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">₹</span>
+                        <input
+                          type="number" min="0"
+                          value={(formData.metadata as any)?.order_bump?.price || ''}
+                          onChange={e => patch({ metadata: { ...(formData.metadata as any), order_bump: { ...((formData.metadata as any)?.order_bump ?? {}), price: parseFloat(e.target.value) || 0 } } })}
+                          className={`${INPUT} pl-8 font-mono`}
+                          placeholder="299"
+                        />
+                      </div>
+                    </Field>
+                  </div>
+                )}
+              </Card>
+
+              {/* Post-purchase Upsell */}
+              <Card title="Post-Purchase Upsell" subtitle="Shown on the thank-you page immediately after payment — one-click to add">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">Enable Post-Purchase Upsell</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Offer a related product right after checkout</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox" className="sr-only peer"
+                      checked={!!(formData.metadata as any)?.upsell?.enabled}
+                      onChange={e => patch({ metadata: { ...(formData.metadata as any), upsell: { ...((formData.metadata as any)?.upsell ?? {}), enabled: e.target.checked } } })}
+                    />
+                    <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                  </label>
+                </div>
+                {(formData.metadata as any)?.upsell?.enabled && (
+                  <div className="space-y-4 mt-2">
+                    <Field label="Upsell Headline">
+                      <input
+                        type="text"
+                        value={(formData.metadata as any)?.upsell?.title || ''}
+                        onChange={e => patch({ metadata: { ...(formData.metadata as any), upsell: { ...((formData.metadata as any)?.upsell ?? {}), title: e.target.value } } })}
+                        placeholder="Wait! Get the advanced bundle at 50% off"
+                        className={INPUT}
+                      />
+                    </Field>
+                    <Field label="Upsell Description">
+                      <textarea
+                        rows={2}
+                        value={(formData.metadata as any)?.upsell?.description || ''}
+                        onChange={e => patch({ metadata: { ...(formData.metadata as any), upsell: { ...((formData.metadata as any)?.upsell ?? {}), description: e.target.value } } })}
+                        placeholder="This offer is only available right now..."
+                        className={`${INPUT} resize-none`}
+                      />
+                    </Field>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Field label="Upsell Price (INR)">
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">₹</span>
+                          <input
+                            type="number" min="0"
+                            value={(formData.metadata as any)?.upsell?.price || ''}
+                            onChange={e => patch({ metadata: { ...(formData.metadata as any), upsell: { ...((formData.metadata as any)?.upsell ?? {}), price: parseFloat(e.target.value) || 0 } } })}
+                            className={`${INPUT} pl-8 font-mono`} placeholder="1499"
+                          />
+                        </div>
+                      </Field>
+                      <Field label="Original Price (optional)">
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">₹</span>
+                          <input
+                            type="number" min="0"
+                            value={(formData.metadata as any)?.upsell?.original_price || ''}
+                            onChange={e => patch({ metadata: { ...(formData.metadata as any), upsell: { ...((formData.metadata as any)?.upsell ?? {}), original_price: parseFloat(e.target.value) || 0 } } })}
+                            className={`${INPUT} pl-8 font-mono`} placeholder="2999"
+                          />
+                        </div>
+                      </Field>
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              {/* What's Included checklist */}
+              <Card title="What's Included" subtitle="Bullet points shown on the product sales page to highlight value">
+                <WhatsIncludedEditor
+                  items={(formData.metadata as any)?.includes ?? []}
+                  onChange={(items: string[]) => patch({ metadata: { ...(formData.metadata as any), includes: items } })}
+                />
+              </Card>
+            </div>
+          )}
+
+          {/* ── TAB 5: MARKETING ───────────────────────────────── */}
           {activeTab === 'marketing' && (
             <div className="space-y-5">
               <Card title="SEO &amp; Discoverability" subtitle="Control how your product appears on Google and social platforms">
@@ -378,6 +509,46 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
       {children}
       {hint && <p className="text-xs text-gray-400 mt-1.5">{hint}</p>}
+    </div>
+  );
+}
+
+function WhatsIncludedEditor({ items, onChange }: { items: string[]; onChange: (items: string[]) => void }) {
+  const [draft, setDraft] = React.useState('');
+  const add = () => {
+    const t = draft.trim();
+    if (!t) return;
+    onChange([...items, t]);
+    setDraft('');
+  };
+  const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+  return (
+    <div className="space-y-3">
+      {items.length > 0 && (
+        <ul className="space-y-2">
+          {items.map((item, i) => (
+            <li key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 px-3 py-2 rounded-lg">
+              <Package className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+              <span className="flex-1">{item}</span>
+              <button onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 transition">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex gap-2">
+        <input
+          type="text" value={draft} onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+          placeholder="e.g. 12 HD video lessons"
+          className={INPUT}
+        />
+        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition shrink-0">
+          <Plus className="w-4 h-4" />
+          Add
+        </button>
+      </div>
     </div>
   );
 }
