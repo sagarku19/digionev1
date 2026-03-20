@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import SectionRenderer from '@/components/storefront/SectionRenderer';
 
-// ISR revalidation for storefronts (e.g. 60 seconds)
+// ISR — revalidate every 60 seconds
 export const revalidate = 60;
 
 export default async function StorefrontPage({
@@ -10,31 +10,40 @@ export default async function StorefrontPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const resolvedParams = await params;
-  const slug = resolvedParams.slug;
+  const { slug } = await params;
   const supabase = await createClient();
 
-  // 1. Fetch site ID (We query main sites with the slug)
+  // Parallel fetch for performance
   const { data: site } = await supabase
     .from('sites')
-    .select('id, site_type')
+    .select('id, site_type, is_active, creator_id')
     .eq('slug', slug)
     .single();
 
-  if (!site || site.site_type !== 'main') {
-    notFound();
-  }
+  if (!site || !site.is_active) notFound();
+  if (site.site_type !== 'main') notFound(); // child types handled in [childslug]
 
-  // 2. Fetch the sections configuration
-  const { data: config } = await supabase
-    .from('site_sections_config')
-    .select('sections')
-    .eq('site_id', site.id)
-    .single();
+  const [
+    { data: config },
+    { data: assignments },
+    { data: siteMain },
+  ] = await Promise.all([
+    supabase.from('site_sections_config').select('sections').eq('site_id', site.id).single(),
+    supabase.from('site_product_assignments')
+      .select('sort_order, products(id, name, price, category, thumbnail_url, is_published, description)')
+      .eq('site_id', site.id)
+      .order('sort_order', { ascending: true }),
+    supabase.from('site_main').select('title, meta_description, logo_url, banner_url').eq('site_id', site.id).maybeSingle(),
+  ]);
 
-  const sections = (config?.sections as any[]) || [];
+  const sections = (config?.sections as any[]) ?? [];
+  const products = (assignments ?? []).flatMap((a: any) => (a.products ? [a.products] : []));
 
-  if (sections.length === 0) {
+  const visible = sections
+    .filter((s: any) => s.is_visible !== false)
+    .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+
+  if (visible.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         <h1 className="text-2xl font-bold mb-2">Store is under construction</h1>
@@ -43,10 +52,9 @@ export default async function StorefrontPage({
     );
   }
 
-  // 3. Render the sections using the dynamic renderer
   return (
     <div className="w-full">
-      <SectionRenderer sections={sections} />
+      <SectionRenderer sections={visible} products={products} siteMain={siteMain} siteId={site.id} />
     </div>
   );
 }
