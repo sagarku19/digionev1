@@ -61,8 +61,8 @@ function ActivityFeed({ orders, loading }: { orders: any[]; loading: boolean }) 
   if (orders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-        <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center mb-3">
-          <ShoppingBag className="w-4 h-4 text-indigo-400" />
+        <div className="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center mb-3">
+          <ShoppingBag className="w-4 h-4 text-[var(--text-secondary)]" />
         </div>
         <p className="text-sm font-medium text-gray-600 dark:text-gray-400">No orders yet</p>
         <p className="text-xs text-gray-400 mt-1">Orders will appear here live</p>
@@ -106,8 +106,8 @@ function ActivityFeed({ orders, loading }: { orders: any[]; loading: boolean }) 
 
 // ─── Quick Actions ────────────────────────────────────────────
 const QUICK_ACTIONS = [
-  { label: 'Add Product',   href: '/dashboard/products/new',         icon: Package,    bg: 'bg-indigo-50 dark:bg-indigo-500/10',  fg: 'text-indigo-600 dark:text-indigo-400'  },
-  { label: 'Main Store',    href: '/dashboard/sites/new/store',      icon: Store,      bg: 'bg-violet-50 dark:bg-violet-500/10',  fg: 'text-violet-600 dark:text-violet-400'  },
+  { label: 'Add Product',   href: '/dashboard/products/new',         icon: Package,    bg: 'bg-[var(--bg-tertiary)]',  fg: 'text-[var(--text-primary)]'  },
+  { label: 'Main Store',    href: '/dashboard/sites/new/store',      icon: Store,      bg: 'bg-[var(--bg-tertiary)]',  fg: 'text-[var(--text-primary)]'  },
   { label: 'Payment Link',  href: '/dashboard/sites/new/payment',    icon: CreditCard, bg: 'bg-emerald-50 dark:bg-emerald-500/10', fg: 'text-emerald-600 dark:text-emerald-400' },
   { label: 'Blog',          href: '/dashboard/sites/new/blog',       icon: FileText,   bg: 'bg-amber-50 dark:bg-amber-500/10',    fg: 'text-amber-600 dark:text-amber-400'    },
   { label: 'Single Page',   href: '/dashboard/sites/new/singlepage', icon: Layers,     bg: 'bg-sky-50 dark:bg-sky-500/10',        fg: 'text-sky-600 dark:text-sky-400'        },
@@ -171,7 +171,7 @@ export default function DashboardHome() {
             href={mainSiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-3 py-2 rounded-xl transition shrink-0"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--accent)]/20 px-3 py-2 rounded-xl transition shrink-0"
           >
             {mainSiteDisplayUrl}
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -270,7 +270,7 @@ export default function DashboardHome() {
           <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-sm font-bold text-gray-900 dark:text-white">Products</h2>
-              <Link href="/dashboard/products" className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+              <Link href="/dashboard/products" className="flex items-center gap-1 text-xs font-medium text-[var(--text-primary)] hover:underline">
                 View all <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
@@ -292,7 +292,7 @@ export default function DashboardHome() {
                 <p className="text-sm text-gray-500">No products yet</p>
                 <Link
                   href="/dashboard/products/new"
-                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-2 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)] bg-[var(--bg-tertiary)] px-3 py-2 rounded-xl hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--accent)]/20 transition"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Product
                 </Link>
@@ -316,12 +316,12 @@ export default function DashboardHome() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-[var(--text-primary)] dark:group-hover:text-[var(--text-secondary)] transition">
                         {p.name}
                       </p>
                       <p className="text-xs text-gray-500">{p.price === 0 ? 'Free' : formatINR(p.price)}</p>
                     </div>
-                    <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 group-hover:text-indigo-400 transition shrink-0" />
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-gray-700 group-hover:text-[var(--text-secondary)] transition shrink-0" />
                   </Link>
                 ))}
               </div>
@@ -342,7 +342,7 @@ export default function DashboardHome() {
                   Live
                 </span>
               </div>
-              <Link href="/dashboard/earnings" className="text-xs text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition font-medium">
+              <Link href="/dashboard/earnings" className="text-xs text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] transition font-medium">
                 All
               </Link>
             </div>
@@ -357,7 +357,7 @@ export default function DashboardHome() {
                 <Link
                   key={a.href}
                   href={a.href}
-                  className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-800/60 hover:bg-gray-50 dark:hover:bg-white/[0.03] transition group"
+                  className="flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-[var(--border)] dark:hover:border-[var(--accent)]/60 hover:bg-gray-50 dark:hover:bg-white/[0.03] transition group"
                 >
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${a.bg}`}>
                     <a.icon className={`w-4 h-4 ${a.fg}`} />

@@ -90,18 +90,18 @@ export default function DiscoverProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-[var(--bg-primary)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="animate-pulse space-y-8">
-            <div className="h-6 bg-white/[0.06] rounded-lg w-32" />
+            <div className="h-6 bg-[var(--bg-tertiary)] rounded-lg w-32" />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="aspect-square bg-white/[0.04] rounded-2xl" />
+              <div className="aspect-square bg-[var(--bg-secondary)] rounded-2xl" />
               <div className="space-y-4">
-                <div className="h-8 bg-white/[0.06] rounded-lg w-3/4" />
-                <div className="h-4 bg-white/[0.04] rounded-lg w-1/2" />
-                <div className="h-12 bg-white/[0.06] rounded-lg w-40" />
+                <div className="h-8 bg-[var(--bg-tertiary)] rounded-lg w-3/4" />
+                <div className="h-4 bg-[var(--bg-secondary)] rounded-lg w-1/2" />
+                <div className="h-12 bg-[var(--bg-tertiary)] rounded-lg w-40" />
                 <div className="space-y-2 pt-4">
-                  {[1, 2, 3].map(i => <div key={i} className="h-3 bg-white/[0.04] rounded-lg" />)}
+                  {[1, 2, 3].map(i => <div key={i} className="h-3 bg-[var(--bg-secondary)] rounded-lg" />)}
                 </div>
               </div>
             </div>
@@ -113,16 +113,16 @@ export default function DiscoverProductPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.04] border border-white/8 flex items-center justify-center">
-            <Package className="w-7 h-7 text-slate-600" />
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center">
+            <Package className="w-7 h-7 text-[var(--text-secondary)]" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Product Not Found</h2>
-          <p className="text-slate-500 mb-6">This product may have been removed or is no longer available.</p>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Product Not Found</h2>
+          <p className="text-[var(--text-secondary)] mb-6">This product may have been removed or is no longer available.</p>
           <Link
             href="/discover"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-sm font-semibold transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Discover
@@ -153,16 +153,16 @@ export default function DiscoverProductPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[var(--bg-primary)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm mb-8">
-          <Link href="/discover" className="text-slate-500 hover:text-white transition-colors">Discover</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          <span className="text-slate-500">{catInfo.label}</span>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          <span className="text-white truncate max-w-[200px]">{product.name}</span>
+          <Link href="/discover" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Discover</Link>
+          <ChevronRight className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+          <span className="text-[var(--text-secondary)]">{catInfo.label}</span>
+          <ChevronRight className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+          <span className="text-[var(--text-primary)] truncate max-w-[200px]">{product.name}</span>
         </nav>
 
         {/* Main Content */}
@@ -171,7 +171,7 @@ export default function DiscoverProductPage() {
           {/* Left: Images */}
           <div className="lg:col-span-3 space-y-4">
             {/* Main Image */}
-            <div className="aspect-[16/10] bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden relative">
+            <div className="aspect-[16/10] bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl overflow-hidden relative">
               {allImages.length > 0 ? (
                 <img
                   src={allImages[activeImage] || allImages[0]}
@@ -180,7 +180,7 @@ export default function DiscoverProductPage() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <Package className="w-16 h-16 text-slate-700" />
+                  <Package className="w-16 h-16 text-[var(--text-secondary)]" />
                 </div>
               )}
             </div>
@@ -193,7 +193,7 @@ export default function DiscoverProductPage() {
                     key={i}
                     onClick={() => setActiveImage(i)}
                     className={`w-20 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                      activeImage === i ? 'border-indigo-500 ring-1 ring-indigo-500/30' : 'border-white/[0.06] hover:border-white/20'
+                      activeImage === i ? 'border-[var(--text-primary)]' : 'border-[var(--border)] hover:border-[var(--text-secondary)]'
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -205,8 +205,8 @@ export default function DiscoverProductPage() {
             {/* Description */}
             {product.description && (
               <div className="pt-6">
-                <h3 className="text-lg font-bold text-white mb-3">About this product</h3>
-                <div className="text-sm text-slate-400 leading-relaxed whitespace-pre-wrap">
+                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-3">About this product</h3>
+                <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
                   {product.description}
                 </div>
               </div>
@@ -214,34 +214,34 @@ export default function DiscoverProductPage() {
 
             {/* What you get */}
             <div className="pt-6 space-y-4">
-              <h3 className="text-lg font-bold text-white">What you get</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">What you get</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex items-start gap-3 p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                  <Package className="w-5 h-5 text-indigo-400 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
+                  <Package className="w-5 h-5 text-[var(--text-secondary)] mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-white">Instant Access</p>
-                    <p className="text-xs text-slate-500">Get the product immediately after purchase</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Instant Access</p>
+                    <p className="text-xs text-[var(--text-secondary)]">Get the product immediately after purchase</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                  <Clock className="w-5 h-5 text-indigo-400 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
+                  <Clock className="w-5 h-5 text-[var(--text-secondary)] mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-white">Lifetime Access</p>
-                    <p className="text-xs text-slate-500">Access your purchase forever</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Lifetime Access</p>
+                    <p className="text-xs text-[var(--text-secondary)]">Access your purchase forever</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                  <Shield className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
+                  <Shield className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-white">Secure Checkout</p>
-                    <p className="text-xs text-slate-500">Safe & encrypted payment</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Secure Checkout</p>
+                    <p className="text-xs text-[var(--text-secondary)]">Safe & encrypted payment</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-                  <Star className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
+                  <Star className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-white">Quality Guaranteed</p>
-                    <p className="text-xs text-slate-500">Handpicked by DigiOne</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">Quality Guaranteed</p>
+                    <p className="text-xs text-[var(--text-secondary)]">Handpicked by DigiOne</p>
                   </div>
                 </div>
               </div>
@@ -253,19 +253,19 @@ export default function DiscoverProductPage() {
             <div className="lg:sticky lg:top-24 space-y-6">
               {/* Category */}
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-400 text-xs font-medium">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-xs font-medium">
                   <CatIcon className="w-3.5 h-3.5" />
                   {catInfo.label}
                 </span>
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">{product.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] leading-tight">{product.name}</h1>
 
               {/* Creator */}
               {creator && (
-                <div className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/[0.06] rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
                     {creator.avatar_url ? (
                       <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -275,22 +275,22 @@ export default function DiscoverProductPage() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-white truncate">{creator.full_name || 'Creator'}</p>
-                    <p className="text-xs text-slate-500">DigiOne Creator</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{creator.full_name || 'Creator'}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">DigiOne Creator</p>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-                    <User className="w-4 h-4 text-slate-400" />
+                  <div className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)] flex items-center justify-center">
+                    <User className="w-4 h-4 text-[var(--text-secondary)]" />
                   </div>
                 </div>
               )}
 
               {/* Price */}
               <div className="flex items-baseline gap-3">
-                <span className={`text-4xl font-extrabold ${product.price === 0 ? 'text-emerald-400' : 'text-white'}`}>
+                <span className={`text-4xl font-extrabold ${product.price === 0 ? 'text-emerald-600' : 'text-[var(--text-primary)]'}`}>
                   {formatPrice(product.price)}
                 </span>
                 {product.price > 0 && (
-                  <span className="text-sm text-slate-500">one-time payment</span>
+                  <span className="text-sm text-[var(--text-secondary)]">one-time payment</span>
                 )}
               </div>
 
@@ -300,14 +300,14 @@ export default function DiscoverProductPage() {
                   href={product.product_link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-base font-bold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-base font-bold transition-all shadow-sm"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   {product.price === 0 ? 'Get for Free' : `Buy Now — ${formatPrice(product.price)}`}
                 </a>
               ) : (
                 <button
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-base font-bold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40"
+                  className="flex items-center justify-center gap-2 w-full py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-base font-bold transition-all shadow-sm"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   {product.price === 0 ? 'Get for Free' : `Buy Now — ${formatPrice(product.price)}`}
@@ -320,16 +320,16 @@ export default function DiscoverProductPage() {
                   onClick={() => setLiked(l => !l)}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                     liked
-                      ? 'bg-red-500/10 border-red-500/20 text-red-400'
-                      : 'bg-white/[0.03] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.06]'
+                      ? 'bg-red-50 border-red-200 text-red-600'
+                      : 'bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                   }`}
                 >
-                  <Heart className={`w-4 h-4 ${liked ? 'fill-red-400' : ''}`} />
+                  <Heart className={`w-4 h-4 ${liked ? 'fill-red-500' : ''}`} />
                   {liked ? 'Saved' : 'Save'}
                 </button>
                 <button
                   onClick={handleShare}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.06] text-sm font-medium transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] text-sm font-medium transition-all"
                 >
                   <Share2 className="w-4 h-4" />
                   Share
@@ -337,18 +337,18 @@ export default function DiscoverProductPage() {
               </div>
 
               {/* Trust Signals */}
-              <div className="p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl space-y-3">
-                <div className="flex items-center gap-2 text-sm text-slate-400">
-                  <Shield className="w-4 h-4 text-emerald-400" />
+              <div className="p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl space-y-3">
+                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                  <Shield className="w-4 h-4 text-emerald-600" />
                   <span>Secure payment powered by DigiOne</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-400">
-                  <Package className="w-4 h-4 text-indigo-400" />
+                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                  <Package className="w-4 h-4 text-[var(--text-secondary)]" />
                   <span>Instant digital delivery</span>
                 </div>
                 {product.created_at && (
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
-                    <Clock className="w-4 h-4 text-slate-500" />
+                  <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                    <Clock className="w-4 h-4 text-[var(--text-secondary)]" />
                     <span>Published {new Date(product.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</span>
                   </div>
                 )}
@@ -359,10 +359,10 @@ export default function DiscoverProductPage() {
 
         {/* More from Creator */}
         {creator && creatorProducts.length > 0 && (
-          <section className="mt-20 pt-12 border-t border-white/[0.06]">
+          <section className="mt-20 pt-12 border-t border-[var(--border)]">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
                   {creator.avatar_url ? (
                     <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -370,8 +370,8 @@ export default function DiscoverProductPage() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">More from {creator.full_name || 'this creator'}</h2>
-                  <p className="text-xs text-slate-500">Other products by this creator</p>
+                  <h2 className="text-xl font-bold text-[var(--text-primary)]">More from {creator.full_name || 'this creator'}</h2>
+                  <p className="text-xs text-[var(--text-secondary)]">Other products by this creator</p>
                 </div>
               </div>
             </div>
@@ -385,13 +385,13 @@ export default function DiscoverProductPage() {
 
         {/* Related Products */}
         {related.length > 0 && (
-          <section className="mt-16 pt-12 border-t border-white/[0.06] pb-16">
+          <section className="mt-16 pt-12 border-t border-[var(--border)] pb-16">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-xl font-bold text-white">You might also like</h2>
-                <p className="text-xs text-slate-500 mt-1">Similar products you may be interested in</p>
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">You might also like</h2>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">Similar products you may be interested in</p>
               </div>
-              <Link href="/discover" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1">
+              <Link href="/discover" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium flex items-center gap-1">
                 Browse all <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -415,9 +415,9 @@ function MiniProductCard({ product }: { product: RelatedProduct }) {
   return (
     <Link
       href={`/discover/${product.id}`}
-      className="group flex flex-col bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all"
+      className="group flex flex-col bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-[var(--text-secondary)] hover:shadow-md transition-all"
     >
-      <div className="aspect-[4/3] relative overflow-hidden bg-white/[0.03]">
+      <div className="aspect-[4/3] relative overflow-hidden bg-[var(--bg-tertiary)]">
         {product.thumbnail_url ? (
           <img
             src={product.thumbnail_url}
@@ -427,7 +427,7 @@ function MiniProductCard({ product }: { product: RelatedProduct }) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-8 h-8 text-slate-700" />
+            <Package className="w-8 h-8 text-[var(--text-secondary)]" />
           </div>
         )}
         <div className="absolute bottom-2 right-2">
@@ -439,12 +439,12 @@ function MiniProductCard({ product }: { product: RelatedProduct }) {
         </div>
       </div>
       <div className="p-3.5">
-        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium mb-1">{catLabel}</p>
-        <h4 className="text-sm font-semibold text-white line-clamp-2 group-hover:text-indigo-300 transition-colors">
+        <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-1">{catLabel}</p>
+        <h4 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--text-secondary)] transition-colors">
           {product.name}
         </h4>
         {creator && (
-          <p className="text-xs text-slate-500 mt-2 truncate">by {creator.full_name || 'Creator'}</p>
+          <p className="text-xs text-[var(--text-secondary)] mt-2 truncate">by {creator.full_name || 'Creator'}</p>
         )}
       </div>
     </Link>

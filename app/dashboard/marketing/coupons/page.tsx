@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 // ─── Marketing Hub Nav ────────────────────────────────────────
 const HUB_TABS = [
@@ -57,7 +57,7 @@ function CopyCode({ code }: { code: string }) {
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="p-1.5 rounded-md text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+      className="p-1.5 rounded-md text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
       title="Copy code"
     >
       {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -149,7 +149,7 @@ export default function CouponsPage() {
       cell: (row: any) => (
         <span className={`inline-flex items-center gap-1 font-bold text-sm px-2.5 py-1 rounded-full ${
           row.discount_type === 'percentage'
-            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-400'
+            ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:bg-[var(--accent)]/15 dark:text-[var(--text-secondary)]'
             : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
         }`}>
           {row.discount_type === 'percentage'
@@ -196,7 +196,7 @@ export default function CouponsPage() {
           <button
             onClick={() => handleToggle(row)}
             disabled={toggling === row.id}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
             title={row.is_active ? 'Deactivate' : 'Activate'}
           >
             {row.is_active
@@ -228,7 +228,7 @@ export default function CouponsPage() {
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all shrink-0"
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all shrink-0"
           >
             <Plus className="w-4 h-4" /> New Coupon
           </button>
@@ -240,9 +240,9 @@ export default function CouponsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Coupons',  value: totalCoupons,  color: 'text-indigo-600 dark:text-indigo-400',  bg: 'bg-indigo-50 dark:bg-indigo-500/10'  },
+            { label: 'Total Coupons',  value: totalCoupons,  color: 'text-[var(--text-primary)]',  bg: 'bg-[var(--bg-tertiary)]'  },
             { label: 'Active',         value: activeCoupons, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-            { label: 'Total Redeemed', value: totalUses,     color: 'text-violet-600 dark:text-violet-400',  bg: 'bg-violet-50 dark:bg-violet-500/10'  },
+            { label: 'Total Redeemed', value: totalUses,     color: 'text-[var(--text-primary)]',  bg: 'bg-[var(--bg-tertiary)]'  },
             { label: 'Expired',        value: expiredCount,  color: 'text-red-600 dark:text-red-400',        bg: 'bg-red-50 dark:bg-red-500/10'        },
           ].map(s => (
             <div key={s.label} className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4">
@@ -262,19 +262,19 @@ export default function CouponsPage() {
           </div>
           {isLoading ? (
             <div className="p-8 text-center">
-              <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
               <p className="text-sm text-gray-500">Loading coupons…</p>
             </div>
           ) : coupons.length === 0 ? (
             <div className="flex flex-col items-center py-16 text-center">
-              <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4">
-                <Ticket className="w-7 h-7 text-indigo-400" />
+              <div className="w-14 h-14 bg-[var(--bg-tertiary)] rounded-2xl flex items-center justify-center mb-4">
+                <Ticket className="w-7 h-7 text-[var(--text-secondary)]" />
               </div>
               <p className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">No coupons yet</p>
               <p className="text-sm text-gray-500 mb-5 max-w-xs">Create discount codes to boost conversions and reward your audience.</p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 transition"
+                className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition"
               >
                 <Plus className="w-4 h-4" /> Create First Coupon
               </button>
@@ -291,8 +291,8 @@ export default function CouponsPage() {
           <div className="bg-white dark:bg-[#0D0D1F] rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center">
-                  <Ticket className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-8 h-8 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center">
+                  <Ticket className="w-4 h-4 text-[var(--text-primary)]" />
                 </div>
                 <h2 className="text-base font-bold text-gray-900 dark:text-white">New Coupon</h2>
               </div>
@@ -334,7 +334,7 @@ export default function CouponsPage() {
                         onClick={() => setFormData(p => ({ ...p, discount_type: t }))}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border-2 transition ${
                           formData.discount_type === t
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
+                            ? 'border-[var(--accent)] bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                             : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
                         }`}
                       >
@@ -393,7 +393,7 @@ export default function CouponsPage() {
               <button
                 type="submit"
                 disabled={isCreating}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+                className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-xl font-bold text-sm shadow-sm transition-all"
               >
                 {isCreating ? 'Creating…' : 'Create Coupon →'}
               </button>

@@ -13,16 +13,16 @@ const tools = [
     label: 'Discount Coupons',
     description: 'Create percentage or fixed-amount promo codes to drive conversions and reward loyal buyers.',
     href: '/dashboard/coupons',
-    color: 'text-violet-600 dark:text-violet-400',
-    bg: 'bg-violet-50 dark:bg-violet-500/10',
+    color: 'text-[var(--text-primary)]',
+    bg: 'bg-[var(--bg-tertiary)]',
   },
   {
     icon: Users,
     label: 'Affiliates',
     description: 'Recruit affiliates to market your products. Set custom commission rates and track their performance.',
     href: '/dashboard/affiliates',
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-50 dark:bg-indigo-500/10',
+    color: 'text-[var(--text-primary)]',
+    bg: 'bg-[var(--bg-tertiary)]',
   },
   {
     icon: Share2,
@@ -39,7 +39,7 @@ export default function MarketingPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Megaphone className="w-6 h-6 text-indigo-500" />
+          <Megaphone className="w-6 h-6 text-[var(--text-secondary)]" />
           Marketing Tools
         </h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -52,7 +52,7 @@ export default function MarketingPage() {
           <Link
             key={tool.href}
             href={tool.href}
-            className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all duration-200 flex flex-col gap-4"
+            className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-4"
           >
             <div className={`w-12 h-12 ${tool.bg} ${tool.color} rounded-xl flex items-center justify-center`}>
               <tool.icon className="w-6 h-6" />

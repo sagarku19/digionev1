@@ -1,55 +1,65 @@
 "use client";
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Minus } from 'lucide-react';
+
+const faqs = [
+  { q: "Do I need a GST number to sell on DigiOne?", a: "No. You don't need a GST number to start selling digital products below the ₹20L threshold. We auto-generate compliant invoices on every sale. Registering for GST brings additional benefits once you scale." },
+  { q: "How fast are payouts processed?", a: "We process payouts within T+1 days via Cashfree. Funds land directly into your UPI ID or bank account instantly after settlement." },
+  { q: "Can I use my own domain name?", a: "Yes. Plus and Pro creators can connect a custom root domain with auto-generated SSL — no developer required." },
+  { q: "What payment methods do buyers have?", a: "Google Pay, PhonePe, Paytm, Credit/Debit Cards, and NetBanking — all through Cashfree for best Indian conversion rates." },
+  { q: "Is there really a free plan?", a: "Yes. Start completely free. We charge a 10% platform fee per transaction instead of a subscription." },
+  { q: "Do you support international buyers?", a: "Yes. Our gateway handles global card settlements and INR conversion transparently." },
+  { q: "What happens if a buyer requests a refund?", a: "Refunds are processed through the dashboard. Gateway processing charges are excluded per Cashfree's dispute policy." },
+  { q: "Can I migrate from Gumroad or Instamojo?", a: "Absolutely. Use our bulk CSV importer to move your product listings in minutes with zero downtime." },
+];
 
 export default function FaqAccordion() {
-  const faqs = [
-    { q: "Do I need a GST number to sell on DigiOne?", a: "No, you don't strictly need a GST to start selling digital products below the ₹20L threshold. We issue invoices explicitly bounding under typical exemptions, though registering brings additional compliance benefits." },
-    { q: "How fast are payouts processed?", a: "We process completely within T+1 days via secure Cashfree nodal accounts. Funds land natively into your UPI ID or Bank Account instantly." },
-    { q: "Can I use my own domain name?", a: "Yes. Plus and Pro tier creators can map custom root domains and secure auto-generated SSL certificates bound to our Next.js edge caching flawlessly." },
-    { q: "What payment methods do buyers have?", a: "We natively support Google Pay, PhonePe, Paytm, standard Credit/Debit Cards, and NetBanking through Cashfree, yielding a highly optimized Indian conversion funnel." },
-    { q: "Is there really a free plan?", a: "Yes. Our Free tier operates entirely without subscription costs and deducts a 10% platform fee per transaction instead." },
-    { q: "Do you support international buyers?", a: "Yes. While our primary infrastructure focuses on optimizing Indian funnels, our gateway cleanly defaults to global card settlements transparently resolving INR conversions." },
-    { q: "What happens if a buyer requests a refund?", a: "Refunds are processed automatically via the dashboard minus gateway processing charges under Cashfree dispute resolution policies." },
-    { q: "Can I migrate from Gumroad or Instamojo?", a: "Absolutely. Our bulk CSV product importer dynamically remaps explicit listings in minutes preventing downtime." }
-  ];
-
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="py-24 bg-[#03040A]">
+    <section className="py-28 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12 tracking-tight">Frequently asked questions</h2>
-        
-        <div className="space-y-4">
-          {faqs.map((faq, i) => (
-            <div key={i} className="border border-white/10 rounded-xl bg-[#0D0F1A] overflow-hidden transition-all duration-300 hover:border-white/20">
-              <button
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
-              >
-                <span className="text-lg font-bold text-white pr-4">{faq.q}</span>
-                <span className={`text-slate-400 text-2xl transition-transform duration-300 ${openIndex === i ? 'rotate-45 text-white' : ''}`}>
-                  +
-                </span>
-              </button>
-              
-              <AnimatePresence>
-                {openIndex === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                  >
-                    <div className="p-6 pt-0 text-slate-400 text-sm leading-relaxed">
-                      {faq.a}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
+        <div className="text-center mb-14">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[var(--brand)] mb-3">FAQ</p>
+          <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] tracking-tight font-display">
+            Frequently asked questions.
+          </h2>
+        </div>
+
+        <div className="space-y-3">
+          {faqs.map((faq, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div key={i} className={`rounded-2xl transition-all duration-300 ${isOpen ? 'bg-[#f7f7f8] shadow-sm' : 'bg-[#f7f7f8]/60 hover:bg-[#f7f7f8]'}`}>
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  className="w-full flex items-center justify-between px-6 py-5 text-left focus:outline-none"
+                >
+                  <span className="text-[15px] font-semibold text-[var(--text-primary)] pr-4 leading-relaxed">{faq.q}</span>
+                  <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors ${isOpen ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'bg-gray-200 text-gray-500'}`}>
+                    {isOpen ? <Minus className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                    >
+                      <div className="px-6 pb-6 text-sm text-[var(--text-secondary)] leading-relaxed">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

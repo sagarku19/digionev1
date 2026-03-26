@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import SiteVisualEditor from '@/components/dashboard/site-edit/SiteVisualEditor';
 import { FileText, Globe, BookOpen, ChevronRight, ImageIcon } from 'lucide-react';
 
-const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
 
 export default function EditBlogPage() {
   const params = useParams();

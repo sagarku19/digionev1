@@ -13,7 +13,27 @@
       "Bash(mkdir -p \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/w/[slug]\")",
       "Bash(mkdir -p \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/p/product/[productId]\")",
       "Bash(grep -E \"\\\\.ts$\")",
-      "Bash(grep -r \"CREATE POLICY\\\\|ALTER TABLE.*ENABLE RLS\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 --include=*.sql)"
+      "Bash(grep -r \"CREATE POLICY\\\\|ALTER TABLE.*ENABLE RLS\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 --include=*.sql)",
+      "Bash(find /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/lib -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.css -o -name *.jsx -o -name *.js \\\\\\))",
+      "Bash(find /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 -type f -name *.css)",
+      "Bash(find /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 -name *.tsx -o -name *.ts)",
+      "Bash(grep -r \"auth-bg\\\\|auth-text\\\\|auth-surface\\\\|brand-gradient\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app --include=*.tsx --include=*.css)",
+      "Bash(grep -r \"auth-bg\\\\|auth-text\\\\|brand-gradient\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 --include=*.css --include=*.tsx --include=*.ts)",
+      "Bash(grep -r \"indigo\\\\|#6366F1\\\\|#4F46E5\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src/components --include=*.tsx)",
+      "Bash(ls:*)",
+      "Bash(grep -r \"bg-indigo\\\\|bg-violet\\\\|bg-purple\\\\|from-indigo\\\\|from-violet\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
+      "Bash(grep -rl \"bg-indigo\\\\|bg-violet\\\\|bg-purple\\\\|from-indigo\\\\|from-violet\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
+      "Bash(grep -r \"bg-indigo\\\\|bg-violet\\\\|text-indigo\\\\|text-violet\\\\|border-indigo\\\\|shadow-indigo\\\\|hover:text-indigo\\\\|hover:bg-indigo\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
+      "Bash(grep -r \"indigo\\\\|violet\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
+      "Bash(grep -r \"\\\\bindigo\\\\b\\\\|\\\\bviolet\\\\b\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
+      "Bash(grep -rn \"\\\\bindigo\\\\b\\\\|\\\\bviolet\\\\b\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
+      "Bash(grep -r \"\\\\bindigo\\\\b\\\\|\\\\bviolet\\\\b\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src/components/dashboard)",
+      "Bash(grep -v \"to-violet-6\\\\|from-\\\\[var\\\\|--brand\\\\|comment\\\\|//\")",
+      "Bash(grep -rn \"\\\\bindigo\\\\b\\\\|\\\\bviolet\\\\b\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src/components/dashboard)",
+      "Bash(grep -v \"to-violet-6\\\\|from-\\\\[var\\\\|--brand\\\\|//\")",
+      "Bash(grep -r \"\\\\bindigo\\\\b\\\\|\\\\bviolet\\\\b\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src/components/dashboard C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
+      "Bash(find \"C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(marketing\\)\" -name \"*.tsx\")",
+      "Bash(find /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))"
     ]
   }
 }

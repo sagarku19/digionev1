@@ -11,7 +11,7 @@ import {
   Heading2, Link as LinkIcon, Code, Quote, Loader2
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 export default function BlogPostEditor() {
   const params = useParams();
@@ -34,7 +34,7 @@ export default function BlogPostEditor() {
   if (isLoading || !form) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--text-secondary)]" />
         <p className="text-sm text-gray-500">Loading editor…</p>
       </div>
     );
@@ -118,7 +118,7 @@ export default function BlogPostEditor() {
             <button
               onClick={handleSave}
               disabled={isUpdating}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all"
+              className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all"
             >
               <Save className="w-4 h-4" />
               {isUpdating ? 'Saving…' : 'Save'}
@@ -244,7 +244,7 @@ export default function BlogPostEditor() {
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" checked={form.is_free !== false} onChange={e => patch({ is_free: e.target.checked })} />
-                <div className="w-10 h-5 bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
+                <div className="w-10 h-5 bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--bg-tertiary)] rounded-full transition after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
               </label>
             </div>
           </div>
@@ -259,16 +259,16 @@ export default function BlogPostEditor() {
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                 placeholder="Add tag…"
-                className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400"
+                className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400"
               />
-              <button onClick={addTag} className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-500 transition">
+              <button onClick={addTag} className="px-3 py-2 bg-[var(--accent)] text-[var(--accent-fg)] rounded-lg text-sm font-semibold hover:bg-[var(--accent)] transition">
                 <Tag className="w-4 h-4" />
               </button>
             </div>
             {(form.tags || []).length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {(form.tags || []).map((tag: string) => (
-                  <span key={tag} className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 text-xs font-medium px-2.5 py-1 rounded-full">
+                  <span key={tag} className="inline-flex items-center gap-1 bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-xs font-medium px-2.5 py-1 rounded-full">
                     {tag}
                     <button onClick={() => removeTag(tag)} className="ml-0.5 hover:text-red-500 transition">
                       <X className="w-3 h-3" />
@@ -290,7 +290,7 @@ export default function BlogPostEditor() {
               value={form.thumbnail_url || ''}
               onChange={e => patch({ thumbnail_url: e.target.value })}
               placeholder="https://example.com/image.jpg"
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400"
             />
             <p className="text-xs text-gray-400">Paste image URL (upload coming soon)</p>
           </div>
@@ -303,7 +303,7 @@ export default function BlogPostEditor() {
               value={form.video_embed_url || ''}
               onChange={e => patch({ video_embed_url: e.target.value })}
               placeholder="YouTube or Vimeo embed URL"
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400"
             />
           </div>
         </div>

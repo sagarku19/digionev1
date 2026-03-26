@@ -1,42 +1,100 @@
 @import "tailwindcss";
 
 /* ================================================================
-   ROOT TOKENS
+   DARK MODE — Class-based (.dark ancestor, dashboard only)
    ================================================================ */
+@variant dark (&:where(.dark, .dark *));
 
+/* ================================================================
+   ROOT DESIGN TOKENS — Light Theme (default for all pages)
+   ================================================================ */
 :root {
-  /* Brand */
-  --brand: #6366F1;
-  --brand-hover: #4F46E5;
-
   /* Backgrounds */
-  --color-bg: #03040A;
-  --color-bg-2: #0D0F1A;
-  --color-bg-3: #141628;
+  --bg-primary:   #ffffff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary:  #f4f4f5;
 
   /* Text */
-  --color-text: #F1F5F9;
-  --color-text-2: #94A3B8;
-  --color-text-3: #475569;
+  --text-primary:   #0a0a0a;
+  --text-secondary: #737373;
 
-  /* Borders */
-  --color-border: rgba(255, 255, 255, 0.08);
+  /* Border */
+  --border: #e5e5e5;
 
-  /* Fonts (CONNECTED TO NEXT FONT) */
-  --font-sans: var(--font-inter);
+  /* Accent — buttons (black in light, white in dark) */
+  --accent:       #0a0a0a;
+  --accent-hover: #262626;
+  --accent-fg:    #ffffff;
+
+  /* Status */
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger:  #dc2626;
+
+  /* Brand indigo — logo / avatar gradient only */
+  --brand:       #6366F1;
+  --brand-hover: #4F46E5;
+
+  /* Auth page variables */
+  --auth-bg:        #f4f4f5;
+  --auth-text:      #0a0a0a;
+  --auth-text-2:    #737373;
+  --auth-surface:   #ffffff;
+  --brand-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+
+  /* Legacy aliases — kept for backward compat */
+  --color-bg:     var(--bg-primary);
+  --color-bg-2:   var(--bg-secondary);
+  --color-bg-3:   var(--bg-tertiary);
+  --color-text:   var(--text-primary);
+  --color-text-2: var(--text-secondary);
+  --color-text-3: var(--text-secondary);
+  --color-border: var(--border);
+
+  /* Fonts */
+  --font-sans:    var(--font-inter);
   --font-display: var(--font-bricolage);
 
   /* Radius */
-  --radius-lg: 12px;
+  --radius:    10px;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+}
+
+/* ================================================================
+   DARK THEME — Applied to .dark wrapper (dashboard only)
+   ================================================================ */
+.dark {
+  --bg-primary:   #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-tertiary:  #1a1a1a;
+
+  --text-primary:   #ededed;
+  --text-secondary: #888888;
+
+  --border: #262626;
+
+  --accent:       #ededed;
+  --accent-hover: #ffffff;
+  --accent-fg:    #0a0a0a;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger:  #f87171;
+
+  /* Legacy aliases */
+  --color-bg:     var(--bg-primary);
+  --color-bg-2:   var(--bg-secondary);
+  --color-bg-3:   var(--bg-tertiary);
+  --color-text:   var(--text-primary);
+  --color-text-2: var(--text-secondary);
+  --color-border: var(--border);
 }
 
 /* ================================================================
    BASE
    ================================================================ */
-
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
@@ -46,29 +104,19 @@ html {
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-/* Headings */
-h1,
-h2,
-h3,
-.font-display {
+h1, h2, h3, .font-display {
   font-family: var(--font-display);
 }
 
 /* ================================================================
    UTILITIES
    ================================================================ */
-
 .container-dg {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
-}
-
-body {
-  background: #03040A;
-  background-image: radial-gradient(circle at top, rgba(99, 102, 241, 0.15), transparent 60%);
 }

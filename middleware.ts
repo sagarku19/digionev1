@@ -32,10 +32,17 @@ export async function middleware(request: NextRequest) {
   );
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser().
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // supabase.auth.getUser(). We wrap in try/catch so transient fetch
+  // failures degrade gracefully (user treated as unauthenticated) rather
+  // than hanging / crashing the middleware.
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Network error reaching Supabase — fail open (treat as logged out)
+    user = null;
+  }
 
   const url = request.nextUrl.clone();
 

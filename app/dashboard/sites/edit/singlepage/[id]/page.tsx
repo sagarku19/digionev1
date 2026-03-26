@@ -11,7 +11,7 @@ import {
   Star, ImageIcon, Timer, ShoppingBag, Eye,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
 
 export default function EditSinglePagePage() {
   const params = useParams();
@@ -85,7 +85,7 @@ export default function EditSinglePagePage() {
       siteId={siteId}
       typeLabel="Single Page"
       typeIcon={Layers}
-      typeIconColor="text-violet-500"
+      typeIconColor="text-[var(--text-secondary)]"
       onTypeSave={handleTypeSave}
       showSlug={true}
     >
@@ -115,7 +115,7 @@ export default function EditSinglePagePage() {
           {/* Hero Image */}
           <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-violet-500" />
+              <ImageIcon className="w-4 h-4 text-[var(--text-secondary)]" />
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Hero Image</h3>
             </div>
             <input type="url" value={heroImage} onChange={e => setHeroImage(e.target.value)}
@@ -128,7 +128,7 @@ export default function EditSinglePagePage() {
           {/* Linked Product */}
           <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-violet-500" />
+              <ShoppingBag className="w-4 h-4 text-[var(--text-secondary)]" />
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Linked Product</h3>
             </div>
             <div className="relative">
@@ -141,9 +141,9 @@ export default function EditSinglePagePage() {
               {filteredProducts.map((p: any) => (
                 <button key={p.id} onClick={() => setProductId(productId === p.id ? null : p.id)}
                   className={`w-full text-left flex items-center gap-3 px-4 py-2.5 transition text-sm ${
-                    productId === p.id ? 'bg-violet-50 dark:bg-violet-500/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                    productId === p.id ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                   } border-b border-gray-100 dark:border-gray-800 last:border-0`}>
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${productId === p.id ? 'bg-violet-600' : 'bg-gray-300'}`} />
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${productId === p.id ? 'bg-[var(--bg-tertiary)]' : 'bg-gray-300'}`} />
                   <span className="text-gray-900 dark:text-white truncate">{p.name}</span>
                   {p.price > 0 && <span className="ml-auto text-xs text-gray-500">{'\u20B9'}{p.price}</span>}
                 </button>
@@ -151,7 +151,7 @@ export default function EditSinglePagePage() {
               {products.length === 0 && <p className="text-sm text-gray-500 p-4 text-center">No products yet</p>}
             </div>
             {productId && (
-              <div className="flex items-center gap-2 text-xs text-violet-600 dark:text-violet-400">
+              <div className="flex items-center gap-2 text-xs text-[var(--text-primary)]">
                 <Sparkles className="w-3 h-3" />
                 Linked: {products.find((p: any) => p.id === productId)?.name ?? 'Product'}
               </div>
@@ -178,7 +178,7 @@ export default function EditSinglePagePage() {
               ))}
             </div>
             <button onClick={() => setWhatsIncluded(prev => [...prev, ''])}
-              className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
               <Plus className="w-3.5 h-3.5" /> Add item
             </button>
           </div>
@@ -207,7 +207,7 @@ export default function EditSinglePagePage() {
               ))}
             </div>
             <button onClick={() => setFaqs(prev => [...prev, { question: '', answer: '' }])}
-              className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
               <Plus className="w-3.5 h-3.5" /> Add FAQ
             </button>
           </div>
@@ -239,7 +239,7 @@ export default function EditSinglePagePage() {
               ))}
             </div>
             <button onClick={() => setTestimonials(prev => [...prev, { name: '', role: '', text: '' }])}
-              className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
               <Plus className="w-3.5 h-3.5" /> Add testimonial
             </button>
           </div>
@@ -259,7 +259,7 @@ export default function EditSinglePagePage() {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
                   <input type="checkbox" className="sr-only peer" checked={opt.val} onChange={e => opt.set(e.target.checked)} />
-                  <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] shadow-inner" />
+                  <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--bg-tertiary)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] shadow-inner" />
                 </label>
               </div>
             ))}

@@ -21,8 +21,8 @@ const sections = [
     label: 'Store Settings',
     description: 'Manage your store name, branding, domain, and general configuration options.',
     href: '/dashboard/settings/store',
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-50 dark:bg-indigo-500/10',
+    color: 'text-[var(--text-primary)]',
+    bg: 'bg-[var(--bg-tertiary)]',
     comingSoon: false,
   },
 ];
@@ -32,7 +32,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Settings className="w-6 h-6 text-indigo-500" />
+          <Settings className="w-6 h-6 text-[var(--text-secondary)]" />
           Settings
         </h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -45,7 +45,7 @@ export default function SettingsPage() {
           <Link
             key={section.href}
             href={section.href}
-            className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all duration-200 flex flex-col gap-4"
+            className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-4"
           >
             <div className={`w-12 h-12 ${section.bg} ${section.color} rounded-xl flex items-center justify-center`}>
               <section.icon className="w-6 h-6" />

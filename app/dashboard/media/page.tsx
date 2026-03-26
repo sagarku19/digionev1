@@ -91,8 +91,8 @@ function formatBytes(bytes: number): string {
 
 function FileIcon({ type, className }: { type: string; className?: string }) {
   const cls = className ?? 'w-8 h-8';
-  if (type === 'image') return <Image className={`${cls} text-indigo-500`} />;
-  if (type === 'video') return <Video className={`${cls} text-violet-500`} />;
+  if (type === 'image') return <Image className={`${cls} text-[var(--text-secondary)]`} />;
+  if (type === 'video') return <Video className={`${cls} text-[var(--text-secondary)]`} />;
   if (type === 'audio') return <Music className={`${cls} text-rose-500`} />;
   if (type === 'document') return <FileText className={`${cls} text-amber-500`} />;
   if (type === 'archive') return <Archive className={`${cls} text-emerald-500`} />;
@@ -119,7 +119,7 @@ function FilterTab({
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
         active
-          ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
+          ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white'
       }`}
     >
@@ -129,7 +129,7 @@ function FilterTab({
         <span
           className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
             active
-              ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400'
+              ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
               : 'bg-gray-100 dark:bg-white/[0.06] text-gray-500 dark:text-gray-500'
           }`}
         >
@@ -163,16 +163,16 @@ function UploadZone({ onUpload }: { onUpload: (files: File[]) => void }) {
       onClick={() => inputRef.current?.click()}
       className={`cursor-pointer border-2 border-dashed rounded-2xl px-6 py-8 flex flex-col items-center justify-center gap-3 transition-all ${
         isDragging
-          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-          : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A] hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-500/5'
+          ? 'border-[var(--accent)] bg-[var(--bg-tertiary)]'
+          : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A] hover:border-[var(--accent)] hover:bg-[var(--bg-tertiary)]'
       }`}
     >
-      <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-        <Upload className="w-7 h-7 text-indigo-500" />
+      <div className="w-14 h-14 rounded-2xl bg-[var(--bg-tertiary)] flex items-center justify-center">
+        <Upload className="w-7 h-7 text-[var(--text-secondary)]" />
       </div>
       <div className="text-center">
         <p className="text-sm font-bold text-gray-800 dark:text-white">
-          Drop files here, or <span className="text-indigo-600 dark:text-indigo-400">browse</span>
+          Drop files here, or <span className="text-[var(--text-primary)]">browse</span>
         </p>
         <p className="text-xs text-gray-400 mt-1">
           Images, PDFs, videos, ZIPs — up to 1 GB per file
@@ -209,7 +209,7 @@ function FileCard({
   };
 
   return (
-    <div className="group relative bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-200">
+    <div className="group relative bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:shadow-lg  transition-all duration-200">
       {/* Preview */}
       <div className="relative aspect-video bg-gray-50 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
         {file.type === 'image' ? (
@@ -279,7 +279,7 @@ function FileRow({
   };
 
   return (
-    <div className="group flex items-center gap-4 px-4 py-3 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl hover:border-indigo-300 dark:hover:border-indigo-700 transition-all">
+    <div className="group flex items-center gap-4 px-4 py-3 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl hover:border-[var(--accent)] dark:hover:border-[var(--accent)] transition-all">
       {/* Preview thumb */}
       <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center shrink-0 overflow-hidden border border-gray-100 dark:border-gray-800">
         {file.type === 'image' ? (
@@ -301,7 +301,7 @@ function FileRow({
         <button
           onClick={copy}
           title="Copy URL"
-          className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+          className="p-1.5 rounded-lg text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
         >
           {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
         </button>
@@ -402,7 +402,7 @@ export default function MediaPage() {
         <div className="hidden sm:flex items-center gap-3">
           <div className="w-32 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-indigo-500 rounded-full"
+              className="h-full bg-[var(--accent)] rounded-full"
               style={{ width: `${Math.min((totalSize / (1024 * 1024 * 1024)) * 100, 100)}%` }}
             />
           </div>
@@ -416,9 +416,9 @@ export default function MediaPage() {
       <UploadZone onUpload={handleUpload} />
 
       {uploading && (
-        <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl">
-          <Loader2 className="w-4 h-4 text-indigo-500 animate-spin shrink-0" />
-          <p className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">Uploading…</p>
+        <div className="flex items-center gap-3 p-4 bg-[var(--bg-tertiary)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl">
+          <Loader2 className="w-4 h-4 text-[var(--text-secondary)] animate-spin shrink-0" />
+          <p className="text-sm text-[var(--text-primary)] font-medium">Uploading…</p>
         </div>
       )}
 
@@ -432,7 +432,7 @@ export default function MediaPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by filename…"
-            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400 transition"
+            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/40 text-gray-900 dark:text-white placeholder-gray-400 transition"
           />
           {search && (
             <button

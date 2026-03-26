@@ -88,7 +88,6 @@ export default function Sidebar() {
   const toggleAccordion = (href: string) =>
     setOpenAccordions(p => ({ ...p, [href]: !p[href] }));
 
-  // Profile
   const userName = profile?.full_name || 'Creator';
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
   const avatarUrl = (profile as any)?.avatar_url;
@@ -108,18 +107,22 @@ export default function Sidebar() {
       onClick={close}
       className={`group flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${
         active
-          ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
-          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white'
+          ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
+          : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
       }`}
     >
-      <Icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'}`} />
+      <Icon className={`w-[18px] h-[18px] shrink-0 transition-colors ${
+        active
+          ? 'text-[var(--text-primary)]'
+          : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+      }`} />
       <span className="flex-1 truncate">{label}</span>
       {badge && badge > 0 ? (
-        <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+        <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--danger)] text-white text-[10px] font-bold leading-none">
           {badge > 9 ? '9+' : badge}
         </span>
       ) : active ? (
-        <ChevronRight className="w-3 h-3 text-indigo-400 shrink-0" />
+        <ChevronRight className="w-3 h-3 text-[var(--text-secondary)] shrink-0" />
       ) : null}
     </Link>
   );
@@ -129,7 +132,7 @@ export default function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-gray-600 dark:text-gray-400 shadow-sm"
+        className="md:hidden fixed top-4 left-4 z-40 p-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-[var(--text-secondary)] shadow-sm"
       >
         <Menu className="w-5 h-5" />
       </button>
@@ -141,8 +144,8 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full bg-white dark:bg-[#07070f]
-        border-r border-gray-200/80 dark:border-white/[0.06]
+        fixed top-0 left-0 h-full bg-[var(--bg-secondary)]
+        border-r border-[var(--border)]
         w-[248px] z-50 flex flex-col
         transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -151,12 +154,12 @@ export default function Sidebar() {
         {/* ── Logo ── */}
         <div className="h-14 flex items-center justify-between px-4 shrink-0">
           <Link href="/dashboard" onClick={close} className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white text-xs font-extrabold shadow-lg shadow-indigo-500/25">
+            <div className="w-8 h-8 bg-gradient-to-br from-[var(--brand)] to-violet-600 rounded-xl flex items-center justify-center text-white text-xs font-extrabold shadow-lg">
               D1
             </div>
-            <span className="font-bold text-[15px] tracking-tight text-gray-900 dark:text-white">DigiOne</span>
+            <span className="font-bold text-[15px] tracking-tight text-[var(--text-primary)]">DigiOne</span>
           </Link>
-          <button onClick={close} className="md:hidden text-gray-400 hover:text-gray-700 dark:hover:text-white transition">
+          <button onClick={close} className="md:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -166,7 +169,7 @@ export default function Sidebar() {
           <Link
             href="/dashboard/sites/new"
             onClick={close}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition shadow-sm shadow-indigo-500/20"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-3.5 h-3.5" />
             Create site
@@ -174,21 +177,21 @@ export default function Sidebar() {
           <Link
             href="/dashboard/products/new"
             onClick={close}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.04] hover:bg-gray-50 dark:hover:bg-white/[0.08] text-gray-700 dark:text-gray-300 rounded-lg text-xs font-semibold transition"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-lg text-xs font-semibold transition"
           >
             <Plus className="w-3.5 h-3.5" />
             Add product
           </Link>
         </div>
 
-        <div className="mx-3 border-t border-gray-100 dark:border-white/[0.06]" />
+        <div className="mx-3 border-t border-[var(--border)]" />
 
         {/* ── Nav ── */}
         <nav className="flex-1 overflow-y-auto pt-3 pb-2 px-3 flex flex-col gap-5 scrollbar-thin">
 
           {NAV.map(({ id, group, items }) => (
             <div key={id}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 dark:text-gray-600 px-3 mb-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-secondary)] px-3 mb-1.5">
                 {group}
               </p>
               <div className="flex flex-col gap-px">
@@ -205,17 +208,17 @@ export default function Sidebar() {
                           onClick={() => toggleAccordion(item.href)}
                           className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${
                             childActive
-                              ? 'text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10'
-                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white'
+                              ? 'text-[var(--text-primary)] bg-[var(--bg-tertiary)]'
+                              : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                           }`}
                         >
-                          <item.icon className={`w-[18px] h-[18px] shrink-0 ${childActive ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}`} />
+                          <item.icon className={`w-[18px] h-[18px] shrink-0 ${childActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`} />
                           <span className="flex-1 text-left">{item.label}</span>
-                          <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-3.5 h-3.5 text-[var(--text-secondary)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
                         </button>
 
                         {open && (
-                          <div className="mt-0.5 ml-[18px] pl-3 border-l border-gray-200 dark:border-gray-800 flex flex-col gap-px">
+                          <div className="mt-0.5 ml-[18px] pl-3 border-l border-[var(--border)] flex flex-col gap-px">
                             {item.children!.map(child => {
                               const ca = pathname?.startsWith(child.href) ?? false;
                               return (
@@ -225,11 +228,11 @@ export default function Sidebar() {
                                   onClick={close}
                                   className={`flex items-center gap-2 px-2.5 py-[5px] rounded-md text-xs font-medium transition-all ${
                                     ca
-                                      ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
-                                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/[0.04] hover:text-gray-800 dark:hover:text-gray-200'
+                                      ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
+                                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                                   }`}
                                 >
-                                  <child.icon className={`w-3.5 h-3.5 shrink-0 ${ca ? 'text-indigo-500' : 'text-gray-400'}`} />
+                                  <child.icon className={`w-3.5 h-3.5 shrink-0 ${ca ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`} />
                                   {child.label}
                                 </Link>
                               );
@@ -256,7 +259,7 @@ export default function Sidebar() {
 
           {/* Account links */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 dark:text-gray-600 px-3 mb-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-secondary)] px-3 mb-1.5">
               Account
             </p>
             <div className="flex flex-col gap-px">
@@ -275,22 +278,22 @@ export default function Sidebar() {
         </nav>
 
         {/* ── Bottom ── */}
-        <div className="shrink-0 border-t border-gray-100 dark:border-white/[0.06]">
+        <div className="shrink-0 border-t border-[var(--border)]">
 
           {/* Upgrade to Pro */}
           <div className="p-3 pb-0">
-            <div className="px-3 py-3 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-500/[0.08] dark:to-violet-500/[0.08] border border-indigo-200/60 dark:border-indigo-500/20 rounded-lg">
+            <div className="px-3 py-3 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl">
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-xs">&#9889;</span>
-                <p className="text-xs font-bold text-gray-800 dark:text-white">Upgrade to Pro</p>
+                <p className="text-xs font-bold text-[var(--text-primary)]">Upgrade to Pro</p>
               </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed mb-2.5">
+              <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mb-2.5">
                 Less Fees, priority support and more.
               </p>
               <Link
                 href="/dashboard/settings/billing"
                 onClick={close}
-                className="block w-full text-center py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-semibold transition shadow-sm shadow-indigo-500/20"
+                className="block w-full text-center py-1.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-lg text-xs font-semibold transition"
               >
                 View Plans
               </Link>
@@ -301,10 +304,10 @@ export default function Sidebar() {
           <div className="p-3 relative">
             <button
               onClick={() => setProfileMenuOpen(o => !o)}
-              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition"
             >
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -313,38 +316,38 @@ export default function Sidebar() {
               </div>
               {/* Info */}
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 truncate leading-tight">{userName}</p>
-                <p className="text-[10px] text-gray-400 truncate leading-tight mt-px">Free Plan</p>
+                <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate leading-tight">{userName}</p>
+                <p className="text-[10px] text-[var(--text-secondary)] truncate leading-tight mt-px">Free Plan</p>
               </div>
-              <MoreHorizontal className="w-4 h-4 text-gray-400 shrink-0" />
+              <MoreHorizontal className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />
             </button>
 
             {/* Profile dropdown */}
             {profileMenuOpen && (
               <div
-                className="absolute bottom-full left-3 right-3 mb-1 bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-1 z-50"
+                className="absolute bottom-full left-3 right-3 mb-1 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl shadow-xl py-1 z-50"
                 onMouseLeave={() => setProfileMenuOpen(false)}
               >
                 <Link
                   href="/dashboard/settings"
                   onClick={() => { close(); setProfileMenuOpen(false); }}
-                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition"
                 >
-                  <Settings className="w-4 h-4 text-gray-400" />
+                  <Settings className="w-4 h-4 text-[var(--text-secondary)]" />
                   Settings
                 </Link>
                 <Link
                   href="/dashboard/settings/billing"
                   onClick={() => { close(); setProfileMenuOpen(false); }}
-                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                  className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition"
                 >
-                  <DollarSign className="w-4 h-4 text-gray-400" />
+                  <DollarSign className="w-4 h-4 text-[var(--text-secondary)]" />
                   Billing & Plan
                 </Link>
-                <hr className="my-1 border-gray-100 dark:border-gray-800" />
+                <hr className="my-1 border-[var(--border)]" />
                 <button
                   onClick={() => { handleLogout(); setProfileMenuOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--danger)] hover:bg-[var(--bg-tertiary)] transition"
                 >
                   <LogOut className="w-4 h-4" />
                   Log out

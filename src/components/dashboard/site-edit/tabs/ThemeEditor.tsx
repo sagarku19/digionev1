@@ -15,9 +15,9 @@ export default function ThemeEditor({
 }) {
   return (
     <div className="space-y-4">
-      <div className="p-3.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl flex items-start gap-3">
-        <Palette className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-indigo-700 dark:text-indigo-300">
+      <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl flex items-start gap-3">
+        <Palette className="w-4 h-4 text-[var(--text-primary)] mt-0.5 shrink-0" />
+        <p className="text-xs text-[var(--text-primary)]">
           Colors update in the preview instantly. Click <strong>Save</strong> to persist changes.
         </p>
       </div>

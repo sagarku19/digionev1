@@ -60,7 +60,7 @@ export default function CustomersPage() {
       sortable: true,
       cell: (row) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 dark:from-indigo-900/30 dark:to-violet-900/30 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+          <div className="w-9 h-9 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center shrink-0 text-[var(--text-primary)] font-bold text-sm">
             {(row.name ?? row.email)[0].toUpperCase()}
           </div>
           <div className="min-w-0">
@@ -122,7 +122,7 @@ export default function CustomersPage() {
         {customers.length > 0 && (
           <button
             onClick={() => exportCSV(customers)}
-            className="flex items-center gap-2 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
+            className="flex items-center gap-2 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -134,8 +134,8 @@ export default function CustomersPage() {
       {!isLoading && customers.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total Customers', value: customers.length.toLocaleString('en-IN'), icon: Users, color: 'indigo' },
-            { label: 'Total Orders', value: totalOrders.toLocaleString('en-IN'), icon: ShoppingBag, color: 'violet' },
+            { label: 'Total Customers', value: customers.length.toLocaleString('en-IN'), icon: Users, color: 'neutral' },
+            { label: 'Total Orders', value: totalOrders.toLocaleString('en-IN'), icon: ShoppingBag, color: 'neutral' },
             { label: 'Revenue from Buyers', value: formatINR(totalRevenue), icon: TrendingUp, color: 'emerald' },
             { label: 'Avg. Order Value', value: formatINR(avgOrderValue), icon: TrendingUp, color: 'amber' },
           ].map(stat => (
@@ -155,7 +155,7 @@ export default function CustomersPage() {
             <input
               value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, email, or phone…"
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
             />
           </div>
           <div className="flex gap-2">
@@ -165,8 +165,8 @@ export default function CustomersPage() {
                 onClick={() => setSortBy(s)}
                 className={`px-3 py-2 rounded-xl text-sm font-medium transition capitalize ${
                   sortBy === s
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
+                    ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
+                    : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-[var(--accent)]'
                 }`}
               >
                 {s === 'spent' ? 'Top Spenders' : s === 'orders' ? 'Most Orders' : 'Recent'}
@@ -188,8 +188,8 @@ export default function CustomersPage() {
       {/* Empty state */}
       {!isLoading && customers.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-5">
-            <UserCircle2 className="w-10 h-10 text-indigo-500" />
+          <div className="w-20 h-20 bg-[var(--bg-tertiary)] rounded-2xl flex items-center justify-center mb-5">
+            <UserCircle2 className="w-10 h-10 text-[var(--text-secondary)]" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No customers yet</h2>
           <p className="text-gray-500 text-sm max-w-xs">Once buyers complete purchases, they'll appear here with their full order history.</p>

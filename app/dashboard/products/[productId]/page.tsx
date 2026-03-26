@@ -14,7 +14,7 @@ import {
 
 // ─── Shared constants & sub-components ───────────────────────
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 function formatINR(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -65,7 +65,7 @@ function WhatsIncludedEditor({ items, onChange }: { items: string[]; onChange: (
         <ul className="space-y-2">
           {items.map((item, i) => (
             <li key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 px-3 py-2 rounded-lg">
-              <Package className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+              <Package className="w-3.5 h-3.5 text-[var(--text-secondary)] shrink-0" />
               <span className="flex-1">{item}</span>
               <button onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 transition">
                 <X className="w-3.5 h-3.5" />
@@ -81,7 +81,7 @@ function WhatsIncludedEditor({ items, onChange }: { items: string[]; onChange: (
           placeholder="e.g. 12 HD video lessons"
           className={INPUT}
         />
-        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition shrink-0">
+        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-sm font-semibold transition shrink-0">
           <Plus className="w-4 h-4" />
           Add
         </button>
@@ -144,7 +144,7 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
           )}
           <div className="flex items-center justify-between gap-2">
             <span className="text-gray-500 dark:text-gray-400 text-xs">Category</span>
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 capitalize">
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] capitalize">
               <Tag className="w-2.5 h-2.5" />
               {product.category || 'digital'}
             </span>
@@ -163,7 +163,7 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
           href={`/product/${product.id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+          className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
         >
           <Eye className="w-3.5 h-3.5" />
           Preview product page
@@ -196,7 +196,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   if (isLoading || !formData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <div className="w-10 h-10 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+        <div className="w-10 h-10 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
         <p className="text-sm text-gray-500">Loading editor…</p>
       </div>
     );
@@ -255,7 +255,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all"
+              className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all"
             >
               <Save className="w-4 h-4" />
               {isSaving ? 'Saving…' : 'Save'}
@@ -279,11 +279,11 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${active
-                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
+                    ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
-                  <tab.icon className={`w-4 h-4 shrink-0 ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`} />
+                  <tab.icon className={`w-4 h-4 shrink-0 ${active ? 'text-[var(--text-primary)]' : 'text-gray-400'}`} />
                   {tab.label}
                 </button>
               );
@@ -325,7 +325,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                 </Card>
 
                 <Card title="Thumbnail" subtitle="First impression matters — use a 16:9 image">
-                  <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-indigo-400 transition cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-[var(--accent)] transition cursor-pointer">
                     {formData.thumbnail_url ? (
                       <div className="relative group">
                         <img src={formData.thumbnail_url} alt="Thumbnail" className="w-full max-h-52 object-contain" />
@@ -336,11 +336,11 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12 gap-3">
-                        <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center">
-                          <ImageIcon className="w-6 h-6 text-indigo-500" />
+                        <div className="w-12 h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center">
+                          <ImageIcon className="w-6 h-6 text-[var(--text-secondary)]" />
                         </div>
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">Click to upload</p>
+                          <p className="text-sm font-semibold text-[var(--text-primary)]">Click to upload</p>
                           <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · 16:9 · Max 5MB</p>
                         </div>
                       </div>
@@ -368,7 +368,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" checked={formData.is_free || false} onChange={e => patch({ is_free: e.target.checked })} />
-                      <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                      <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--bg-tertiary)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
                     </label>
                   </div>
 
@@ -390,9 +390,9 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   )}
 
                   {!formData.is_free && (
-                    <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center gap-3">
-                      <Zap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <p className="text-xs text-indigo-700 dark:text-indigo-400">
+                    <div className="mt-4 p-3 bg-[var(--bg-tertiary)] rounded-xl flex items-center gap-3">
+                      <Zap className="w-4 h-4 text-[var(--text-primary)] shrink-0" />
+                      <p className="text-xs text-[var(--text-primary)]">
                         <strong>Platform fee:</strong> DigiOne charges 10% on Free plan · 7% on Plus · 5% on Pro. You keep the rest.
                       </p>
                     </div>
@@ -406,8 +406,8 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
               <Card title="Digital Delivery" subtitle="Files buyers receive after purchase — protected by zero-trust access">
                 <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-800 mb-4">
                   <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 group">
-                    <div className="w-9 h-9 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <div className="w-9 h-9 bg-[var(--bg-tertiary)] rounded-lg flex items-center justify-center shrink-0">
+                      <FileText className="w-4 h-4 text-[var(--text-primary)]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">Sample_Module_1.zip</p>
@@ -419,7 +419,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   </div>
                 </div>
 
-                <button className="w-full border-2 border-dashed border-indigo-200 dark:border-indigo-900 hover:border-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 py-8 rounded-xl flex flex-col items-center justify-center gap-2 transition">
+                <button className="w-full border-2 border-dashed border-[var(--border)] dark:border-[var(--border)] hover:border-[var(--accent)] bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] py-8 rounded-xl flex flex-col items-center justify-center gap-2 transition">
                   <UploadCloud className="w-7 h-7" />
                   <span className="font-semibold text-sm">Upload New Asset</span>
                   <span className="text-xs opacity-70">PDF · ZIP · MP4 · MP3 · Max 2GB per file</span>
@@ -480,7 +480,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   </Field>
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
                     <div className="flex items-center gap-3">
-                      <Globe className="w-5 h-5 text-indigo-500" />
+                      <Globe className="w-5 h-5 text-[var(--text-secondary)]" />
                       <div>
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">Show on Discover Page</p>
                         <p className="text-xs text-gray-500 mt-0.5">Make this product visible on the public Discover page</p>
@@ -492,7 +492,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                         checked={(formData as any).is_on_discover_page ?? true}
                         onChange={e => patch({ is_on_discover_page: e.target.checked } as any)}
                       />
-                      <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                      <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--bg-tertiary)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
                     </label>
                   </div>
                 </Card>

@@ -181,7 +181,7 @@ function setNestedValue(obj: any, path: string, value: unknown): any {
   return result;
 }
 
-const PI = 'w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400 transition';
+const PI = 'w-full px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-[var(--accent)]/40 text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 // ─── Items Editor ─────────────────────────────────────────────
 function ItemsEditor({ items, fieldDefs, onChange }: {
@@ -212,7 +212,7 @@ function ItemsEditor({ items, fieldDefs, onChange }: {
               onChange={e => update(i, f.key, e.target.value)}
               placeholder={f.label}
               rows={2}
-              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg resize-none outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400"
+              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg resize-none outline-none focus:ring-1 focus:ring-[var(--accent)]/40 text-gray-900 dark:text-white placeholder-gray-400"
             />
           ) : (
             <input
@@ -221,14 +221,14 @@ function ItemsEditor({ items, fieldDefs, onChange }: {
               value={item[f.key] ?? ''}
               onChange={e => update(i, f.key, e.target.value)}
               placeholder={f.label}
-              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400"
+              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)]/40 text-gray-900 dark:text-white placeholder-gray-400"
             />
           ))}
         </div>
       ))}
       <button
         onClick={add}
-        className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-700 rounded-xl text-xs font-semibold transition"
+        className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] hover:border-[var(--accent)] dark:hover:border-[var(--accent)] rounded-xl text-xs font-semibold transition"
       >
         <Plus className="w-3.5 h-3.5" /> Add item
       </button>
@@ -258,7 +258,7 @@ function SettingsPanel({ section, onUpdate, onClose }: {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            {React.createElement(meta.icon, { className: 'w-4 h-4 text-indigo-500' })}
+            {React.createElement(meta.icon, { className: 'w-4 h-4 text-[var(--text-secondary)]' })}
             <h2 className="font-bold text-gray-900 dark:text-white">{meta.label}</h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-white p-1 rounded-lg transition">
@@ -305,7 +305,7 @@ function SettingsPanel({ section, onUpdate, onClose }: {
                   <button
                     type="button"
                     onClick={() => set(field.key, !checked)}
-                    className={`relative w-10 h-5 rounded-full transition-colors ${checked ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-gray-700'}`}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${checked ? 'bg-[var(--accent)]' : 'bg-gray-300 dark:bg-gray-700'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
@@ -360,7 +360,7 @@ function SettingsPanel({ section, onUpdate, onClose }: {
           <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
             Cancel
           </button>
-          <button onClick={handleApply} className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold transition shadow-lg shadow-indigo-500/20">
+          <button onClick={handleApply} className="flex-1 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-sm font-bold transition shadow-sm">
             Apply
           </button>
         </div>
@@ -384,7 +384,7 @@ function SectionRow({ section, index, total, onMove, onToggle, onDelete, onEdit 
   return (
     <div className={`group flex items-center gap-3 bg-white dark:bg-[#0A0A1A] border rounded-xl px-4 py-3.5 transition-all ${
       section.is_visible
-        ? 'border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-800'
+        ? 'border-gray-200 dark:border-gray-800 hover:border-[var(--accent)] dark:hover:border-[var(--accent)]'
         : 'border-dashed border-gray-200 dark:border-gray-800 opacity-60'
     }`}>
       {/* Order controls */}
@@ -399,8 +399,8 @@ function SectionRow({ section, index, total, onMove, onToggle, onDelete, onEdit 
       </div>
 
       {/* Icon */}
-      <div className="w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-        <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+      <div className="w-9 h-9 rounded-lg bg-[var(--bg-tertiary)] flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4 text-[var(--text-primary)]" />
       </div>
 
       {/* Info */}
@@ -423,7 +423,7 @@ function SectionRow({ section, index, total, onMove, onToggle, onDelete, onEdit 
         {hasSettings && (
           <button
             onClick={() => onEdit(section)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
             title="Edit settings"
           >
             <Pencil className="w-4 h-4" />
@@ -459,7 +459,7 @@ function AddSectionPanel({ onAdd, onClose }: { onAdd: (type: string) => void; on
           <input
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search sections…"
-            className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400"
+            className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-[var(--accent)]/40 text-gray-900 dark:text-white placeholder-gray-400"
           />
         </div>
         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -469,13 +469,13 @@ function AddSectionPanel({ onAdd, onClose }: { onAdd: (type: string) => void; on
               <button
                 key={type}
                 onClick={() => { onAdd(type); onClose(); }}
-                className="flex items-center gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 text-left transition group"
+                className="flex items-center gap-3 p-3.5 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:bg-[var(--bg-tertiary)]/50 dark:hover:bg-[var(--accent)]/5 text-left transition group"
               >
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                  <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4 text-[var(--text-primary)]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-indigo-700 dark:group-hover:text-indigo-400 truncate">{meta.label}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-[var(--text-primary)] dark:group-hover:text-[var(--text-secondary)] truncate">{meta.label}</p>
                   <p className="text-xs text-gray-400 truncate">{meta.desc}</p>
                 </div>
               </button>
@@ -525,9 +525,9 @@ function ThemeTab({ siteId }: { siteId: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="p-3.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl flex items-start gap-3">
-        <Palette className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-indigo-700 dark:text-indigo-300">
+      <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl flex items-start gap-3">
+        <Palette className="w-4 h-4 text-[var(--text-primary)] mt-0.5 shrink-0" />
+        <p className="text-xs text-[var(--text-primary)]">
           Colors are applied as CSS variables across your entire storefront. Save and refresh to see changes.
         </p>
       </div>
@@ -559,7 +559,7 @@ function ThemeTab({ siteId }: { siteId: string }) {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+        className="w-full flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-sm transition-all"
       >
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : <Palette className="w-4 h-4" />}
         {saving ? 'Saving…' : saved ? 'Theme saved!' : 'Save Theme'}
@@ -621,9 +621,9 @@ function ProductsTab({ siteId }: { siteId: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="p-3.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl flex items-start gap-3">
-        <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-indigo-700 dark:text-indigo-300">
+      <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl flex items-start gap-3">
+        <Package className="w-4 h-4 text-[var(--text-primary)] mt-0.5 shrink-0" />
+        <p className="text-xs text-[var(--text-primary)]">
           Select which products appear on this storefront. They show in Featured Products and Product Grid sections.
         </p>
       </div>
@@ -645,7 +645,7 @@ function ProductsTab({ siteId }: { siteId: string }) {
               onClick={() => toggle(product.id)}
               className={`flex items-center gap-4 p-4 bg-white dark:bg-[#0A0A1A] border rounded-xl cursor-pointer transition-all ${
                 isSelected
-                  ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-500/5'
+                  ? 'border-[var(--accent)] dark:border-[var(--border)] bg-[var(--bg-tertiary)]/30 dark:bg-[var(--accent)]/5'
                   : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
               }`}
             >
@@ -663,7 +663,7 @@ function ProductsTab({ siteId }: { siteId: string }) {
                 </p>
               </div>
               <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-                isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900'
+                isSelected ? 'border-[var(--accent)] bg-[var(--accent)]' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900'
               }`}>
                 {isSelected && (
                   <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
@@ -680,7 +680,7 @@ function ProductsTab({ siteId }: { siteId: string }) {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white py-3 rounded-xl font-bold text-sm shadow-sm transition-all"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
           {saving ? 'Saving…' : saved ? 'Saved!' : `Save (${assigned.size} selected)`}
@@ -785,7 +785,7 @@ export default function SiteBuilderPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--text-secondary)]" />
         <span className="text-sm text-gray-500">Loading builder…</span>
       </div>
     );
@@ -832,7 +832,7 @@ export default function SiteBuilderPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-indigo-500/20 transition-all"
+              className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save
@@ -859,7 +859,7 @@ export default function SiteBuilderPage() {
           <Layers className="w-4 h-4" />
           Sections
           {sections.length > 0 && (
-            <span className="text-xs bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 px-1.5 py-0.5 rounded-full font-bold">
+            <span className="text-xs bg-[var(--bg-tertiary)] text-[var(--text-primary)] px-1.5 py-0.5 rounded-full font-bold">
               {visibleCount}/{sections.length}
             </span>
           )}
@@ -897,9 +897,9 @@ export default function SiteBuilderPage() {
       {/* Sections Tab */}
       {activeTab === 'sections' && (
         <>
-          <div className="mb-4 p-3.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl flex items-start gap-3">
-            <Layout className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-indigo-700 dark:text-indigo-300">
+          <div className="mb-4 p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border)] dark:border-[var(--border)] rounded-xl flex items-start gap-3">
+            <Layout className="w-4 h-4 text-[var(--text-primary)] mt-0.5 shrink-0" />
+            <p className="text-xs text-[var(--text-primary)]">
               Hover a section and click <strong>✏ Edit</strong> to configure content. Reorder with arrows. Click <strong>Save</strong> when done.
             </p>
           </div>
@@ -929,7 +929,7 @@ export default function SiteBuilderPage() {
 
           <button
             onClick={() => setShowAddPanel(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 font-semibold text-sm transition-all"
+            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[var(--accent)] dark:border-[var(--border)] text-[var(--text-primary)] rounded-xl hover:border-[var(--accent)] hover:bg-[var(--bg-tertiary)]/50 dark:hover:bg-[var(--accent)]/5 font-semibold text-sm transition-all"
           >
             <Plus className="w-4 h-4" />
             Add Section

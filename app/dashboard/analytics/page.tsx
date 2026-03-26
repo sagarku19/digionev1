@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
               onClick={() => setDaysBack(val)}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 daysBack === val 
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400' 
+                  ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:bg-[var(--accent)]/20 dark:text-[var(--text-secondary)]' 
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
             >

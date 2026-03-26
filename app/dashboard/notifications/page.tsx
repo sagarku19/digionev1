@@ -15,8 +15,8 @@ type NotifType = 'order' | 'payout' | 'lead' | 'system' | 'marketing' | string;
 
 const TYPE_META: Record<NotifType, { icon: React.ElementType; color: string; bg: string }> = {
   order:     { icon: ShoppingBag,    color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  payout:    { icon: DollarSign,     color: 'text-indigo-600 dark:text-indigo-400',   bg: 'bg-indigo-50 dark:bg-indigo-500/10'   },
-  lead:      { icon: Users,          color: 'text-violet-600 dark:text-violet-400',   bg: 'bg-violet-50 dark:bg-violet-500/10'   },
+  payout:    { icon: DollarSign,     color: 'text-[var(--text-primary)]',   bg: 'bg-[var(--bg-tertiary)]'   },
+  lead:      { icon: Users,          color: 'text-[var(--text-primary)]',   bg: 'bg-[var(--bg-tertiary)]'   },
   marketing: { icon: Megaphone,      color: 'text-amber-600 dark:text-amber-400',     bg: 'bg-amber-50 dark:bg-amber-500/10'     },
   warning:   { icon: AlertTriangle,  color: 'text-red-600 dark:text-red-400',         bg: 'bg-red-50 dark:bg-red-500/10'         },
   system:    { icon: Info,           color: 'text-gray-600 dark:text-gray-400',       bg: 'bg-gray-100 dark:bg-gray-800'         },
@@ -77,7 +77,7 @@ export default function NotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={() => markAllRead()}
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 border border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700 px-4 py-2 rounded-xl transition"
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] border border-gray-200 dark:border-gray-700 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] px-4 py-2 rounded-xl transition"
           >
             <CheckCheck className="w-4 h-4" />
             Mark all read
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
           <div className="flex gap-1 flex-wrap">
             {types.map(t => (
               <button key={t} onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition capitalize ${typeFilter === t ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-indigo-300'}`}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition capitalize ${typeFilter === t ? 'bg-[var(--accent)] text-[var(--accent-fg)]' : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-[var(--accent)]'}`}
               >
                 {t}
               </button>
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
             {filter === 'unread' ? 'You have no unread notifications.' : 'Activity from orders, payouts, and leads will appear here.'}
           </p>
           {filter === 'unread' && (
-            <button onClick={() => setFilter('all')} className="mt-4 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">View all notifications</button>
+            <button onClick={() => setFilter('all')} className="mt-4 text-sm text-[var(--text-primary)] hover:underline">View all notifications</button>
           )}
         </div>
       )}
@@ -145,7 +145,7 @@ export default function NotificationsPage() {
               <div
                 key={notif.id}
                 onClick={() => handleClick(notif)}
-                className={`flex items-start gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/40 transition ${!notif.is_read ? 'bg-indigo-50/40 dark:bg-indigo-500/5' : ''}`}
+                className={`flex items-start gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/40 transition ${!notif.is_read ? 'bg-[var(--bg-tertiary)]' : ''}`}
               >
                 {/* Icon */}
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${meta.bg}`}>
@@ -164,12 +164,12 @@ export default function NotificationsPage() {
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-xs text-gray-400 whitespace-nowrap">{timeAgo(notif.created_at)}</span>
                       {!notif.is_read && (
-                        <Circle className="w-2 h-2 fill-indigo-500 text-indigo-500 shrink-0" />
+                        <Circle className="w-2 h-2 fill-[var(--text-secondary)] text-[var(--text-secondary)] shrink-0" />
                       )}
                     </div>
                   </div>
                   {notif.action_url && (
-                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-[var(--text-primary)]">
                       View details <ExternalLink className="w-3 h-3" />
                     </span>
                   )}

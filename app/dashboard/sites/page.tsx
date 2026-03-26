@@ -23,8 +23,8 @@ const FILTER_TABS = [
 ] as const;
 
 const SITE_TYPE_META: Record<string, { label: string; color: string; dot: string }> = {
-  main:      { label: 'Main Store',    color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400',  dot: 'bg-indigo-500' },
-  single:    { label: 'Single Page',   color: 'bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400',  dot: 'bg-violet-500' },
+  main:      { label: 'Main Store',    color: 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:bg-[var(--accent)]/15 dark:text-[var(--text-secondary)]',  dot: 'bg-[var(--accent)]' },
+  single:    { label: 'Single Page',   color: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-secondary)]',  dot: 'bg-[var(--bg-tertiary)]' },
   payment:   { label: 'Payment Link',  color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400', dot: 'bg-emerald-500' },
   blog:      { label: 'Blog',          color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',    dot: 'bg-amber-500' },
   builder:   { label: 'Builder',       color: 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',       dot: 'bg-rose-500' },
@@ -149,7 +149,7 @@ function SiteRow({ site, onRequestDelete, onToggle }: {
   };
 
   return (
-    <div className="group flex items-center gap-4 px-5 py-4 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-200">
+    <div className="group flex items-center gap-4 px-5 py-4 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:shadow-lg  transition-all duration-200">
       {/* Type Icon */}
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${meta.color}`}>
         {sm?.logo_url ? (
@@ -168,10 +168,10 @@ function SiteRow({ site, onRequestDelete, onToggle }: {
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate max-w-[200px]">{displayUrl}</p>
+          <p className="text-xs text-[var(--text-secondary)] dark:text-[var(--text-secondary)] truncate max-w-[200px]">{displayUrl}</p>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0"
+            className="flex items-center gap-1 text-[11px] font-medium text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] transition shrink-0"
             title="Copy link"
           >
             {copied ? (
@@ -213,7 +213,7 @@ function SiteRow({ site, onRequestDelete, onToggle }: {
           href={publicPath}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-lg transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--accent)]/20 rounded-lg transition"
         >
           <ExternalLink className="w-3.5 h-3.5" />
           View
@@ -275,7 +275,7 @@ function EmptyState({ label, onClick }: { label: string; onClick: () => void }) 
       </p>
       <button
         onClick={onClick}
-        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+        className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-6 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all"
       >
         <Plus className="w-4 h-4" />
         Create site
@@ -323,7 +323,7 @@ export default function SitesPage() {
           </div>
           <button
             onClick={() => router.push('/dashboard/sites/new')}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all shrink-0"
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
             New site
@@ -344,16 +344,16 @@ export default function SitesPage() {
                     onClick={() => setActiveFilter(tab.key)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       isActive
-                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 shadow-sm'
+                        ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] shadow-sm'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
-                    <tab.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-indigo-500' : 'text-gray-400'}`} />
+                    <tab.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[var(--text-secondary)]' : 'text-gray-400'}`} />
                     <span className="flex-1 text-left truncate">{tab.label}</span>
                     {count > 0 && (
                       <span className={`text-[11px] font-semibold min-w-[20px] text-center px-1.5 py-0.5 rounded-md ${
                         isActive
-                          ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'
+                          ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                           : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
                       }`}>
                         {count}
@@ -376,7 +376,7 @@ export default function SitesPage() {
                   onClick={() => setActiveFilter(tab.key)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                      ? 'bg-[var(--accent)] text-[var(--accent-fg)] shadow-md'
                       : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
                   }`}
                 >

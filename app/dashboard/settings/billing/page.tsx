@@ -136,7 +136,7 @@ export default function KYCAndBillingPage() {
                   value={formData.legal_name}
                   onChange={e => setFormData({ ...formData, legal_name: e.target.value })}
                   disabled={isVerified || isPending}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white disabled:opacity-60"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white disabled:opacity-60"
                   placeholder="As per PAN card"
                 />
              </div>
@@ -148,7 +148,7 @@ export default function KYCAndBillingPage() {
                   value={formData.pan_enc}
                   onChange={e => setFormData({ ...formData, pan_enc: e.target.value.toUpperCase() })}
                   disabled={isVerified || isPending}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white font-mono disabled:opacity-60"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white font-mono disabled:opacity-60"
                   placeholder="ABCDE1234F"
                 />
              </div>
@@ -170,7 +170,7 @@ export default function KYCAndBillingPage() {
                 value={formData.bank_account_name}
                 onChange={e => setFormData({ ...formData, bank_account_name: e.target.value })}
                 disabled={isVerified || isPending}
-                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white disabled:opacity-60"
+                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white disabled:opacity-60"
                 placeholder="Must match Legal Name exactly"
               />
            </div>
@@ -184,7 +184,7 @@ export default function KYCAndBillingPage() {
                   value={formData.bank_account_enc}
                   onChange={e => setFormData({ ...formData, bank_account_enc: e.target.value })}
                   disabled={isVerified || isPending}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white font-mono disabled:opacity-60"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white font-mono disabled:opacity-60"
                 />
              </div>
              <div>
@@ -195,7 +195,7 @@ export default function KYCAndBillingPage() {
                   value={formData.ifsc_code}
                   onChange={e => setFormData({ ...formData, ifsc_code: e.target.value.toUpperCase() })}
                   disabled={isVerified || isPending}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white font-mono disabled:opacity-60"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white font-mono disabled:opacity-60"
                   placeholder="SBIN0001234"
                 />
              </div>

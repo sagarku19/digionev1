@@ -89,7 +89,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Tip: 'bg-amber-500/10 text-amber-400',
   Feedback: 'bg-blue-500/10 text-blue-400',
   General: 'bg-slate-500/10 text-slate-400',
-  Event: 'bg-violet-500/10 text-violet-400',
+  Event: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]',
 };
 
 const LEADERBOARD = [
@@ -167,20 +167,20 @@ export default function DashboardCommunityPage() {
                     onChange={e => setNewPost(e.target.value)}
                     placeholder="Share something with the community..."
                     rows={3}
-                    className="w-full bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 transition-all resize-none"
+                    className="w-full bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-[var(--accent)]/50 focus:ring-1 focus:ring-[var(--accent)]/20 transition-all resize-none"
                   />
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-2">
-                      <button className="p-2 text-gray-400 dark:text-slate-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all">
+                      <button className="p-2 text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] rounded-lg transition-all">
                         <Image className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-gray-400 dark:text-slate-500 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all">
+                      <button className="p-2 text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] rounded-lg transition-all">
                         <PenLine className="w-4 h-4" />
                       </button>
                     </div>
                     <button
                       disabled={!newPost.trim()}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-lg text-sm font-semibold transition-all shadow-sm shadow-indigo-500/20 disabled:shadow-none"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-lg text-sm font-semibold transition-all shadow-sm disabled:shadow-none"
                     >
                       <Send className="w-3.5 h-3.5" />
                       Post
@@ -198,7 +198,7 @@ export default function DashboardCommunityPage() {
                   onClick={() => setActiveFilter(f)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize whitespace-nowrap transition-all ${
                     activeFilter === f
-                      ? 'bg-indigo-600 text-white shadow-sm'
+                      ? 'bg-[var(--accent)] text-[var(--accent-fg)] shadow-sm'
                       : 'bg-white dark:bg-white/[0.03] text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-white/[0.06] hover:bg-gray-50 dark:hover:bg-white/[0.06]'
                   }`}
                 >
@@ -234,11 +234,11 @@ export default function DashboardCommunityPage() {
                       </div>
                       <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed mb-3">{post.content}</p>
                       <div className="flex items-center gap-5">
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
+                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors">
                           <ThumbsUp className="w-3.5 h-3.5" />
                           {post.likes}
                         </button>
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
+                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors">
                           <MessageSquare className="w-3.5 h-3.5" />
                           {post.comments}
                         </button>
@@ -246,10 +246,10 @@ export default function DashboardCommunityPage() {
                           <Eye className="w-3.5 h-3.5" />
                           {post.views}
                         </span>
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors ml-auto">
+                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors ml-auto">
                           <Bookmark className="w-3.5 h-3.5" />
                         </button>
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
+                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors">
                           <Share2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -345,13 +345,13 @@ export default function DashboardCommunityPage() {
             </div>
 
             {/* Invite CTA */}
-            <div className="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-500/[0.06] dark:to-violet-500/[0.06] border border-indigo-200/60 dark:border-indigo-500/15 rounded-2xl p-5 text-center">
-              <Users className="w-8 h-8 text-indigo-500 dark:text-indigo-400 mx-auto mb-2" />
+            <div className="bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-2xl p-5 text-center">
+              <Users className="w-8 h-8 text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mx-auto mb-2" />
               <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Invite Creators</h4>
               <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">
                 Earn bonus points for every creator you invite!
               </p>
-              <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-all shadow-sm shadow-indigo-500/20">
+              <button className="w-full py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-lg text-xs font-semibold transition-all shadow-sm">
                 Copy Invite Link
               </button>
             </div>

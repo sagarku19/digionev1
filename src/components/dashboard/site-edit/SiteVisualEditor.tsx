@@ -237,7 +237,7 @@ export default function SiteVisualEditor({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+        <Loader2 className="w-5 h-5 animate-spin text-[var(--text-secondary)]" />
         <span className="text-sm text-gray-500">Loading editor...</span>
       </div>
     );
@@ -320,7 +320,7 @@ export default function SiteVisualEditor({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-4 py-2 rounded-lg shadow-sm shadow-indigo-500/20 transition-all"
+              className="flex items-center gap-1.5 text-xs font-semibold bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-[var(--accent-fg)] px-4 py-2 rounded-lg shadow-sm transition-all"
             >
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               Save
@@ -345,7 +345,7 @@ export default function SiteVisualEditor({
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-10 h-10 flex flex-col items-center justify-center rounded-lg transition-all ${
                     active
-                      ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                      ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                       : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300'
                   }`}
                   title={tab.label}
@@ -369,7 +369,7 @@ export default function SiteVisualEditor({
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
                       active
-                        ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        ? 'bg-white dark:bg-gray-800 text-[var(--text-primary)] shadow-sm'
                         : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                   >

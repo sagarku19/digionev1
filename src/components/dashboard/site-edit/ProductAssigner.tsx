@@ -52,9 +52,9 @@ export default function ProductAssigner({
 
   return (
     <div className="space-y-4">
-      <div className="p-3.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl flex items-start gap-3">
-        <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
-        <p className="text-xs text-indigo-700 dark:text-indigo-300">
+      <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl flex items-start gap-3">
+        <Package className="w-4 h-4 text-[var(--text-primary)] mt-0.5 shrink-0" />
+        <p className="text-xs text-[var(--text-primary)]">
           Select products for this storefront. Click <strong>Save</strong> to persist.
         </p>
       </div>
@@ -76,7 +76,7 @@ export default function ProductAssigner({
               onClick={() => toggle(product.id)}
               className={`flex items-center gap-4 p-4 bg-white dark:bg-[#0A0A1A] border rounded-xl cursor-pointer transition-all ${
                 isSelected
-                  ? 'border-indigo-300 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-500/5'
+                  ? 'border-[var(--accent)] bg-[var(--bg-tertiary)]/30 dark:bg-[var(--bg-tertiary)]'
                   : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
               }`}
             >
@@ -94,7 +94,7 @@ export default function ProductAssigner({
                 </p>
               </div>
               <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-                isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900'
+                isSelected ? 'border-[var(--accent)] bg-[var(--accent)]' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900'
               }`}>
                 {isSelected && (
                   <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">

@@ -8,13 +8,9 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#03040A] text-white">
+    <div className="min-h-screen flex flex-col bg-[#f7f7f8] text-[var(--text-primary)]">
       <MarketingNav />
-      {/* 
-        The top padding here (pt-[72px] or similar) ensures content 
-        isn't hidden behind the fixed navbar.
-      */}
-      <main className="flex-1 flex flex-col pt-[72px]">
+      <main className="flex-1 flex flex-col">
         {children}
       </main>
       <MarketingFooter />

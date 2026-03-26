@@ -12,7 +12,7 @@ import {
   Loader2, CheckCircle2, X, ExternalLink, Copy, Eye,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 type Tab = 'config' | 'products' | 'contact' | 'theme' | 'seo';
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -55,7 +55,7 @@ export default function UpsellEditPage() {
   if (pageLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[var(--text-secondary)] animate-spin" />
       </div>
     );
   }
@@ -64,7 +64,7 @@ export default function UpsellEditPage() {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Upsell page not found</h2>
-        <button onClick={() => router.push('/dashboard/products')} className="text-indigo-500 text-sm hover:underline mt-2">
+        <button onClick={() => router.push('/dashboard/products')} className="text-[var(--text-secondary)] text-sm hover:underline mt-2">
           Back to products
         </button>
       </div>
@@ -180,7 +180,7 @@ export default function UpsellEditPage() {
                 <Shield className="w-4 h-4 text-emerald-500" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">Show guarantee badge</span>
               </div>
-              <input type="checkbox" checked={config.show_guarantee_badge ?? true} onChange={e => patchConfig('show_guarantee_badge', e.target.checked)} className="accent-indigo-600 w-4 h-4" />
+              <input type="checkbox" checked={config.show_guarantee_badge ?? true} onChange={e => patchConfig('show_guarantee_badge', e.target.checked)} className="accent-[var(--accent)] w-4 h-4" />
             </label>
           </div>
         )}
@@ -191,17 +191,17 @@ export default function UpsellEditPage() {
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Primary Product</p>
               {primaryProduct ? (
-                <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl border border-indigo-200 dark:border-indigo-800">
+                <div className="flex items-center gap-3 p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] dark:border-[var(--border)]">
                   {primaryProduct.thumbnail_url ? (
                     <img src={primaryProduct.thumbnail_url} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
                   ) : (
-                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 rounded-lg flex items-center justify-center shrink-0">
-                      <Package className="w-5 h-5 text-indigo-500" />
+                    <div className="w-12 h-12 bg-[var(--bg-tertiary)] dark:bg-[var(--bg-tertiary)] rounded-lg flex items-center justify-center shrink-0">
+                      <Package className="w-5 h-5 text-[var(--text-secondary)]" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{primaryProduct.name}</p>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400">{formatINR(primaryProduct.price || 0)}</p>
+                    <p className="text-xs text-[var(--text-primary)]">{formatINR(primaryProduct.price || 0)}</p>
                   </div>
                 </div>
               ) : (
@@ -270,7 +270,7 @@ export default function UpsellEditPage() {
                   type="checkbox"
                   checked={contactFields[field.key] ?? false}
                   onChange={e => patchConfig('contact_fields', { ...contactFields, [field.key]: e.target.checked })}
-                  className="accent-indigo-600 w-4 h-4"
+                  className="accent-[var(--accent)] w-4 h-4"
                 />
               </label>
             ))}
@@ -337,7 +337,7 @@ export default function UpsellEditPage() {
         <button
           onClick={handleSave}
           disabled={isUpdating}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition shadow-lg shadow-indigo-500/20"
+          className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] px-6 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm"
         >
           {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : null}
           {saved ? 'Saved!' : 'Save Changes'}

@@ -60,7 +60,7 @@ export function Field({
 }
 
 export const INPUT =
-  'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+  'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
 
 // ─── Tab definitions ─────────────────────────────────────────
 
@@ -93,7 +93,7 @@ type SiteEditShellProps = {
   typeLabel: string;
   /** Icon shown next to type label */
   typeIcon?: React.ElementType;
-  /** Accent color class for type icon (e.g. "text-indigo-500") */
+  /** Accent color class for type icon (e.g. "text-[var(--text-secondary)]") */
   typeIconColor?: string;
   /** Extra buttons in the top bar (e.g. "Open Builder") */
   topBarExtra?: React.ReactNode;
@@ -226,7 +226,7 @@ export default function SiteEditShell({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+        <Loader2 className="w-5 h-5 animate-spin text-[var(--text-secondary)]" />
         <span className="text-sm text-gray-500">Loading settings...</span>
       </div>
     );
@@ -283,7 +283,7 @@ export default function SiteEditShell({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-3.5 py-1.5 rounded-lg shadow-sm shadow-indigo-500/20 transition-all"
+              className="flex items-center gap-1.5 text-xs font-semibold bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-[var(--accent-fg)] px-3.5 py-1.5 rounded-lg shadow-sm transition-all"
             >
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               Save
@@ -310,18 +310,18 @@ export default function SiteEditShell({
                       active
                         ? isDanger
                           ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400'
-                          : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
+                          : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                         : isDanger
                         ? 'text-red-500 dark:text-red-500/80 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
                     {active && (
-                      <span className={`absolute left-0 top-1 bottom-1 w-0.5 rounded-full ${isDanger ? 'bg-red-500' : 'bg-indigo-500'}`} />
+                      <span className={`absolute left-0 top-1 bottom-1 w-0.5 rounded-full ${isDanger ? 'bg-red-500' : 'bg-[var(--accent)]'}`} />
                     )}
                     <tab.icon className={`w-4 h-4 shrink-0 ${
                       active
-                        ? isDanger ? 'text-red-500' : 'text-indigo-500'
+                        ? isDanger ? 'text-red-500' : 'text-[var(--text-secondary)]'
                         : isDanger ? 'text-red-400' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
                     }`} />
                     {tab.label}
@@ -346,7 +346,7 @@ export default function SiteEditShell({
                     active
                       ? isDanger
                         ? 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400'
-                        : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
+                        : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                       : isDanger
                       ? 'text-red-500 hover:bg-red-50'
                       : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -389,7 +389,7 @@ export default function SiteEditShell({
                 <p className="text-xs text-gray-400">No nav links yet. Add links like &quot;Home&quot;, &quot;Products &rarr; /shop&quot;, etc.</p>
               )}
               <button onClick={() => setNavItems(prev => [...prev, { label: '', url: '' }])}
-                className="flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition mt-1">
+                className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] transition mt-1">
                 <Plus className="w-4 h-4" /> Add nav link
               </button>
             </Card>
@@ -401,7 +401,7 @@ export default function SiteEditShell({
               <Card title="Default URL" subtitle="Your automatically assigned DigiOne URL">
                 <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
                   <Globe className="w-4 h-4 text-gray-400 shrink-0" />
-                  <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 flex-1 truncate">
+                  <span className="text-sm font-medium text-[var(--text-primary)] flex-1 truncate">
                     {site ? getSiteDisplayUrl(site) : '\u2014'}
                   </span>
                   <button
@@ -536,7 +536,7 @@ export default function SiteEditShell({
                     <input type="checkbox" className="sr-only peer"
                       checked={legal[key] ?? false}
                       onChange={e => setLegal(prev => ({ ...prev, [key]: e.target.checked }))} />
-                    <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] shadow-inner" />
+                    <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--accent)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] shadow-inner" />
                   </label>
                 </div>
               ))}

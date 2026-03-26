@@ -4,7 +4,7 @@
 import React from 'react';
 import { Plus, X, GripVertical } from 'lucide-react';
 
-const INPUT = 'w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
 
 export type HeaderData = {
   logoUrl: string;
@@ -85,7 +85,7 @@ export default function HeaderEditor({
           <p className="text-xs text-gray-400">No nav links yet. Add links like &quot;Home&quot;, &quot;Products&quot;, etc.</p>
         )}
         <button onClick={addNav}
-          className="flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition">
+          className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--text-primary)] transition">
           <Plus className="w-4 h-4" /> Add nav link
         </button>
       </div>
@@ -110,7 +110,7 @@ export default function HeaderEditor({
               <input type="checkbox" className="sr-only peer"
                 checked={data[opt.key]}
                 onChange={e => set(opt.key, e.target.checked)} />
-              <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] shadow-inner" />
+              <div className="w-10 h-[22px] bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--accent)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px] shadow-inner" />
             </label>
           </div>
         ))}

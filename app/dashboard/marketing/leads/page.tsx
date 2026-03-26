@@ -112,7 +112,7 @@ export default function LeadsPage() {
       sortable: true,
       cell: (row: any) => (
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+          <div className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center shrink-0 text-[var(--text-primary)] font-bold text-sm">
             {(row.full_name ?? row.email ?? 'L')[0].toUpperCase()}
           </div>
           <div>
@@ -131,7 +131,7 @@ export default function LeadsPage() {
       header: 'Source',
       accessorKey: 'conversion_event_type',
       cell: (row: any) => (
-        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 capitalize">
+        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:text-[var(--text-secondary)] capitalize">
           <Tag className="w-3 h-3" />
           {(row.conversion_event_type ?? 'newsletter').replace(/_/g, ' ')}
         </span>
@@ -181,14 +181,14 @@ export default function LeadsPage() {
               <>
                 <button
                   onClick={() => exportCSV(filtered)}
-                  className="flex items-center gap-2 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
+                  className="flex items-center gap-2 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
                 >
                   <ArrowDownToLine className="w-4 h-4" />
                   Export CSV
                 </button>
                 <button
                   onClick={() => setShowBroadcast(true)}
-                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+                  className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all"
                 >
                   <Send className="w-4 h-4" />
                   Broadcast Email
@@ -223,7 +223,7 @@ export default function LeadsPage() {
               <input
                 value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Search by name or email…"
-                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
               />
             </div>
             {sources.length > 2 && (
@@ -234,8 +234,8 @@ export default function LeadsPage() {
                     key={s} onClick={() => setFilterSource(s)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition capitalize ${
                       filterSource === s
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
+                        ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
+                        : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-[var(--accent)]'
                     }`}
                   >
                     {s === 'all' ? 'All Sources' : s.replace(/_/g, ' ')}
@@ -263,7 +263,7 @@ export default function LeadsPage() {
           <div className="bg-white dark:bg-[#0D0D1F] rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <MailOpen className="w-5 h-5 text-indigo-500" />
+                <MailOpen className="w-5 h-5 text-[var(--text-secondary)]" />
                 Broadcast Email
               </h2>
               <button onClick={() => setShowBroadcast(false)} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
@@ -271,7 +271,7 @@ export default function LeadsPage() {
               </button>
             </div>
             <form onSubmit={handleBroadcast} className="p-6 space-y-4">
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-800/40 rounded-xl text-sm text-indigo-700 dark:text-indigo-400">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)]">
                 <Mail className="w-4 h-4 shrink-0" />
                 Sending to <strong className="ml-1">{filtered.filter((l: any) => l.email).length} leads</strong>
                 {filterSource !== 'all' && <span className="ml-1 opacity-70">(filtered by: {filterSource.replace(/_/g, ' ')})</span>}
@@ -294,7 +294,7 @@ export default function LeadsPage() {
                 <input
                   type="text" required value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)}
                   placeholder="🎉 Special offer just for you!"
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400"
                 />
               </div>
               <div>
@@ -302,7 +302,7 @@ export default function LeadsPage() {
                 <textarea
                   required rows={6} value={broadcastBody} onChange={e => setBroadcastBody(e.target.value)}
                   placeholder="Hi {{name}},&#10;&#10;I wanted to share something special with you...&#10;&#10;Use code SPECIAL20 for 20% off.&#10;&#10;— Your Name"
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 resize-none"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 resize-none"
                 />
                 <p className="text-xs text-gray-400 mt-1">Use {'{{name}}'} to personalize. Plain text only.</p>
               </div>
@@ -312,7 +312,7 @@ export default function LeadsPage() {
               </div>
               <button
                 type="submit" disabled={isSending || broadcastSent}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
+                className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-xl font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4" />
                 {isSending ? 'Sending…' : broadcastSent ? 'Sent!' : `Send to ${filtered.filter((l: any) => l.email).length} leads`}

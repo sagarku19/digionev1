@@ -27,8 +27,8 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'Your full creator storefront with multiple products, navigation, and sections.',
     best: 'Courses, ebooks, digital assets',
     icon: Store,
-    gradient: 'from-indigo-500/10 via-indigo-500/5 to-transparent',
-    iconBg: 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400',
+    gradient: 'from-[var(--bg-tertiary)] to-transparent',
+    iconBg: 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]',
     href: '/dashboard/sites/new/store',
   },
   {
@@ -37,8 +37,8 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'High-converting landing page for a single product. Countdown, FAQ, testimonials.',
     best: 'Course launches, premium products',
     icon: Layers,
-    gradient: 'from-violet-500/10 via-violet-500/5 to-transparent',
-    iconBg: 'bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400',
+    gradient: 'from-[var(--bg-tertiary)] to-transparent',
+    iconBg: 'bg-[var(--bg-tertiary)] dark:bg-[var(--bg-tertiary)] text-[var(--text-primary)]',
     href: '/dashboard/sites/new/singlepage',
   },
   {
@@ -109,9 +109,9 @@ export default function NewSiteHub() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         {/* Title */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-full mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Create Something New</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-tertiary)] rounded-full mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+            <span className="text-xs font-semibold text-[var(--text-primary)]">Create Something New</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             What are you building?
@@ -130,7 +130,7 @@ export default function NewSiteHub() {
               <button
                 key={t.id}
                 onClick={() => router.push(t.href)}
-                className={`relative text-left p-5 border-2 rounded-2xl transition-all duration-200 bg-gradient-to-r ${t.gradient} group border-gray-200 dark:border-gray-700/80 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5`}
+                className={`relative text-left p-5 border-2 rounded-2xl transition-all duration-200 bg-gradient-to-r ${t.gradient} group border-gray-200 dark:border-gray-700/80 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:shadow-lg `}
               >
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${t.iconBg}`}>
@@ -151,7 +151,7 @@ export default function NewSiteHub() {
                       <p className="text-xs text-gray-400 font-medium">Best for: {t.best}</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-indigo-500 transition shrink-0 mt-1" />
+                  <ChevronRight className="w-5 h-5 text-gray-300 dark:text-gray-600 group-hover:text-[var(--text-secondary)] transition shrink-0 mt-1" />
                 </div>
               </button>
             );

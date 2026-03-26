@@ -10,7 +10,7 @@ import {
   Search, Sparkles, CheckCircle2, XCircle,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 export default function CreateSinglePagePage() {
   const router = useRouter();
@@ -74,7 +74,7 @@ export default function CreateSinglePagePage() {
             <ChevronLeft className="w-4 h-4" /> {step > 1 ? 'Back' : 'All Types'}
           </button>
           <div className="flex items-center gap-2">
-            <Layers className="w-4 h-4 text-violet-500" />
+            <Layers className="w-4 h-4 text-[var(--text-secondary)]" />
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Single Page</span>
           </div>
         </div>
@@ -83,9 +83,9 @@ export default function CreateSinglePagePage() {
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6">
         {/* Progress */}
         <div className="flex gap-1">
-          <div className={`h-1 flex-1 rounded-full ${step >= 1 ? 'bg-violet-500' : 'bg-gray-200 dark:bg-gray-800'}`} />
-          <div className={`h-1 flex-1 rounded-full ${step >= 2 ? 'bg-violet-500' : 'bg-gray-200 dark:bg-gray-800'}`} />
-          <div className={`h-1 flex-1 rounded-full ${step >= 3 ? 'bg-violet-500' : 'bg-gray-200 dark:bg-gray-800'}`} />
+          <div className={`h-1 flex-1 rounded-full ${step >= 1 ? 'bg-[var(--bg-tertiary)]' : 'bg-gray-200 dark:bg-gray-800'}`} />
+          <div className={`h-1 flex-1 rounded-full ${step >= 2 ? 'bg-[var(--bg-tertiary)]' : 'bg-gray-200 dark:bg-gray-800'}`} />
+          <div className={`h-1 flex-1 rounded-full ${step >= 3 ? 'bg-[var(--bg-tertiary)]' : 'bg-gray-200 dark:bg-gray-800'}`} />
         </div>
 
         <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 md:p-8 shadow-sm">
@@ -98,12 +98,12 @@ export default function CreateSinglePagePage() {
                 <p className="text-sm text-gray-500 mt-1">Pick a custom slug for your single page. You can change this later.</p>
               </div>
 
-              <div className="p-4 bg-violet-50 dark:bg-violet-500/10 rounded-xl border border-violet-200 dark:border-violet-800/40">
+              <div className="p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)] dark:border-[var(--border)]">
                 <div className="flex items-center gap-2 mb-2">
-                  <Globe className="w-3.5 h-3.5 text-violet-500" />
-                  <span className="text-xs font-semibold text-violet-700 dark:text-violet-400">Your URL</span>
+                  <Globe className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                  <span className="text-xs font-semibold text-[var(--text-primary)] dark:text-[var(--text-secondary)]">Your URL</span>
                 </div>
-                <p className="text-sm text-violet-600 dark:text-violet-400 font-mono">
+                <p className="text-sm text-[var(--text-primary)] font-mono">
                   digione.in/s/<span className="font-bold">{slug || '...'}</span>
                 </p>
               </div>
@@ -173,9 +173,9 @@ export default function CreateSinglePagePage() {
                   {products.filter((p: any) => p.name?.toLowerCase().includes(productSearch.toLowerCase())).map((p: any) => (
                     <button key={p.id} onClick={() => setProductId(productId === p.id ? null : p.id)}
                       className={`w-full text-left flex items-center gap-3 px-4 py-3 transition ${
-                        productId === p.id ? 'bg-violet-50 dark:bg-violet-500/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                        productId === p.id ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                       } border-b border-gray-100 dark:border-gray-800 last:border-0`}>
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${productId === p.id ? 'bg-violet-600' : 'bg-gray-300'}`} />
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${productId === p.id ? 'bg-[var(--bg-tertiary)]' : 'bg-gray-300'}`} />
                       <span className="text-sm text-gray-900 dark:text-white">{p.name}</span>
                       {p.price > 0 && <span className="ml-auto text-xs text-gray-500">{'\u20B9'}{p.price}</span>}
                     </button>
@@ -193,9 +193,9 @@ export default function CreateSinglePagePage() {
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Ready to launch?</h2>
                 <p className="text-sm text-gray-500 mt-1">Your single product page is ready.</p>
               </div>
-              <div className="rounded-2xl border-2 border-violet-200 dark:border-violet-800/50 p-5 bg-gradient-to-br from-violet-500/10 via-violet-500/5 to-transparent">
+              <div className="rounded-2xl border-2 border-[var(--border)] dark:border-[var(--border)] p-5 bg-[var(--bg-tertiary)]">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-violet-100 dark:bg-violet-500/20 text-violet-600">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--bg-tertiary)] dark:bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">
                     <Layers className="w-5 h-5" />
                   </div>
                   <div>
@@ -203,10 +203,10 @@ export default function CreateSinglePagePage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">{title}</p>
                   </div>
                 </div>
-                <p className="text-xs text-violet-600 dark:text-violet-400 font-mono mb-2">digione.in/s/{slug}</p>
+                <p className="text-xs text-[var(--text-primary)] font-mono mb-2">digione.in/s/{slug}</p>
                 {description && <p className="text-xs text-gray-500 leading-relaxed">{description}</p>}
                 {productId && (
-                  <div className="mt-3 flex items-center gap-2 text-xs text-violet-600 dark:text-violet-400">
+                  <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-primary)]">
                     <Sparkles className="w-3 h-3" />
                     Linked to: {products.find((p: any) => p.id === productId)?.name ?? 'Product'}
                   </div>
@@ -226,12 +226,12 @@ export default function CreateSinglePagePage() {
 
             {step < 3 ? (
               <button onClick={() => setStep(s => s + 1)} disabled={step === 1 ? !canNext1 : !canNext2}
-                className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-violet-500/20 transition-all">
+                className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-[var(--accent-fg)] px-6 py-2.5 rounded-xl font-semibold text-sm shadow-lg  transition-all">
                 Continue <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <button onClick={handleSubmit} disabled={submitting}
-                className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white px-7 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-violet-500/20 transition-all">
+                className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-[var(--accent-fg)] px-7 py-2.5 rounded-xl font-bold text-sm shadow-lg  transition-all">
                 {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</> : <><Zap className="w-4 h-4" /> Launch Page</>}
               </button>
             )}

@@ -1,47 +1,53 @@
 "use client";
-import React from 'react';
+
 import { motion } from 'framer-motion';
 
-export default function Showcase() {
-  const creators = [
-    { name: "Arjun Sharma", niche: "Figma Courses", link: "digione.in/arjun", theme: "bg-slate-900" },
-    { name: "Priya Mehta", niche: "Design Assets", link: "digione.in/priya", theme: "bg-zinc-100 text-slate-900" },
-    { name: "Rahul Verma", niche: "Photography", link: "digione.in/rahul", theme: "bg-amber-900" },
-    { name: "Neha Kapoor", niche: "Podcast Creator", link: "digione.in/neha", theme: "bg-pink-950" }
-  ];
+const creators = [
+  { name: "Arjun Sharma", niche: "Figma Courses", link: "digione.ai/arjun", color: "from-indigo-500 to-purple-600" },
+  { name: "Priya Mehta", niche: "Design Assets", link: "digione.ai/priya", color: "from-pink-500 to-rose-500" },
+  { name: "Rahul Verma", niche: "Photography", link: "digione.ai/rahul", color: "from-amber-500 to-orange-500" },
+  { name: "Neha Kapoor", niche: "Podcast Creator", link: "digione.ai/neha", color: "from-emerald-500 to-teal-500" },
+  { name: "Vikram Joshi", niche: "Notion Templates", link: "digione.ai/vikram", color: "from-sky-500 to-blue-600" },
+  { name: "Sneha Iyer", niche: "Illustration Packs", link: "digione.ai/sneha", color: "from-fuchsia-500 to-purple-500" },
+  { name: "Karan Singh", niche: "Music Production", link: "digione.ai/karan", color: "from-red-500 to-rose-600" },
+  { name: "Ananya Roy", niche: "Fitness Guides", link: "digione.ai/ananya", color: "from-lime-500 to-green-500" },
+];
 
+export default function Showcase() {
   return (
-    <section id="creators" className="py-32 bg-[#03040A] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 mb-16">
-        <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">See what creators are building</h2>
+    <section id="creators" className="py-28 bg-[#f7f7f8] overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 mb-12">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[var(--brand)] mb-3">Creator stores</p>
+        <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] tracking-tight font-display">
+          See what creators are building.
+        </h2>
       </div>
 
-      <div className="flex overflow-x-auto gap-8 px-6 sm:px-8 pb-16 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+      <div className="flex overflow-x-auto gap-6 px-6 sm:px-8 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
         {creators.map((c, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            className={`min-w-[300px] md:min-w-[400px] h-[450px] rounded-2xl flex flex-col border border-white/10 overflow-hidden shrink-0 snap-center hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] hover:border-indigo-500/50 transition-all duration-300 relative group cursor-pointer ${c.theme}`}
+            className="min-w-[280px] md:min-w-[340px] rounded-2xl bg-white border border-gray-200 overflow-hidden shrink-0 snap-center hover:shadow-xl hover:shadow-black/[0.06] transition-all duration-300 group"
           >
-            <div className="h-8 border-b border-black/10 bg-black/5 flex items-center px-4 gap-1.5 shrink-0">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+            {/* Gradient header */}
+            <div className={`h-40 bg-gradient-to-br ${c.color} relative`}>
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:24px_24px]" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-16 h-16 rounded-2xl bg-white border-4 border-white shadow-lg flex items-center justify-center">
+                <span className="text-xl font-bold text-gray-800">{c.name.charAt(0)}</span>
+              </div>
             </div>
-            
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative pointer-events-none">
-              <div className="w-24 h-24 rounded-full bg-black/20 mb-6 backdrop-blur-md"></div>
-              <h3 className={`text-2xl font-bold mb-2 ${c.theme.includes('text-') ? '' : 'text-white'}`}>{c.name}</h3>
-              <p className={`text-sm font-medium ${c.theme.includes('text-') ? 'opacity-60' : 'text-white/60'}`}>{c.niche}</p>
-            </div>
-            
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="bg-[#03040A] border border-white/10 rounded-xl p-4 flex items-center justify-between text-white backdrop-blur-xl group-hover:bg-[#0D0F1A] transition-colors">
-                <span className="text-sm font-medium">{c.link}</span>
-                <span className="text-indigo-400 text-sm font-bold">Visit &rarr;</span>
+
+            {/* Content */}
+            <div className="pt-12 pb-6 px-6 text-center">
+              <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">{c.name}</h3>
+              <p className="text-sm text-[var(--text-secondary)] mb-4">{c.niche}</p>
+              <div className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#f7f7f8] border border-gray-200 text-xs font-medium text-[var(--text-secondary)] group-hover:bg-[var(--accent)] group-hover:text-[var(--accent-fg)] group-hover:border-transparent transition-all duration-300">
+                {c.link}
+                <span className="ml-1">→</span>
               </div>
             </div>
           </motion.div>

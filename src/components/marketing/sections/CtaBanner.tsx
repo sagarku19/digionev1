@@ -1,26 +1,38 @@
 "use client";
-import React from 'react';
+
 import Link from 'next/link';
 
 export default function CtaBanner() {
   return (
-    <section className="py-32 relative overflow-hidden bg-[#03040A]">
-      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-900/30 via-[#03040A] to-violet-900/30 -z-10" />
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay -z-10 pointer-events-none" />
-      
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
-        <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+    <section className="py-32 bg-[var(--text-primary)] relative overflow-hidden">
+      {/* Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      {/* Radial glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,rgba(99,102,241,0.12),transparent)] pointer-events-none" />
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
+        <p className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-5">Get started today</p>
+        <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight font-display">
           Start selling in 30 minutes.
         </h2>
-        <p className="text-xl text-slate-300 mb-10">
-          No credit card. No setup fee. Just your products.
+        <p className="text-lg text-white/50 mb-10 max-w-xl mx-auto">
+          No credit card. No setup fee. Just your products and your audience.
         </p>
-        
-        <Link href="/signup" className="inline-flex h-14 items-center justify-center px-10 rounded-xl bg-white text-black font-bold text-lg hover:bg-slate-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] hover:scale-[1.02] mb-8">
-          Create your free store &rarr;
-        </Link>
-        <p className="text-slate-400 text-sm">
-          Already have an account? <Link href="/login" className="text-white font-medium hover:underline">Log in &rarr;</Link>
+
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          <Link
+            href="/signup"
+            className="inline-flex h-13 items-center justify-center px-10 py-3.5 rounded-full bg-white text-[var(--text-primary)] font-bold text-base hover:bg-gray-100 transition-all shadow-lg shadow-white/10"
+          >
+            Create your free store →
+          </Link>
+        </div>
+
+        <p className="mt-8 text-white/30 text-sm">
+          Already have an account?{' '}
+          <Link href="/login" className="text-white/60 hover:text-white font-medium transition-colors underline underline-offset-4">
+            Log in
+          </Link>
         </p>
       </div>
     </section>

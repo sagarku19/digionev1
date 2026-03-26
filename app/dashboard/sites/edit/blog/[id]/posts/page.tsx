@@ -77,7 +77,7 @@ export default function BlogPostsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+          className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all"
         >
           <Plus className="w-4 h-4" />
           New Post
@@ -92,7 +92,7 @@ export default function BlogPostsPage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search posts..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
           />
         </div>
       )}
@@ -109,14 +109,14 @@ export default function BlogPostsPage() {
       {/* Empty state */}
       {!isLoading && posts.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-5">
-            <BookOpen className="w-10 h-10 text-indigo-500" />
+          <div className="w-20 h-20 bg-[var(--bg-tertiary)] rounded-2xl flex items-center justify-center mb-5">
+            <BookOpen className="w-10 h-10 text-[var(--text-secondary)]" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No posts yet</h2>
           <p className="text-gray-500 text-sm max-w-xs mb-6">Write your first blog post to attract and engage your audience.</p>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all"
           >
             <Plus className="w-4 h-4" />
             Write first post
@@ -130,10 +130,10 @@ export default function BlogPostsPage() {
           {filtered.map((post: any) => (
             <div key={post.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-900/40 group transition">
               {/* Thumbnail / Icon */}
-              <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-[var(--bg-tertiary)] flex items-center justify-center">
                 {post.thumbnail_url
                   ? <img src={post.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                  : <FileText className="w-5 h-5 text-indigo-400" />
+                  : <FileText className="w-5 h-5 text-[var(--text-secondary)]" />
                 }
               </div>
 
@@ -176,7 +176,7 @@ export default function BlogPostsPage() {
               <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition shrink-0">
                 <button
                   onClick={() => router.push(`/dashboard/sites/edit/blog/${siteId}/posts/${post.id}`)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg transition"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--accent)]/20 px-3 py-1.5 rounded-lg transition"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   Edit
@@ -204,7 +204,7 @@ export default function BlogPostsPage() {
       {!isLoading && posts.length > 0 && filtered.length === 0 && (
         <div className="text-center py-16">
           <p className="text-gray-500">No posts match &ldquo;{search}&rdquo;</p>
-          <button onClick={() => setSearch('')} className="text-indigo-500 text-sm mt-2 hover:underline">Clear search</button>
+          <button onClick={() => setSearch('')} className="text-[var(--text-secondary)] text-sm mt-2 hover:underline">Clear search</button>
         </div>
       )}
 
@@ -224,7 +224,7 @@ export default function BlogPostsPage() {
                 <input
                   type="text" required autoFocus value={newTitle} onChange={e => setNewTitle(e.target.value)}
                   placeholder="e.g. How I made ₹1L in 30 days"
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400"
                 />
                 {newTitle && (
                   <p className="text-xs text-gray-400 mt-1">URL: /{slugify(newTitle)}</p>
@@ -235,7 +235,7 @@ export default function BlogPostsPage() {
                 <textarea
                   rows={2} value={newDescription} onChange={e => setNewDescription(e.target.value)}
                   placeholder="Brief summary shown in the blog index..."
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 resize-none"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 resize-none"
                 />
               </div>
               {/* Access */}
@@ -246,12 +246,12 @@ export default function BlogPostsPage() {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={isFree} onChange={e => setIsFree(e.target.checked)} />
-                  <div className="w-10 h-5 bg-gray-300 dark:bg-gray-700 peer-checked:bg-indigo-600 rounded-full transition after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
+                  <div className="w-10 h-5 bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--bg-tertiary)] rounded-full transition after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                 </label>
               </div>
               <button
                 type="submit" disabled={isCreating || !newTitle.trim()}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+                className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-xl font-bold text-sm shadow-sm transition-all"
               >
                 {isCreating ? 'Creating…' : 'Create & Open Editor →'}
               </button>

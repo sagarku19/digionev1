@@ -107,7 +107,7 @@ export default function EarningsPage() {
           
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-colors"
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-5 py-2.5 rounded-lg font-bold shadow-sm transition-colors"
           >
             <ArrowUpRight className="w-5 h-5" />
             Request Payout
@@ -141,7 +141,7 @@ export default function EarningsPage() {
             label="Available for Payout" 
             value={formatINR(available)} 
             icon={CheckCircle2} 
-            className="border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/10 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-50 dark:ring-indigo-900/20"
+            className="border-[var(--border)] bg-[var(--bg-tertiary)] "
           />
           <StatCard 
             label="Pending Clearance" 
@@ -196,7 +196,7 @@ export default function EarningsPage() {
                   <p className="text-sm text-gray-500 mb-6">You must complete KYC and attach a Bank Account before withdrawing funds.</p>
                   <Link 
                     href="/dashboard/settings/billing"
-                    className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition"
+                    className="block w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] font-bold py-3 rounded-xl transition"
                   >
                     Set up Bank Account
                   </Link>
@@ -215,7 +215,7 @@ export default function EarningsPage() {
                       <button 
                         type="button" 
                         onClick={() => setPayoutAmount(String(available))}
-                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                        className="text-xs font-bold text-[var(--text-primary)] hover:underline"
                       >
                         Max: {formatINR(available)}
                       </button>
@@ -231,7 +231,7 @@ export default function EarningsPage() {
                         max={available}
                         value={payoutAmount}
                         onChange={(e) => setPayoutAmount(e.target.value)}
-                        className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white font-mono text-lg"
+                        className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white font-mono text-lg"
                         placeholder="0.00"
                       />
                     </div>

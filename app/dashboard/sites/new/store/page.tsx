@@ -42,7 +42,7 @@ const TEMPLATES = [
   { id: 'blank',   name: 'Blank',     desc: 'Start from scratch',         accent: '#9CA3AF', blocks: ['h-3 w-16', 'h-3 w-20', 'h-3 w-28', 'h-3 w-12'] },
 ];
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 function StepBar({ step, total }: { step: number; total: number }) {
   return (
@@ -51,7 +51,7 @@ function StepBar({ step, total }: { step: number; total: number }) {
         <div
           key={i}
           className={`h-1 flex-1 rounded-full transition-colors ${
-            i < step ? 'bg-indigo-500' : 'bg-gray-200 dark:bg-gray-800'
+            i < step ? 'bg-[var(--accent)]' : 'bg-gray-200 dark:bg-gray-800'
           }`}
         />
       ))}
@@ -117,7 +117,7 @@ export default function CreateMainStorePage() {
             {step > 1 ? 'Back' : 'All Types'}
           </button>
           <div className="flex items-center gap-2">
-            <Store className="w-4 h-4 text-indigo-500" />
+            <Store className="w-4 h-4 text-[var(--text-secondary)]" />
             <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Main Store</span>
           </div>
         </div>
@@ -144,13 +144,13 @@ export default function CreateMainStorePage() {
                       onClick={() => setTemplate(t.id)}
                       className={`border-2 rounded-2xl overflow-hidden transition-all duration-200 text-left ${
                         selected
-                          ? 'border-indigo-500 ring-2 ring-indigo-500/20 shadow-md shadow-indigo-500/10'
+                          ? 'border-[var(--accent)]  '
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
                       <div className="h-24 p-3 flex flex-col gap-1.5 relative" style={{ backgroundColor: `${t.accent}15` }}>
                         {selected && (
-                          <span className="absolute top-2 right-2 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center shadow">
+                          <span className="absolute top-2 right-2 w-5 h-5 bg-[var(--bg-tertiary)] rounded-full flex items-center justify-center shadow">
                             <Check className="w-3 h-3 text-white" />
                           </span>
                         )}
@@ -193,7 +193,7 @@ export default function CreateMainStorePage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Your URL <span className="text-red-400">*</span>
                 </label>
-                <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-indigo-500 transition">
+                <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-[var(--accent)]/40 transition">
                   <span className="px-3.5 py-2.5 text-sm text-gray-500 border-r border-gray-200 dark:border-gray-700 shrink-0 bg-gray-100 dark:bg-gray-800 font-mono">
                     digione.in/p/
                   </span>
@@ -229,9 +229,9 @@ export default function CreateMainStorePage() {
                 <p className="text-sm text-gray-500 mt-1">Review your store details below.</p>
               </div>
 
-              <div className="rounded-2xl border-2 border-indigo-200 dark:border-indigo-800/50 p-5 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent">
+              <div className="rounded-2xl border-2 border-[var(--border)] dark:border-[var(--border)] p-5 bg-[var(--bg-tertiary)]">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--bg-tertiary)] text-[var(--text-primary)]">
                     <Store className="w-5 h-5" />
                   </div>
                   <div>
@@ -239,7 +239,7 @@ export default function CreateMainStorePage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">{title}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 bg-white/60 dark:bg-white/5 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 text-sm text-[var(--text-primary)] bg-white/60 dark:bg-white/5 rounded-xl px-3 py-2">
                   <Globe className="w-4 h-4 shrink-0" />
                   <span className="font-mono text-sm truncate">digione.in/p/{slug}</span>
                 </div>
@@ -279,12 +279,12 @@ export default function CreateMainStorePage() {
 
             {step < 3 ? (
               <button onClick={() => setStep(s => s + 1)} disabled={!canNext()}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all">
+                className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all">
                 Continue <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <button onClick={handleSubmit} disabled={submitting}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white px-7 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all">
+                className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white px-7 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all">
                 {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</> : <><Zap className="w-4 h-4" /> Launch Store</>}
               </button>
             )}

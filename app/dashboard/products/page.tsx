@@ -13,7 +13,7 @@ import {
   Loader2, Sparkles,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
 
 const CATEGORIES = [
   { value: 'digital', label: 'Digital File', icon: FileText, desc: 'PDF, ZIP, video, audio' },
@@ -126,7 +126,7 @@ export default function ProductsPage() {
         </div>
         <button
           onClick={openModal}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+          className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all"
         >
           <Plus className="w-4 h-4" />
           New Product
@@ -144,7 +144,7 @@ export default function ProductsPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search products..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
               />
             </div>
           )}
@@ -165,12 +165,12 @@ export default function ProductsPage() {
           {/* Empty state */}
           {!isLoading && products.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-5">
-                <Package className="w-10 h-10 text-indigo-500" />
+              <div className="w-20 h-20 bg-[var(--bg-tertiary)] rounded-2xl flex items-center justify-center mb-5">
+                <Package className="w-10 h-10 text-[var(--text-secondary)]" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No products yet</h2>
               <p className="text-gray-500 text-sm max-w-xs mb-6">Create your first digital product and start selling in minutes.</p>
-              <button onClick={openModal} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all">
+              <button onClick={openModal} className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all">
                 <Plus className="w-4 h-4" />
                 Create your first product
               </button>
@@ -181,13 +181,13 @@ export default function ProductsPage() {
           {!isLoading && filtered.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {filtered.map((product: any) => (
-                <div key={product.id} className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-lg transition-all duration-200">
-                  <div className="relative w-full h-36 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 overflow-hidden">
+                <div key={product.id} className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:shadow-lg transition-all duration-200">
+                  <div className="relative w-full h-36 bg-[var(--bg-tertiary)] overflow-hidden">
                     {product.thumbnail_url ? (
                       <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Package className="w-12 h-12 text-indigo-300 dark:text-indigo-700" />
+                        <Package className="w-12 h-12 text-[var(--text-secondary)] dark:text-[var(--text-primary)]" />
                       </div>
                     )}
                     <div className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${
@@ -214,7 +214,7 @@ export default function ProductsPage() {
                     <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                       <button
                         onClick={() => router.push(`/dashboard/products/${product.id}`)}
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 py-2 rounded-lg transition"
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-[var(--text-primary)] bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--accent)]/20 py-2 rounded-lg transition"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                         Edit
@@ -232,7 +232,7 @@ export default function ProductsPage() {
           {!isLoading && products.length > 0 && filtered.length === 0 && (
             <div className="text-center py-16">
               <p className="text-gray-500">No products match &ldquo;{search}&rdquo;</p>
-              <button onClick={() => setSearch('')} className="text-indigo-500 text-sm mt-2 hover:underline">Clear search</button>
+              <button onClick={() => setSearch('')} className="text-[var(--text-secondary)] text-sm mt-2 hover:underline">Clear search</button>
             </div>
           )}
         </div>
@@ -243,8 +243,8 @@ export default function ProductsPage() {
             <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-indigo-500" />
+                  <div className="w-8 h-8 bg-[var(--bg-tertiary)] rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-[var(--text-secondary)]" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-white text-sm">Upsell Pages</h3>
@@ -253,7 +253,7 @@ export default function ProductsPage() {
                 </div>
                 <button
                   onClick={openUpsellModal}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg transition shadow-sm"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] px-3 py-2 rounded-lg transition shadow-sm"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Create
@@ -270,8 +270,8 @@ export default function ProductsPage() {
 
               {!upsellLoading && upsellPages.length === 0 && (
                 <div className="text-center py-10">
-                  <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <Link2 className="w-7 h-7 text-indigo-400" />
+                  <div className="w-14 h-14 bg-[var(--bg-tertiary)] rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <Link2 className="w-7 h-7 text-[var(--text-secondary)]" />
                   </div>
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No upsell pages yet</p>
                   <p className="text-xs text-gray-400 mt-1 max-w-[200px] mx-auto">Create a shareable checkout link to boost your sales.</p>
@@ -308,14 +308,14 @@ export default function ProductsPage() {
                       <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                         <button
                           onClick={() => router.push(`/dashboard/products/upsells/${up.id}`)}
-                          className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+                          className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2.5 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
                         >
                           <Edit3 className="w-3 h-3" />
                           Edit
                         </button>
                         <button
                           onClick={() => handleCopyLink(up.slug, up.id)}
-                          className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+                          className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2.5 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
                         >
                           {copiedId === up.id ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                           {copiedId === up.id ? 'Copied!' : 'Copy'}
@@ -324,7 +324,7 @@ export default function ProductsPage() {
                           href={getUpsellPublicPath(up.slug)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+                          className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2.5 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
                         >
                           <ExternalLink className="w-3 h-3" />
                           View
@@ -358,17 +358,17 @@ export default function ProductsPage() {
             <form onSubmit={handleCreate} className="p-6 space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Product Name</label>
-                <input type="text" required autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Complete Figma Mastery Course" className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400" />
+                <input type="text" required autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Complete Figma Mastery Course" className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
                 <div className="grid grid-cols-2 gap-2">
                   {CATEGORIES.map(c => (
                     <button key={c.value} type="button" onClick={() => setCategory(c.value)}
-                      className={`flex items-center gap-3 p-3 border rounded-xl text-left transition ${category === c.value ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300'}`}>
-                      <c.icon className={`w-5 h-5 shrink-0 ${category === c.value ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`} />
+                      className={`flex items-center gap-3 p-3 border rounded-xl text-left transition ${category === c.value ? 'border-[var(--accent)] bg-[var(--bg-tertiary)]' : 'border-gray-200 dark:border-gray-700 hover:border-[var(--accent)]'}`}>
+                      <c.icon className={`w-5 h-5 shrink-0 ${category === c.value ? 'text-[var(--text-primary)]' : 'text-gray-400'}`} />
                       <div>
-                        <div className={`text-xs font-semibold ${category === c.value ? 'text-indigo-700 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300'}`}>{c.label}</div>
+                        <div className={`text-xs font-semibold ${category === c.value ? 'text-[var(--text-primary)]' : 'text-gray-700 dark:text-gray-300'}`}>{c.label}</div>
                         <div className="text-xs text-gray-400">{c.desc}</div>
                       </div>
                     </button>
@@ -379,11 +379,11 @@ export default function ProductsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Starting Price (INR)</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">{'\u20B9'}</span>
-                  <input type="number" min="0" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" className="w-full pl-8 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white font-mono" />
+                  <input type="number" min="0" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" className="w-full pl-8 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white font-mono" />
                 </div>
                 <p className="text-xs text-gray-400 mt-1.5">You can change pricing anytime after creation.</p>
               </div>
-              <button type="submit" disabled={isCreating || !name.trim()} className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all">
+              <button type="submit" disabled={isCreating || !name.trim()} className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-xl font-bold text-sm shadow-sm transition-all">
                 {isCreating ? 'Creating...' : 'Create Product \u2192'}
               </button>
             </form>
@@ -408,8 +408,8 @@ export default function ProductsPage() {
               {upsellStep === 'info' ? (
                 <div className="space-y-5">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0">
-                      <Sparkles className="w-6 h-6 text-indigo-500" />
+                    <div className="w-12 h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center shrink-0">
+                      <Sparkles className="w-6 h-6 text-[var(--text-secondary)]" />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Standalone Checkout Pages</h3>
@@ -418,9 +418,9 @@ export default function ProductsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="bg-indigo-50 dark:bg-indigo-500/10 rounded-xl p-4 space-y-2">
-                    <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-400">How it works:</p>
-                    <ul className="text-xs text-indigo-600 dark:text-indigo-300 space-y-1.5">
+                  <div className="bg-[var(--bg-tertiary)] rounded-xl p-4 space-y-2">
+                    <p className="text-xs font-semibold text-[var(--text-primary)]">How it works:</p>
+                    <ul className="text-xs text-[var(--text-primary)] dark:text-[var(--text-secondary)] space-y-1.5">
                       <li className="flex items-start gap-2"><span className="mt-0.5">1.</span> Pick a primary product for your checkout page</li>
                       <li className="flex items-start gap-2"><span className="mt-0.5">2.</span> Optionally add 1-2 upsell products as add-ons</li>
                       <li className="flex items-start gap-2"><span className="mt-0.5">3.</span> Share the link — buyers see a clean checkout with add-on offers</li>
@@ -430,7 +430,7 @@ export default function ProductsPage() {
                   <button
                     onClick={() => setUpsellStep('select')}
                     disabled={products.length === 0}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+                    className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-xl font-bold text-sm shadow-sm transition-all"
                   >
                     {products.length === 0 ? 'Create a product first' : 'Get Started \u2192'}
                   </button>
@@ -462,7 +462,7 @@ export default function ProductsPage() {
                           key={p.id} type="button"
                           onClick={() => { setPrimaryId(p.id); setSecondaryIds(ids => ids.filter(id => id !== p.id)); if (!upsellTitle) setUpsellTitle(p.name); }}
                           className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition ${
-                            primaryId === p.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                            primaryId === p.id ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                           }`}
                         >
                           {p.thumbnail_url ? (
@@ -476,7 +476,7 @@ export default function ProductsPage() {
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
                             <p className="text-xs text-gray-500">{formatINR(p.price || 0)}</p>
                           </div>
-                          {primaryId === p.id && <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />}
+                          {primaryId === p.id && <CheckCircle2 className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />}
                         </button>
                       ))}
                     </div>
@@ -497,12 +497,12 @@ export default function ProductsPage() {
                               key={p.id} type="button" disabled={disabled}
                               onClick={() => setSecondaryIds(ids => selected ? ids.filter(id => id !== p.id) : [...ids, p.id])}
                               className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition ${
-                                selected ? 'bg-violet-50 dark:bg-violet-500/10 border border-violet-300 dark:border-violet-700'
+                                selected ? 'bg-[var(--bg-tertiary)] border border-[var(--border)] dark:border-[var(--border)]'
                                   : disabled ? 'opacity-40 cursor-not-allowed'
-                                  : 'border border-gray-200 dark:border-gray-700 hover:border-violet-300'
+                                  : 'border border-gray-200 dark:border-gray-700 hover:border-[var(--border)]'
                               }`}
                             >
-                              <input type="checkbox" checked={selected} readOnly className="accent-violet-600 w-4 h-4 shrink-0" />
+                              <input type="checkbox" checked={selected} readOnly className="accent-[var(--accent)] w-4 h-4 shrink-0" />
                               <p className="text-sm text-gray-900 dark:text-white truncate flex-1">{p.name}</p>
                               <p className="text-xs text-gray-500 shrink-0">{formatINR(p.price || 0)}</p>
                             </button>
@@ -515,7 +515,7 @@ export default function ProductsPage() {
                   <button
                     onClick={handleCreateUpsell}
                     disabled={!primaryId || upsellCreating}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+                    className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-xl font-bold text-sm shadow-sm transition-all"
                   >
                     {upsellCreating ? 'Creating...' : 'Create Upsell Page'}
                   </button>

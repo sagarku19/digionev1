@@ -10,7 +10,7 @@ import {
   Trash2, EyeOff, Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
 
 export type SettingsData = {
   metaTitle: string;
@@ -150,7 +150,7 @@ export default function SettingsPanel({
         {/* Default URL */}
         <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
           <Globe className="w-4 h-4 text-gray-400 shrink-0" />
-          <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 flex-1 truncate">
+          <span className="text-sm font-medium text-[var(--text-primary)] flex-1 truncate">
             {site ? getSiteDisplayUrl(site) : '-'}
           </span>
           <button
