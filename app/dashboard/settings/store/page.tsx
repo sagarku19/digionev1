@@ -236,13 +236,13 @@ export default function StoreSettingsPage() {
             </div>
           </Field>
 
-          <Field label="Store URL" hint={`Your public address: digione.in/${siteSlug}`}>
+          <Field label="Store URL" hint={`Your public address: digione.in/p/${siteSlug}`}>
             <div className="relative">
               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none">digione.in/</span>
+              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none">digione.in/p/</span>
               <input
                 type="text" value={siteSlug} readOnly
-                className={`${INPUT} pl-[108px] bg-gray-100 dark:bg-gray-800 cursor-not-allowed`}
+                className={`${INPUT} pl-[120px] bg-gray-100 dark:bg-gray-800 cursor-not-allowed`}
               />
             </div>
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">To change your slug, contact support.</p>

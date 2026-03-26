@@ -16,7 +16,7 @@ export default function DashboardLayout({
       <Sidebar />
 
       {/* Main Content Pane */}
-      <div className="flex-1 flex flex-col md:pl-[240px] min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+      <div className="flex-1 flex flex-col md:pl-[248px] min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
         <TopBar />
 
         <main className="flex-1 px-4 md:px-6 pb-20 overflow-x-hidden">

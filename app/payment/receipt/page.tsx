@@ -63,19 +63,22 @@ export default async function ReceiptPage({
       orderId: submission.gateway_order_id || order_id
     };
   } else {
-    // Standard Checkout Order
-    const { data: order } = await supabase
+    // Standard Checkout Order — order_id can be a UUID or a gateway order id (ord_...)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(order_id);
+    const col = isUUID ? 'id' : 'gateway_order_id';
+    const { data: order } = await (supabase
       .from('orders')
-      .select('*, order_items(products(name))')
-      .eq('id', order_id)
+      .select('*, order_items(products(name))') as any)
+      .eq(col, order_id)
       .single();
 
     if (!order) return notFound();
 
     // Try to fetch buyer details safely
-    let buyerName = 'Customer', buyerEmail = '';
-    if (order.buyer_id) {
-       const { data: buyer } = await supabase.from('profiles').select('*').eq('id', order.buyer_id).maybeSingle();
+    let buyerName = order.customer_name || 'Customer';
+    let buyerEmail = order.customer_email || '';
+    if (order.user_id && buyerName === 'Customer') {
+       const { data: buyer } = await supabase.from('profiles').select('*').eq('id', order.user_id).maybeSingle();
        if (buyer) {
           buyerName = buyer.full_name || 'Customer';
        }

@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, X, LayoutDashboard, ChevronDown, LogOut } from 'lucide-react';
+import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface UserProfile {
@@ -122,7 +122,15 @@ export default function MarketingNav() {
 
             {/* Desktop nav links */}
             <div className="hidden md:flex items-center gap-8 ml-10">
-              <Link href="#features" className="text-sm text-slate-400 hover:text-white transition-colors">Features</Link>
+              <Link href="/discover" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5" />
+                Discover
+              </Link>
+              <Link href="/community" className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5" />
+                Community
+              </Link>
+              {/* <Link href="#features" className="text-sm text-slate-400 hover:text-white transition-colors">Features</Link> */}
               <Link href="#pricing" className="text-sm text-slate-400 hover:text-white transition-colors">Pricing</Link>
               <Link href="#creators" className="text-sm text-slate-400 hover:text-white transition-colors">Creators</Link>
               <Link href="/blog" className="text-sm text-slate-400 hover:text-white transition-colors">Blog</Link>
@@ -244,7 +252,9 @@ export default function MarketingNav() {
           {/* Nav links */}
           <div className="flex flex-col gap-1 flex-1 overflow-y-auto">
             {[
-              { label: 'Features', href: '#features' },
+              { label: 'Discover', href: '/discover' },
+              { label: 'Community', href: '/community' },
+              // { label: 'Features', href: '#features' },
               { label: 'Pricing', href: '#pricing' },
               { label: 'Creators', href: '#creators' },
               { label: 'Blog', href: '/blog' },

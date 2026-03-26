@@ -1,6 +1,7 @@
-// API Route: GET /api/sites/check-slug?slug=xxx
-// Checks whether a slug is available. Reads: sites table.
-// Uses service client so the check works regardless of auth state.
+// API Route: GET /api/sites/check-slug?slug=xxx&type=xxx
+// Checks slug availability:
+//   main, single, builder → checks slug column in sites table
+//   payment, blog → slug not needed (URL uses siteId), always available
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
@@ -11,27 +12,33 @@ export async function GET(req: NextRequest) {
     const slug = searchParams.get('slug')?.toLowerCase().trim();
     const type = searchParams.get('type');
 
-    if (!slug || !type) {
-      return NextResponse.json({ available: false, error: 'No slug or type provided' }, { status: 400 });
+    if (!type) {
+      return NextResponse.json({ available: false, error: 'No type provided' }, { status: 400 });
     }
 
-    // Validate slug format
+    // Payment and blog don't use slugs — URL is /pay/{siteId} or /blog/{siteId}
+    if (type === 'payment' || type === 'blog') {
+      return NextResponse.json({ available: true });
+    }
+
+    // main, single, builder need slug check
+    if (!slug) {
+      return NextResponse.json({ available: false, error: 'No slug provided' }, { status: 400 });
+    }
+
     if (!/^[a-z0-9][a-z0-9-]{1,48}[a-z0-9]$/.test(slug)) {
       return NextResponse.json({
         available: false,
-        error: 'Slug must be 3–50 chars, lowercase letters, numbers, and hyphens only'
+        error: 'Slug must be 3-50 chars, lowercase letters, numbers, and hyphens only'
       }, { status: 400 });
     }
 
     const db = createServiceClient();
-    
-    // For main sites, check "slug". For child sites, check "child_slug"
-    const columnToCheck = type === 'main' ? 'slug' : 'child_slug';
 
     const { data } = await db
       .from('sites')
       .select('id')
-      .eq(columnToCheck, slug)
+      .eq('slug', slug)
       .maybeSingle();
 
     return NextResponse.json({ available: data === null });

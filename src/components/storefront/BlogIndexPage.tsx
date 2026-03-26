@@ -30,11 +30,10 @@ function PostCard({ post, href }: { post: any; href: string }) {
   );
 }
 
-export default function BlogIndexPage({ blog, posts, parentSlug, childSlug }: {
-  blog: any; posts: any[]; parentSlug: string; childSlug: string;
+export default function BlogIndexPage({ blog, posts, basePath }: {
+  blog: any; posts: any[]; basePath: string;
 }) {
   const allTags = Array.from(new Set(posts.flatMap((p: any) => p.tags ?? [])));
-  const basePath = `/${parentSlug}/${childSlug}`;
 
   return (
     <div className="min-h-screen">

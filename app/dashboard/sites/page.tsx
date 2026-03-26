@@ -1,146 +1,261 @@
 'use client';
-// Dashboard: My Stores — list all creator sites.
-// DB tables: sites, site_main (read via useSites)
+// Dashboard: My Sites — list view with left-side type filter tabs.
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSites, SiteWithMain } from '@/hooks/useSites';
+import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
-  Plus, ExternalLink, Settings, MoreVertical, Store, Package,
-  CreditCard, FileText, Globe, Shield, ShieldAlert, ShieldX, Clock,
-  Trash2, EyeOff, Eye
+  Plus, ExternalLink, MoreVertical, Store, Layers,
+  CreditCard, FileText, Hammer, Link2, Globe, Copy, Check,
+  Trash2, EyeOff, Eye, Clock, Pencil, AlertTriangle, X,
 } from 'lucide-react';
 
-// ─── Badge helpers ──────────────────────────────────────────
-const SITE_TYPE_META: Record<string, { label: string; color: string }> = {
-  main:    { label: 'Main store',    color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-400' },
-  single:  { label: 'Product page',  color: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400' },
-  payment: { label: 'Payment link',  color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' },
-  blog:    { label: 'Blog',          color: 'bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-400' },
+// ─── Type filter config ─────────────────────────────────────
+const FILTER_TABS = [
+  { key: 'all',       label: 'All Sites',     icon: Globe },
+  { key: 'main',      label: 'Main Store',    icon: Store },
+  { key: 'single',    label: 'Single Page',   icon: Layers },
+  { key: 'payment',   label: 'Payment Link',  icon: CreditCard },
+  { key: 'blog',      label: 'Blog',          icon: FileText },
+  { key: 'builder',   label: 'Builder',       icon: Hammer },
+  { key: 'linkinbio', label: 'Link in Bio',   icon: Link2 },
+] as const;
+
+const SITE_TYPE_META: Record<string, { label: string; color: string; dot: string }> = {
+  main:      { label: 'Main Store',    color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400',  dot: 'bg-indigo-500' },
+  single:    { label: 'Single Page',   color: 'bg-violet-50 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400',  dot: 'bg-violet-500' },
+  payment:   { label: 'Payment Link',  color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400', dot: 'bg-emerald-500' },
+  blog:      { label: 'Blog',          color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',    dot: 'bg-amber-500' },
+  builder:   { label: 'Builder',       color: 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',       dot: 'bg-rose-500' },
+  linkinbio: { label: 'Link in Bio',   color: 'bg-pink-50 text-pink-600 dark:bg-pink-500/15 dark:text-pink-400',      dot: 'bg-pink-500' },
 };
 
-const SSL_META: Record<string, { label: string; dot: string }> = {
-  active:  { label: 'SSL active',  dot: 'bg-emerald-500' },
-  pending: { label: 'Pending',     dot: 'bg-amber-400' },
-  none:    { label: 'No SSL',      dot: 'bg-gray-400' },
-  failed:  { label: 'SSL failed',  dot: 'bg-red-500' },
+const SITE_TYPE_ICON: Record<string, React.ElementType> = {
+  main: Store, single: Layers, payment: CreditCard, blog: FileText, builder: Hammer, linkinbio: Link2,
 };
 
-function SiteTypeBadge({ type }: { type: string }) {
-  const m = SITE_TYPE_META[type] ?? SITE_TYPE_META.main;
-  return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${m.color}`}>{m.label}</span>;
-}
+// ─── Delete Confirmation Modal ──────────────────────────────
+function DeleteModal({ siteName, onConfirm, onCancel }: {
+  siteName: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const [typed, setTyped] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
-function SslBadge({ status }: { status: string | null }) {
-  const key = status ?? 'none';
-  const m = SSL_META[key] ?? SSL_META.none;
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const canDelete = typed === siteName;
+
   return (
-    <span className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${m.dot}`} />
-      {m.label}
-    </span>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/15 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Delete site</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              This action is permanent and cannot be undone. All data associated with this site will be lost.
+            </p>
+          </div>
+          <button onClick={onCancel} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Confirmation input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Type <span className="font-bold text-gray-900 dark:text-white">{siteName}</span> to confirm
+          </label>
+          <input
+            ref={inputRef}
+            type="text"
+            value={typed}
+            onChange={e => setTyped(e.target.value)}
+            placeholder={siteName}
+            className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 pt-1">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={!canDelete}
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition ${
+              canDelete
+                ? 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-500/20'
+                : 'bg-red-200 dark:bg-red-900/30 text-red-400 cursor-not-allowed'
+            }`}
+          >
+            Delete permanently
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// ─── Site Card ──────────────────────────────────────────────
-function SiteCard({ site, onDelete, onToggle }: {
+// ─── Site Row ───────────────────────────────────────────────
+function SiteRow({ site, onRequestDelete, onToggle }: {
   site: SiteWithMain;
-  onDelete: (id: string) => void;
+  onRequestDelete: (id: string, name: string) => void;
   onToggle: (id: string, active: boolean) => void;
 }) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const sm = Array.isArray(site.site_main) ? site.site_main[0] : site.site_main;
-  
-  const title = sm?.title ?? site.slug ?? site.child_slug ?? 'Untitled';
-  
-  let urlPath = site.slug;
-  if (!urlPath && site.child_slug) {
-    const parent = Array.isArray(site.parent_site) ? site.parent_site[0] : site.parent_site;
-    urlPath = parent?.slug ? `${parent.slug}/${site.child_slug}` : site.child_slug;
-  }
-  
-  const displayUrl = site.custom_domain ?? `digione.in/${urlPath}`;
+  const sb = (site as any).site_blog;
+  const sp = (site as any).site_singlepage;
+  const sl = (site as any).site_linkinbio;
+  const blogTitle = Array.isArray(sb) ? sb[0]?.title : sb?.title;
+  const singleTitle = Array.isArray(sp) ? sp[0]?.title : sp?.title;
+  const bioName = Array.isArray(sl) ? sl[0]?.display_name : sl?.display_name;
+
+  const title = sm?.title ?? blogTitle ?? singleTitle ?? bioName ?? 'Untitled';
+  const truncatedTitle = title.length > 30 ? title.slice(0, 30) + '...' : title;
+  const displayUrl = getSiteDisplayUrl(site);
+  const publicPath = getSitePublicPath(site);
+  const meta = SITE_TYPE_META[site.site_type] ?? SITE_TYPE_META.main;
+  const TypeIcon = SITE_TYPE_ICON[site.site_type] ?? Store;
+  const createdDate = new Date(site.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const handleEdit = () => {
+    const typeSlug = site.site_type === 'single' ? 'singlepage' : site.site_type === 'linkinbio' ? 'linkinbio' : site.site_type;
+    router.push(`/dashboard/sites/edit/${typeSlug}/${site.id}`);
+  };
+
+  const handleCopy = async () => {
+    const fullUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}${publicPath}`
+      : publicPath;
+    await navigator.clipboard.writeText(fullUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-200">
-      {/* Banner */}
-      <div className="relative h-40 overflow-hidden bg-gradient-to-br from-indigo-500/20 to-violet-500/20">
-        {sm?.banner_url ? (
-          <img src={sm.banner_url} alt={title} className="w-full h-full object-cover" />
+    <div className="group flex items-center gap-4 px-5 py-4 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-200">
+      {/* Type Icon */}
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${meta.color}`}>
+        {sm?.logo_url ? (
+          <img src={sm.logo_url} alt={title} className="w-full h-full object-cover rounded-xl" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-indigo-500/30 to-violet-600/30 flex items-center justify-center">
-            <Store className="w-10 h-10 text-indigo-400/60" />
-          </div>
-        )}
-        {!site.is_active && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-full">Inactive</span>
-          </div>
+          <TypeIcon className="w-5 h-5" />
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-4">
-        {/* Badges */}
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <SiteTypeBadge type={site.site_type} />
-          <SslBadge status={site.ssl_status} />
+      {/* Title + URL + Copy Link */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white" title={title}>{truncatedTitle}</h3>
+          {!site.is_active && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 uppercase tracking-wide">Draft</span>
+          )}
         </div>
-
-        {/* Title + URL */}
-        <h3 className="font-semibold text-sm text-gray-900 dark:text-white truncate">{title}</h3>
-        <p className="text-xs text-indigo-500 dark:text-indigo-400 mt-0.5 truncate">{displayUrl}</p>
-
-        {/* Actions row */}
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center gap-2 mt-0.5">
+          <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate max-w-[200px]">{displayUrl}</p>
           <button
-            onClick={() => router.push(`/dashboard/sites/${site.id}`)}
-            className="flex-1 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 py-2 rounded-lg transition flex items-center justify-center gap-1.5"
+            onClick={handleCopy}
+            className="flex items-center gap-1 text-[11px] font-medium text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0"
+            title="Copy link"
           >
-            <Settings className="w-3.5 h-3.5" />
-            Settings
-          </button>
-          <a
-            href={`/${urlPath}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 py-2 px-3 rounded-lg transition"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            View
-          </a>
-
-          {/* ··· dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setMenuOpen(o => !o)}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-            {menuOpen && (
-              <div
-                className="absolute right-0 bottom-full mb-1 w-44 bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-1 z-50"
-                onMouseLeave={() => setMenuOpen(false)}
-              >
-                <button
-                  onClick={() => { onToggle(site.id, !site.is_active); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                >
-                  {site.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  {site.is_active ? 'Deactivate' : 'Activate'}
-                </button>
-                <button
-                  onClick={() => { if (confirm(`Delete "${title}"? This cannot be undone.`)) onDelete(site.id); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete site
-                </button>
-              </div>
+            {copied ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-500" />
+                <span className="text-emerald-500">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                <span className="hidden sm:inline">Copy</span>
+              </>
             )}
-          </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Type badge */}
+      <span className={`hidden lg:inline-flex text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 ${meta.color}`}>
+        {meta.label}
+      </span>
+
+      {/* Created date */}
+      <span className="hidden xl:flex items-center gap-1.5 text-xs text-gray-400 shrink-0 tabular-nums">
+        <Clock className="w-3 h-3" />
+        {createdDate}
+      </span>
+
+      {/* Actions */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <button
+          onClick={handleEdit}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          Edit
+        </button>
+        <a
+          href={publicPath}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-lg transition"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+          View
+        </a>
+
+        {/* More menu */}
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+          {menuOpen && (
+            <div
+              className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl py-1.5 z-50"
+              onMouseLeave={() => setMenuOpen(false)}
+            >
+              <button
+                onClick={() => { handleCopy(); setMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                <Copy className="w-4 h-4 text-gray-400" />
+                Copy link
+              </button>
+              <button
+                onClick={() => { onToggle(site.id, !site.is_active); setMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                {site.is_active ? <EyeOff className="w-4 h-4 text-gray-400" /> : <Eye className="w-4 h-4 text-gray-400" />}
+                {site.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+              <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+              <button
+                onClick={() => { onRequestDelete(site.id, title); setMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete site
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -148,22 +263,22 @@ function SiteCard({ site, onDelete, onToggle }: {
 }
 
 // ─── Empty state ─────────────────────────────────────────────
-function EmptyState({ onClick }: { onClick: () => void }) {
+function EmptyState({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl flex items-center justify-center mb-6">
-        <Store className="w-10 h-10 text-gray-300 dark:text-gray-600" />
+      <div className="w-20 h-20 bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex items-center justify-center mb-6">
+        <Globe className="w-8 h-8 text-gray-300 dark:text-gray-600" />
       </div>
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No stores yet</h2>
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{label}</h2>
       <p className="text-sm text-gray-500 max-w-xs mb-6">
-        Build your first storefront in 5 minutes and start selling digital products.
+        Create a new site to get started selling.
       </p>
       <button
         onClick={onClick}
-        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all"
+        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all"
       >
         <Plus className="w-4 h-4" />
-        Create your first store →
+        Create site
       </button>
     </div>
   );
@@ -173,6 +288,8 @@ function EmptyState({ onClick }: { onClick: () => void }) {
 export default function SitesPage() {
   const router = useRouter();
   const { sites, isLoading, deleteSite, toggleActive } = useSites();
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const handleDelete = async (id: string) => {
     try { await deleteSite(id); } catch { /* silent */ }
@@ -182,57 +299,150 @@ export default function SitesPage() {
     try { await toggleActive({ siteId: id, isActive: active }); } catch { /* silent */ }
   };
 
+  // Count per type
+  const typeCounts: Record<string, number> = { all: sites.length };
+  sites.forEach(s => {
+    typeCounts[s.site_type] = (typeCounts[s.site_type] || 0) + 1;
+  });
+
+  // Filter
+  const filtered = activeFilter === 'all' ? sites : sites.filter(s => s.site_type === activeFilter);
+
   return (
-    <div className="space-y-6 pt-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Stores</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage all your storefronts and pages</p>
+    <>
+      <div className="space-y-6 pt-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Sites</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {sites.length > 0
+                ? `${sites.length} site${sites.length !== 1 ? 's' : ''} total`
+                : 'Manage all your stores, pages, and apps'}
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/dashboard/sites/new')}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            New site
+          </button>
         </div>
-        <button
-          onClick={() => router.push('/dashboard/sites/new')}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 transition-all shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          New site
-        </button>
+
+        {/* Layout: left tabs + right list */}
+        <div className="flex gap-6">
+          {/* Left filter tabs */}
+          <div className="hidden md:flex flex-col w-48 shrink-0">
+            <div className="sticky top-24 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-2 space-y-0.5">
+              {FILTER_TABS.map(tab => {
+                const count = typeCounts[tab.key] || 0;
+                const isActive = activeFilter === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveFilter(tab.key)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <tab.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-indigo-500' : 'text-gray-400'}`} />
+                    <span className="flex-1 text-left truncate">{tab.label}</span>
+                    {count > 0 && (
+                      <span className={`text-[11px] font-semibold min-w-[20px] text-center px-1.5 py-0.5 rounded-md ${
+                        isActive
+                          ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile filter - horizontal scroll */}
+          <div className="md:hidden flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 w-[calc(100%+2rem)]">
+            {FILTER_TABS.map(tab => {
+              const count = typeCounts[tab.key] || 0;
+              const isActive = activeFilter === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveFilter(tab.key)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                    isActive
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  {tab.label}
+                  {count > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${isActive ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right side: list */}
+          <div className="flex-1 min-w-0">
+            {/* Skeleton loading */}
+            {isLoading && (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="flex items-center gap-4 px-5 py-4 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl animate-pulse">
+                    <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
+                      <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
+                    </div>
+                    <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-20" />
+                    <div className="h-7 bg-gray-100 dark:bg-gray-800 rounded-lg w-16" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty */}
+            {!isLoading && filtered.length === 0 && (
+              <EmptyState
+                label={activeFilter === 'all' ? 'No sites yet' : `No ${FILTER_TABS.find(t => t.key === activeFilter)?.label ?? ''} sites`}
+                onClick={() => router.push('/dashboard/sites/new')}
+              />
+            )}
+
+            {/* List */}
+            {!isLoading && filtered.length > 0 && (
+              <div className="space-y-2">
+                {filtered.map(site => (
+                  <SiteRow
+                    key={site.id}
+                    site={site}
+                    onRequestDelete={(id, name) => setDeleteTarget({ id, name })}
+                    onToggle={handleToggle}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Skeleton loading */}
-      {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden animate-pulse">
-              <div className="h-40 bg-gray-100 dark:bg-gray-800" />
-              <div className="p-4 space-y-3">
-                <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/3" />
-                <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4" />
-                <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <DeleteModal
+          siteName={deleteTarget.name}
+          onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
-
-      {/* Empty state */}
-      {!isLoading && sites.length === 0 && (
-        <EmptyState onClick={() => router.push('/dashboard/sites/new')} />
-      )}
-
-      {/* Grid */}
-      {!isLoading && sites.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sites.map(site => (
-            <SiteCard
-              key={site.id}
-              site={site}
-              onDelete={handleDelete}
-              onToggle={handleToggle}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    </>
   );
 }

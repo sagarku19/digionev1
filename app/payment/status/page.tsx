@@ -33,10 +33,21 @@ export default async function PaymentStatusPage({
     ? 'https://api.cashfree.com/pg'
     : 'https://sandbox.cashfree.com/pg';
 
+  // Resolve the gateway order ID for Cashfree API lookup
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(order_id);
+  let cfOrderId = order_id;
+  if (isUUID) {
+    const { data: ord } = await (supabase.from('orders') as any)
+      .select('gateway_order_id')
+      .eq('id', order_id)
+      .maybeSingle();
+    if (ord?.gateway_order_id) cfOrderId = ord.gateway_order_id;
+  }
+
   let orderStatus = 'PENDING';
-  
+
   try {
-    const res = await fetch(`${CASHFREE_ENV}/orders/${order_id}`, {
+    const res = await fetch(`${CASHFREE_ENV}/orders/${cfOrderId}`, {
       headers: {
         'x-api-version': '2023-08-01',
         'x-client-id': process.env.CASHFREE_CLIENT_ID!,
@@ -44,7 +55,7 @@ export default async function PaymentStatusPage({
       },
       cache: 'no-store'
     });
-    
+
     if (res.ok) {
       const data = await res.json();
       orderStatus = data.order_status; // 'PAID', 'ACTIVE', 'DROPPED', 'USER_DROPPED'
@@ -66,15 +77,14 @@ export default async function PaymentStatusPage({
       await supabase.from('payment_submissions').update({ payment_status: dbStatus }).eq('id', sub);
     }
   } else {
-    // Standard Product Checkout
-    let dbStatus = 'pending';
+    // Standard Product Checkout — order_id may be UUID or gateway id (ord_...)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(order_id);
+    const col = isUUID ? 'id' : 'gateway_order_id';
     if (orderStatus === 'PAID') {
-       dbStatus = 'success';
-       await supabase.from('orders').update({ status: 'success' }).eq('id', order_id);
+       await (supabase.from('orders') as any).update({ status: 'completed' }).eq(col, order_id);
     }
     else if (orderStatus === 'DROPPED' || orderStatus === 'USER_DROPPED' || orderStatus === 'FAILED') {
-       dbStatus = 'failed';
-       await supabase.from('orders').update({ status: 'failed' }).eq('id', order_id);
+       await (supabase.from('orders') as any).update({ status: 'failed' }).eq(col, order_id);
     }
   }
 

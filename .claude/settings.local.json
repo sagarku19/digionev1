@@ -5,7 +5,15 @@
       "Bash(command -v claude)",
       "Read(//c/Users/sagar/AppData/Roaming/npm/**)",
       "Read(//c/Users/sagar/AppData/Local/Programs/**)",
-      "Read(//c/Users/sagar/AppData/Local/**)"
+      "Read(//c/Users/sagar/AppData/Local/**)",
+      "Bash(npx tsc:*)",
+      "Bash(mkdir -p \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/pay/[siteId]\")",
+      "Bash(mkdir -p \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/blog/[siteId]/[postSlug]\")",
+      "Bash(mkdir -p \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/s/[slug]\")",
+      "Bash(mkdir -p \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/w/[slug]\")",
+      "Bash(mkdir -p \"c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(storefront\\)/p/product/[productId]\")",
+      "Bash(grep -E \"\\\\.ts$\")",
+      "Bash(grep -r \"CREATE POLICY\\\\|ALTER TABLE.*ENABLE RLS\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 --include=*.sql)"
     ]
   }
 }

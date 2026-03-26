@@ -11,6 +11,7 @@ export type SiteWithMain = {
   child_slug: string | null;
   parent_site_id: string | null;
   parent_site?: { slug: string | null } | null;
+  creator_id: string;
   site_type: string;
   is_active: boolean;
   custom_domain: string | null;
@@ -22,6 +23,9 @@ export type SiteWithMain = {
     logo_url: string | null;
     meta_description: string | null;
   } | null;
+  site_blog: { title: string | null } | null;
+  site_singlepage: { title: string | null } | null;
+  site_linkinbio: { display_name: string | null } | null;
 };
 
 export function useSites() {
@@ -55,8 +59,11 @@ export function useSites() {
       const { data, error } = await supabase
         .from('sites')
         .select(`
-          id, slug, child_slug, parent_site_id, site_type, is_active, custom_domain, ssl_status, created_at,
+          id, slug, child_slug, parent_site_id, creator_id, site_type, is_active, custom_domain, ssl_status, created_at,
           site_main(title, banner_url, logo_url, meta_description),
+          site_blog(title),
+          site_singlepage(title),
+          site_linkinbio(display_name),
           parent_site:sites(slug)
         `)
         .eq('creator_id', profile.id)

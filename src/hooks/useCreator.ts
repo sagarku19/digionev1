@@ -17,29 +17,36 @@ export function useCreator() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not logged in");
 
+      // auth UID → users.auth_provider_id → users.id → profiles.user_id
       const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+        .from('users')
+        .select('id, profiles(*)')
+        .eq('auth_provider_id', user.id)
+        .maybeSingle();
 
       if (error) throw error;
-      return data;
+      if (!data) throw new Error('User account not found');
+
+      const profileRow = Array.isArray(data.profiles)
+        ? data.profiles[0]
+        : (data.profiles as Profile | null);
+
+      if (!profileRow) throw new Error('Profile not found');
+      return profileRow;
     }
   });
 
   const updateMutation = useMutation({
     mutationFn: async (updates: ProfileUpdate) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      if (!profile?.id) throw new Error("No profile loaded");
 
       const { data, error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('id', user.id)
+        .eq('id', profile.id)
         .select()
         .single();
-        
+
       if (error) throw error;
       return data;
     },

@@ -3,6 +3,13 @@
 // DB tables written: sites, site_main OR site_singlepage OR site_blog,
 //                    site_sections_config, site_design_tokens, site_navigation
 // Auth via createClient (anon) — all DB writes via createServiceClient (service role, bypasses RLS).
+//
+// URL scheme:
+//   main    → /p/{slug}
+//   payment → /pay/{siteId}          (not renamable)
+//   blog    → /blog/{siteId}         (not renamable)
+//   single  → /s/{slug}              (renamable)
+//   builder → /w/{slug}              (renamable)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -50,27 +57,29 @@ const DEFAULT_SECTIONS_PAYMENT = [
   { id: crypto.randomUUID(), type: 'trust_badges', sort_order: 1, is_visible: true, settings: {} },
 ];
 
+const DEFAULT_SECTIONS_BUILDER: any[] = [];
+const DEFAULT_SECTIONS_LINKINBIO: any[] = [];
+
 function sectionsFor(type: string) {
-  if (type === 'single')  return DEFAULT_SECTIONS_SINGLE;
-  if (type === 'blog')    return DEFAULT_SECTIONS_BLOG;
-  if (type === 'payment') return DEFAULT_SECTIONS_PAYMENT;
+  if (type === 'single')    return DEFAULT_SECTIONS_SINGLE;
+  if (type === 'blog')      return DEFAULT_SECTIONS_BLOG;
+  if (type === 'payment')   return DEFAULT_SECTIONS_PAYMENT;
+  if (type === 'builder')   return DEFAULT_SECTIONS_BUILDER;
+  if (type === 'linkinbio') return DEFAULT_SECTIONS_LINKINBIO;
   return DEFAULT_SECTIONS_MAIN;
 }
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Authenticate with the user-session client (anon key + cookies)
     const authClient = await createClient();
     const { data: { user }, error: authError } = await authClient.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Use service-role client for ALL DB reads and writes (bypasses RLS)
     const db = createServiceClient();
 
     // Resolve auth user → public users → profiles
-    // sites.creator_id FK references profiles.id
     const { data: publicUser, error: userErr } = await db
       .from('users')
       .select('id')
@@ -83,7 +92,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (!publicUser) {
-      // Fallback: try matching by email (covers edge cases in auth setup)
       const { data: userByEmail } = await db
         .from('users')
         .select('id')
@@ -95,7 +103,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'User record not found. Please complete your profile setup.' }, { status: 404 });
       }
 
-      // Use the email-matched user
       const { data: profile } = await db
         .from('profiles')
         .select('id')
@@ -147,83 +154,76 @@ async function createSite(
 
   const { site_type, slug, title, description, product_id } = body;
 
-  if (!site_type || !slug || !title) {
-    return NextResponse.json({ error: 'Missing required fields: site_type, slug, title' }, { status: 400 });
+  if (!site_type || !title) {
+    return NextResponse.json({ error: 'Missing required fields: site_type, title' }, { status: 400 });
   }
 
-  // 1. Determine correct slug/child_slug routing
-  let finalSlug: string | null = slug;
-  let finalChildSlug: string | null = null;
-  let parentSiteId: string | null = null;
-  let responseUrlPath = slug;
+  // Slug is required for: main, single, builder
+  // Not required for: payment, blog (URL uses siteId)
+  const needsSlug = site_type === 'main' || site_type === 'single' || site_type === 'builder' || site_type === 'linkinbio';
 
+  if (needsSlug && !slug) {
+    return NextResponse.json({ error: `Slug is required for ${site_type} sites` }, { status: 400 });
+  }
+
+  // For non-main types, check that the creator doesn't already have one of this type
   if (site_type !== 'main') {
-    const { data: mainSite } = await db
+    const { data: existing } = await db
       .from('sites')
-      .select('id, slug')
+      .select('id')
       .eq('creator_id', creatorId)
-      .eq('site_type', 'main')
+      .eq('site_type', site_type)
       .maybeSingle();
 
-    if (mainSite) {
-      // User HAS a main site.
-      // Constraint: parent_site_id IS NOT NULL => child_slug IS NOT NULL AND slug IS NULL
-      finalSlug = null;
-      finalChildSlug = slug;
-      parentSiteId = mainSite.id;
-      responseUrlPath = `${mainSite.slug}/${slug}`;
-    } else {
-      // User DOES NOT have a main site.
-      // Constraint: parent_site_id IS NULL => slug IS NOT NULL AND child_slug IS NULL
-      // To support the user's requested mental model of nested links even without a main site,
-      // we generate a random prefix for display, but store the site as a top-level `slug`
-      // because `app/(storefront)/[slug]/[childslug]/page.tsx`'s fallback ignores the first segment.
-      finalSlug = slug;
-      finalChildSlug = null;
-      parentSiteId = null;
-      
-      const randomPrefix = Math.random().toString(36).substring(2, 10);
-      responseUrlPath = `${randomPrefix}/${slug}`;
+    if (existing) {
+      return NextResponse.json({
+        error: `You already have a ${site_type} site. Each creator can have one per type.`,
+        existingSiteId: existing.id,
+      }, { status: 409 });
     }
   }
 
-  // 2. Verify availability
-  const query = db.from('sites').select('id');
-  if (finalSlug) {
-    query.eq('slug', finalSlug);
-  } else if (finalChildSlug) {
-    query.eq('child_slug', finalChildSlug).eq('parent_site_id', parentSiteId!);
+  // Verify slug availability for types that use slugs
+  if (needsSlug && slug) {
+    const { data: slugTaken } = await db
+      .from('sites')
+      .select('id')
+      .eq('slug', slug!)
+      .maybeSingle();
+
+    if (slugTaken) {
+      return NextResponse.json({ error: 'Slug already taken' }, { status: 409 });
+    }
   }
 
-  const { data: existing } = await query.maybeSingle();
-
-  if (existing) {
-    return NextResponse.json({ error: 'Slug already taken' }, { status: 409 });
-  }
-
-  // 3. Insert the site row
+  // Insert the site row
   const { data: site, error: siteErr } = await db
     .from('sites')
     .insert({
       creator_id: creatorId,
       site_type,
-      slug: finalSlug,
-      child_slug: finalChildSlug,
-      parent_site_id: parentSiteId,
-      is_active: true
+      slug: needsSlug ? slug! : null,
+      child_slug: null,
+      parent_site_id: null,
+      is_active: true,
     })
     .select('id')
     .single();
 
   if (siteErr || !site) {
-    console.error('[sites/create] sites insert error:', siteErr?.message);
-    throw siteErr ?? new Error('Failed to create site');
+    console.error('[sites/create] sites insert error:', siteErr?.message, siteErr?.details, siteErr?.hint, siteErr?.code);
+    return NextResponse.json({
+      error: siteErr?.message ?? 'Failed to create site',
+      details: siteErr?.details,
+      hint: siteErr?.hint,
+      code: siteErr?.code,
+    }, { status: 500 });
   }
 
   const siteId = site.id;
 
-  // 3. Insert type-specific sub-table
-  if (site_type === 'main' || site_type === 'payment') {
+  // Insert type-specific sub-table
+  if (site_type === 'main' || site_type === 'payment' || site_type === 'builder') {
     const { error: smErr } = await db.from('site_main').insert({
       site_id: siteId,
       title,
@@ -234,7 +234,7 @@ async function createSite(
     const { error: ssErr } = await db.from('site_singlepage').insert({
       site_id: siteId,
       title,
-      product_id: product_id ?? '', // required by schema FK
+      product_id: product_id ?? '',
     });
     if (ssErr) console.error('[sites/create] site_singlepage insert error:', ssErr.message);
   } else if (site_type === 'blog') {
@@ -244,9 +244,16 @@ async function createSite(
       description: description ?? null,
     });
     if (sbErr) console.error('[sites/create] site_blog insert error:', sbErr.message);
+  } else if (site_type === 'linkinbio') {
+    const { error: slErr } = await db.from('site_linkinbio' as any).insert({
+      site_id: siteId,
+      display_name: title,
+      bio_text: description ?? null,
+    } as any);
+    if (slErr) console.error('[sites/create] site_linkinbio insert error:', slErr.message, slErr.details, slErr.hint, slErr.code);
   }
 
-  // 4. Default sections config
+  // Default sections config
   const { error: secErr } = await db.from('site_sections_config').insert({
     site_id: siteId,
     site_type,
@@ -254,7 +261,7 @@ async function createSite(
   });
   if (secErr) console.error('[sites/create] sections_config insert error:', secErr.message);
 
-  // 5. Default design tokens
+  // Default design tokens
   const { error: tokErr } = await db.from('site_design_tokens').insert({
     site_id: siteId,
     creator_id: creatorId,
@@ -265,16 +272,47 @@ async function createSite(
   });
   if (tokErr) console.error('[sites/create] design_tokens insert error:', tokErr.message);
 
-  // 6. Default navigation
+  // Default navigation
+  const navItems = site_type === 'main'
+    ? [
+        { label: 'Home',     url: '/',         type: 'link' },
+        { label: 'Products', url: '#products', type: 'link' },
+        { label: 'About',    url: '#about',    type: 'link' },
+      ]
+    : [
+        { label: 'Home', url: '/', type: 'link' },
+      ];
+
   const { error: navErr } = await db.from('site_navigation').insert({
     site_id: siteId,
-    nav_items: [
-      { label: 'Home',     url: '/',         type: 'link' },
-      { label: 'Products', url: '#products', type: 'link' },
-      { label: 'About',    url: '#about',    type: 'link' },
-    ],
+    nav_items: navItems,
   });
   if (navErr) console.error('[sites/create] navigation insert error:', navErr.message);
 
-  return NextResponse.json({ siteId, slug: responseUrlPath }, { status: 201 });
+  // Build the response URL path based on new scheme
+  let responseUrlPath: string;
+  switch (site_type) {
+    case 'main':
+      responseUrlPath = `p/${slug}`;
+      break;
+    case 'payment':
+      responseUrlPath = `pay/${siteId}`;
+      break;
+    case 'blog':
+      responseUrlPath = `blog/${siteId}`;
+      break;
+    case 'single':
+      responseUrlPath = `s/${slug}`;
+      break;
+    case 'builder':
+      responseUrlPath = `w/${slug}`;
+      break;
+    case 'linkinbio':
+      responseUrlPath = `link/${slug}`;
+      break;
+    default:
+      responseUrlPath = `p/${slug}`;
+  }
+
+  return NextResponse.json({ siteId, slug: responseUrlPath, creatorId }, { status: 201 });
 }
