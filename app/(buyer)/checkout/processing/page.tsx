@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 
-export default function ProcessingPage() {
+function ProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id');
@@ -26,7 +26,7 @@ export default function ProcessingPage() {
         if (!res.ok) throw new Error('Failed to verify order status');
 
         const { status } = await res.json();
-        
+
         if (status === 'completed' || status === 'success') {
           clearInterval(intervalId);
           clearCart();
@@ -36,7 +36,7 @@ export default function ProcessingPage() {
           router.push(`/order/${orderId}/failed`);
         }
         // If pending, keep polling
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Polling error', err);
         setError('Connection interrupted while verifying payment. Please check your email for receipts before retrying.');
         clearInterval(intervalId);
@@ -73,5 +73,18 @@ export default function ProcessingPage() {
         We're securely talking to your bank. Please do not close or refresh this window as it may interrupt the transaction.
       </p>
     </div>
+  );
+}
+
+export default function ProcessingPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-lg mx-auto p-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-xl text-center flex flex-col items-center">
+        <Loader2 className="w-16 h-16 text-indigo-600 animate-spin mb-8" />
+        <p className="text-gray-500 dark:text-gray-400 font-medium">Loading...</p>
+      </div>
+    }>
+      <ProcessingContent />
+    </Suspense>
   );
 }

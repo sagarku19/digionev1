@@ -322,7 +322,7 @@ export default function EditLinkInBioPage() {
   }, []);
 
   // ── Push content to iframe (debounced, no dep array to avoid React Compiler size mismatch) ──
-  const sendTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const sendTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const latestRef = useRef({ profile, links, appearance, products, palette });
   latestRef.current = { profile, links, appearance, products, palette };
 

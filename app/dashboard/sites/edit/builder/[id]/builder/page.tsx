@@ -494,28 +494,39 @@ function AddSectionPanel({ onAdd, onClose }: { onAdd: (type: string) => void; on
 function ThemeTab({ siteId }: { siteId: string }) {
   const supabase = createClient();
   const [palette, setPalette] = useState<Record<string, string>>({});
+  const [creatorId, setCreatorId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from('site_design_tokens')
-      .select('color_palette')
-      .eq('site_id', siteId)
-      .single()
-      .then(({ data }) => {
-        if (data?.color_palette) setPalette(data.color_palette as Record<string, string>);
-        setLoading(false);
-      });
+    const load = async () => {
+      // Fetch existing palette and resolve creator_id (required by site_design_tokens Insert)
+      const [{ data: tokens }, { data: authData }] = await Promise.all([
+        supabase.from('site_design_tokens').select('color_palette').eq('site_id', siteId).single(),
+        supabase.auth.getUser(),
+      ]);
+      if (tokens?.color_palette) setPalette(tokens.color_palette as Record<string, string>);
+      if (authData.user) {
+        const { data: userRow } = await supabase.from('users').select('id').eq('auth_provider_id', authData.user.id).single();
+        if (userRow) {
+          const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', userRow.id).single();
+          if (profile) setCreatorId(profile.id);
+        }
+      }
+      setLoading(false);
+    };
+    load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId]);
 
   const handleSave = async () => {
+    if (!creatorId) return;
     setSaving(true);
     await supabase
       .from('site_design_tokens')
-      .upsert({ site_id: siteId, color_palette: palette }, { onConflict: 'site_id' });
+      // creator_id is required in Insert type; Update allows it omitted but upsert uses Insert signature
+      .upsert({ site_id: siteId, creator_id: creatorId, color_palette: palette }, { onConflict: 'site_id' });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -583,7 +594,8 @@ function ProductsTab({ siteId }: { siteId: string }) {
       if (!user) { setLoading(false); return; }
 
       const { data: userRow } = await supabase.from('users').select('id').eq('auth_provider_id', user.id).single();
-      const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', userRow?.id).single();
+      if (!userRow) { setLoading(false); return; }
+      const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', userRow.id).single();
       if (!profile) { setLoading(false); return; }
 
       const [{ data: prods }, { data: asgn }] = await Promise.all([

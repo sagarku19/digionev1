@@ -57,7 +57,7 @@ export default function MarketingNav() {
 
         const pd: UserProfile | null = Array.isArray(data?.profiles)
           ? (data?.profiles[0] ?? null)
-          : (data?.profiles as UserProfile | null) ?? null;
+          : ((data?.profiles as unknown) as UserProfile | null) ?? null;
         setUserProfile(pd);
       } catch {
         setUserProfile(null);
