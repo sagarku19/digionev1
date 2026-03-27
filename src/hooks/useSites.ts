@@ -25,7 +25,7 @@ export type SiteWithMain = {
   } | null;
   site_blog: { title: string | null } | null;
   site_singlepage: { title: string | null } | null;
-  site_linkinbio: { display_name: string | null } | null;
+  linkinbio_pages: { display_name: string | null } | null;
 };
 
 export function useSites() {
@@ -63,7 +63,7 @@ export function useSites() {
           site_main(title, banner_url, logo_url, meta_description),
           site_blog(title),
           site_singlepage(title),
-          site_linkinbio(display_name),
+          linkinbio_pages(display_name),
           parent_site:sites(slug)
         `)
         .eq('creator_id', profile.id)

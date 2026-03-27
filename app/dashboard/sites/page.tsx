@@ -121,7 +121,7 @@ function SiteRow({ site, onRequestDelete, onToggle }: {
   const sm = Array.isArray(site.site_main) ? site.site_main[0] : site.site_main;
   const sb = (site as any).site_blog;
   const sp = (site as any).site_singlepage;
-  const sl = (site as any).site_linkinbio;
+  const sl = (site as any).linkinbio_pages;
   const blogTitle = Array.isArray(sb) ? sb[0]?.title : sb?.title;
   const singleTitle = Array.isArray(sp) ? sp[0]?.title : sp?.title;
   const bioName = Array.isArray(sl) ? sl[0]?.display_name : sl?.display_name;

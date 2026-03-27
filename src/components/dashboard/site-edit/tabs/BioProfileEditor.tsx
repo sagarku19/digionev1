@@ -2,11 +2,12 @@
 // BioProfileEditor — controlled profile editor for Link in Bio.
 // Manages: display name, bio text, avatar, cover image, social links.
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   User, Image, Instagram, Twitter, Youtube, Linkedin, Github, Globe, Music,
-  Plus, Trash2, Eye, EyeOff,
+  Plus, Trash2, Eye, EyeOff, ImagePlus,
 } from 'lucide-react';
+import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
 const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
 
@@ -37,6 +38,8 @@ export default function BioProfileEditor({
   data: BioProfileData;
   onChange: (data: BioProfileData) => void;
 }) {
+  const [imagePicker, setImagePicker] = useState<{ open: boolean; field: 'avatar' | 'cover' }>({ open: false, field: 'avatar' });
+
   const updateSocial = (index: number, field: keyof SocialLink, value: any) => {
     const next = [...data.socialLinks];
     next[index] = { ...next[index], [field]: value };
@@ -72,7 +75,7 @@ export default function BioProfileEditor({
           <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Display Name</label>
           <input
             type="text"
-            value={data.displayName}
+            value={data.displayName || ''}
             onChange={e => onChange({ ...data, displayName: e.target.value })}
             className={INPUT}
             placeholder="Your name"
@@ -82,13 +85,13 @@ export default function BioProfileEditor({
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Bio</label>
-            <span className={`text-xs tabular-nums ${data.bioText.length > 200 ? 'text-red-500' : 'text-gray-400'}`}>
-              {data.bioText.length}/200
+            <span className={`text-xs tabular-nums ${(data.bioText || '').length > 200 ? 'text-red-500' : 'text-gray-400'}`}>
+              {(data.bioText || '').length}/200
             </span>
           </div>
           <textarea
             rows={3}
-            value={data.bioText}
+            value={data.bioText || ''}
             onChange={e => onChange({ ...data, bioText: e.target.value })}
             className={`${INPUT} resize-none`}
             placeholder="Tell people about yourself..."
@@ -105,14 +108,24 @@ export default function BioProfileEditor({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Avatar URL</label>
-          <input
-            type="url"
-            value={data.avatarUrl}
-            onChange={e => onChange({ ...data, avatarUrl: e.target.value })}
-            className={INPUT}
-            placeholder="https://example.com/avatar.jpg"
-          />
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Avatar</label>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={data.avatarUrl || ''}
+              onChange={e => onChange({ ...data, avatarUrl: e.target.value })}
+              className={`${INPUT} flex-1`}
+              placeholder="https://example.com/avatar.jpg"
+            />
+            <button
+              type="button"
+              onClick={() => setImagePicker({ open: true, field: 'avatar' })}
+              className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-pink-50 dark:bg-pink-500/10 hover:bg-pink-100 dark:hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-500/30 rounded-lg text-xs font-semibold transition"
+            >
+              <ImagePlus className="w-3.5 h-3.5" />
+              Add Image
+            </button>
+          </div>
           {data.avatarUrl && (
             <div className="mt-2 flex justify-center">
               <img src={data.avatarUrl} alt="Avatar preview" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700" />
@@ -121,14 +134,24 @@ export default function BioProfileEditor({
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Cover Image URL</label>
-          <input
-            type="url"
-            value={data.coverImageUrl}
-            onChange={e => onChange({ ...data, coverImageUrl: e.target.value })}
-            className={INPUT}
-            placeholder="https://example.com/cover.jpg"
-          />
+          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Cover Image</label>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={data.coverImageUrl || ''}
+              onChange={e => onChange({ ...data, coverImageUrl: e.target.value })}
+              className={`${INPUT} flex-1`}
+              placeholder="https://example.com/cover.jpg"
+            />
+            <button
+              type="button"
+              onClick={() => setImagePicker({ open: true, field: 'cover' })}
+              className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-pink-50 dark:bg-pink-500/10 hover:bg-pink-100 dark:hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-500/30 rounded-lg text-xs font-semibold transition"
+            >
+              <ImagePlus className="w-3.5 h-3.5" />
+              Add Image
+            </button>
+          </div>
           {data.coverImageUrl && (
             <div className="mt-2">
               <img src={data.coverImageUrl} alt="Cover preview" className="w-full h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
@@ -156,7 +179,7 @@ export default function BioProfileEditor({
               </div>
               <input
                 type="url"
-                value={social.url}
+                value={social.url || ''}
                 onChange={e => updateSocial(i, 'url', e.target.value)}
                 className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 dark:text-white placeholder-gray-400"
                 placeholder={platform?.placeholder || 'URL'}
@@ -193,6 +216,20 @@ export default function BioProfileEditor({
           </div>
         )}
       </div>
+
+      {/* Image Picker Modal */}
+      <ImagePickerModal
+        open={imagePicker.open}
+        onClose={() => setImagePicker(prev => ({ ...prev, open: false }))}
+        onSelect={(url) => {
+          if (imagePicker.field === 'avatar') {
+            onChange({ ...data, avatarUrl: url });
+          } else {
+            onChange({ ...data, coverImageUrl: url });
+          }
+        }}
+        title={imagePicker.field === 'avatar' ? 'Select Avatar' : 'Select Cover Image'}
+      />
     </div>
   );
 }

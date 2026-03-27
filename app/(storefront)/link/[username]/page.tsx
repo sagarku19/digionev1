@@ -23,24 +23,85 @@ export default async function LinkInBioStorefront({
 
   if (!site) notFound();
 
-  // Fetch bio profile data
-  const { data: bio } = await supabase
-    .from('site_linkinbio' as any)
+  // ── V2: Fetch linkinbio_pages ──
+  const { data: page } = await supabase
+    .from('linkinbio_pages' as any)
     .select('*')
     .eq('site_id', site.id)
     .maybeSingle();
 
-  if (!bio) notFound();
+  if (!page) notFound();
 
-  // Fetch links (visible only, ordered)
-  const { data: rawLinks } = await supabase
-    .from('linkinbio_links' as any)
+  const pageData = page as any;
+  const theme = (pageData.theme as any) ?? {};
+  const layout = (pageData.layout as any) ?? {};
+  const settings = (pageData.settings as any) ?? {};
+
+  // Map V2 page → BioData shape for the component
+  const bio = {
+    display_name: pageData.display_name ?? '',
+    bio_text: pageData.bio ?? null,
+    avatar_url: pageData.avatar_url ?? null,
+    cover_image_url: pageData.cover_url ?? null,
+    layout_style: layout.style ?? 'classic',
+    button_style: theme.buttonStyle ?? 'rounded',
+    background_type: theme.backgroundType ?? 'solid',
+    background_value: theme.backgroundValue ?? null,
+    social_links: settings.socialLinks ?? [],
+    show_watermark: settings.showWatermark ?? true,
+    show_share_button: settings.showShareButton ?? true,
+    // V2 appearance fields
+    font_family: theme.fontFamily ?? 'system',
+    card_style: theme.cardStyle ?? 'solid',
+    animation: theme.animation ?? 'none',
+    border_radius: theme.borderRadius ?? 'md',
+    spacing: theme.spacing ?? 'default',
+  };
+
+  // ── V2: Fetch blocks + items ──
+  const { data: rawBlocks } = await supabase
+    .from('linkinbio_blocks' as any)
     .select('*')
-    .eq('site_id', site.id)
+    .eq('page_id', pageData.id)
     .eq('is_visible', true)
     .order('sort_order', { ascending: true });
 
-  const links = (rawLinks ?? []) as any[];
+  const blocks = (rawBlocks ?? []) as any[];
+
+  // Fetch items for all blocks
+  const blockIds = blocks.map((b: any) => b.id);
+  let itemsByBlock: Record<string, any> = {};
+  if (blockIds.length > 0) {
+    const { data: rawItems } = await supabase
+      .from('linkinbio_items' as any)
+      .select('*')
+      .in('block_id', blockIds)
+      .order('sort_order', { ascending: true });
+
+    for (const item of (rawItems ?? []) as any[]) {
+      itemsByBlock[item.block_id] = item;
+    }
+  }
+
+  // Map V2 blocks+items → old flat BioLink shape
+  const links = blocks.map((b: any) => {
+    const content = (b.content as any) ?? {};
+    const style = (b.style as any) ?? {};
+    const item = itemsByBlock[b.id];
+
+    return {
+      id: b.id,
+      link_type: b.type,
+      title: item?.title ?? content.title ?? null,
+      description: item?.description ?? content.description ?? null,
+      url: item?.url ?? content.url ?? null,
+      thumbnail_url: item?.thumbnail_url ?? content.thumbnail_url ?? null,
+      product_id: item?.product_id ?? null,
+      icon_type: item?.metadata?.icon_type ?? style.icon_type ?? null,
+      style_variant: item?.metadata?.style_variant ?? style.variant ?? 'default',
+      metadata: { ...content, ...(item?.metadata ?? {}) },
+    };
+  });
 
   // For product-type links, fetch product data
   const productIds = links

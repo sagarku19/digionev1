@@ -14,7 +14,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Filename required" }, { status: 400 });
     }
 
-    const filePath = `${Date.now()}_${filename.replace(/\s+/g, '_')}`;
+    // Organize by bucket subfolder for linkinbio uploads
+    const prefix = bucket === 'public-asset' ? 'linkinbio/' : '';
+    const filePath = `${prefix}${Date.now()}_${filename.replace(/\s+/g, '_')}`;
 
     const { data, error } = await supabase.storage
       .from(bucket)

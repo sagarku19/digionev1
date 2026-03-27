@@ -245,12 +245,16 @@ async function createSite(
     });
     if (sbErr) console.error('[sites/create] site_blog insert error:', sbErr.message);
   } else if (site_type === 'linkinbio') {
-    const { error: slErr } = await db.from('site_linkinbio' as any).insert({
+    const { error: slErr } = await db.from('linkinbio_pages' as any).insert({
       site_id: siteId,
       display_name: title,
-      bio_text: description ?? null,
+      bio: description ?? null,
+      theme: {},
+      layout: { style: 'classic' },
+      seo: { title: title, description: description ?? '' },
+      settings: { showWatermark: true, showShareButton: true, socialLinks: [] },
     } as any);
-    if (slErr) console.error('[sites/create] site_linkinbio insert error:', slErr.message, slErr.details, slErr.hint, slErr.code);
+    if (slErr) console.error('[sites/create] linkinbio_pages insert error:', slErr.message, slErr.details, slErr.hint, slErr.code);
   }
 
   // Default sections config

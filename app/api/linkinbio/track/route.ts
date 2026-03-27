@@ -1,7 +1,7 @@
 // API Route: POST /api/linkinbio/track
 // Fire-and-forget click/view tracking for Link in Bio pages.
 // No auth required — this is a public tracking endpoint.
-// Inserts into linkinbio_analytics + increments click_count on linkinbio_links.
+// Inserts into linkinbio_analytics + increments click_count on linkinbio_items.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     if (link_id && (event_type === 'link_click' || event_type === 'product_click')) {
       await db.rpc('increment_link_click_count' as any, { p_link_id: link_id } as any).maybeSingle();
       // Fallback if RPC doesn't exist: direct update
-      // await db.from('linkinbio_links').update({ click_count: db.raw('click_count + 1') }).eq('id', link_id);
+      // await db.from('linkinbio_items').update({ click_count: db.raw('click_count + 1') }).eq('id', link_id);
     }
 
     return NextResponse.json({ ok: true });
