@@ -15,6 +15,7 @@ import {
   ArrowLeft, Save, Loader2, CheckCircle2, ExternalLink,
   Settings, Monitor, Tablet, Smartphone, RefreshCw,
   XCircle, LayoutDashboard, Package, Store, BarChart2,
+  Copy, Check,
 } from 'lucide-react';
 
 // ─── Device presets ──────────────────────────────────────────
@@ -29,7 +30,6 @@ const MINI_NAV = [
   { href: '/dashboard',           icon: LayoutDashboard, label: 'Overview'  },
   { href: '/dashboard/products',  icon: Package,         label: 'Products'  },
   { href: '/dashboard/sites',     icon: Store,           label: 'Sites'     },
-  { href: '/dashboard/analytics', icon: BarChart2,       label: 'Analytics' },
   { href: '/dashboard/settings',  icon: Settings,        label: 'Settings'  },
 ];
 
@@ -155,6 +155,7 @@ export default function EditLinkInBioPage() {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
+  const [copied, setCopied] = useState(false);
 
   // ── Site data ──
   const [site, setSite] = useState<any>(null);
@@ -469,77 +470,68 @@ export default function EditLinkInBioPage() {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[#060610]">
 
-      {/* ═══ HEADER — full width, top ═══ */}
-      <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A]">
-        <div className="flex items-center gap-3 px-4 h-14">
-          <button
-            onClick={() => router.push('/dashboard/sites')}
-            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-
-          <div className="flex-1 flex items-center justify-center min-w-0">
-            <div className="flex items-center gap-2 max-w-50">
-              <Link2 className="w-3.5 h-3.5 text-pink-500 shrink-0" />
-              <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                {displayTitle}
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-1.5 text-xs font-semibold bg-pink-600 hover:bg-pink-500 disabled:opacity-60 text-white px-3.5 py-2 rounded-lg shadow-sm shadow-pink-500/20 transition-all"
-            >
-              {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : saved ? (
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              {saved ? 'Saved' : 'Save'}
-            </button>
-
-            {site && (
-              <a
-                href={getSitePublicPath(site)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
-                title="Open live page"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ BODY — below header ═══ */}
+      {/* ═══ BODY — full height, panels own their headers ═══ */}
       <div className="flex-1 flex min-h-0">
 
-        {/* ═══ MINI SIDEBAR — starts after header ═══ */}
+        {/* ═══ MINI SIDEBAR ═══ */}
         <div className="w-14 shrink-0 relative">
-          <div className="group/sidebar absolute inset-y-0 left-0 w-14 hover:w-48 bg-white dark:bg-[#0A0A1A] border-r border-gray-200 dark:border-gray-800 flex flex-col py-3 gap-1 transition-all duration-200 overflow-hidden z-30 hover:shadow-xl hover:shadow-black/10">
-            {MINI_NAV.map(item => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0"
+          <div className="group/sidebar absolute inset-y-0 left-0 w-14 hover:w-48 bg-white dark:bg-[#0A0A1A] border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-200 overflow-hidden z-30 hover:shadow-xl hover:shadow-black/10">
+            {/* Back button — h-14 aligns with panel headers */}
+            <div className="h-14 shrink-0 border-b border-gray-200 dark:border-gray-800 flex items-center justify-center group-hover/sidebar:justify-start group-hover/sidebar:px-4 gap-3">
+              <button
+                onClick={() => router.push('/dashboard/sites')}
+                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition shrink-0"
               >
-                <item.icon className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.label}</span>
-              </Link>
-            ))}
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Dashboard</span>
+            </div>
+            {/* Nav links */}
+            <div className="flex flex-col py-3 gap-2">
+              {MINI_NAV.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0"
+                >
+                  <item.icon className="w-4 h-4 shrink-0" />
+                  <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* ═══ LEFT PANEL ═══ */}
         <div className="flex flex-col flex-1 min-w-80 max-w-[50%] border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A]">
+
+        {/* ── Editor Header ── */}
+        <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-3 gap-2">
+          {/* Site name — centered */}
+          <div className="flex-1 flex items-center justify-center min-w-0">
+            <div className="flex items-center gap-1.5">
+              <Link2 className="w-3.5 h-3.5 text-pink-500 shrink-0" />
+              <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[180px]">
+                {displayTitle}
+              </h1>
+            </div>
+          </div>
+          {/* Save */}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-1.5 text-xs font-semibold bg-pink-600 hover:bg-pink-500 disabled:opacity-60 text-white px-3.5 py-2 rounded-lg shadow-sm shadow-pink-500/20 transition-all shrink-0"
+          >
+            {saving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : saved ? (
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            {saved ? 'Saved' : 'Save'}
+          </button>
+        </div>
 
         {/* ── Tab Bar ── */}
         <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 px-2 py-2 flex items-center gap-0.5 overflow-x-auto">
@@ -670,10 +662,32 @@ export default function EditLinkInBioPage() {
       {/* ═══ RIGHT PANEL — full-height preview ═══ */}
       <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
 
-        {/* Preview header with device toggle */}
-        <div className="shrink-0 flex items-center justify-between px-4 h-14">
-          <div />
-          <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700">
+        {/* ── Preview Header ── */}
+        <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3">
+          {/* Copy link */}
+          <button
+            onClick={() => {
+              if (site) {
+                navigator.clipboard.writeText(`https://${getSiteDisplayUrl(site)}`);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }
+            }}
+            disabled={!site}
+            className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
+            title="Copy page link"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? 'Copied!' : 'Copy Link'}
+          </button>
+          {/* Preview Page label — centered */}
+          <div className="flex-1 flex items-center justify-center">
+            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+              Website Preview
+            </span>
+          </div>
+          {/* Device toggles */}
+          <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
             {DEVICES.map(d => (
               <button
                 key={d.id}

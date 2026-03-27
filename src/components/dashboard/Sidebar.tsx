@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Package, Store, BarChart2, DollarSign,
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
-  Network, Gift, Plus, Image, MoreHorizontal, LogOut, MessageCircle,
+  Network, Gift, Plus, Image, MoreHorizontal, LogOut, MessageCircle, HelpCircle,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -55,12 +55,13 @@ const NAV: NavGroup[] = [
         ],
       },
     ],
-  },
+  }, 
 ];
 
 const BOTTOM_NAV = [
   { label: 'Notifications', href: '/dashboard/notifications', icon: Bell },
   { label: 'Settings',      href: '/dashboard/settings',      icon: Settings },
+  { label: 'Help Center',          href: '/dashboard/help',          icon: HelpCircle },
 ];
 
 // ─── Sidebar ─────────────────────────────────────────────────
