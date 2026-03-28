@@ -15,32 +15,28 @@ import {
   ArrowLeft, Save, Loader2, CheckCircle2, ExternalLink,
   Settings, Monitor, Tablet, Smartphone, RefreshCw,
   XCircle, LayoutDashboard, Package, Store, BarChart2,
-  Copy, Check,
+  Copy, Check, Plus, HelpCircle, Moon, Sun
 } from 'lucide-react';
+import { useTheme } from '@/contexts/DashboardThemeContext';
 
 // ─── Device presets ──────────────────────────────────────────
 const DEVICES = [
-  { id: 'desktop',  icon: Monitor,    width: '100%',  label: 'Desktop' },
-  { id: 'tablet',   icon: Tablet,     width: '768px', label: 'Tablet'  },
-  { id: 'mobile',   icon: Smartphone, width: '375px', label: 'Mobile'  },
+  { id: 'desktop', icon: Monitor, width: '100%', label: 'Desktop' },
+  { id: 'tablet', icon: Tablet, width: '768px', label: 'Tablet' },
+  { id: 'mobile', icon: Smartphone, width: '375px', label: 'Mobile' },
 ] as const;
 
 // ─── Mini sidebar nav ────────────────────────────────────────
-const MINI_NAV = [
-  { href: '/dashboard',           icon: LayoutDashboard, label: 'Overview'  },
-  { href: '/dashboard/products',  icon: Package,         label: 'Products'  },
-  { href: '/dashboard/sites',     icon: Store,           label: 'Sites'     },
-  { href: '/dashboard/settings',  icon: Settings,        label: 'Settings'  },
-];
+// The mini sidebar is split into top/bottom actions inline.
 
 // ─── Tabs ────────────────────────────────────────────────────
 type Tab = 'profile' | 'templates' | 'section' | 'appearance' | 'settings';
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'profile',    label: 'Profile',    icon: User },
-  { id: 'templates',  label: 'Templates',  icon: Paintbrush },
-  { id: 'section',    label: 'Section',    icon: LinkIcon },
+  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'templates', label: 'Templates', icon: Paintbrush },
+  { id: 'section', label: 'Section', icon: LinkIcon },
   { id: 'appearance', label: 'Appearance', icon: Sparkles },
-  { id: 'settings',   label: 'Settings',   icon: Settings },
+  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 // ─── Templates ──────────────────────────────────────────────────────────
@@ -273,6 +269,7 @@ export default function EditLinkInBioPage() {
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const { theme, setTheme } = useTheme();
 
   // ── UI state ──
   const [activeTab, setActiveTab] = useState<Tab>('profile');
@@ -428,7 +425,7 @@ export default function EditLinkInBioPage() {
       }
     };
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId]);
 
   // ── Slug availability check ──
@@ -727,7 +724,15 @@ export default function EditLinkInBioPage() {
             const itemMeta: any = {};
             if (l.icon_type) itemMeta.icon_type = l.icon_type;
             if (l.style_variant) itemMeta.style_variant = l.style_variant;
-            if (l.link_type === 'product' && l.metadata?.cta_text) itemMeta.cta_text = l.metadata.cta_text;
+            if (l.link_type === 'product') {
+              if (l.metadata?.cta_text) itemMeta.cta_text = l.metadata.cta_text;
+              if (l.metadata?.badge !== undefined) itemMeta.badge = l.metadata.badge;
+              if (l.metadata?.show_price !== undefined) itemMeta.show_price = l.metadata.show_price;
+              if (l.metadata?.layout) itemMeta.layout = l.metadata.layout;
+              if (l.metadata?.button_position) itemMeta.button_position = l.metadata.button_position;
+              if (l.metadata?.price_position) itemMeta.price_position = l.metadata.price_position;
+              if (l.metadata?.original_price !== undefined && l.metadata?.original_price !== null) itemMeta.original_price = l.metadata.original_price;
+            }
             if (l.link_type === 'url' && l.metadata?.animation) itemMeta.animation = l.metadata.animation;
 
             await (supabase.from('linkinbio_items' as any) as any).insert({
@@ -786,18 +791,61 @@ export default function EditLinkInBioPage() {
               </button>
               <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Dashboard</span>
             </div>
-            {/* Nav links */}
-            <div className="flex flex-col py-3 gap-2">
-              {MINI_NAV.map(item => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0"
-                >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">{item.label}</span>
-                </Link>
-              ))}
+            {/* Top Nav links */}
+            <div className="flex flex-col py-3 gap-1 flex-1 overflow-y-auto">
+              <Link href="/dashboard" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+                <LayoutDashboard className="w-4 h-4 shrink-0" />
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Overview</span>
+              </Link>
+
+              <Link href="/dashboard/products" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+                <Package className="w-4 h-4 shrink-0" />
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Products</span>
+              </Link>
+              <Link href="/dashboard/products/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0 mb-1 group/addbtn">
+                <div className="relative shrink-0 w-4 h-4 flex items-center justify-center">
+                  <Package className="w-3.5 h-3.5" />
+                  <div className="absolute -bottom-1.5 -right-1.5 bg-white dark:bg-[#0A0A1A] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
+                    <Plus className="w-[10px] h-[10px] stroke-[3]" />
+                  </div>
+                </div>
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium whitespace-nowrap">Add New Product</span>
+              </Link>
+
+              <Link href="/dashboard/sites" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+                <Store className="w-4 h-4 shrink-0" />
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sites</span>
+              </Link>
+              <Link href="/dashboard/sites/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0 mb-1 group/addbtn">
+                <div className="relative shrink-0 w-4 h-4 flex items-center justify-center">
+                  <Store className="w-3.5 h-3.5" />
+                  <div className="absolute -bottom-1.5 -right-1.5 bg-white dark:bg-[#0A0A1A] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
+                    <Plus className="w-[10px] h-[10px] stroke-[3]" />
+                  </div>
+                </div>
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium whitespace-nowrap">Create New Site</span>
+              </Link>
+            </div>
+
+            {/* Bottom Nav links */}
+            <div className="flex flex-col py-3 gap-1 border-t border-gray-200 dark:border-gray-800">
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0"
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4 shrink-0" /> : <Moon className="w-4 h-4 shrink-0" />}
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  Theme: {theme === 'dark' ? 'Dark' : 'Light'}
+                </span>
+              </button>
+              <Link href="/dashboard/help" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+                <HelpCircle className="w-4 h-4 shrink-0" />
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Help Center</span>
+              </Link>
+              <Link href="/dashboard/settings" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+                <Settings className="w-4 h-4 shrink-0" />
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Settings</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -805,333 +853,331 @@ export default function EditLinkInBioPage() {
         {/* ═══ LEFT PANEL ═══ */}
         <div className="flex flex-col flex-1 min-w-80 max-w-[50%] border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A]">
 
-        {/* ── Editor Header ── */}
-        <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-3 gap-2">
-          {/* Site name — centered */}
-          <div className="flex-1 flex items-center justify-center min-w-0">
-            <div className="flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5 text-pink-500 shrink-0" />
-              <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[180px]">
-                {displayTitle}
-              </h1>
+          {/* ── Editor Header ── */}
+          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-3 gap-2">
+            {/* Site name — centered */}
+            <div className="flex-1 flex items-center justify-center min-w-0">
+              <div className="flex items-center gap-1.5">
+                <Link2 className="w-3.5 h-3.5 text-pink-500 shrink-0" />
+                <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[180px]">
+                  {displayTitle}
+                </h1>
+              </div>
             </div>
+            {/* Save */}
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 text-xs font-semibold bg-pink-600 hover:bg-pink-500 disabled:opacity-60 text-white px-3.5 py-2 rounded-lg shadow-sm shadow-pink-500/20 transition-all shrink-0"
+            >
+              {saving ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : saved ? (
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              ) : (
+                <Save className="w-3.5 h-3.5" />
+              )}
+              {saved ? 'Saved' : 'Save'}
+            </button>
           </div>
-          {/* Save */}
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-1.5 text-xs font-semibold bg-pink-600 hover:bg-pink-500 disabled:opacity-60 text-white px-3.5 py-2 rounded-lg shadow-sm shadow-pink-500/20 transition-all shrink-0"
-          >
-            {saving ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : saved ? (
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            ) : (
-              <Save className="w-3.5 h-3.5" />
-            )}
-            {saved ? 'Saved' : 'Save'}
-          </button>
-        </div>
 
-        {/* ── Tab Bar ── */}
-        <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 px-3 py-2.5">
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-            {TABS.map(tab => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition ${
-                    active
+          {/* ── Tab Bar ── */}
+          <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 px-3 py-2.5">
+            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+              {TABS.map(tab => {
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition ${active
                       ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                       : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-                >
-                  <tab.icon className="w-3.5 h-3.5" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Editor Content (scrollable) ── */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
-          {/* ── Profile Tab ── */}
-          {activeTab === 'profile' && (
-            <BioProfileEditor data={profile} onChange={setProfile} />
-          )}
-
-          {/* ── Templates Tab ── */}
-          {activeTab === 'templates' && (
-            <div className="space-y-5">
-              <div>
-                <p className="text-xs text-gray-500">Each template applies a complete page layout with pre-built sections, theme, and styling.</p>
-              </div>
-
-              {/* Category groups */}
-              {(['starter', 'creative', 'business', 'social'] as const).map(cat => {
-                const catTemplates = TEMPLATES.filter(t => t.category === cat);
-                if (catTemplates.length === 0) return null;
-                const catLabel = { starter: 'Get Started', creative: 'Creative', business: 'Business', social: 'Social & Store' }[cat];
-                return (
-                  <div key={cat} className="space-y-2.5">
-                    <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{catLabel}</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {catTemplates.map(tpl => {
-                        const btnRadius = tpl.buttonStyle === 'pill' ? '9999px' : tpl.buttonStyle === 'sharp' ? '0' : tpl.borderRadius === 'full' ? '9999px' : tpl.borderRadius === 'lg' ? '12px' : tpl.borderRadius === 'sm' ? '4px' : tpl.borderRadius === 'none' ? '0' : '8px';
-                        const bgStyle = tpl.backgroundType === 'gradient' ? tpl.backgroundValue : tpl.preview.bg;
-                        const isGlass = tpl.cardStyle === 'glass';
-                        return (
-                          <button
-                            key={tpl.name}
-                            onClick={() => applyTemplate(tpl)}
-                            className="group relative rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 overflow-hidden transition-all hover:shadow-lg text-left"
-                          >
-                            {tpl.tag && (
-                              <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-pink-500 text-white text-[8px] font-bold rounded-md uppercase z-10">
-                                {tpl.tag}
-                              </span>
-                            )}
-                            {/* Block wireframe preview */}
-                            <div className="h-40 px-4 py-3 flex flex-col items-center gap-[3px] overflow-hidden" style={{ background: bgStyle }}>
-                              {tpl.blocks.slice(0, 8).map((b, i) => {
-                                const accent = tpl.preview.accent;
-                                const text = tpl.preview.text;
-                                const card = tpl.preview.card;
-
-                                if (b.link_type === 'header') return (
-                                  <div key={i} className="flex flex-col items-center gap-[2px] mb-0.5 shrink-0">
-                                    <div className="w-5 h-5 rounded-full" style={{ backgroundColor: accent }} />
-                                    <div className="w-14 h-[5px] rounded-full" style={{ backgroundColor: text, opacity: 0.8 }} />
-                                    <div className="w-10 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.4 }} />
-                                  </div>
-                                );
-                                if (b.link_type === 'heading') return (
-                                  <div key={i} className="w-12 h-[4px] rounded-sm self-start shrink-0 mt-0.5" style={{ backgroundColor: text, opacity: 0.6 }} />
-                                );
-                                if (b.link_type === 'url') return (
-                                  <div key={i} className="w-full h-[10px] shrink-0" style={{
-                                    backgroundColor: isGlass ? card : card,
-                                    borderRadius: btnRadius,
-                                    border: tpl.buttonStyle === 'outline' ? `1px solid ${accent}` : tpl.cardStyle === 'bordered' ? `1px solid ${text}30` : 'none',
-                                    boxShadow: tpl.buttonStyle === 'shadow' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
-                                    backdropFilter: isGlass ? 'blur(4px)' : 'none',
-                                  }} />
-                                );
-                                if (b.link_type === 'divider') return (
-                                  <div key={i} className="w-12 shrink-0 my-[1px]" style={{ height: '1px', backgroundColor: text, opacity: 0.15 }} />
-                                );
-                                if (b.link_type === 'text') return (
-                                  <div key={i} className="flex flex-col gap-[2px] w-full px-1 shrink-0">
-                                    <div className="w-full h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.25 }} />
-                                    <div className="w-3/4 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.15 }} />
-                                  </div>
-                                );
-                                if (b.link_type === 'social_icons') return (
-                                  <div key={i} className="flex gap-[3px] justify-center shrink-0 my-[1px]">
-                                    {Array.from({ length: Math.min(b.metadata?.links?.length || 4, 4) }).map((_, j) => (
-                                      <div key={j} className="w-[7px] h-[7px] rounded-full" style={{ backgroundColor: accent, opacity: 0.7 }} />
-                                    ))}
-                                  </div>
-                                );
-                                if (b.link_type === 'email_capture') return (
-                                  <div key={i} className="w-full flex gap-[3px] shrink-0">
-                                    <div className="flex-1 h-[10px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${text}20` }} />
-                                    <div className="w-8 h-[10px] rounded-sm" style={{ backgroundColor: accent, opacity: 0.8 }} />
-                                  </div>
-                                );
-                                if (b.link_type === 'spotify') return (
-                                  <div key={i} className="w-full h-[12px] rounded-sm shrink-0" style={{ backgroundColor: '#1DB954', opacity: 0.6 }} />
-                                );
-                                if (b.link_type === 'video_embed') return (
-                                  <div key={i} className="w-full h-[18px] rounded-sm shrink-0 flex items-center justify-center" style={{ backgroundColor: `${text}15` }}>
-                                    <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: `6px solid ${accent}` }} />
-                                  </div>
-                                );
-                                if (b.link_type === 'banner') return (
-                                  <div key={i} className="w-full h-[12px] rounded-sm shrink-0" style={{ backgroundColor: b.metadata?.bg_color || accent, opacity: 0.75 }} />
-                                );
-                                return <div key={i} className="w-full h-[8px] rounded-sm shrink-0" style={{ backgroundColor: card }} />;
-                              })}
-                            </div>
-                            {/* Label + description */}
-                            <div className="px-3 py-2 bg-white dark:bg-[#0A0A1A] border-t border-gray-200 dark:border-gray-700">
-                              <p className="text-xs font-semibold text-gray-900 dark:text-white">{tpl.name}</p>
-                              <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{tpl.description}</p>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium">
-                                  {tpl.blocks.length} sections
-                                </span>
-                                {tpl.blocks.some(b => b.link_type === 'email_capture') && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-500 font-medium">email</span>
-                                )}
-                                {tpl.blocks.some(b => b.link_type === 'spotify' || b.link_type === 'video_embed') && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/10 text-purple-500 font-medium">media</span>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                      }`}
+                  >
+                    <tab.icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
                 );
               })}
             </div>
-          )}
+          </div>
 
-          {/* ── Section Tab (formerly Links) ── */}
-          {activeTab === 'section' && (
-            <BioLinksEditor links={links} onChange={setLinks} products={products} />
-          )}
+          {/* ── Editor Content (scrollable) ── */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
-          {/* ── Appearance Tab ── */}
-          {activeTab === 'appearance' && (
-            <BioAppearanceEditor
-              data={appearance}
-              onChange={setAppearance}
-              palette={palette}
-              onPaletteChange={updatePalette}
-            />
-          )}
+            {/* ── Profile Tab ── */}
+            {activeTab === 'profile' && (
+              <BioProfileEditor data={profile} onChange={setProfile} />
+            )}
 
-          {/* ── Settings Tab ── */}
-          {activeTab === 'settings' && (
-            <div className="space-y-5">
-              <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+            {/* ── Templates Tab ── */}
+            {activeTab === 'templates' && (
+              <div className="space-y-5">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-pink-500" /> URL Slug
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Customize your public URL</p>
+                  <p className="text-xs text-gray-500">Each template applies a complete page layout with pre-built sections, theme, and styling.</p>
                 </div>
-                <div>
-                  <input
-                    type="text"
-                    value={slug}
-                    onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm"
-                    placeholder="my-bio-page"
-                  />
-                  <div className="flex items-center gap-2 mt-2 min-h-5">
-                    {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
-                    {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
-                      <span className="text-xs text-gray-400">digione.in/link/{slug}</span>
-                    )}
-                    {slugStatus === 'available' && (
-                      <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available</span>
-                    )}
-                    {slugStatus === 'taken' && (
-                      <span className="flex items-center gap-1 text-xs text-red-500"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
-                    )}
-                    {slugStatus === 'invalid' && (
-                      <span className="text-xs text-red-500">3+ chars, lowercase letters, numbers, hyphens</span>
-                    )}
+
+                {/* Category groups */}
+                {(['starter', 'creative', 'business', 'social'] as const).map(cat => {
+                  const catTemplates = TEMPLATES.filter(t => t.category === cat);
+                  if (catTemplates.length === 0) return null;
+                  const catLabel = { starter: 'Get Started', creative: 'Creative', business: 'Business', social: 'Social & Store' }[cat];
+                  return (
+                    <div key={cat} className="space-y-2.5">
+                      <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{catLabel}</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {catTemplates.map(tpl => {
+                          const btnRadius = tpl.buttonStyle === 'pill' ? '9999px' : tpl.buttonStyle === 'sharp' ? '0' : tpl.borderRadius === 'full' ? '9999px' : tpl.borderRadius === 'lg' ? '12px' : tpl.borderRadius === 'sm' ? '4px' : tpl.borderRadius === 'none' ? '0' : '8px';
+                          const bgStyle = tpl.backgroundType === 'gradient' ? tpl.backgroundValue : tpl.preview.bg;
+                          const isGlass = tpl.cardStyle === 'glass';
+                          return (
+                            <button
+                              key={tpl.name}
+                              onClick={() => applyTemplate(tpl)}
+                              className="group relative rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 overflow-hidden transition-all hover:shadow-lg text-left"
+                            >
+                              {tpl.tag && (
+                                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-pink-500 text-white text-[8px] font-bold rounded-md uppercase z-10">
+                                  {tpl.tag}
+                                </span>
+                              )}
+                              {/* Block wireframe preview */}
+                              <div className="h-40 px-4 py-3 flex flex-col items-center gap-[3px] overflow-hidden" style={{ background: bgStyle }}>
+                                {tpl.blocks.slice(0, 8).map((b, i) => {
+                                  const accent = tpl.preview.accent;
+                                  const text = tpl.preview.text;
+                                  const card = tpl.preview.card;
+
+                                  if (b.link_type === 'header') return (
+                                    <div key={i} className="flex flex-col items-center gap-[2px] mb-0.5 shrink-0">
+                                      <div className="w-5 h-5 rounded-full" style={{ backgroundColor: accent }} />
+                                      <div className="w-14 h-[5px] rounded-full" style={{ backgroundColor: text, opacity: 0.8 }} />
+                                      <div className="w-10 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.4 }} />
+                                    </div>
+                                  );
+                                  if (b.link_type === 'heading') return (
+                                    <div key={i} className="w-12 h-[4px] rounded-sm self-start shrink-0 mt-0.5" style={{ backgroundColor: text, opacity: 0.6 }} />
+                                  );
+                                  if (b.link_type === 'url') return (
+                                    <div key={i} className="w-full h-[10px] shrink-0" style={{
+                                      backgroundColor: isGlass ? card : card,
+                                      borderRadius: btnRadius,
+                                      border: tpl.buttonStyle === 'outline' ? `1px solid ${accent}` : tpl.cardStyle === 'bordered' ? `1px solid ${text}30` : 'none',
+                                      boxShadow: tpl.buttonStyle === 'shadow' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                                      backdropFilter: isGlass ? 'blur(4px)' : 'none',
+                                    }} />
+                                  );
+                                  if (b.link_type === 'divider') return (
+                                    <div key={i} className="w-12 shrink-0 my-[1px]" style={{ height: '1px', backgroundColor: text, opacity: 0.15 }} />
+                                  );
+                                  if (b.link_type === 'text') return (
+                                    <div key={i} className="flex flex-col gap-[2px] w-full px-1 shrink-0">
+                                      <div className="w-full h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.25 }} />
+                                      <div className="w-3/4 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.15 }} />
+                                    </div>
+                                  );
+                                  if (b.link_type === 'social_icons') return (
+                                    <div key={i} className="flex gap-[3px] justify-center shrink-0 my-[1px]">
+                                      {Array.from({ length: Math.min(b.metadata?.links?.length || 4, 4) }).map((_, j) => (
+                                        <div key={j} className="w-[7px] h-[7px] rounded-full" style={{ backgroundColor: accent, opacity: 0.7 }} />
+                                      ))}
+                                    </div>
+                                  );
+                                  if (b.link_type === 'email_capture') return (
+                                    <div key={i} className="w-full flex gap-[3px] shrink-0">
+                                      <div className="flex-1 h-[10px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${text}20` }} />
+                                      <div className="w-8 h-[10px] rounded-sm" style={{ backgroundColor: accent, opacity: 0.8 }} />
+                                    </div>
+                                  );
+                                  if (b.link_type === 'spotify') return (
+                                    <div key={i} className="w-full h-[12px] rounded-sm shrink-0" style={{ backgroundColor: '#1DB954', opacity: 0.6 }} />
+                                  );
+                                  if (b.link_type === 'video_embed') return (
+                                    <div key={i} className="w-full h-[18px] rounded-sm shrink-0 flex items-center justify-center" style={{ backgroundColor: `${text}15` }}>
+                                      <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: `6px solid ${accent}` }} />
+                                    </div>
+                                  );
+                                  if (b.link_type === 'banner') return (
+                                    <div key={i} className="w-full h-[12px] rounded-sm shrink-0" style={{ backgroundColor: b.metadata?.bg_color || accent, opacity: 0.75 }} />
+                                  );
+                                  return <div key={i} className="w-full h-[8px] rounded-sm shrink-0" style={{ backgroundColor: card }} />;
+                                })}
+                              </div>
+                              {/* Label + description */}
+                              <div className="px-3 py-2 bg-white dark:bg-[#0A0A1A] border-t border-gray-200 dark:border-gray-700">
+                                <p className="text-xs font-semibold text-gray-900 dark:text-white">{tpl.name}</p>
+                                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{tpl.description}</p>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium">
+                                    {tpl.blocks.length} sections
+                                  </span>
+                                  {tpl.blocks.some(b => b.link_type === 'email_capture') && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-500 font-medium">email</span>
+                                  )}
+                                  {tpl.blocks.some(b => b.link_type === 'spotify' || b.link_type === 'video_embed') && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/10 text-purple-500 font-medium">media</span>
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── Section Tab (formerly Links) ── */}
+            {activeTab === 'section' && (
+              <BioLinksEditor links={links} onChange={setLinks} products={products} />
+            )}
+
+            {/* ── Appearance Tab ── */}
+            {activeTab === 'appearance' && (
+              <BioAppearanceEditor
+                data={appearance}
+                onChange={setAppearance}
+                palette={palette}
+                onPaletteChange={updatePalette}
+              />
+            )}
+
+            {/* ── Settings Tab ── */}
+            {activeTab === 'settings' && (
+              <div className="space-y-5">
+                <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-pink-500" /> URL Slug
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">Customize your public URL</p>
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm"
+                      placeholder="my-bio-page"
+                    />
+                    <div className="flex items-center gap-2 mt-2 min-h-5">
+                      {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
+                      {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
+                        <span className="text-xs text-gray-400">digione.in/link/{slug}</span>
+                      )}
+                      {slugStatus === 'available' && (
+                        <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available</span>
+                      )}
+                      {slugStatus === 'taken' && (
+                        <span className="flex items-center gap-1 text-xs text-red-500"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
+                      )}
+                      {slugStatus === 'invalid' && (
+                        <span className="text-xs text-red-500">3+ chars, lowercase letters, numbers, hyphens</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ═══ RIGHT PANEL — full-height preview ═══ */}
-      <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
-
-        {/* ── Preview Header ── */}
-        <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3">
-          {/* Copy link */}
-          <button
-            onClick={() => {
-              if (site) {
-                navigator.clipboard.writeText(`https://${getSiteDisplayUrl(site)}`);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              }
-            }}
-            disabled={!site}
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
-            title="Copy page link"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? 'Copied!' : 'Copy Link'}
-          </button>
-          {/* Preview Page label — centered */}
-          <div className="flex-1 flex items-center justify-center">
-            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
-              Website Preview
-            </span>
-          </div>
-          {/* Device toggles */}
-          <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
-            {DEVICES.map(d => (
-              <button
-                key={d.id}
-                onClick={() => setDevice(d.id)}
-                className={`p-1.5 rounded-md transition ${
-                  device === d.id
-                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                }`}
-                title={d.label}
-              >
-                <d.icon className="w-4 h-4" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Preview iframe */}
-        <div className="flex-1 flex items-start justify-center px-6 pb-6 overflow-auto">
-          <div
-            className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 flex flex-col"
-            style={{
-              width: DEVICES.find(d => d.id === device)?.width ?? '100%',
-              maxWidth: '100%',
-              height: '100%',
-            }}
-          >
-            {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
-              <div className="flex gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-400" />
-                <span className="w-3 h-3 rounded-full bg-amber-400" />
-                <span className="w-3 h-3 rounded-full bg-emerald-400" />
-              </div>
-              <div className="flex-1 px-3 py-1 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-                <p className="text-[10px] text-gray-400 font-mono truncate">
-                  {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
-                </p>
-              </div>
-              <button
-                onClick={() => setPreviewKey(Date.now())}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                title="Refresh"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* iframe */}
-            {previewUrl ? (
-              <iframe
-                ref={iframeRef}
-                key={previewKey}
-                src={previewUrl}
-                className="w-full flex-1 border-0"
-                title="Bio Preview"
-              />
-            ) : (
-              <div className="flex items-center justify-center flex-1 text-sm text-gray-400">
-                No preview available
               </div>
             )}
           </div>
         </div>
-      </div>
+
+        {/* ═══ RIGHT PANEL — full-height preview ═══ */}
+        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
+
+          {/* ── Preview Header ── */}
+          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3">
+            {/* Copy link */}
+            <button
+              onClick={() => {
+                if (site) {
+                  navigator.clipboard.writeText(`https://${getSiteDisplayUrl(site)}`);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }
+              }}
+              disabled={!site}
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
+              title="Copy page link"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+            {/* Preview Page label — centered */}
+            <div className="flex-1 flex items-center justify-center">
+              <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Website Preview
+              </span>
+            </div>
+            {/* Device toggles */}
+            <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
+              {DEVICES.map(d => (
+                <button
+                  key={d.id}
+                  onClick={() => setDevice(d.id)}
+                  className={`p-1.5 rounded-md transition ${device === d.id
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                    }`}
+                  title={d.label}
+                >
+                  <d.icon className="w-4 h-4" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Preview iframe */}
+          <div className="flex-1 flex items-start justify-center px-6 pb-6 overflow-auto">
+            <div
+              className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 flex flex-col"
+              style={{
+                width: DEVICES.find(d => d.id === device)?.width ?? '100%',
+                maxWidth: '100%',
+                height: '100%',
+              }}
+            >
+              {/* Browser chrome */}
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+                <div className="flex gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-400" />
+                  <span className="w-3 h-3 rounded-full bg-amber-400" />
+                  <span className="w-3 h-3 rounded-full bg-emerald-400" />
+                </div>
+                <div className="flex-1 px-3 py-1 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
+                  <p className="text-[10px] text-gray-400 font-mono truncate">
+                    {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setPreviewKey(Date.now())}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                  title="Refresh"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* iframe */}
+              {previewUrl ? (
+                <iframe
+                  ref={iframeRef}
+                  key={previewKey}
+                  src={previewUrl}
+                  className="w-full flex-1 border-0"
+                  title="Bio Preview"
+                />
+              ) : (
+                <div className="flex items-center justify-center flex-1 text-sm text-gray-400">
+                  No preview available
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>{/* close flex-1 flex min-h-0 body wrapper */}
     </div>
   );
