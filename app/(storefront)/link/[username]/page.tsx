@@ -1,8 +1,61 @@
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import LinkInBioPage from '@/components/storefront/LinkInBioPage';
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+  const { username } = await params;
+  const supabase = await createClient();
+
+  const { data: site } = await supabase
+    .from('sites')
+    .select('id')
+    .eq('slug', username)
+    .eq('site_type', 'linkinbio')
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (!site) return {};
+
+  const { data: page } = await supabase
+    .from('linkinbio_pages' as any)
+    .select('display_name, bio, avatar_url, seo')
+    .eq('site_id', site.id)
+    .maybeSingle();
+
+  if (!page) return {};
+
+  const p = page as any;
+  const seoData = (p.seo as any) ?? {};
+
+  const title = seoData.custom_title || p.display_name || username;
+  const description = seoData.custom_description || p.bio || '';
+  const imageUrl = seoData.custom_image || p.avatar_url || '';
+
+  return {
+    title,
+    description: description || undefined,
+    openGraph: {
+      title,
+      description: description || undefined,
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : [],
+      type: 'profile',
+      url: `https://digione.in/link/${username}`,
+    },
+    twitter: {
+      card: imageUrl ? 'summary_large_image' : 'summary',
+      title,
+      description: description || undefined,
+      images: imageUrl ? [imageUrl] : [],
+    },
+  };
+}
 
 export default async function LinkInBioStorefront({
   params,
@@ -56,6 +109,7 @@ export default async function LinkInBioStorefront({
     animation: theme.animation ?? 'none',
     border_radius: theme.borderRadius ?? 'md',
     spacing: theme.spacing ?? 'default',
+    avatar_shape: (settings.avatarShape ?? 'circular') as 'circular' | 'rounded' | 'square',
   };
 
   // ── V2: Fetch blocks + items ──

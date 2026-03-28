@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Instagram, Twitter, Youtube, Linkedin, Github, Globe, Music,
-  ExternalLink, Share2, Package, Play, Mail, Music2,
+  ExternalLink, Share2, Package, Play, Music2,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────
@@ -31,6 +31,7 @@ type BioData = {
   animation?: string;
   border_radius?: string;
   spacing?: string;
+  avatar_shape?: 'circular' | 'rounded' | 'square';
 };
 
 type BioLink = {
@@ -175,12 +176,14 @@ function ProfileSection({
   return (
     <div className="flex flex-col items-center lg:items-center gap-4">
       {bio.cover_image_url && (
-        <div className="w-full h-32 lg:h-36 rounded-2xl overflow-hidden mb-[-40px]">
+        <div className="w-full h-32 lg:h-36 rounded-2xl overflow-hidden -mb-10">
           <img src={bio.cover_image_url} alt="" className="w-full h-full object-cover" />
         </div>
       )}
       <div
-        className={`w-24 h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden border-4 border-white shadow-lg ${bio.cover_image_url ? 'relative z-10' : ''}`}
+        className={`w-24 h-24 lg:w-28 lg:h-28 overflow-hidden border-4 border-white shadow-lg ${bio.cover_image_url ? 'relative z-10' : ''} ${
+          bio.avatar_shape === 'square' ? 'rounded-none' : bio.avatar_shape === 'rounded' ? 'rounded-2xl' : 'rounded-full'
+        }`}
         style={{ backgroundColor: palette.primary || '#EC4899' }}
       >
         {bio.avatar_url ? (
@@ -799,7 +802,7 @@ export default function LinkInBioPage({ siteId, bio, links, productsMap, palette
               <a href="https://digione.in" target="_blank" rel="noopener noreferrer"
                 className="mt-8 flex items-center justify-center lg:justify-start gap-1.5 text-xs font-medium opacity-50 hover:opacity-80 transition"
                 style={{ color: activePalette.muted || '#64748B' }}>
-                <div className="w-4 h-4 bg-gradient-to-br from-indigo-600 to-violet-600 rounded flex items-center justify-center text-white text-[7px] font-extrabold">
+                <div className="w-4 h-4 bg-linear-to-br from-indigo-600 to-violet-600 rounded flex items-center justify-center text-white text-[7px] font-extrabold">
                   D1
                 </div>
                 Made with DigiOne

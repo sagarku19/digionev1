@@ -19,6 +19,7 @@ export type BioProfileData = {
   avatarUrl: string;
   coverImageUrl: string;
   socialLinks: SocialLink[];
+  avatarShape?: 'circular' | 'rounded' | 'square';
 };
 
 const PLATFORMS = [
@@ -126,11 +127,33 @@ export default function BioProfileEditor({
               Add Image
             </button>
           </div>
-          {data.avatarUrl && (
-            <div className="mt-2 flex justify-center">
-              <img src={data.avatarUrl} alt="Avatar preview" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700" />
+          {/* Avatar shape picker */}
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Avatar Shape</label>
+            <div className="flex gap-2">
+              {([
+                { id: 'circular', label: 'Circle',    cls: 'rounded-full' },
+                { id: 'rounded',  label: 'Rounded',   cls: 'rounded-xl' },
+                { id: 'square',   label: 'Square',    cls: 'rounded-none' },
+              ] as const).map(s => {
+                const active = (data.avatarShape || 'circular') === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => onChange({ ...data, avatarShape: s.id })}
+                    className={`flex-1 flex flex-col items-center gap-2 py-2.5 rounded-xl border-2 transition ${active ? 'border-pink-500 bg-pink-50 dark:bg-pink-500/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}
+                  >
+                    <div
+                      className={`w-8 h-8 ${s.cls} ${active ? 'bg-pink-400' : 'bg-gray-300 dark:bg-gray-600'} transition`}
+                      style={data.avatarUrl ? { backgroundImage: `url(${data.avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                    />
+                    <span className={`text-[10px] font-semibold ${active ? 'text-pink-600 dark:text-pink-400' : 'text-gray-500'}`}>{s.label}</span>
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         <div>

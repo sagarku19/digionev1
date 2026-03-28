@@ -15,7 +15,7 @@ import {
   ArrowLeft, Save, Loader2, CheckCircle2, ExternalLink,
   Settings, Monitor, Tablet, Smartphone, RefreshCw,
   XCircle, LayoutDashboard, Package, Store, BarChart2,
-  Copy, Check, Plus, HelpCircle, Moon, Sun
+  Copy, Check, Plus, HelpCircle, Moon, Sun, Search, ImagePlus, Globe2
 } from 'lucide-react';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 
@@ -67,6 +67,7 @@ type BioTemplate = {
   animation?: string;
   borderRadius?: string;
   spacing?: string;
+  profileShape?: 'circular' | 'rounded' | 'square';
   blocks: BioTemplateBlock[];
 };
 
@@ -155,6 +156,7 @@ const TEMPLATES: BioTemplate[] = [
     layoutStyle: 'classic', buttonStyle: 'rounded',
     backgroundType: 'solid', backgroundValue: '#FAF5EF',
     fontFamily: 'playfair', cardStyle: 'solid', borderRadius: 'sm', spacing: 'relaxed',
+    profileShape: 'rounded',
     blocks: [
       { link_type: 'header', title: 'Jane Designer', metadata: { subtitle: 'Visual Designer & Art Director', alignment: 'center', size: 'xl' } },
       { link_type: 'heading', title: 'Selected Work', metadata: { alignment: 'left', size: 'lg', show_divider: true } },
@@ -195,6 +197,7 @@ const TEMPLATES: BioTemplate[] = [
     layoutStyle: 'classic', buttonStyle: 'sharp',
     backgroundType: 'solid', backgroundValue: '#FFFFFF',
     fontFamily: 'inter', cardStyle: 'solid', borderRadius: 'sm',
+    profileShape: 'square',
     blocks: [
       { link_type: 'header', title: 'Company Name', metadata: { subtitle: 'Professional Services', alignment: 'center', size: 'xl' } },
       { link_type: 'url', title: 'Visit Our Website', url: '', icon_type: 'external' },
@@ -234,6 +237,7 @@ const TEMPLATES: BioTemplate[] = [
     layoutStyle: 'grid', buttonStyle: 'shadow',
     backgroundType: 'solid', backgroundValue: '#F3F4F6',
     fontFamily: 'poppins', cardStyle: 'solid', borderRadius: 'lg',
+    profileShape: 'rounded',
     blocks: [
       { link_type: 'header', title: 'Brand Name', metadata: { subtitle: 'Shop Our Collection', alignment: 'center', size: 'xl' } },
       { link_type: 'banner', title: 'Summer Sale', metadata: { description: '20% off everything this week', button_text: 'Shop Now', button_url: '', bg_color: '#EF4444' } },
@@ -269,7 +273,18 @@ export default function EditLinkInBioPage() {
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
+  const [previewW, setPreviewW] = useState(700);
   const { theme, setTheme } = useTheme();
+
+  // Measure available preview panel width for desktop zoom scaling
+  useEffect(() => {
+    const el = previewWrapperRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(es => setPreviewW(es[0].contentRect.width - 2));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // ── UI state ──
   const [activeTab, setActiveTab] = useState<Tab>('profile');
@@ -318,6 +333,9 @@ export default function EditLinkInBioPage() {
     spacing: 'default',
   });
 
+  // ── SEO ──
+  const [seo, setSeo] = useState({ title: '', description: '', image: '' });
+
   // ── Products ──
   const [products, setProducts] = useState<{ id: string; name: string; price: number; thumbnail_url: string | null }[]>([]);
 
@@ -347,12 +365,20 @@ export default function EditLinkInBioPage() {
           const layout = (page.layout as any) ?? {};
           const settings = (page.settings as any) ?? {};
 
+          const pageSeo = (page.seo as any) ?? {};
+          setSeo({
+            title: pageSeo.custom_title ?? '',
+            description: pageSeo.custom_description ?? '',
+            image: pageSeo.custom_image ?? '',
+          });
+
           setProfile({
             displayName: page.display_name ?? '',
             bioText: page.bio ?? '',
             avatarUrl: page.avatar_url ?? '',
             coverImageUrl: page.cover_url ?? '',
             socialLinks: (settings.socialLinks as SocialLink[]) ?? [],
+            avatarShape: (settings.avatarShape as 'circular' | 'rounded' | 'square') ?? 'circular',
           });
           setAppearance({
             layoutStyle: layout.style ?? 'classic',
@@ -484,6 +510,11 @@ export default function EditLinkInBioPage() {
       spacing: tpl.spacing ?? prev.spacing,
     }));
 
+    // Apply avatar shape from template
+    if (tpl.profileShape) {
+      setProfile(prev => ({ ...prev, avatarShape: tpl.profileShape }));
+    }
+
     // Apply pre-built blocks from template
     if (tpl.blocks && tpl.blocks.length > 0) {
       const newLinks: BioLink[] = tpl.blocks.map((b, i) => ({
@@ -533,6 +564,7 @@ export default function EditLinkInBioPage() {
         animation: appearance.animation || 'none',
         border_radius: appearance.borderRadius || 'md',
         spacing: appearance.spacing || 'default',
+        avatar_shape: profile.avatarShape ?? 'circular',
       };
 
       const previewLinks = links.filter(l => l.is_visible).map(l => ({
@@ -603,11 +635,18 @@ export default function EditLinkInBioPage() {
           spacing: appearance.spacing || 'default',
         },
         layout: { style: appearance.layoutStyle },
-        seo: { title: profile.displayName, description: profile.bioText || '' },
+        seo: {
+          title: profile.displayName,
+          description: profile.bioText || '',
+          custom_title: seo.title || null,
+          custom_description: seo.description || null,
+          custom_image: seo.image || null,
+        },
         settings: {
           showWatermark: appearance.showWatermark,
           showShareButton: appearance.showShareButton,
           socialLinks: profile.socialLinks,
+          avatarShape: profile.avatarShape ?? 'circular',
         },
       };
 
@@ -757,7 +796,7 @@ export default function EditLinkInBioPage() {
     } finally {
       setSaving(false);
     }
-  }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links]);
+  }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo]);
 
   // ── Derived ──
   const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
@@ -949,13 +988,16 @@ export default function EditLinkInBioPage() {
                                   const text = tpl.preview.text;
                                   const card = tpl.preview.card;
 
-                                  if (b.link_type === 'header') return (
-                                    <div key={i} className="flex flex-col items-center gap-[2px] mb-0.5 shrink-0">
-                                      <div className="w-5 h-5 rounded-full" style={{ backgroundColor: accent }} />
-                                      <div className="w-14 h-[5px] rounded-full" style={{ backgroundColor: text, opacity: 0.8 }} />
-                                      <div className="w-10 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.4 }} />
-                                    </div>
-                                  );
+                                  if (b.link_type === 'header') {
+                                    const avatarRadius = tpl.profileShape === 'square' ? '2px' : tpl.profileShape === 'rounded' ? '5px' : '9999px';
+                                    return (
+                                      <div key={i} className="flex flex-col items-center gap-[2px] mb-0.5 shrink-0">
+                                        <div className="w-5 h-5 overflow-hidden" style={{ backgroundColor: accent, borderRadius: avatarRadius }} />
+                                        <div className="w-14 h-[5px] rounded-full" style={{ backgroundColor: text, opacity: 0.8 }} />
+                                        <div className="w-10 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.4 }} />
+                                      </div>
+                                    );
+                                  }
                                   if (b.link_type === 'heading') return (
                                     <div key={i} className="w-12 h-[4px] rounded-sm self-start shrink-0 mt-0.5" style={{ backgroundColor: text, opacity: 0.6 }} />
                                   );
@@ -1048,38 +1090,129 @@ export default function EditLinkInBioPage() {
             {/* ── Settings Tab ── */}
             {activeTab === 'settings' && (
               <div className="space-y-5">
+
+                {/* URL Slug */}
                 <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-pink-500" /> URL Slug
+                      <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
                     </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Customize your public URL</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Your link-in-bio page address</p>
                   </div>
                   <div>
-                    <input
-                      type="text"
-                      value={slug}
-                      onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                      className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm"
-                      placeholder="my-bio-page"
-                    />
-                    <div className="flex items-center gap-2 mt-2 min-h-5">
+                    <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg mb-2">
+                      <span className="text-xs text-gray-400 shrink-0">digione.in/link/</span>
+                      <input
+                        type="text"
+                        value={slug}
+                        onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                        className="flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-white placeholder-gray-400 min-w-0"
+                        placeholder="your-name"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 min-h-5">
                       {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
                       {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
-                        <span className="text-xs text-gray-400">digione.in/link/{slug}</span>
+                        <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Your current URL</span>
                       )}
                       {slugStatus === 'available' && (
-                        <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available</span>
+                        <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available — save to apply</span>
                       )}
                       {slugStatus === 'taken' && (
                         <span className="flex items-center gap-1 text-xs text-red-500"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
                       )}
                       {slugStatus === 'invalid' && (
-                        <span className="text-xs text-red-500">3+ chars, lowercase letters, numbers, hyphens</span>
+                        <span className="text-xs text-red-500">3+ chars, letters, numbers, hyphens only</span>
                       )}
                     </div>
                   </div>
                 </div>
+
+                {/* SEO & Social Sharing */}
+                <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <Search className="w-4 h-4 text-pink-500" /> SEO & Social Sharing
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">How your page looks when shared on WhatsApp, Twitter, etc.</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                        Page Title <span className="text-gray-400 font-normal">(overrides your display name)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={seo.title}
+                        onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
+                        maxLength={70}
+                        className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition"
+                        placeholder={profile.displayName || 'Your Name · Link in Bio'}
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1">{seo.title.length}/70 characters</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                        Meta Description <span className="text-gray-400 font-normal">(overrides your bio)</span>
+                      </label>
+                      <textarea
+                        value={seo.description}
+                        onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
+                        maxLength={160}
+                        rows={2}
+                        className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition resize-none"
+                        placeholder={profile.bioText || 'A short description of your page...'}
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1">{seo.description.length}/160 characters</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+                        Share Preview Image <span className="text-gray-400 font-normal">(OG image)</span>
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={seo.image}
+                          onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
+                          className="flex-1 px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition"
+                          placeholder="https://... (defaults to your avatar)"
+                        />
+                      </div>
+                      {(seo.image || profile.avatarUrl) && (
+                        <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-16 bg-gray-50 dark:bg-gray-900">
+                          <img src={seo.image || profile.avatarUrl} alt="OG preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Live share preview card */}
+                  {(seo.title || profile.displayName) && (
+                    <div className="mt-2">
+                      <p className="text-[10px] font-medium text-gray-400 mb-2 uppercase tracking-wide">Preview when shared</p>
+                      <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden text-left">
+                        {(seo.image || profile.avatarUrl) && (
+                          <div className="h-24 bg-gray-100 dark:bg-gray-800">
+                            <img src={seo.image || profile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="px-3 py-2.5">
+                          <p className="text-[10px] text-gray-400 mb-0.5">digione.in</p>
+                          <p className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">
+                            {seo.title || profile.displayName || 'Your page title'}
+                          </p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                            {seo.description || profile.bioText || 'Your page description will appear here.'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
               </div>
             )}
           </div>
@@ -1131,16 +1264,15 @@ export default function EditLinkInBioPage() {
           </div>
 
           {/* Preview iframe */}
-          <div className="flex-1 flex items-start justify-center px-6 pb-6 overflow-auto">
-            <div
-              className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 flex flex-col"
-              style={{
-                width: DEVICES.find(d => d.id === device)?.width ?? '100%',
-                maxWidth: '100%',
-                height: '100%',
-              }}
-            >
-              {/* Browser chrome */}
+          {(() => {
+            const DESKTOP_W = 1280;
+            const DESKTOP_H = Math.round(DESKTOP_W * 10 / 16); // 16:10 aspect ratio = 800px
+            const isDesktop = device === 'desktop';
+            const isMobile = device === 'mobile';
+            const devicePx = isDesktop ? DESKTOP_W : isMobile ? 375 : 768;
+            const zoom = isDesktop ? Math.min(1, previewW / DESKTOP_W) : 1;
+
+            const BrowserChrome = () => (
               <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400" />
@@ -1152,31 +1284,37 @@ export default function EditLinkInBioPage() {
                     {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
                   </p>
                 </div>
-                <button
-                  onClick={() => setPreviewKey(Date.now())}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                  title="Refresh"
-                >
+                <button onClick={() => setPreviewKey(Date.now())}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition" title="Refresh">
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
               </div>
+            );
 
-              {/* iframe */}
-              {previewUrl ? (
-                <iframe
-                  ref={iframeRef}
-                  key={previewKey}
-                  src={previewUrl}
-                  className="w-full flex-1 border-0"
-                  title="Bio Preview"
-                />
-              ) : (
-                <div className="flex items-center justify-center flex-1 text-sm text-gray-400">
-                  No preview available
+            // Single container for all devices — avoids unmount/remount flash on device switch
+            return (
+              <div ref={previewWrapperRef} className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-16' : 'pt-6'}`}>
+                <div
+                  className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
+                  style={{
+                    width: devicePx,
+                    maxWidth: '100%',
+                    height: isDesktop ? DESKTOP_H : '100%',
+                    zoom: isDesktop ? zoom : undefined,
+                    transformOrigin: 'top left',
+                  }}
+                >
+                  <BrowserChrome />
+                  {previewUrl ? (
+                    <iframe ref={iframeRef} key={previewKey} src={previewUrl}
+                      className="w-full flex-1 border-0" title="Bio Preview" />
+                  ) : (
+                    <div className="flex items-center justify-center flex-1 text-sm text-gray-400">No preview available</div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            );
+          })()}
         </div>
       </div>{/* close flex-1 flex min-h-0 body wrapper */}
     </div>
