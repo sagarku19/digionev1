@@ -9,7 +9,7 @@
 ## Table of Contents
 
 1. [Design System — Public Layer](#1-design-system--public-layer)
-2. [SaaS Homepage (digione.in)](#2-saas-homepage)
+2. [SaaS Homepage (digione.ai)](#2-saas-homepage)
 3. [Pricing Page](#3-pricing-page)
 4. [Creator Storefront — Main Store (:slug)](#4-creator-storefront--main-store-slug)
 5. [Creator Storefront — Single Product Page (:slug/:childslug)](#5-creator-storefront--single-product-page)
@@ -222,7 +222,7 @@ Each section: large visual left or right, headline + description + feature pills
 
 #### Feature 1 — Creator Store
 
-Visual (left): browser mockup showing Arjun's dark-themed store at `digione.in/arjun`
+Visual (left): browser mockup showing Arjun's dark-themed store at `digione.ai/arjun`
 
 ```
 Your store. Your brand.
@@ -235,7 +235,7 @@ under 30 minutes.
 [ 18 section types ]  [ Custom domain ]
 [ SEO ready ]         [ Mobile first ]
 
-digione.in/arjun  →  (live example link)
+digione.ai/arjun  →  (live example link)
 ```
 
 Schema: `sites`, `site_sections_config`, `site_design_tokens`, `site_navigation`
@@ -305,7 +305,7 @@ Horizontal scroll of 4 live storefront preview cards:
 │                  │  │                  │  │                  │  │                  │
 │ Arjun Sharma     │  │ Priya Mehta      │  │ Rahul Verma      │  │ Neha Kapoor      │
 │ Figma Courses    │  │ Design Assets    │  │ Photography      │  │ Podcast Creator  │
-│ digione.in/arjun │  │ digione.in/priya │  │ digione.in/rahul │  │ digione.in/neha  │
+│ digione.ai/arjun │  │ digione.ai/priya │  │ digione.ai/rahul │  │ digione.ai/neha  │
 │ [ Visit → ]      │  │ [ Visit → ]      │  │ [ Visit → ]      │  │ [ Visit → ]      │
 └──────────────────┘  └──────────────────┘  └──────────────────┘  └──────────────────┘
 ```
@@ -331,7 +331,7 @@ Three large cards in a grid:
 │                                                    │
 │ [Avatar]  Arjun Sharma                             │
 │           UI/UX Educator · 50K+ students           │
-│           digione.in/arjun ↗                       │
+│           digione.ai/arjun ↗                       │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -462,7 +462,7 @@ If `subscription_offers` row exists with `is_active = true AND start_date <= NOW
 ## 4. Creator Storefront — Main Store (:slug)
 
 **Route:** `/:slug`
-**Example:** `digione.in/arjun`
+**Example:** `digione.ai/arjun`
 **Schema tables:** `sites`, `site_main`, `site_sections_config`, `site_design_tokens`, `site_navigation`, `products`, `site_product_assignments`, `product_ratings`, `user_carts`
 
 Creator's theme is injected as CSS variables at the layout level from `site_design_tokens`:
@@ -663,7 +663,7 @@ Built from `site_navigation` row:
 │  Arjun Sharma — Design Courses                                        │
 │                                                                        │
 │  Products          Legal               Contact                         │
-│  Courses           About us            arjun@digione.in               │
+│  Courses           About us            arjun@digione.ai               │
 │  Ebooks            Terms of service    +91 90000 00002                 │
 │  Design Assets     Privacy policy                                      │
 │                    Refund policy                                        │
@@ -681,7 +681,7 @@ Legal pages shown based on `site_main.legal_pages` jsonb flags.
 ## 5. Creator Storefront — Single Product Page
 
 **Route:** `/:slug/:childslug`
-**Example:** `digione.in/arjun/figma-course`
+**Example:** `digione.ai/arjun/figma-course`
 **Schema tables:** `sites (type='single')`, `site_singlepage`, `products`, `product_files`, `product_ratings`, `coupons`, `product_related`
 
 High-conversion landing page for one product. Layout driven by `site_singlepage` row.
@@ -838,7 +838,7 @@ Fires if product has `product_related WHERE relation_type = 'upsell'` rows:
 ## 6. Creator Storefront — Payment Link Page
 
 **Route:** `/:slug/:childslug` (child `site_type = 'payment'`)
-**Example:** `digione.in/arjun/mentorship`
+**Example:** `digione.ai/arjun/mentorship`
 **Schema tables:** `sites (type='payment')`, `payment_requests`, `payment_submissions`
 
 Clean centered card layout (max-width 560px) on a subtle tinted background:
@@ -883,7 +883,7 @@ If site has multiple `payment_requests`, show them as a card selection list abov
 ## 7. Creator Storefront — Blog
 
 **Route:** `/:slug/:childslug` (child `site_type = 'blog'`)
-**Example:** `digione.in/priya/blog`
+**Example:** `digione.ai/priya/blog`
 **Schema tables:** `site_blog`, `blog_posts`, `products`
 
 ### Blog Header
@@ -1122,7 +1122,7 @@ Same split-screen shell as signup. Form:
 ```
 
 **On submit:**
-`supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://digione.in/auth/reset-password' })`
+`supabase.auth.resetPasswordForEmail(email, { redirectTo: 'https://digione.ai/auth/reset-password' })`
 
 **Success state:**
 ```
@@ -1166,7 +1166,7 @@ On token expiry: show "This link has expired. Request a new reset link." + link 
   ─────────────────────────────
 
   We sent a verification link to
-  arjun@digione.in
+  arjun@digione.ai
 
   Click the link in your email to activate
   your account.
@@ -1372,7 +1372,7 @@ Three-step progress bar:
   [Share on X/Twitter ↗]   [Share on WhatsApp ↗]
 ```
 
-Pre-filled caption: "Just enrolled in Figma Masterclass 2024 by @arjunsharma — can't wait to start! 🎨 digione.in/arjun/figma-course"
+Pre-filled caption: "Just enrolled in Figma Masterclass 2024 by @arjunsharma — can't wait to start! 🎨 digione.ai/arjun/figma-course"
 
 ---
 
@@ -1638,8 +1638,8 @@ Real-time display with `setInterval(1000)`. Pauses on tab visibility change. Cle
 <meta name="description"
   content="Sell courses, ebooks, and digital products. UPI payouts, custom store,
            visual builder — all in one platform built for India.">
-<meta property="og:image" content="https://digione.in/og/homepage.jpg">
-<link rel="canonical" href="https://digione.in/">
+<meta property="og:image" content="https://digione.ai/og/homepage.jpg">
+<link rel="canonical" href="https://digione.ai/">
 ```
 
 ### Creator Main Store
@@ -1651,7 +1651,7 @@ Dynamic, pulled from `site_main`:
 <meta name="description" content="{site_main.meta_description}">
 <meta name="keywords" content="{site_main.meta_keywords}">
 <meta property="og:image" content="{site_main.banner_url}">
-<link rel="canonical" href="https://digione.in/{sites.slug}">
+<link rel="canonical" href="https://digione.ai/{sites.slug}">
 ```
 
 When `sites.domain_verified = true`, canonical points to `sites.custom_domain`.
@@ -1811,15 +1811,15 @@ export default async function ChildPage({ params }) {
 
 | URL | Site type | Site ID (seed) |
 |-----|-----------|----------------|
-| `digione.in/arjun` | main store | fb0...001 |
-| `digione.in/arjun/figma-course` | single product | fb0...002 |
-| `digione.in/arjun/mentorship` | payment link | fb0...003 |
-| `digione.in/priya` | main store | fb0...004 |
-| `digione.in/priya/blog` | blog index | fb0...005 |
-| `digione.in/priya/blog/10-figma-shortcuts` | blog post | — |
-| `digione.in/rahul` | main store | fb0...006 |
-| `digione.in/rahul/golden-hour` | single product | fb0...007 |
-| `digione.in/neha` | main store | fb0...008 |
+| `digione.ai/arjun` | main store | fb0...001 |
+| `digione.ai/arjun/figma-course` | single product | fb0...002 |
+| `digione.ai/arjun/mentorship` | payment link | fb0...003 |
+| `digione.ai/priya` | main store | fb0...004 |
+| `digione.ai/priya/blog` | blog index | fb0...005 |
+| `digione.ai/priya/blog/10-figma-shortcuts` | blog post | — |
+| `digione.ai/rahul` | main store | fb0...006 |
+| `digione.ai/rahul/golden-hour` | single product | fb0...007 |
+| `digione.ai/neha` | main store | fb0...008 |
 | `store.arjunsharma.in` | custom domain → arjun | fb0...001 |
 | `priyamehta.design` | custom domain → priya | fb0...004 |
 

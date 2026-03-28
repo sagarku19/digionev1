@@ -130,7 +130,7 @@ export default function CreateLinkInBioPage() {
                 </label>
                 <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-pink-500 transition">
                   <span className="px-3.5 py-2.5 text-sm text-gray-500 border-r border-gray-200 dark:border-gray-700 shrink-0 bg-gray-100 dark:bg-gray-800 font-mono">
-                    digione.in/link/
+                    digione.ai/link/
                   </span>
                   <input
                     type="text"
@@ -166,7 +166,7 @@ export default function CreateLinkInBioPage() {
                 <div className="p-4 bg-gradient-to-r from-pink-500/10 via-pink-500/5 to-transparent border border-pink-200 dark:border-pink-800/40 rounded-xl">
                   <div className="flex items-center gap-2 text-sm text-pink-600 dark:text-pink-400">
                     <Globe className="w-4 h-4 shrink-0" />
-                    <span className="font-mono truncate">digione.in/link/{username}</span>
+                    <span className="font-mono truncate">digione.ai/link/{username}</span>
                   </div>
                 </div>
               )}
@@ -235,7 +235,7 @@ export default function CreateLinkInBioPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-pink-600 dark:text-pink-400 bg-white/60 dark:bg-white/5 rounded-xl px-3 py-2">
                   <AtSign className="w-4 h-4 shrink-0" />
-                  <span className="font-mono text-sm truncate">digione.in/link/{username}</span>
+                  <span className="font-mono text-sm truncate">digione.ai/link/{username}</span>
                 </div>
               </div>
 
@@ -244,7 +244,7 @@ export default function CreateLinkInBioPage() {
                   { label: 'Type',     value: 'Link in Bio' },
                   { label: 'Username', value: `@${username}` },
                   { label: 'Name',     value: displayName },
-                  { label: 'URL',      value: `digione.in/link/${username}` },
+                  { label: 'URL',      value: `digione.ai/link/${username}` },
                 ].map((row, i) => (
                   <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
                     <div>

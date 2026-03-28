@@ -236,10 +236,10 @@ export default function StoreSettingsPage() {
             </div>
           </Field>
 
-          <Field label="Store URL" hint={`Your public address: digione.in/p/${siteSlug}`}>
+          <Field label="Store URL" hint={`Your public address: digione.ai/p/${siteSlug}`}>
             <div className="relative">
               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none">digione.in/p/</span>
+              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none">digione.ai/p/</span>
               <input
                 type="text" value={siteSlug} readOnly
                 className={`${INPUT} pl-[120px] bg-gray-100 dark:bg-gray-800 cursor-not-allowed`}

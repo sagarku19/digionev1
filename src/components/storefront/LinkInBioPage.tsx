@@ -799,7 +799,7 @@ export default function LinkInBioPage({ siteId, bio, links, productsMap, palette
             </div>
 
             {activeBio.show_watermark && (
-              <a href="https://digione.in" target="_blank" rel="noopener noreferrer"
+              <a href="https://digione.ai" target="_blank" rel="noopener noreferrer"
                 className="mt-8 flex items-center justify-center lg:justify-start gap-1.5 text-xs font-medium opacity-50 hover:opacity-80 transition"
                 style={{ color: activePalette.muted || '#64748B' }}>
                 <div className="w-4 h-4 bg-linear-to-br from-indigo-600 to-violet-600 rounded flex items-center justify-center text-white text-[7px] font-extrabold">

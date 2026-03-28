@@ -45,19 +45,19 @@ export function getSiteDisplayUrl(site: SiteUrlInfo): string {
 
   switch (site.site_type) {
     case 'main':
-      return `digione.in/p/${site.slug}`;
+      return `digione.ai/p/${site.slug}`;
     case 'payment':
-      return `digione.in/pay/${shortId(site.id)}`;
+      return `digione.ai/pay/${shortId(site.id)}`;
     case 'blog':
-      return `digione.in/blog/${shortId(site.id)}`;
+      return `digione.ai/blog/${shortId(site.id)}`;
     case 'single':
-      return `digione.in/s/${site.slug ?? shortId(site.id)}`;
+      return `digione.ai/s/${site.slug ?? shortId(site.id)}`;
     case 'builder':
-      return `digione.in/w/${site.slug ?? shortId(site.id)}`;
+      return `digione.ai/w/${site.slug ?? shortId(site.id)}`;
     case 'linkinbio':
-      return `digione.in/link/${site.slug ?? shortId(site.id)}`;
+      return `digione.ai/link/${site.slug ?? shortId(site.id)}`;
     default:
-      return `digione.in/p/${site.slug}`;
+      return `digione.ai/p/${site.slug}`;
   }
 }
 
@@ -75,7 +75,7 @@ export function getUpsellPublicPath(slug: string): string {
 
 /** Returns a display-friendly URL string for upsell pages */
 export function getUpsellDisplayUrl(slug: string): string {
-  return `digione.in/upsells/${slug}`;
+  return `digione.ai/upsells/${slug}`;
 }
 
 // ── Legacy helpers (kept for old-route redirects) ─────────────────

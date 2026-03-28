@@ -375,7 +375,7 @@ One card per `sites` row for this creator. Card contains:
 │ [site_type badge]  [ssl_status badge]  │
 │                                        │
 │ Store name (from site_main.title)      │
-│ digione.in/{slug}         [Live link]  │
+│ digione.ai/{slug}         [Live link]  │
 │                                        │
 │ Products: 3  |  Views: 1,240           │
 │                                        │
@@ -551,7 +551,7 @@ One card per `payment_requests` row:
 ```
 ┌──────────────────────────────────────────┐
 │ 1-on-1 Mentorship — 60 min              │
-│ digione.in/arjun/mentorship/one-on-one  │
+│ digione.ai/arjun/mentorship/one-on-one  │
 │                                          │
 │ ₹2,500 fixed                            │
 │ 3 submissions · ₹7,500 collected        │
@@ -1153,7 +1153,7 @@ Fields:
 │ Your referral code                       │
 │                                          │
 │  REF-ARJUN-001                  [Copy]  │
-│  digione.in?ref=REF-ARJUN-001           │
+│  digione.ai?ref=REF-ARJUN-001           │
 │                                          │
 │  Share: [WhatsApp] [Instagram] [Copy link]│
 └──────────────────────────────────────────┘
@@ -1337,7 +1337,7 @@ Upgrade CTA buttons on lower plan columns.
 
 ```
 API access: Enabled (Pro plan)
-Base URL: https://api.digione.in/v1
+Base URL: https://api.digione.ai/v1
 Auth: Bearer token (from profile settings)
 ```
 

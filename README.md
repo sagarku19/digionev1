@@ -127,7 +127,7 @@ robots.txt control
 
 Add CNAME instructions with auto-verify
 SSL auto-provisioned (Vercel or Caddy)
-Subdomain option on digione.in
+Subdomain option on digione.ai
 PHASE 4 — Monetization Modes (Multiple ways to earn)
 Creator gets more ways to make money
 

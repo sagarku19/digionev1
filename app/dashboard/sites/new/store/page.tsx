@@ -195,7 +195,7 @@ export default function CreateMainStorePage() {
                 </label>
                 <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 focus-within:ring-2 focus-within:ring-[var(--accent)]/40 transition">
                   <span className="px-3.5 py-2.5 text-sm text-gray-500 border-r border-gray-200 dark:border-gray-700 shrink-0 bg-gray-100 dark:bg-gray-800 font-mono">
-                    digione.in/p/
+                    digione.ai/p/
                   </span>
                   <input type="text" value={slug}
                     onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
@@ -241,7 +241,7 @@ export default function CreateMainStorePage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-[var(--text-primary)] bg-white/60 dark:bg-white/5 rounded-xl px-3 py-2">
                   <Globe className="w-4 h-4 shrink-0" />
-                  <span className="font-mono text-sm truncate">digione.in/p/{slug}</span>
+                  <span className="font-mono text-sm truncate">digione.ai/p/{slug}</span>
                 </div>
                 {description && <p className="mt-3 text-xs text-gray-500 leading-relaxed">{description}</p>}
               </div>
@@ -250,7 +250,7 @@ export default function CreateMainStorePage() {
                 {[
                   { label: 'Type',     value: 'Main Store' },
                   { label: 'Name',     value: title },
-                  { label: 'URL',      value: `digione.in/p/${slug}` },
+                  { label: 'URL',      value: `digione.ai/p/${slug}` },
                   { label: 'Template', value: TEMPLATES.find(t => t.id === template)?.name ?? '—' },
                 ].map((row, i) => (
                   <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">

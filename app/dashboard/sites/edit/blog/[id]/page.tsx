@@ -99,7 +99,7 @@ export default function EditBlogPage() {
             <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-500/10 rounded-xl border border-amber-200 dark:border-amber-800/40">
               <Globe className="w-4 h-4 text-amber-500 shrink-0" />
               <span className="text-sm font-mono text-amber-600 dark:text-amber-400 truncate">
-                digione.in/blog/{siteId.substring(0, 8)}...
+                digione.ai/blog/{siteId.substring(0, 8)}...
               </span>
             </div>
             <p className="text-xs text-gray-500">

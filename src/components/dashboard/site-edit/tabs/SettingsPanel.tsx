@@ -186,7 +186,7 @@ export default function SettingsPanel({
                   {data.customDomain.split('.').slice(0, -2).join('.') || data.customDomain}
                 </code>
                 <span className="font-medium text-gray-500">Value</span>
-                <code className="font-mono text-gray-900 dark:text-gray-200">cname.digione.in</code>
+                <code className="font-mono text-gray-900 dark:text-gray-200">cname.digione.ai</code>
               </div>
             </div>
           </div>

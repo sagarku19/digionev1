@@ -1101,7 +1101,7 @@ export default function EditLinkInBioPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg mb-2">
-                      <span className="text-xs text-gray-400 shrink-0">digione.in/link/</span>
+                      <span className="text-xs text-gray-400 shrink-0">digione.ai/link/</span>
                       <input
                         type="text"
                         value={slug}
@@ -1200,7 +1200,7 @@ export default function EditLinkInBioPage() {
                           </div>
                         )}
                         <div className="px-3 py-2.5">
-                          <p className="text-[10px] text-gray-400 mb-0.5">digione.in</p>
+                          <p className="text-[10px] text-gray-400 mb-0.5">digione.ai</p>
                           <p className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">
                             {seo.title || profile.displayName || 'Your page title'}
                           </p>
@@ -1222,7 +1222,18 @@ export default function EditLinkInBioPage() {
         <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
 
           {/* ── Preview Header ── */}
-          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3">
+          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3 relative">
+            {/* Open in Browser */}
+            <a
+              href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
+              title="Open in browser"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Open
+            </a>
             {/* Copy link */}
             <button
               onClick={() => {
@@ -1237,14 +1248,15 @@ export default function EditLinkInBioPage() {
               title="Copy page link"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? 'Copied!' : 'Copy Link'}
+              {copied ? 'Copied!' : 'Link'}
             </button>
-            {/* Preview Page label — centered */}
-            <div className="flex-1 flex items-center justify-center">
+            {/* Preview Page label — truly centered */}
+            <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none">
               <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
                 Website Preview
               </span>
             </div>
+            <div className="flex-1" />
             {/* Device toggles */}
             <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
               {DEVICES.map(d => (

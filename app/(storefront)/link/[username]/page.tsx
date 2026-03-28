@@ -46,7 +46,7 @@ export async function generateMetadata({
       description: description || undefined,
       images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : [],
       type: 'profile',
-      url: `https://digione.in/link/${username}`,
+      url: `https://digione.ai/link/${username}`,
     },
     twitter: {
       card: imageUrl ? 'summary_large_image' : 'summary',

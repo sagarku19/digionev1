@@ -116,7 +116,7 @@ export default function CreateBuilderAppPage() {
                 <span className="text-xs font-semibold text-rose-700 dark:text-rose-400">Your URL</span>
               </div>
               <p className="text-sm text-rose-600 dark:text-rose-400 font-mono mb-3">
-                digione.in/w/<span className="font-bold">{slug || '...'}</span>
+                digione.ai/w/<span className="font-bold">{slug || '...'}</span>
               </p>
               <input
                 type="text"

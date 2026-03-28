@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   // Check if the current hostname is our root domain or localhost
   const isMainDomain =
-    hostname.includes('digione.in') ||
+    hostname.includes('digione.ai') ||
     hostname.includes('localhost') ||
     hostname.startsWith('192.168.') ||   // ✅ ADD THIS
     hostname.startsWith('10.') ||        // ✅ ADD THIS (optional)

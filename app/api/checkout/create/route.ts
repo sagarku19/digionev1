@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         customer_details: {
           customer_id: orderId,
           customer_name: contact?.name || 'Customer',
-          customer_email: contact?.email || 'noreply@digione.in',
+          customer_email: contact?.email || 'noreply@digione.ai',
           customer_phone: contact?.phone || '0000000000',
         },
         order_meta: {

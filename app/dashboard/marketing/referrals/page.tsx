@@ -80,7 +80,7 @@ export default function ReferralsPage() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digione.in';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digione.ai';
 
   async function load() {
     setLoading(true);

@@ -44,7 +44,7 @@ const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: 'How do I get my store link?',
-        a: 'Your store is live at digione.in/[your-username] once you complete onboarding. You can also create a custom Link-in-Bio site or full storefront from My Sites.',
+        a: 'Your store is live at digione.ai/[your-username] once you complete onboarding. You can also create a custom Link-in-Bio site or full storefront from My Sites.',
       },
       {
         q: 'Is there a free plan?',
@@ -210,7 +210,7 @@ const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: 'How do I delete my account?',
-        a: 'Please contact support at support@digione.in to request account deletion. We\'ll process it within 7 business days after confirming your identity.',
+        a: 'Please contact support at support@digione.ai to request account deletion. We\'ll process it within 7 business days after confirming your identity.',
       },
       {
         q: 'Is my data secure?',
@@ -227,7 +227,7 @@ const SUPPORT_OPTIONS = [
     icon: Mail,
     label: 'Email Support',
     description: 'Get help via email. We respond within 24 hours on business days.',
-    action: 'mailto:support@digione.in',
+    action: 'mailto:support@digione.ai',
     actionLabel: 'Send an email',
     color: 'text-blue-600 dark:text-blue-400',
     bg: 'bg-blue-50 dark:bg-blue-500/10',
@@ -245,7 +245,7 @@ const SUPPORT_OPTIONS = [
     icon: BookOpen,
     label: 'Documentation',
     description: 'Read detailed guides and API references in our knowledge base.',
-    action: 'https://docs.digione.in',
+    action: 'https://docs.digione.ai',
     actionLabel: 'Open docs',
     color: 'text-violet-600 dark:text-violet-400',
     bg: 'bg-violet-50 dark:bg-violet-500/10',
@@ -403,8 +403,8 @@ export default function HelpPage() {
       {/* Platform status note */}
       <p className="text-xs text-[var(--text-secondary)] text-center pb-4">
         DigiOne v1 &mdash; For urgent issues email{' '}
-        <a href="mailto:support@digione.in" className="underline hover:text-[var(--text-primary)] transition">
-          support@digione.in
+        <a href="mailto:support@digione.ai" className="underline hover:text-[var(--text-primary)] transition">
+          support@digione.ai
         </a>
       </p>
 

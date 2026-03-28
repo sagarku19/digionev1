@@ -104,7 +104,7 @@ export default function CreateSinglePagePage() {
                   <span className="text-xs font-semibold text-[var(--text-primary)] dark:text-[var(--text-secondary)]">Your URL</span>
                 </div>
                 <p className="text-sm text-[var(--text-primary)] font-mono">
-                  digione.in/s/<span className="font-bold">{slug || '...'}</span>
+                  digione.ai/s/<span className="font-bold">{slug || '...'}</span>
                 </p>
               </div>
 
@@ -203,7 +203,7 @@ export default function CreateSinglePagePage() {
                     <p className="text-lg font-bold text-gray-900 dark:text-white">{title}</p>
                   </div>
                 </div>
-                <p className="text-xs text-[var(--text-primary)] font-mono mb-2">digione.in/s/{slug}</p>
+                <p className="text-xs text-[var(--text-primary)] font-mono mb-2">digione.ai/s/{slug}</p>
                 {description && <p className="text-xs text-gray-500 leading-relaxed">{description}</p>}
                 {productId && (
                   <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-primary)]">

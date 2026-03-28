@@ -110,7 +110,7 @@ export default function EditPaymentPage() {
             <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
               <Globe className="w-4 h-4 text-emerald-500 shrink-0" />
               <span className="text-sm font-mono text-emerald-600 dark:text-emerald-400 truncate">
-                digione.in/pay/{siteId.substring(0, 8)}...
+                digione.ai/pay/{siteId.substring(0, 8)}...
               </span>
             </div>
             <p className="text-xs text-gray-500">
