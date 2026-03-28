@@ -13,10 +13,11 @@ export default function TopBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showThemeDropdown, setShowThemeDropdown] = useState(false);
 
   const { profile } = useCreator();
   const { unreadCount } = useNotifications();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -48,15 +49,6 @@ export default function TopBar() {
           <Search className="w-3.5 h-3.5" />
         </button>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="w-8 h-8 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition"
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-        </button>
-
         {/* Notifications */}
         <Link
           href="/dashboard/notifications"
@@ -69,6 +61,49 @@ export default function TopBar() {
             </span>
           )}
         </Link>
+
+        {/* Theme Selector */}
+        <div className="relative">
+          <button
+            onClick={() => setShowThemeDropdown(!showThemeDropdown)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition focus:outline-none"
+            title="Dashboard Theme"
+          >
+            {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+            <span className="hidden sm:block">
+              {theme === 'dark' ? 'Dark Theme' : 'Light Theme'}
+            </span>
+          </button>
+
+          {showThemeDropdown && (
+            <div
+              className="absolute right-0 mt-2 w-36 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl shadow-xl py-1 z-50"
+              onMouseLeave={() => setShowThemeDropdown(false)}
+            >
+              <div className="px-3 py-1.5 border-b border-[var(--border)] mb-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Dashboard Theme</p>
+              </div>
+              <button
+                className={`w-full px-3 py-2 text-left text-[13px] flex items-center transition ${theme === 'light' ? 'text-[var(--accent)] bg-[var(--accent)]/10 font-semibold' : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'}`}
+                onClick={() => { setTheme('light'); setShowThemeDropdown(false); }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Sun className="w-4 h-4" />
+                  Light
+                </div>
+              </button>
+              <button
+                className={`w-full px-3 py-2 text-left text-[13px] flex items-center transition ${theme === 'dark' ? 'text-[var(--accent)] bg-[var(--accent)]/10 font-semibold' : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'}`}
+                onClick={() => { setTheme('dark'); setShowThemeDropdown(false); }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Moon className="w-4 h-4" />
+                  Dark
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Profile */}
         <div className="relative ml-1">

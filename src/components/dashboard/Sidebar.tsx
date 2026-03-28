@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Package, Store, BarChart2, DollarSign,
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
-  Network, Gift, Plus, Image, MoreHorizontal, LogOut, MessageCircle, HelpCircle,
+  Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, LogOut, MessageCircle, HelpCircle,
+  Instagram, Zap,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -23,11 +25,11 @@ const NAV: NavGroup[] = [
     id: 'workspace',
     group: 'Workspace',
     items: [
-      { label: 'Overview',  href: '/dashboard',           icon: LayoutDashboard },
-      { label: 'Products',  href: '/dashboard/products',  icon: Package },
-      { label: 'My Sites',  href: '/dashboard/sites',     icon: Store },
+      { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'Products', href: '/dashboard/products', icon: Package },
+      { label: 'My Sites', href: '/dashboard/sites', icon: Store },
       { label: 'Customers', href: '/dashboard/customers', icon: Users },
-      { label: 'Media',     href: '/dashboard/media',     icon: Image },
+      { label: 'Media', href: '/dashboard/media', icon: ImageIcon },
     ],
   },
   {
@@ -35,33 +37,36 @@ const NAV: NavGroup[] = [
     group: 'Money',
     items: [
       { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart2 },
-      { label: 'Earnings',  href: '/dashboard/earnings',  icon: DollarSign },
+      { label: 'Earnings', href: '/dashboard/earnings', icon: DollarSign },
     ],
   },
   {
     id: 'grow',
     group: 'Grow',
     items: [
+      { label: 'Auto DM', href: '/dashboard/autodm', icon: Instagram },
+      { label: 'Automation', href: '/dashboard/automation', icon: Zap },
       { label: 'Community', href: '/dashboard/marketing/community', icon: MessageCircle },
+
       {
         label: 'Marketing',
         href: '/dashboard/marketing',
         icon: Megaphone,
         children: [
-          { label: 'Coupons',    href: '/dashboard/marketing/coupons',    icon: Ticket },
-          { label: 'Leads',      href: '/dashboard/marketing/leads',      icon: BookOpen },
+          { label: 'Coupons', href: '/dashboard/marketing/coupons', icon: Ticket },
+          { label: 'Leads', href: '/dashboard/marketing/leads', icon: BookOpen },
           { label: 'Affiliates', href: '/dashboard/marketing/affiliates', icon: Network },
-          { label: 'Referrals',  href: '/dashboard/marketing/referrals',  icon: Gift },
+          { label: 'Referrals', href: '/dashboard/marketing/referrals', icon: Gift },
         ],
       },
     ],
-  }, 
+  },
 ];
 
 const BOTTOM_NAV = [
   { label: 'Notifications', href: '/dashboard/notifications', icon: Bell },
-  { label: 'Settings',      href: '/dashboard/settings',      icon: Settings },
-  { label: 'Help Center',          href: '/dashboard/help',          icon: HelpCircle },
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { label: 'Help Center', href: '/dashboard/help', icon: HelpCircle },
 ];
 
 // ─── Sidebar ─────────────────────────────────────────────────
@@ -106,17 +111,15 @@ export default function Sidebar() {
     <Link
       href={href}
       onClick={close}
-      className={`group flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${
-        active
-          ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-          : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
-      }`}
+      className={`group flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${active
+        ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
+        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+        }`}
     >
-      <Icon className={`w-[18px] h-[18px] shrink-0 transition-colors ${
-        active
-          ? 'text-[var(--text-primary)]'
-          : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
-      }`} />
+      <Icon className={`w-[18px] h-[18px] shrink-0 transition-colors ${active
+        ? 'text-[var(--text-primary)]'
+        : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+        }`} />
       <span className="flex-1 truncate">{label}</span>
       {badge && badge > 0 ? (
         <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--danger)] text-white text-[10px] font-bold leading-none">
@@ -153,12 +156,12 @@ export default function Sidebar() {
       `}>
 
         {/* ── Logo ── */}
-        <div className="h-14 flex items-center justify-between px-4 shrink-0">
-          <Link href="/dashboard" onClick={close} className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-[var(--brand)] to-violet-600 rounded-xl flex items-center justify-center text-white text-xs font-extrabold shadow-lg">
-              D1
-            </div>
-            <span className="font-bold text-[15px] tracking-tight text-[var(--text-primary)]">DigiOne</span>
+        <div className="h-14 flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1 bg-[var(--bg-primary)]/50">
+          <Link href="/dashboard" onClick={close} className="flex items-center gap-2 shrink-0 group">
+            <Image src="/logo.webp" alt="DigiOne" width={28} height={28} className="rounded-lg group-hover:scale-105 transition-transform" />
+            <span className="text-[16px] font-bold tracking-tight text-[var(--text-primary)]">
+              DigiOne<sup className="text-[9px] text-[var(--text-secondary)] font-medium ml-0.5 -top-1.5 relative">.ai</sup>
+            </span>
           </Link>
           <button onClick={close} className="md:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
             <X className="w-4 h-4" />
@@ -170,15 +173,16 @@ export default function Sidebar() {
           <Link
             href="/dashboard/sites/new"
             onClick={close}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-lg text-xs font-semibold transition"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-xs font-semibold transition"
           >
             <Plus className="w-3.5 h-3.5" />
             Create site
           </Link>
+
           <Link
             href="/dashboard/products/new"
             onClick={close}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-lg text-xs font-semibold transition"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-xl text-xs font-semibold transition"
           >
             <Plus className="w-3.5 h-3.5" />
             Add product
@@ -207,11 +211,10 @@ export default function Sidebar() {
                       <div key={item.href}>
                         <button
                           onClick={() => toggleAccordion(item.href)}
-                          className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${
-                            childActive
-                              ? 'text-[var(--text-primary)] bg-[var(--bg-tertiary)]'
-                              : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
-                          }`}
+                          className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${childActive
+                            ? 'text-[var(--text-primary)] bg-[var(--bg-tertiary)]'
+                            : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                            }`}
                         >
                           <item.icon className={`w-[18px] h-[18px] shrink-0 ${childActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`} />
                           <span className="flex-1 text-left">{item.label}</span>
@@ -227,11 +230,10 @@ export default function Sidebar() {
                                   key={child.href}
                                   href={child.href}
                                   onClick={close}
-                                  className={`flex items-center gap-2 px-2.5 py-[5px] rounded-md text-xs font-medium transition-all ${
-                                    ca
-                                      ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
-                                  }`}
+                                  className={`flex items-center gap-2 px-2.5 py-[5px] rounded-md text-xs font-medium transition-all ${ca
+                                    ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
+                                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                                    }`}
                                 >
                                   <child.icon className={`w-3.5 h-3.5 shrink-0 ${ca ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`} />
                                   {child.label}
