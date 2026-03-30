@@ -458,6 +458,17 @@ export default function BioLinksEditor({
                           ))}
                         </div>
                       </div>
+                      <div>
+                        <FieldLabel>Width in Grid</FieldLabel>
+                        <div className="flex gap-1.5">
+                          <Chip active={(link.metadata?.col_span || 'full') === 'full'} onClick={() => updateMeta(link.id, 'col_span', 'full')}>
+                            Full Width
+                          </Chip>
+                          <Chip active={link.metadata?.col_span === 'half'} onClick={() => updateMeta(link.id, 'col_span', 'half')}>
+                            Half Width
+                          </Chip>
+                        </div>
+                      </div>
                     </>
                   )}
 

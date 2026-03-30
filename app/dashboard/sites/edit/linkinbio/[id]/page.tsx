@@ -916,7 +916,7 @@ export default function EditLinkInBioPage() {
               ) : (
                 <Save className="w-3.5 h-3.5" />
               )}
-              {saved ? 'Saved' : 'Save'}
+              {saved ? 'Saved' : 'Save Changes'}
             </button>
           </div>
 

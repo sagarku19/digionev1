@@ -49,6 +49,7 @@ type BioLink = {
 
 type Props = {
   siteId: string;
+  username?: string;
   bio: BioData;
   links: BioLink[];
   productsMap: Record<string, { id: string; name: string; price: number; thumbnail_url: string | null; is_published: boolean }>;
@@ -166,44 +167,52 @@ function trackClick(siteId: string, linkId: string, eventType: string) {
 
 // ─── Profile Section ─────────────────────────────────────────
 function ProfileSection({
-  bio, palette, socials, onShare,
+  bio, palette, socials, onShare, username,
 }: {
   bio: BioData;
   palette: Record<string, string>;
   socials: SocialLink[];
   onShare: () => void;
+  username?: string;
 }) {
   return (
-    <div className="flex flex-col items-center lg:items-center gap-4">
+    <div className="flex flex-col items-center gap-5 text-center w-full">
       {bio.cover_image_url && (
-        <div className="w-full h-32 lg:h-36 rounded-2xl overflow-hidden -mb-10">
+        <div className="w-full h-32 rounded-2xl overflow-hidden -mb-12">
           <img src={bio.cover_image_url} alt="" className="w-full h-full object-cover" />
         </div>
       )}
       <div
-        className={`w-24 h-24 lg:w-28 lg:h-28 overflow-hidden border-4 border-white shadow-lg ${bio.cover_image_url ? 'relative z-10' : ''} ${
+        className={`w-24 h-24 overflow-hidden border-4 shadow-lg shrink-0 ${bio.cover_image_url ? 'relative z-10' : ''} ${
           bio.avatar_shape === 'square' ? 'rounded-none' : bio.avatar_shape === 'rounded' ? 'rounded-2xl' : 'rounded-full'
         }`}
-        style={{ backgroundColor: palette.primary || '#EC4899' }}
+        style={{ backgroundColor: palette.primary || '#EC4899', borderColor: palette.background || '#fff' }}
       >
         {bio.avatar_url ? (
           <img src={bio.avatar_url} alt={bio.display_name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-white text-2xl lg:text-3xl font-bold">
+          <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold">
             {bio.display_name.charAt(0).toUpperCase()}
           </div>
         )}
       </div>
-      <div className="text-center lg:text-center">
-        <h1 className="text-xl lg:text-2xl font-bold" style={{ color: palette.text || '#0F172A' }}>
+
+      <div className="flex flex-col items-center gap-1">
+        <h1 className="text-2xl font-bold leading-tight" style={{ color: palette.text || '#0F172A' }}>
           {bio.display_name}
         </h1>
+        {username && (
+          <p className="text-sm font-medium" style={{ color: palette.muted || '#64748B' }}>
+            @{username}
+          </p>
+        )}
         {bio.bio_text && (
-          <p className="mt-1.5 text-sm lg:text-base max-w-xs mx-auto leading-relaxed" style={{ color: palette.muted || '#64748B' }}>
+          <p className="mt-2 text-sm leading-relaxed max-w-65" style={{ color: palette.muted || '#64748B' }}>
             {bio.bio_text}
           </p>
         )}
       </div>
+
       {socials.length > 0 && (
         <div className="flex items-center gap-2.5 flex-wrap justify-center">
           {socials.map((s, i) => {
@@ -211,13 +220,14 @@ function ProfileSection({
             return (
               <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full flex items-center justify-center transition hover:scale-110"
-                style={{ backgroundColor: `${palette.primary || '#EC4899'}15`, color: palette.primary || '#EC4899' }}>
+                style={{ backgroundColor: `${palette.primary || '#EC4899'}18`, color: palette.primary || '#EC4899' }}>
                 <Icon className="w-4 h-4" />
               </a>
             );
           })}
         </div>
       )}
+
       {bio.show_share_button && (
         <button onClick={onShare}
           className="flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-full transition hover:opacity-80"
@@ -499,7 +509,7 @@ function LinkCard({
       return (
         <a href={href}
           onClick={() => trackClick(siteId, link.id, 'product_click')}
-          className={`w-full flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg ${rClass}`}
+          className={`w-full col-span-2 flex flex-col overflow-hidden transition-all duration-200 hover:shadow-lg ${rClass}`}
           style={{ ...cardSt, ...animStyle }}>
           <div className="relative w-full">
             {displayImage ? (
@@ -547,7 +557,7 @@ function LinkCard({
       return (
         <a href={href}
           onClick={() => trackClick(siteId, link.id, 'product_click')}
-          className={`w-full flex flex-row overflow-hidden transition-all duration-200 hover:shadow-lg ${rClass}`}
+          className={`w-full col-span-2 flex flex-row overflow-hidden transition-all duration-200 hover:shadow-lg ${rClass}`}
           style={{ ...cardSt, ...animStyle }}>
           {/* Left: image ~40% width */}
           <div className="relative shrink-0 w-2/5">
@@ -598,7 +608,7 @@ function LinkCard({
     return (
       <a href={href}
         onClick={() => trackClick(siteId, link.id, 'product_click')}
-        className={`${getButtonClasses(bio.button_style, bio.border_radius)} group`}
+        className={`${getButtonClasses(bio.button_style, bio.border_radius)} group col-span-2`}
         style={{ ...cardSt, ...animStyle }}>
         <div className="relative shrink-0">
           {displayImage ? (
@@ -654,11 +664,12 @@ function LinkCard({
 
     const isFeatured = link.style_variant === 'featured';
     const linkAnim = link.metadata?.animation || 'none';
+    const isHalf = link.metadata?.col_span === 'half';
 
     return (
       <a href={link.url || '#'} target="_blank" rel="noopener noreferrer"
         onClick={() => trackClick(siteId, link.id, 'link_click')}
-        className={`${getButtonClasses(bio.button_style, bio.border_radius)} group ${isFeatured ? 'py-5' : ''} ${
+        className={`${getButtonClasses(bio.button_style, bio.border_radius)} group ${isFeatured ? 'py-5' : ''} ${isHalf ? 'col-span-1' : 'col-span-2'} ${
           linkAnim === 'pulse' ? 'hover:animate-pulse' :
           linkAnim === 'shine' ? 'bio-shine' :
           linkAnim === 'glow' ? 'bio-glow' : ''
@@ -709,7 +720,7 @@ function AnimationStyles() {
 }
 
 // ─── Main Component ──────────────────────────────────────────
-export default function LinkInBioPage({ siteId, bio, links, productsMap, palette }: Props) {
+export default function LinkInBioPage({ siteId, username, bio, links, productsMap, palette }: Props) {
   const [liveBio, setLiveBio] = useState<BioData | null>(null);
   const [liveLinks, setLiveLinks] = useState<BioLink[] | null>(null);
   const [livePalette, setLivePalette] = useState<Record<string, string> | null>(null);
@@ -772,44 +783,49 @@ export default function LinkInBioPage({ siteId, bio, links, productsMap, palette
       <FontLink font={activeBio.font_family} />
       <AnimationStyles />
 
-      <div className="w-full max-w-6xl mx-auto px-4 py-8 lg:py-12">
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+      {/* ── Centered max-width container — flex split on desktop ── */}
+      <div className="max-w-5xl mx-auto min-h-screen flex flex-col lg:flex-row lg:gap-4">
 
-          {/* ── Left: Profile (sticky on desktop) ── */}
-          <div className="w-full lg:w-80 lg:shrink-0">
-            <div className="lg:sticky lg:top-12">
-              <ProfileSection bio={activeBio} palette={activePalette} socials={socials} onShare={handleShare} />
-            </div>
+        {/* ── Left Panel: profile ── */}
+        <div className="w-full lg:w-2/5 lg:shrink-0">
+          {/* Mobile */}
+          <div className="lg:hidden px-8 py-10">
+            <ProfileSection bio={activeBio} palette={activePalette} socials={socials} onShare={handleShare} username={username} />
           </div>
-
-          {/* ── Right: Links ── */}
-          <div className="flex-1 min-w-0 max-w-lg mx-auto lg:mx-0 w-full">
-            <div className={`w-full flex flex-col ${spacingClass} ${activeBio.layout_style === 'grid' ? 'sm:grid sm:grid-cols-2' : ''}`}>
-              {activeLinks.map((link, i) => (
-                <LinkCard
-                  key={link.id}
-                  link={link}
-                  bio={activeBio}
-                  palette={activePalette}
-                  productsMap={activeProductsMap}
-                  siteId={siteId}
-                  index={i}
-                />
-              ))}
-            </div>
-
-            {activeBio.show_watermark && (
-              <a href="https://digione.ai" target="_blank" rel="noopener noreferrer"
-                className="mt-8 flex items-center justify-center lg:justify-start gap-1.5 text-xs font-medium opacity-50 hover:opacity-80 transition"
-                style={{ color: activePalette.muted || '#64748B' }}>
-                <div className="w-4 h-4 bg-linear-to-br from-indigo-600 to-violet-600 rounded flex items-center justify-center text-white text-[7px] font-extrabold">
-                  D1
-                </div>
-                Made with DigiOne
-              </a>
-            )}
+          {/* Desktop: sticky, full-height, vertically centered */}
+          <div className="hidden lg:flex flex-col items-center justify-center pl-2 pr-30" style={{ height: '100vh', position: 'sticky', top: 0 }}>
+            <ProfileSection bio={activeBio} palette={activePalette} socials={socials} onShare={handleShare} username={username} />
           </div>
         </div>
+
+        {/* ── Right Panel: scrollable links ── */}
+        <div className="flex-1 min-w-0 px-4 lg:px-10 py-6 lg:py-12">
+          <div className={activeBio.layout_style === 'grid' ? `w-full grid grid-cols-2 ${spacingClass}` : `w-full flex flex-col ${spacingClass}`}>
+            {activeLinks.map((link, i) => (
+              <LinkCard
+                key={link.id}
+                link={link}
+                bio={activeBio}
+                palette={activePalette}
+                productsMap={activeProductsMap}
+                siteId={siteId}
+                index={i}
+              />
+            ))}
+          </div>
+
+          {activeBio.show_watermark && (
+            <a href="https://digione.ai" target="_blank" rel="noopener noreferrer"
+              className="mt-8 flex items-center justify-center gap-1.5 text-xs font-medium opacity-50 hover:opacity-80 transition"
+              style={{ color: activePalette.muted || '#64748B' }}>
+              <div className="w-4 h-4 bg-linear-to-br from-indigo-600 to-violet-600 rounded flex items-center justify-center text-white text-[7px] font-extrabold">
+                D1
+              </div>
+              Made with DigiOne
+            </a>
+          )}
+        </div>
+
       </div>
     </div>
   );
