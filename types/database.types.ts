@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -45,22 +45,7 @@ export type Database = {
           metadata?: Json | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_aff_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_aff_user"
-            columns: ["affiliate_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       api_rate_limits: {
         Row: {
@@ -99,15 +84,7 @@ export type Database = {
           window_end?: string
           window_start?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_api_rate_limit_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       background_jobs: {
         Row: {
@@ -147,15 +124,11 @@ export type Database = {
           content: string | null
           created_at: string | null
           creator_id: string
-          custom_css: string | null
-          custom_head_html: string | null
-          custom_js: string | null
           description: string | null
           duration_seconds: number | null
           id: string
           is_free: boolean | null
           is_published: boolean | null
-          metadata: Json | null
           product_id: string | null
           published_at: string | null
           search_vector: unknown
@@ -175,15 +148,11 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           creator_id: string
-          custom_css?: string | null
-          custom_head_html?: string | null
-          custom_js?: string | null
           description?: string | null
           duration_seconds?: number | null
           id?: string
           is_free?: boolean | null
           is_published?: boolean | null
-          metadata?: Json | null
           product_id?: string | null
           published_at?: string | null
           search_vector?: unknown
@@ -203,15 +172,11 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           creator_id?: string
-          custom_css?: string | null
-          custom_head_html?: string | null
-          custom_js?: string | null
           description?: string | null
           duration_seconds?: number | null
           id?: string
           is_free?: boolean | null
           is_published?: boolean | null
-          metadata?: Json | null
           product_id?: string | null
           published_at?: string | null
           search_vector?: unknown
@@ -236,13 +201,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_blog_posts_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_blog_posts_site"
             columns: ["site_id"]
             isOneToOne: false
@@ -260,6 +218,7 @@ export type Database = {
           metadata: Json | null
           name: string
           source: string | null
+          storage_file_id: string | null
           storage_url: string
           tags: string[] | null
           thumbnail_url: string | null
@@ -272,6 +231,7 @@ export type Database = {
           metadata?: Json | null
           name: string
           source?: string | null
+          storage_file_id?: string | null
           storage_url: string
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -284,6 +244,7 @@ export type Database = {
           metadata?: Json | null
           name?: string
           source?: string | null
+          storage_file_id?: string | null
           storage_url?: string
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -296,64 +257,53 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_ba_storage"
+            columns: ["storage_file_id"]
+            isOneToOne: false
+            referencedRelation: "storage_files"
+            referencedColumns: ["id"]
+          },
         ]
       }
       builder_fonts: {
         Row: {
           created_at: string | null
           creator_id: string
+          custom_url: string | null
           font_family: string
           font_name: string
           google_font_id: string | null
           id: string
           is_active: boolean | null
-          site_id: string
+          site_id: string | null
           source: Database["public"]["Enums"]["font_source_type"]
-          storage_url: string | null
-          variants: Json | null
         }
         Insert: {
           created_at?: string | null
           creator_id: string
+          custom_url?: string | null
           font_family: string
           font_name: string
           google_font_id?: string | null
           id?: string
           is_active?: boolean | null
-          site_id: string
+          site_id?: string | null
           source?: Database["public"]["Enums"]["font_source_type"]
-          storage_url?: string | null
-          variants?: Json | null
         }
         Update: {
           created_at?: string | null
           creator_id?: string
+          custom_url?: string | null
           font_family?: string
           font_name?: string
           google_font_id?: string | null
           id?: string
           is_active?: boolean | null
-          site_id?: string
+          site_id?: string | null
           source?: Database["public"]["Enums"]["font_source_type"]
-          storage_url?: string | null
-          variants?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_bf_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_bf_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       conversion_events: {
         Row: {
@@ -386,22 +336,7 @@ export type Database = {
           session_id?: string | null
           site_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_ce_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_ce_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       coupons: {
         Row: {
@@ -449,15 +384,7 @@ export type Database = {
           valid_from?: string | null
           valid_until?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_coupons_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_balances: {
         Row: {
@@ -490,21 +417,14 @@ export type Database = {
           total_platform_fees?: number
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_creator_balances_creator"
-            columns: ["creator_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_kyc: {
         Row: {
           aadhaar_last4: string | null
           address_line1: string | null
           address_line2: string | null
+          admin_notes: string | null
           bank_account_enc: string | null
           bank_account_name: string | null
           bank_last4: string | null
@@ -527,8 +447,6 @@ export type Database = {
           ifsc_code: string | null
           kyc_level: string
           legal_name: string | null
-          metadata: Json | null
-          notes: string | null
           pan_enc: string | null
           pan_last4: string | null
           pan_name: string | null
@@ -537,8 +455,6 @@ export type Database = {
           pan_verified: boolean | null
           pan_verified_at: string | null
           postal_code: string | null
-          provider_verification_id: string | null
-          rejected_at: string | null
           rejection_reason: string | null
           state: string | null
           status: string
@@ -549,13 +465,12 @@ export type Database = {
           upi_verified: boolean | null
           upi_verified_at: string | null
           verification_provider: string | null
-          verified_at: string | null
-          verified_by: string | null
         }
         Insert: {
           aadhaar_last4?: string | null
           address_line1?: string | null
           address_line2?: string | null
+          admin_notes?: string | null
           bank_account_enc?: string | null
           bank_account_name?: string | null
           bank_last4?: string | null
@@ -578,8 +493,6 @@ export type Database = {
           ifsc_code?: string | null
           kyc_level?: string
           legal_name?: string | null
-          metadata?: Json | null
-          notes?: string | null
           pan_enc?: string | null
           pan_last4?: string | null
           pan_name?: string | null
@@ -588,8 +501,6 @@ export type Database = {
           pan_verified?: boolean | null
           pan_verified_at?: string | null
           postal_code?: string | null
-          provider_verification_id?: string | null
-          rejected_at?: string | null
           rejection_reason?: string | null
           state?: string | null
           status?: string
@@ -600,13 +511,12 @@ export type Database = {
           upi_verified?: boolean | null
           upi_verified_at?: string | null
           verification_provider?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
         }
         Update: {
           aadhaar_last4?: string | null
           address_line1?: string | null
           address_line2?: string | null
+          admin_notes?: string | null
           bank_account_enc?: string | null
           bank_account_name?: string | null
           bank_last4?: string | null
@@ -629,8 +539,6 @@ export type Database = {
           ifsc_code?: string | null
           kyc_level?: string
           legal_name?: string | null
-          metadata?: Json | null
-          notes?: string | null
           pan_enc?: string | null
           pan_last4?: string | null
           pan_name?: string | null
@@ -639,8 +547,6 @@ export type Database = {
           pan_verified?: boolean | null
           pan_verified_at?: string | null
           postal_code?: string | null
-          provider_verification_id?: string | null
-          rejected_at?: string | null
           rejection_reason?: string | null
           state?: string | null
           status?: string
@@ -651,18 +557,8 @@ export type Database = {
           upi_verified?: boolean | null
           upi_verified_at?: string | null
           verification_provider?: string | null
-          verified_at?: string | null
-          verified_by?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_creator_kyc_creator"
-            columns: ["creator_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_payout_methods: {
         Row: {
@@ -716,15 +612,7 @@ export type Database = {
           upi_id?: string | null
           version?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_creator_payout_methods_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_payout_request_items: {
         Row: {
@@ -750,17 +638,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_cpri_payout_request"
+            foreignKeyName: "fk_cpri_request"
             columns: ["payout_request_id"]
             isOneToOne: false
             referencedRelation: "creator_payout_requests"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_cpri_revenue_share"
-            columns: ["revenue_share_id"]
-            isOneToOne: false
-            referencedRelation: "creator_revenue_shares"
             referencedColumns: ["id"]
           },
         ]
@@ -805,22 +686,7 @@ export type Database = {
           status?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_creator_payout_requests_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_creator_payout_requests_method"
-            columns: ["payout_method_id"]
-            isOneToOne: false
-            referencedRelation: "creator_payout_methods"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_payouts: {
         Row: {
@@ -877,29 +743,7 @@ export type Database = {
           status?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_creator_payouts_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_creator_payouts_method"
-            columns: ["payout_method_id"]
-            isOneToOne: false
-            referencedRelation: "creator_payout_methods"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_creator_payouts_request"
-            columns: ["payout_request_id"]
-            isOneToOne: false
-            referencedRelation: "creator_payout_requests"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_revenue_shares: {
         Row: {
@@ -953,29 +797,7 @@ export type Database = {
           subscription_id?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_crs_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_crs_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_revenue_share_subscription"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       creator_subscription_orders: {
         Row: {
@@ -1023,26 +845,16 @@ export type Database = {
           plan_id?: string
           status?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_cso_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       email_events: {
         Row: {
           created_at: string | null
           creator_id: string | null
-          error_message: string | null
           id: string
           metadata: Json | null
           order_id: string | null
           payout_request_id: string | null
-          provider_response: Json | null
           recipient_email: string
           sent_at: string | null
           status: string | null
@@ -1053,12 +865,10 @@ export type Database = {
         Insert: {
           created_at?: string | null
           creator_id?: string | null
-          error_message?: string | null
           id?: string
           metadata?: Json | null
           order_id?: string | null
           payout_request_id?: string | null
-          provider_response?: Json | null
           recipient_email: string
           sent_at?: string | null
           status?: string | null
@@ -1069,12 +879,10 @@ export type Database = {
         Update: {
           created_at?: string | null
           creator_id?: string | null
-          error_message?: string | null
           id?: string
           metadata?: Json | null
           order_id?: string | null
           payout_request_id?: string | null
-          provider_response?: Json | null
           recipient_email?: string
           sent_at?: string | null
           status?: string | null
@@ -1082,22 +890,7 @@ export type Database = {
           template_name?: string
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_ee_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_ee_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       guest_leads: {
         Row: {
@@ -1136,18 +929,172 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
         }
+        Relationships: []
+      }
+      linkinbio_blocks: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          is_visible: boolean
+          page_id: string
+          settings: Json
+          sort_order: number
+          style: Json
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_id: string
+          settings?: Json
+          sort_order?: number
+          style?: Json
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_id?: string
+          settings?: Json
+          sort_order?: number
+          style?: Json
+          type?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "fk_guest_leads_product"
+            foreignKeyName: "fk_linkinbio_blocks_page"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "linkinbio_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkinbio_items: {
+        Row: {
+          block_id: string
+          click_count: number
+          created_at: string
+          description: string
+          id: string
+          is_visible: boolean
+          metadata: Json
+          product_id: string | null
+          sort_order: number
+          thumbnail_url: string
+          title: string
+          type: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          block_id: string
+          click_count?: number
+          created_at?: string
+          description?: string
+          id?: string
+          is_visible?: boolean
+          metadata?: Json
+          product_id?: string | null
+          sort_order?: number
+          thumbnail_url?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Update: {
+          block_id?: string
+          click_count?: number
+          created_at?: string
+          description?: string
+          id?: string
+          is_visible?: boolean
+          metadata?: Json
+          product_id?: string | null
+          sort_order?: number
+          thumbnail_url?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_linkinbio_items_block"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "linkinbio_blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_linkinbio_items_product"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      linkinbio_pages: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          cover_url: string | null
+          created_at: string
+          display_name: string
+          id: string
+          layout: Json
+          published: boolean
+          seo: Json
+          settings: Json
+          site_id: string
+          theme: Json
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          cover_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          layout?: Json
+          published?: boolean
+          seo?: Json
+          settings?: Json
+          site_id: string
+          theme?: Json
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          cover_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          layout?: Json
+          published?: boolean
+          seo?: Json
+          settings?: Json
+          site_id?: string
+          theme?: Json
+          updated_at?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "fk_guest_leads_site"
+            foreignKeyName: "fk_linkinbio_pages_site"
             columns: ["site_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "sites"
             referencedColumns: ["id"]
           },
@@ -1168,6 +1115,7 @@ export type Database = {
           is_favorite: boolean | null
           media_type: string
           metadata: Json | null
+          storage_file_id: string | null
           storage_url: string
           tags: string[] | null
           thumbnail_url: string | null
@@ -1189,6 +1137,7 @@ export type Database = {
           is_favorite?: boolean | null
           media_type: string
           metadata?: Json | null
+          storage_file_id?: string | null
           storage_url: string
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -1210,6 +1159,7 @@ export type Database = {
           is_favorite?: boolean | null
           media_type?: string
           metadata?: Json | null
+          storage_file_id?: string | null
           storage_url?: string
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -1223,6 +1173,13 @@ export type Database = {
             columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_media_library_storage"
+            columns: ["storage_file_id"]
+            isOneToOne: false
+            referencedRelation: "storage_files"
             referencedColumns: ["id"]
           },
         ]
@@ -1267,22 +1224,7 @@ export type Database = {
           type?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_notifications_creator"
-            columns: ["recipient_creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_notifications_user"
-            columns: ["recipient_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       order_items: {
         Row: {
@@ -1320,21 +1262,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_order_items_order"
+            foreignKeyName: "fk_oi_order"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_order_items_origin_site"
-            columns: ["origin_site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_order_items_product"
+            foreignKeyName: "fk_oi_product"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -1349,10 +1284,9 @@ export type Database = {
           id: string
           metadata: Json | null
           order_id: string
-          referral_code_id: string | null
-          referred_user_id: string
+          referral_code_id: string
+          referred_user_id: string | null
           referrer_creator_id: string | null
-          referrer_user_id: string | null
           status: string | null
         }
         Insert: {
@@ -1361,10 +1295,9 @@ export type Database = {
           id?: string
           metadata?: Json | null
           order_id: string
-          referral_code_id?: string | null
-          referred_user_id: string
+          referral_code_id: string
+          referred_user_id?: string | null
           referrer_creator_id?: string | null
-          referrer_user_id?: string | null
           status?: string | null
         }
         Update: {
@@ -1373,42 +1306,12 @@ export type Database = {
           id?: string
           metadata?: Json | null
           order_id?: string
-          referral_code_id?: string | null
-          referred_user_id?: string
+          referral_code_id?: string
+          referred_user_id?: string | null
           referrer_creator_id?: string | null
-          referrer_user_id?: string | null
           status?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_or_referral_code"
-            columns: ["referral_code_id"]
-            isOneToOne: false
-            referencedRelation: "referral_codes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_or_referred_user"
-            columns: ["referred_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_or_referrer_creator"
-            columns: ["referrer_creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_or_referrer_user"
-            columns: ["referrer_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       orders: {
         Row: {
@@ -1468,29 +1371,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_orders_guest_lead"
-            columns: ["guest_lead_id"]
-            isOneToOne: false
-            referencedRelation: "guest_leads"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_orders_origin_site"
-            columns: ["origin_site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_orders_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       other_products: {
         Row: {
@@ -1523,22 +1404,7 @@ export type Database = {
           product_id?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_other_products_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_other_products_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       page_block_media: {
         Row: {
@@ -1564,14 +1430,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_page_block_media_block"
+            foreignKeyName: "fk_pbm_block"
             columns: ["page_block_id"]
             isOneToOne: false
             referencedRelation: "page_blocks"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_page_block_media_media"
+            foreignKeyName: "fk_pbm_media"
             columns: ["media_id"]
             isOneToOne: false
             referencedRelation: "media_library"
@@ -1581,166 +1447,122 @@ export type Database = {
       }
       page_blocks: {
         Row: {
-          animation: Json | null
+          animations: Json | null
           background_color: string | null
           background_image_url: string | null
           background_video_url: string | null
           block_type: Database["public"]["Enums"]["page_block_type"]
-          content: Json
+          content: Json | null
           created_at: string | null
           creator_id: string
           custom_classes: string | null
           custom_css: string | null
           custom_id: string | null
           custom_styles: Json | null
-          deleted_at: string | null
           display_name: string | null
-          entrance_animation: Json | null
           html_attributes: Json | null
           id: string
-          interaction_triggers: Json | null
           is_locked: boolean | null
           is_visible: boolean | null
           layout_role: Database["public"]["Enums"]["layout_role_type"]
           margin: Json | null
-          metadata: Json | null
           padding: Json | null
           page_id: string
           parent_block_id: string | null
-          responsive_settings: Json | null
+          responsive_overrides: Json | null
           sort_order: number
+          style: Json | null
           updated_at: string | null
-          visibility_rules: Json | null
         }
         Insert: {
-          animation?: Json | null
+          animations?: Json | null
           background_color?: string | null
           background_image_url?: string | null
           background_video_url?: string | null
           block_type: Database["public"]["Enums"]["page_block_type"]
-          content?: Json
+          content?: Json | null
           created_at?: string | null
           creator_id: string
           custom_classes?: string | null
           custom_css?: string | null
           custom_id?: string | null
           custom_styles?: Json | null
-          deleted_at?: string | null
           display_name?: string | null
-          entrance_animation?: Json | null
           html_attributes?: Json | null
           id?: string
-          interaction_triggers?: Json | null
           is_locked?: boolean | null
           is_visible?: boolean | null
           layout_role?: Database["public"]["Enums"]["layout_role_type"]
           margin?: Json | null
-          metadata?: Json | null
           padding?: Json | null
           page_id: string
           parent_block_id?: string | null
-          responsive_settings?: Json | null
+          responsive_overrides?: Json | null
           sort_order?: number
+          style?: Json | null
           updated_at?: string | null
-          visibility_rules?: Json | null
         }
         Update: {
-          animation?: Json | null
+          animations?: Json | null
           background_color?: string | null
           background_image_url?: string | null
           background_video_url?: string | null
           block_type?: Database["public"]["Enums"]["page_block_type"]
-          content?: Json
+          content?: Json | null
           created_at?: string | null
           creator_id?: string
           custom_classes?: string | null
           custom_css?: string | null
           custom_id?: string | null
           custom_styles?: Json | null
-          deleted_at?: string | null
           display_name?: string | null
-          entrance_animation?: Json | null
           html_attributes?: Json | null
           id?: string
-          interaction_triggers?: Json | null
           is_locked?: boolean | null
           is_visible?: boolean | null
           layout_role?: Database["public"]["Enums"]["layout_role_type"]
           margin?: Json | null
-          metadata?: Json | null
           padding?: Json | null
           page_id?: string
           parent_block_id?: string | null
-          responsive_settings?: Json | null
+          responsive_overrides?: Json | null
           sort_order?: number
+          style?: Json | null
           updated_at?: string | null
-          visibility_rules?: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_page_blocks_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_page_blocks_page"
+            foreignKeyName: "fk_pb_page"
             columns: ["page_id"]
             isOneToOne: false
             referencedRelation: "pages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_page_blocks_parent"
-            columns: ["parent_block_id"]
-            isOneToOne: false
-            referencedRelation: "page_blocks"
             referencedColumns: ["id"]
           },
         ]
       }
       page_edit_locks: {
         Row: {
+          created_at: string | null
           expires_at: string
-          id: string
-          locked_at: string
           locked_by_user_id: string
           page_id: string
           session_id: string
         }
         Insert: {
-          expires_at?: string
-          id?: string
-          locked_at?: string
+          created_at?: string | null
+          expires_at: string
           locked_by_user_id: string
           page_id: string
           session_id: string
         }
         Update: {
+          created_at?: string | null
           expires_at?: string
-          id?: string
-          locked_at?: string
           locked_by_user_id?: string
           page_id?: string
           session_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_page_edit_locks_page"
-            columns: ["page_id"]
-            isOneToOne: true
-            referencedRelation: "pages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_page_edit_locks_user"
-            columns: ["locked_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       page_templates: {
         Row: {
@@ -1751,9 +1573,8 @@ export type Database = {
           id: string
           is_public: boolean | null
           is_system_template: boolean | null
-          metadata: Json | null
           page_type: Database["public"]["Enums"]["page_type"]
-          rating: number | null
+          tags: string[] | null
           template_blocks: Json
           template_name: string
           thumbnail_url: string | null
@@ -1768,9 +1589,8 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           is_system_template?: boolean | null
-          metadata?: Json | null
           page_type: Database["public"]["Enums"]["page_type"]
-          rating?: number | null
+          tags?: string[] | null
           template_blocks: Json
           template_name: string
           thumbnail_url?: string | null
@@ -1785,29 +1605,19 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           is_system_template?: boolean | null
-          metadata?: Json | null
           page_type?: Database["public"]["Enums"]["page_type"]
-          rating?: number | null
+          tags?: string[] | null
           template_blocks?: Json
           template_name?: string
           thumbnail_url?: string | null
           updated_at?: string | null
           usage_count?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_page_templates_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       page_versions: {
         Row: {
-          change_summary: string | null
-          created_at: string
+          created_at: string | null
           created_by_user_id: string | null
           id: string
           is_autosave: boolean | null
@@ -1816,8 +1626,7 @@ export type Database = {
           version_label: string | null
         }
         Insert: {
-          change_summary?: string | null
-          created_at?: string
+          created_at?: string | null
           created_by_user_id?: string | null
           id?: string
           is_autosave?: boolean | null
@@ -1826,8 +1635,7 @@ export type Database = {
           version_label?: string | null
         }
         Update: {
-          change_summary?: string | null
-          created_at?: string
+          created_at?: string | null
           created_by_user_id?: string | null
           id?: string
           is_autosave?: boolean | null
@@ -1835,26 +1643,10 @@ export type Database = {
           page_id?: string
           version_label?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_page_versions_user"
-            columns: ["created_by_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "page_versions_page_id_fkey"
-            columns: ["page_id"]
-            isOneToOne: false
-            referencedRelation: "pages"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       pages: {
         Row: {
-          canonical_url: string | null
           created_at: string
           creator_id: string | null
           custom_css: string | null
@@ -1866,12 +1658,8 @@ export type Database = {
           is_published: boolean | null
           layout: Json | null
           layout_type: string | null
-          meta_robots: string | null
-          metadata: Json | null
           name: string
-          og_image_url: string | null
           page_type: Database["public"]["Enums"]["page_type"]
-          password_protected_hash: string | null
           project_id: string
           published_at: string | null
           seo_description: string | null
@@ -1879,16 +1667,13 @@ export type Database = {
           seo_title: string | null
           site_id: string | null
           slug: string
-          sort_order: number | null
           status: Database["public"]["Enums"]["content_status"] | null
-          theme_override: Json | null
+          thumbnail_url: string | null
           title: string | null
-          updated_at: string
+          updated_at: string | null
           view_count: number | null
-          visibility: string | null
         }
         Insert: {
-          canonical_url?: string | null
           created_at?: string
           creator_id?: string | null
           custom_css?: string | null
@@ -1900,12 +1685,8 @@ export type Database = {
           is_published?: boolean | null
           layout?: Json | null
           layout_type?: string | null
-          meta_robots?: string | null
-          metadata?: Json | null
           name: string
-          og_image_url?: string | null
           page_type?: Database["public"]["Enums"]["page_type"]
-          password_protected_hash?: string | null
           project_id: string
           published_at?: string | null
           seo_description?: string | null
@@ -1913,16 +1694,13 @@ export type Database = {
           seo_title?: string | null
           site_id?: string | null
           slug: string
-          sort_order?: number | null
           status?: Database["public"]["Enums"]["content_status"] | null
-          theme_override?: Json | null
+          thumbnail_url?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
           view_count?: number | null
-          visibility?: string | null
         }
         Update: {
-          canonical_url?: string | null
           created_at?: string
           creator_id?: string | null
           custom_css?: string | null
@@ -1934,12 +1712,8 @@ export type Database = {
           is_published?: boolean | null
           layout?: Json | null
           layout_type?: string | null
-          meta_robots?: string | null
-          metadata?: Json | null
           name?: string
-          og_image_url?: string | null
           page_type?: Database["public"]["Enums"]["page_type"]
-          password_protected_hash?: string | null
           project_id?: string
           published_at?: string | null
           seo_description?: string | null
@@ -1947,29 +1721,13 @@ export type Database = {
           seo_title?: string | null
           site_id?: string | null
           slug?: string
-          sort_order?: number | null
           status?: Database["public"]["Enums"]["content_status"] | null
-          theme_override?: Json | null
+          thumbnail_url?: string | null
           title?: string | null
-          updated_at?: string
+          updated_at?: string | null
           view_count?: number | null
-          visibility?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_pages_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pages_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "pages_project_id_fkey"
             columns: ["project_id"]
@@ -2019,15 +1777,7 @@ export type Database = {
           title?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_payment_requests_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       payment_submissions: {
         Row: {
@@ -2046,7 +1796,6 @@ export type Database = {
           payment_request_id: string
           payment_status: string | null
           transaction_id: string | null
-          updated_at: string | null
         }
         Insert: {
           amount: number
@@ -2064,7 +1813,6 @@ export type Database = {
           payment_request_id: string
           payment_status?: string | null
           transaction_id?: string | null
-          updated_at?: string | null
         }
         Update: {
           amount?: number
@@ -2082,17 +1830,8 @@ export type Database = {
           payment_request_id?: string
           payment_status?: string | null
           transaction_id?: string | null
-          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_payment_submissions_request"
-            columns: ["payment_request_id"]
-            isOneToOne: false
-            referencedRelation: "payment_requests"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_bundle_items: {
         Row: {
@@ -2116,22 +1855,7 @@ export type Database = {
           product_id?: string
           sort_order?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pbi_bundle"
-            columns: ["bundle_id"]
-            isOneToOne: false
-            referencedRelation: "product_bundles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pbi_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_bundles: {
         Row: {
@@ -2173,15 +1897,7 @@ export type Database = {
           thumbnail_url?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pbundle_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_files: {
         Row: {
@@ -2195,6 +1911,7 @@ export type Database = {
           id: string
           is_primary: boolean | null
           product_id: string
+          storage_file_id: string | null
           storage_url: string
           updated_at: string | null
           version: string | null
@@ -2210,6 +1927,7 @@ export type Database = {
           id?: string
           is_primary?: boolean | null
           product_id: string
+          storage_file_id?: string | null
           storage_url: string
           updated_at?: string | null
           version?: string | null
@@ -2225,18 +1943,12 @@ export type Database = {
           id?: string
           is_primary?: boolean | null
           product_id?: string
+          storage_file_id?: string | null
           storage_url?: string
           updated_at?: string | null
           version?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_pf_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "fk_pf_product"
             columns: ["product_id"]
@@ -2244,73 +1956,56 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_pf_storage"
+            columns: ["storage_file_id"]
+            isOneToOne: false
+            referencedRelation: "storage_files"
+            referencedColumns: ["id"]
+          },
         ]
       }
       product_licenses: {
         Row: {
-          created_at: string | null
           expires_at: string | null
           id: string
           issued_at: string | null
           license_key: string | null
           license_type: string | null
-          metadata: Json | null
           order_id: string
           order_item_id: string
           product_id: string
           snapshot: Json | null
           status: string
-          updated_at: string | null
           user_id: string | null
         }
         Insert: {
-          created_at?: string | null
           expires_at?: string | null
           id?: string
           issued_at?: string | null
           license_key?: string | null
           license_type?: string | null
-          metadata?: Json | null
           order_id: string
           order_item_id: string
           product_id: string
           snapshot?: Json | null
           status?: string
-          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
-          created_at?: string | null
           expires_at?: string | null
           id?: string
           issued_at?: string | null
           license_key?: string | null
           license_type?: string | null
-          metadata?: Json | null
           order_id?: string
           order_item_id?: string
           product_id?: string
           snapshot?: Json | null
           status?: string
-          updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pl_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pl_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_ratings: {
         Row: {
@@ -2352,22 +2047,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pr_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pr_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_related: {
         Row: {
@@ -2394,22 +2074,7 @@ export type Database = {
           relation_type?: Database["public"]["Enums"]["product_relation_type"]
           sort_order?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_prelat_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_prelat_related"
-            columns: ["related_product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       product_view_events: {
         Row: {
@@ -2439,22 +2104,7 @@ export type Database = {
           session_id?: string | null
           site_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pve_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pve_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       products: {
         Row: {
@@ -2584,9 +2234,9 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_profiles_users"
+            foreignKeyName: "fk_profiles_user"
             columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -2629,22 +2279,40 @@ export type Database = {
           slug?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_projects_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_projects_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      public_images: {
+        Row: {
+          category: string
+          created_at: string | null
+          height: number | null
+          id: string
+          name: string
+          tags: string[] | null
+          url: string
+          width: number | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          name?: string
+          tags?: string[] | null
+          url: string
+          width?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          name?: string
+          tags?: string[] | null
+          url?: string
+          width?: number | null
+        }
+        Relationships: []
       }
       referral_codes: {
         Row: {
@@ -2677,22 +2345,7 @@ export type Database = {
           owner_user_id?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_rc_owner_creator"
-            columns: ["owner_creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_rc_owner_user"
-            columns: ["owner_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       saved_components: {
         Row: {
@@ -2737,15 +2390,7 @@ export type Database = {
           updated_at?: string | null
           usage_count?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_sc_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_ab_tests: {
         Row: {
@@ -2753,6 +2398,7 @@ export type Database = {
           creator_id: string
           end_at: string | null
           id: string
+          metadata: Json | null
           section_key: string
           site_id: string
           start_at: string | null
@@ -2769,6 +2415,7 @@ export type Database = {
           creator_id: string
           end_at?: string | null
           id?: string
+          metadata?: Json | null
           section_key: string
           site_id: string
           start_at?: string | null
@@ -2785,6 +2432,7 @@ export type Database = {
           creator_id?: string
           end_at?: string | null
           id?: string
+          metadata?: Json | null
           section_key?: string
           site_id?: string
           start_at?: string | null
@@ -2796,22 +2444,7 @@ export type Database = {
           variant_b?: Json
           winner?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_sat_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_sat_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_blog: {
         Row: {
@@ -2927,22 +2560,7 @@ export type Database = {
           typography?: Json
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_sdt_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_sdt_site"
-            columns: ["site_id"]
-            isOneToOne: true
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_main: {
         Row: {
@@ -3064,15 +2682,7 @@ export type Database = {
           sticky_header?: boolean | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_snav_site"
-            columns: ["site_id"]
-            isOneToOne: true
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_page_views: {
         Row: {
@@ -3121,7 +2731,6 @@ export type Database = {
           created_at: string | null
           id: string
           is_visible: boolean | null
-          metadata: Json | null
           placement: string
           product_id: string
           site_id: string
@@ -3131,7 +2740,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_visible?: boolean | null
-          metadata?: Json | null
           placement?: string
           product_id: string
           site_id: string
@@ -3141,28 +2749,12 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_visible?: boolean | null
-          metadata?: Json | null
           placement?: string
           product_id?: string
           site_id?: string
           sort_order?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_spa_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_spa_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_sections_config: {
         Row: {
@@ -3189,19 +2781,10 @@ export type Database = {
           site_type?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_ssc_site"
-            columns: ["site_id"]
-            isOneToOne: true
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       site_singlepage: {
         Row: {
-          comparison_table: Json | null
           contact_email: string | null
           contact_mobile: string | null
           countdown_end_at: string | null
@@ -3230,10 +2813,8 @@ export type Database = {
           title: string
           updated_at: string | null
           upsell_product_ids: string[] | null
-          video_testimonial_url: string | null
         }
         Insert: {
-          comparison_table?: Json | null
           contact_email?: string | null
           contact_mobile?: string | null
           countdown_end_at?: string | null
@@ -3262,10 +2843,8 @@ export type Database = {
           title: string
           updated_at?: string | null
           upsell_product_ids?: string[] | null
-          video_testimonial_url?: string | null
         }
         Update: {
-          comparison_table?: Json | null
           contact_email?: string | null
           contact_mobile?: string | null
           countdown_end_at?: string | null
@@ -3294,18 +2873,17 @@ export type Database = {
           title?: string
           updated_at?: string | null
           upsell_product_ids?: string[] | null
-          video_testimonial_url?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_site_singlepage_product"
+            foreignKeyName: "fk_sp_product"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_site_singlepage_site"
+            foreignKeyName: "fk_sp_site"
             columns: ["site_id"]
             isOneToOne: true
             referencedRelation: "sites"
@@ -3392,22 +2970,7 @@ export type Database = {
           thumbnail_url?: string | null
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_stp_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_stp_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       sites: {
         Row: {
@@ -3512,46 +3075,61 @@ export type Database = {
       }
       storage_files: {
         Row: {
-          bucket: string
+          cdn_url: string
+          checksum_sha256: string | null
           created_at: string | null
           deleted_at: string | null
+          file_name: string | null
           file_type: string | null
           id: string
           metadata: Json | null
+          mime_type: string | null
           owner_creator_id: string | null
           owner_user_id: string | null
-          path: string
-          public_url: string
+          provider: Database["public"]["Enums"]["storage_provider_type"]
+          provider_bucket: string
+          provider_path: string
+          public_url: string | null
           size_bytes: number | null
           status: string
           updated_at: string | null
         }
         Insert: {
-          bucket: string
+          cdn_url: string
+          checksum_sha256?: string | null
           created_at?: string | null
           deleted_at?: string | null
+          file_name?: string | null
           file_type?: string | null
           id?: string
           metadata?: Json | null
+          mime_type?: string | null
           owner_creator_id?: string | null
           owner_user_id?: string | null
-          path: string
-          public_url: string
+          provider?: Database["public"]["Enums"]["storage_provider_type"]
+          provider_bucket: string
+          provider_path: string
+          public_url?: string | null
           size_bytes?: number | null
           status?: string
           updated_at?: string | null
         }
         Update: {
-          bucket?: string
+          cdn_url?: string
+          checksum_sha256?: string | null
           created_at?: string | null
           deleted_at?: string | null
+          file_name?: string | null
           file_type?: string | null
           id?: string
           metadata?: Json | null
+          mime_type?: string | null
           owner_creator_id?: string | null
           owner_user_id?: string | null
-          path?: string
-          public_url?: string
+          provider?: Database["public"]["Enums"]["storage_provider_type"]
+          provider_bucket?: string
+          provider_path?: string
+          public_url?: string | null
           size_bytes?: number | null
           status?: string
           updated_at?: string | null
@@ -3607,29 +3185,7 @@ export type Database = {
           offer_id?: string
           subscription_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_offer_redemption_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_offer_redemption_offer"
-            columns: ["offer_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_offers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_offer_redemption_subscription"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       subscription_offers: {
         Row: {
@@ -3683,15 +3239,7 @@ export type Database = {
           subscription_plan_id?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_subscription_offer_plan"
-            columns: ["subscription_plan_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       subscription_plans: {
         Row: {
@@ -3786,17 +3334,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_subscription_plan"
-            columns: ["subscription_plan_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_subscriptions_creator"
+            foreignKeyName: "fk_sub_creator"
             columns: ["creator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sub_plan"
+            columns: ["subscription_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -3844,36 +3392,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_st_admin"
-            columns: ["assigned_admin_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_st_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_st_site"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_st_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       transaction_ledger: {
         Row: {
@@ -3932,6 +3451,60 @@ export type Database = {
         }
         Relationships: []
       }
+      upsell_pages: {
+        Row: {
+          config: Json
+          created_at: string | null
+          creator_id: string
+          id: string
+          is_published: boolean | null
+          primary_product_id: string
+          slug: string
+          title: string
+          updated_at: string | null
+          upsell_product_ids: string[] | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string | null
+          creator_id: string
+          id?: string
+          is_published?: boolean | null
+          primary_product_id: string
+          slug: string
+          title: string
+          updated_at?: string | null
+          upsell_product_ids?: string[] | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string | null
+          creator_id?: string
+          id?: string
+          is_published?: boolean | null
+          primary_product_id?: string
+          slug?: string
+          title?: string
+          updated_at?: string | null
+          upsell_product_ids?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upsell_pages_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_pages_primary_product_id_fkey"
+            columns: ["primary_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_carts: {
         Row: {
           created_at: string
@@ -3957,22 +3530,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_user_carts_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_user_carts_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_product_access: {
         Row: {
@@ -4011,22 +3569,7 @@ export type Database = {
           snapshot_metadata?: Json | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_upa_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_upa_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_referrals: {
         Row: {
@@ -4062,36 +3605,7 @@ export type Database = {
           reward_amount?: number | null
           reward_status?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_ur_code"
-            columns: ["referral_code_id"]
-            isOneToOne: false
-            referencedRelation: "referral_codes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_ur_referred_user"
-            columns: ["referred_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_ur_referrer_creator"
-            columns: ["referrer_creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_ur_referrer_user"
-            columns: ["referrer_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -4131,7 +3645,7 @@ export type Database = {
       user_wallet_transactions: {
         Row: {
           amount: number
-          balance_after: number | null
+          balance_after: number
           created_at: string | null
           description: string | null
           direction: Database["public"]["Enums"]["wallet_direction"]
@@ -4146,7 +3660,7 @@ export type Database = {
         }
         Insert: {
           amount: number
-          balance_after?: number | null
+          balance_after: number
           created_at?: string | null
           description?: string | null
           direction: Database["public"]["Enums"]["wallet_direction"]
@@ -4161,7 +3675,7 @@ export type Database = {
         }
         Update: {
           amount?: number
-          balance_after?: number | null
+          balance_after?: number
           created_at?: string | null
           description?: string | null
           direction?: Database["public"]["Enums"]["wallet_direction"]
@@ -4175,20 +3689,6 @@ export type Database = {
           wallet_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_uwt_order_referral"
-            columns: ["related_order_referral_id"]
-            isOneToOne: false
-            referencedRelation: "order_referrals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_uwt_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "fk_uwt_wallet"
             columns: ["wallet_id"]
@@ -4226,15 +3726,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_uw_user"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_wishlist: {
         Row: {
@@ -4258,22 +3750,7 @@ export type Database = {
           product_id?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_user_wishlist_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_user_wishlist_user"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       users: {
         Row: {
@@ -4316,17 +3793,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      auth_profile_id: { Args: never; Returns: string }
+      [_ in never]: never
     }
     Enums: {
       ab_test_status: "draft" | "running" | "paused" | "concluded"
       builder_asset_type:
-        | "icon_set"
-        | "font"
-        | "lottie_animation"
-        | "pattern"
-        | "illustration"
-        | "stock_image"
+      | "icon_set"
+      | "font"
+      | "lottie_animation"
+      | "pattern"
+      | "illustration"
+      | "stock_image"
       content_status: "draft" | "published" | "archived"
       conversion_event_type: "add_to_cart" | "checkout_start" | "purchase"
       device_type: "desktop" | "mobile" | "tablet"
@@ -4336,53 +3813,60 @@ export type Database = {
       layout_role_type: "section" | "row" | "column" | "block"
       offer_type: "percentage" | "fixed_amount" | "free_period"
       order_status:
-        | "pending"
-        | "completed"
-        | "failed"
-        | "refunded"
-        | "cancelled"
+      | "pending"
+      | "completed"
+      | "failed"
+      | "refunded"
+      | "cancelled"
       page_block_type:
-        | "hero"
-        | "text"
-        | "image"
-        | "image_gallery"
-        | "video"
-        | "product_showcase"
-        | "cta_button"
-        | "testimonial"
-        | "faq"
-        | "newsletter"
-        | "columns"
-        | "divider"
-        | "pricing_table"
-        | "form"
-        | "countdown"
-        | "rich_text"
-        | "embed"
-        | "custom_html"
+      | "hero"
+      | "text"
+      | "image"
+      | "image_gallery"
+      | "video"
+      | "product_showcase"
+      | "cta_button"
+      | "testimonial"
+      | "faq"
+      | "newsletter"
+      | "columns"
+      | "divider"
+      | "pricing_table"
+      | "form"
+      | "countdown"
+      | "rich_text"
+      | "embed"
+      | "custom_html"
       page_type: "landing" | "product" | "about" | "contact" | "blog" | "custom"
       payout_status: "pending" | "initiated" | "processed" | "failed"
       payout_type: "upi" | "bank_transfer"
       product_relation_type: "upsell" | "cross_sell" | "bundle"
       site_section_type:
-        | "hero_banner"
-        | "featured_products"
-        | "product_grid"
-        | "testimonials"
-        | "about_creator"
-        | "faq_accordion"
-        | "countdown_timer"
-        | "social_proof"
-        | "email_capture"
-        | "video_showcase"
-        | "rich_text"
-        | "image_gallery"
-        | "product_comparison"
-        | "pricing_table"
-        | "announcement_bar"
-        | "sticky_cta"
-        | "trust_badges"
-        | "custom_html"
+      | "hero_banner"
+      | "featured_products"
+      | "product_grid"
+      | "testimonials"
+      | "about_creator"
+      | "faq_accordion"
+      | "countdown_timer"
+      | "social_proof"
+      | "email_capture"
+      | "video_showcase"
+      | "rich_text"
+      | "image_gallery"
+      | "product_comparison"
+      | "pricing_table"
+      | "announcement_bar"
+      | "sticky_cta"
+      | "trust_badges"
+      | "custom_html"
+      storage_provider_type:
+      | "supabase"
+      | "digitalocean"
+      | "aws_s3"
+      | "cloudflare_r2"
+      | "gcs"
+      | "bunny"
       subscription_plan_type: "free" | "plus" | "pro"
       user_role_type: "super_admin" | "creator" | "user"
       wallet_direction: "credit" | "debit"
@@ -4399,116 +3883,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+    DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] &
+    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R
+    }
+  ? R
+  : never
+  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
+    Insert: infer I
+  }
+  ? I
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Insert: infer I
+  }
+  ? I
+  : never
+  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
+    Update: infer U
+  }
+  ? U
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Update: infer U
+  }
+  ? U
+  : never
+  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Enums"]
+  | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["CompositeTypes"]
+  | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+  : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
 
 export const Constants = {
   public: {
@@ -4574,6 +4058,14 @@ export const Constants = {
         "sticky_cta",
         "trust_badges",
         "custom_html",
+      ],
+      storage_provider_type: [
+        "supabase",
+        "digitalocean",
+        "aws_s3",
+        "cloudflare_r2",
+        "gcs",
+        "bunny",
       ],
       subscription_plan_type: ["free", "plus", "pro"],
       user_role_type: ["super_admin", "creator", "user"],

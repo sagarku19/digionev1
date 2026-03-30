@@ -186,7 +186,7 @@ export default async function LinkInBioStorefront({
   return (
     <LinkInBioPage
       siteId={site.id}
-      username={site.slug}
+      username={site.slug ?? undefined}
       bio={bio as any}
       links={links}
       productsMap={productsMap}
