@@ -5,8 +5,8 @@
 
 import React, { useState } from 'react';
 import {
-  Palette, LayoutGrid, RectangleHorizontal, SquareStack, Sparkles,
-  Type, Layers, Zap, Circle, Space, ImagePlus,
+  Palette, Sparkles,
+  Type, Zap, Space, ImagePlus,
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
@@ -59,20 +59,6 @@ function SectionCard({ icon: Icon, title, desc, children }: {
 }
 
 // ─── Config data ─────────────────────────────────────────
-const LAYOUTS = [
-  { id: 'classic', label: 'Classic',  desc: 'Stacked list',   icon: RectangleHorizontal },
-  { id: 'grid',    label: 'Grid',     desc: '2-column cards', icon: LayoutGrid },
-  { id: 'bento',   label: 'Bento',    desc: 'Mixed sizes',    icon: SquareStack },
-];
-
-const BUTTON_STYLES = [
-  { id: 'rounded', label: 'Rounded',  preview: 'rounded-xl' },
-  { id: 'pill',    label: 'Pill',     preview: 'rounded-full' },
-  { id: 'sharp',   label: 'Sharp',    preview: 'rounded-none' },
-  { id: 'outline', label: 'Outline',  preview: 'rounded-xl border-2' },
-  { id: 'shadow',  label: 'Shadow',   preview: 'rounded-xl shadow-lg' },
-];
-
 const FONTS = [
   { id: 'system',        label: 'System',         preview: 'font-sans' },
   { id: 'inter',         label: 'Inter',          preview: 'font-sans' },
@@ -132,14 +118,10 @@ const PRESET_GRADIENTS = [
 ];
 
 const PALETTE_COLORS = [
-  { key: 'primary',    label: 'Primary',    desc: 'Buttons & accents' },
-  { key: 'text',       label: 'Text',       desc: 'Headings & body' },
-  { key: 'surface',    label: 'Surface',    desc: 'Card backgrounds' },
-  { key: 'muted',      label: 'Muted',      desc: 'Secondary text' },
-  { key: 'background', label: 'Background', desc: 'Page background' },
+  { key: 'primary', label: 'Primary', desc: 'Buttons & accents' },
+  { key: 'text',    label: 'Text',    desc: 'Headings & body' },
+  { key: 'muted',   label: 'Muted',   desc: 'Secondary text' },
 ];
-
-const QUICK_SWATCHES = ['#EC4899', '#8B5CF6', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#14B8A6', '#F97316', '#06B6D4'];
 
 // ─── Main ────────────────────────────────────────────────
 export default function BioAppearanceEditor({
@@ -159,23 +141,6 @@ export default function BioAppearanceEditor({
   return (
     <div className="space-y-5">
 
-      {/* ─── Layout ─── */}
-      <SectionCard icon={LayoutGrid} title="Layout" desc="How your blocks are arranged">
-        <div className="grid grid-cols-3 gap-2">
-          {LAYOUTS.map(l => {
-            const sel = data.layoutStyle === l.id;
-            return (
-              <button key={l.id} onClick={() => set('layoutStyle', l.id)}
-                className={`p-3 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <l.icon className={`w-5 h-5 mx-auto mb-1.5 ${sel ? 'text-pink-500' : 'text-gray-400'}`} />
-                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{l.label}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{l.desc}</p>
-              </button>
-            );
-          })}
-        </div>
-      </SectionCard>
-
       {/* ─── Font Family ─── */}
       <SectionCard icon={Type} title="Font" desc="Typography for your page">
         <div className="grid grid-cols-3 gap-2">
@@ -191,25 +156,24 @@ export default function BioAppearanceEditor({
           })}
         </div>
       </SectionCard>
-
-      {/* ─── Button Style ─── */}
-      <SectionCard icon={Sparkles} title="Button Style" desc="Shape of your link buttons">
-        <div className="space-y-2">
-          {BUTTON_STYLES.map(bs => {
-            const sel = data.buttonStyle === bs.id;
+      
+      {/* ─── Border Radius ─── */}
+      <SectionCard icon={Sparkles} title="Border Radius" desc="Corner rounding for cards">
+        <div className="flex gap-2">
+          {BORDER_RADII.map(br => {
+            const sel = (data.borderRadius || 'md') === br.id;
             return (
-              <button key={bs.id} onClick={() => set('buttonStyle', bs.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <div className={`w-16 h-8 border-2 border-gray-300 dark:border-gray-600 ${bs.preview} shrink-0`} />
-                <span className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{bs.label}</span>
+              <button key={br.id} onClick={() => set('borderRadius', br.id)}
+                className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition ${sel ? CHIP_ON : CHIP_OFF}`}>
+                <div className={`w-8 h-6 bg-gray-300 dark:bg-gray-600 ${br.preview}`} />
+                <span className={`text-[10px] font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-500'}`}>{br.label}</span>
               </button>
             );
           })}
         </div>
       </SectionCard>
-
       {/* ─── Card Style ─── */}
-      <SectionCard icon={Layers} title="Card Style" desc="How link cards look">
+      <SectionCard icon={Sparkles} title="Card Style" desc="How link cards look">
         <div className="grid grid-cols-2 gap-2">
           {CARD_STYLES.map(cs => {
             const sel = (data.cardStyle || 'solid') === cs.id;
@@ -244,18 +208,6 @@ export default function BioAppearanceEditor({
             ))}
           </div>
 
-          {/* Quick swatches for primary */}
-          <div>
-            <p className="text-[10px] font-medium text-gray-400 mb-2">Quick Primary Colors</p>
-            <div className="flex flex-wrap gap-2">
-              {QUICK_SWATCHES.map(color => (
-                <button key={color} onClick={() => onPaletteChange('primary', color)}
-                  className={`w-7 h-7 rounded-full border-2 transition hover:scale-110 ${
-                    palette.primary === color ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'
-                  }`} style={{ backgroundColor: color }} />
-              ))}
-            </div>
-          </div>
         </SectionCard>
       )}
 
@@ -335,22 +287,6 @@ export default function BioAppearanceEditor({
               <button key={a.id} onClick={() => set('animation', a.id)}
                 className={`py-2 rounded-lg border-2 text-xs font-semibold text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
                 <span className={sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}>{a.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </SectionCard>
-
-      {/* ─── Border Radius ─── */}
-      <SectionCard icon={Circle} title="Border Radius" desc="Corner rounding for cards">
-        <div className="flex gap-2">
-          {BORDER_RADII.map(br => {
-            const sel = (data.borderRadius || 'md') === br.id;
-            return (
-              <button key={br.id} onClick={() => set('borderRadius', br.id)}
-                className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <div className={`w-8 h-6 bg-gray-300 dark:bg-gray-600 ${br.preview}`} />
-                <span className={`text-[10px] font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-500'}`}>{br.label}</span>
               </button>
             );
           })}
