@@ -4,14 +4,14 @@
 // Enhanced: heading (subtitle/align/size/divider), url (animation),
 //           image (caption/radius/ratio), video (caption), email (description).
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   GripVertical, Eye, EyeOff, Trash2, ChevronDown, ChevronRight,
   Plus, Link as LinkIcon, Package, Type, Minus, Play, Image,
   ExternalLink, Star, Code, Share2, Music2, Megaphone, AlignLeft,
   AlignCenter, AlignRight, Heading1, FileText, Globe, Instagram,
   Twitter, Youtube, Linkedin, Github, Music, ImagePlus, ArrowUpDown,
-  ClipboardList, X,
+  ClipboardList, X, MoreVertical, Copy,
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
@@ -47,16 +47,7 @@ const BLOCK_CATEGORIES = [
       { id: 'space',         label: 'Space',         icon: ArrowUpDown,  desc: 'Empty vertical gap' },
     ],
   },
-  {
-    label: 'Media & Embeds',
-    types: [
-      { id: 'image',         label: 'Image',         icon: Image,        desc: 'Full-width image' },
-      { id: 'video_embed',   label: 'Video',         icon: Play,         desc: 'YouTube / Vimeo' },
-      { id: 'spotify',       label: 'Spotify',       icon: Music2,       desc: 'Track or playlist' },
-      { id: 'html_embed',    label: 'HTML / Iframe',  icon: Code,         desc: 'Custom embed code' },
-    ],
-  },
-  {
+    {
     label: 'Commerce & Social',
     types: [
       { id: 'product',       label: 'Product',       icon: Package,      desc: 'Sell a product' },
@@ -65,6 +56,14 @@ const BLOCK_CATEGORIES = [
       { id: 'banner',        label: 'Banner CTA',    icon: Megaphone,    desc: 'Call-to-action card' },
     ],
   },
+  {
+    label: 'Media & Embeds',
+    types: [
+      { id: 'image',         label: 'Image',         icon: Image,        desc: 'Full-width image' },
+      { id: 'html_embed',    label: 'HTML / Iframe',  icon: Code,         desc: 'Custom embed code' },
+    ],
+  },
+
 ];
 
 // Flat list for lookups
@@ -153,6 +152,25 @@ export default function BioLinksEditor({
   const [showAddPicker, setShowAddPicker] = useState(false);
   const [imagePicker, setImagePicker] = useState<{ open: boolean; linkId: string; field: string }>({ open: false, linkId: '', field: '' });
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on outside click or Escape
+  useEffect(() => {
+    if (!menuOpenId) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpenId(null);
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpenId(null);
+    };
+    document.addEventListener('click', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('click', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [menuOpenId]);
 
   const updateLink = (id: string, updates: Partial<BioLink>) => {
     onChange(links.map(l => l.id === id ? { ...l, ...updates } : l));
@@ -169,12 +187,28 @@ export default function BioLinksEditor({
     if (expandedId === id) setExpandedId(null);
   };
 
+  const duplicateLink = (id: string) => {
+    const source = links.find(l => l.id === id);
+    if (!source) return;
+    const idx = links.findIndex(l => l.id === id);
+    const clone: BioLink = {
+      ...source,
+      id: crypto.randomUUID(),
+      title: source.title ? `${source.title} (copy)` : '',
+      metadata: source.metadata ? JSON.parse(JSON.stringify(source.metadata)) : {},
+    };
+    const next = [...links];
+    next.splice(idx + 1, 0, clone);
+    onChange(next.map((l, i) => ({ ...l, sort_order: i + 1 })));
+    setExpandedId(clone.id);
+  };
+
   const addLink = (type: string) => {
     const defaults: Record<string, any> = {
       social_icons: { links: [], style: 'circle', size: 'md', alignment: 'center' },
       header: { subtitle: '', alignment: 'center', size: 'xl', show_divider: false },
       text: { content: '', alignment: 'left', size: 'base' },
-      html_embed: { html: '', height: '300' },
+      html_embed: { html: '' },
       spotify: { spotify_url: '', embed_type: 'track' },
       banner: { description: '', button_text: 'Learn More', button_url: '', bg_color: '' },
       space: { height: 'md' },
@@ -272,7 +306,7 @@ export default function BioLinksEditor({
           return (
             <div
               key={link.id}
-              className={`bg-white dark:bg-[#0A0A1A] border rounded-xl overflow-hidden transition-all ${
+              className={`relative bg-white dark:bg-[#0A0A1A] border rounded-xl transition-all ${
                 isExpanded ? 'border-pink-300 dark:border-pink-700 shadow-sm shadow-pink-500/5' : 'border-gray-200 dark:border-gray-800'
               } ${dragIdx === idx ? 'opacity-50' : ''}`}
               draggable
@@ -297,9 +331,30 @@ export default function BioLinksEditor({
                   className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
                   {link.is_visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                 </button>
-                <button onClick={() => removeLink(link.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="relative" ref={menuOpenId === link.id ? menuRef : undefined}>
+                  <button onClick={() => setMenuOpenId(menuOpenId === link.id ? null : link.id)}
+                    aria-label="Block options" aria-haspopup="true" aria-expanded={menuOpenId === link.id}
+                    className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+                    <MoreVertical className="w-3.5 h-3.5" />
+                  </button>
+                  {menuOpenId === link.id && (
+                    <div role="menu" className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1 overflow-hidden"
+                      onDragStart={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
+                      <button role="menuitem"
+                        onClick={() => { duplicateLink(link.id); setMenuOpenId(null); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                      >
+                        <Copy className="w-3.5 h-3.5" /> Duplicate
+                      </button>
+                      <button role="menuitem"
+                        onClick={() => { removeLink(link.id); setMenuOpenId(null); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <button onClick={() => setExpandedId(isExpanded ? null : link.id)} className="p-1.5 text-gray-400">
                   {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                 </button>
@@ -916,11 +971,6 @@ export default function BioLinksEditor({
                           className={`${INPUT} resize-none font-mono text-xs`}
                           placeholder={'<iframe src="https://..." width="100%" height="300"></iframe>'} />
                         <p className="text-[10px] text-gray-400 mt-1">Paste any embed code — iframes, widgets, maps, forms, etc.</p>
-                      </div>
-                      <div>
-                        <FieldLabel>Height (px)</FieldLabel>
-                        <input type="number" value={link.metadata?.height || '300'} onChange={e => updateMeta(link.id, 'height', e.target.value)}
-                          className={INPUT} placeholder="300" min="100" max="2000" />
                       </div>
                     </>
                   )}

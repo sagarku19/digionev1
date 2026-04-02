@@ -32,6 +32,7 @@ type BioData = {
   border_radius?: string;
   spacing?: string;
   avatar_shape?: 'circular' | 'rounded' | 'square';
+  avatar_border?: boolean;
 };
 
 type BioLink = {
@@ -319,10 +320,10 @@ function ProfileSection({
         </div>
       )}
       <div
-        className={`w-24 h-24 overflow-hidden border-4 shadow-lg shrink-0 ${bio.cover_image_url ? 'relative z-10' : ''} ${
+        className={`w-24 h-24 overflow-hidden shadow-lg shrink-0 ${bio.avatar_border !== false ? 'border-4' : ''} ${bio.cover_image_url ? 'relative z-10' : ''} ${
           bio.avatar_shape === 'square' ? 'rounded-none' : bio.avatar_shape === 'rounded' ? 'rounded-2xl' : 'rounded-full'
         }`}
-        style={{ backgroundColor: palette.primary || '#EC4899', borderColor: palette.background || '#fff' }}
+        style={{ backgroundColor: palette.primary || '#EC4899', ...(bio.avatar_border !== false ? { borderColor: palette.border || palette.background || '#fff' } : {}) }}
       >
         {bio.avatar_url ? (
           <img src={bio.avatar_url} alt={bio.display_name} className="w-full h-full object-cover" />
@@ -494,8 +495,7 @@ function LinkCard({
       <div className="w-full col-span-2 overflow-hidden rounded-xl" style={animStyle}>
         <div
           dangerouslySetInnerHTML={{ __html: link.metadata.html }}
-          style={{ height: `${link.metadata.height || 300}px` }}
-          className="w-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0"
+          className="w-full [&>iframe]:w-full [&>iframe]:border-0"
         />
       </div>
     );
@@ -886,7 +886,9 @@ export default function LinkInBioPage({ siteId, username, bio, links, productsMa
 
   // Background style
   const bgStyle: React.CSSProperties = {};
-  if (activeBio.background_type === 'gradient' && activeBio.background_value) {
+  if (activeBio.background_type === 'solid') {
+    bgStyle.backgroundColor = activePalette.background || '#FFFFFF';
+  } else if (activeBio.background_type === 'gradient' && activeBio.background_value) {
     bgStyle.background = activeBio.background_value;
   } else if (activeBio.background_type === 'image' && activeBio.background_value) {
     bgStyle.backgroundImage = `url(${activeBio.background_value})`;
@@ -900,8 +902,19 @@ export default function LinkInBioPage({ siteId, username, bio, links, productsMa
   const socials = (activeBio.social_links ?? []).filter(s => s.url && s.is_visible !== false);
   const spacingClass = getSpacingClass(activeBio.spacing);
 
+  // Inject CSS custom properties so Tailwind arbitrary-value classes like
+  // border-[--creator-primary] resolve to actual palette colours.
+  const cssVars: Record<string, string> = {
+    '--creator-primary': activePalette.primary || '#EC4899',
+    '--creator-text': activePalette.text || '#0F172A',
+    '--creator-muted': activePalette.muted || '#64748B',
+    '--creator-surface': activePalette.surface || '#FFFFFF',
+    '--creator-background': activePalette.background || '#FFFFFF',
+    '--creator-border': activePalette.border || activePalette.background || '#FFFFFF',
+  };
+
   return (
-    <div className="min-h-screen" style={bgStyle}>
+    <div className="min-h-screen" style={{ ...bgStyle, ...cssVars } as React.CSSProperties}>
       <FontLink font={activeBio.font_family} />
       <AnimationStyles />
 

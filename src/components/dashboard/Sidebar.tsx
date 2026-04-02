@@ -9,7 +9,7 @@ import {
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
   Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, LogOut, MessageCircle, HelpCircle,
-  Instagram, Zap,
+  Instagram, Zap, Server,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -64,7 +64,7 @@ const NAV: NavGroup[] = [
 ];
 
 const BOTTOM_NAV = [
-  { label: 'Notifications', href: '/dashboard/notifications', icon: Bell },
+  { label: 'Services', href: '/dashboard/services', icon: Server },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
   { label: 'Help Center', href: '/dashboard/help', icon: HelpCircle },
 ];
@@ -284,7 +284,7 @@ export default function Sidebar() {
         <div className="shrink-0 border-t border-[var(--border)]">
 
           {/* Upgrade to Pro */}
-          <div className="p-3 pb-0">
+          {/* <div className="p-3 pb-0">
             <div className="px-3 py-3 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl">
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-xs">&#9889;</span>
@@ -301,7 +301,7 @@ export default function Sidebar() {
                 View Plans
               </Link>
             </div>
-          </div>
+          </div> */}
 
           {/* User profile */}
           <div className="p-3 relative">

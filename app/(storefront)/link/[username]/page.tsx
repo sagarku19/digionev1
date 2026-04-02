@@ -110,6 +110,7 @@ export default async function LinkInBioStorefront({
     border_radius: theme.borderRadius ?? 'md',
     spacing: theme.spacing ?? 'default',
     avatar_shape: (settings.avatarShape ?? 'circular') as 'circular' | 'rounded' | 'square',
+    avatar_border: settings.avatarBorder ?? true,
   };
 
   // ── V2: Fetch blocks + items ──

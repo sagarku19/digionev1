@@ -15,7 +15,8 @@ import {
   ArrowLeft, Save, Loader2, CheckCircle2, ExternalLink,
   Settings, Monitor, Tablet, Smartphone, RefreshCw,
   XCircle, LayoutDashboard, Package, Store, BarChart2,
-  Copy, Check, Plus, HelpCircle, Moon, Sun, Search, ImagePlus, Globe2
+  Copy, Check, Plus, HelpCircle, Moon, Sun, Search, ImagePlus, Globe2,
+  Undo2, Redo2,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 
@@ -130,7 +131,7 @@ const TEMPLATES: BioTemplate[] = [
   },
   {
     name: 'Musician',
-    description: 'Spotify embed, tour banner & streaming links.',
+    description: 'Tour banner, streaming links & social icons.',
     category: 'creative',
     preview: { bg: '#1a1a2e', accent: '#e94560', text: '#eaeaea', card: '#16213e' },
     palette: { primary: '#e94560', text: '#eaeaea', surface: '#16213e', muted: '#8b8b9e', background: '#1a1a2e' },
@@ -139,11 +140,11 @@ const TEMPLATES: BioTemplate[] = [
     fontFamily: 'space-grotesk', cardStyle: 'solid', animation: 'slide-up', borderRadius: 'lg',
     blocks: [
       { link_type: 'header', title: 'Artist Name', metadata: { subtitle: 'New Album Out Now', alignment: 'center', size: 'xl' } },
-      { link_type: 'spotify', metadata: { spotify_url: '', embed_type: 'track' } },
       { link_type: 'heading', title: 'Listen Everywhere', metadata: { alignment: 'center', size: 'md', show_divider: false } },
       { link_type: 'url', title: 'Apple Music', url: '', icon_type: 'external' },
       { link_type: 'url', title: 'Bandcamp', url: '', icon_type: 'external' },
-      { link_type: 'social_icons', metadata: { links: [{ platform: 'spotify', url: '' }, { platform: 'instagram', url: '' }, { platform: 'youtube', url: '' }, { platform: 'tiktok', url: '' }], style: 'circle', size: 'md', alignment: 'center' } },
+      { link_type: 'url', title: 'SoundCloud', url: '', icon_type: 'external' },
+      { link_type: 'social_icons', metadata: { links: [{ platform: 'instagram', url: '' }, { platform: 'youtube', url: '' }, { platform: 'tiktok', url: '' }], style: 'circle', size: 'md', alignment: 'center' } },
       { link_type: 'banner', title: 'Tour Dates 2025', metadata: { description: 'Tickets available now', button_text: 'Get Tickets', button_url: '', bg_color: '#e94560' } },
     ],
   },
@@ -170,7 +171,7 @@ const TEMPLATES: BioTemplate[] = [
   },
   {
     name: 'Influencer', tag: 'NEW',
-    description: 'Glassmorphic vibe with video, collabs & community signup.',
+    description: 'Glassmorphic vibe with collabs & community signup.',
     category: 'social',
     preview: { bg: '#667eea', accent: '#FFFFFF', text: '#FFFFFF', card: 'rgba(255,255,255,0.15)' },
     palette: { primary: '#FFFFFF', text: '#FFFFFF', surface: 'rgba(255,255,255,0.12)', muted: 'rgba(255,255,255,0.7)', background: '#667eea' },
@@ -180,10 +181,9 @@ const TEMPLATES: BioTemplate[] = [
     blocks: [
       { link_type: 'header', title: 'Your Name', metadata: { subtitle: 'Content Creator & Brand Partner', alignment: 'center', size: 'xl' } },
       { link_type: 'social_icons', metadata: { links: [{ platform: 'tiktok', url: '' }, { platform: 'instagram', url: '' }, { platform: 'youtube', url: '' }, { platform: 'twitter', url: '' }], style: 'circle', size: 'lg', alignment: 'center' } },
-      { link_type: 'heading', title: 'Latest Content', metadata: { alignment: 'center', size: 'md', show_divider: false } },
-      { link_type: 'video_embed', metadata: { embed_url: '', aspect_ratio: '16/9', caption: '' } },
       { link_type: 'url', title: 'Brand Collaborations', url: '', icon_type: 'external', style_variant: 'featured' },
       { link_type: 'url', title: 'My Favorites on Amazon', url: '', icon_type: 'external' },
+      { link_type: 'url', title: 'Latest Blog Post', url: '', icon_type: 'external' },
       { link_type: 'lead_form', title: 'Join My Community', metadata: { description: 'Exclusive content and early access', button_text: 'Join Free', fields: [{ type: 'name', label: 'Name', required: false, placeholder: 'Your name' }, { type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' }] } },
     ],
   },
@@ -215,7 +215,7 @@ const TEMPLATES: BioTemplate[] = [
     palette: { primary: '#C084FC', text: '#4C1D95', surface: '#FFFFFF', muted: '#A78BFA', background: '#FDF2F8' },
     layoutStyle: 'classic', buttonStyle: 'pill',
     backgroundType: 'gradient', backgroundValue: 'linear-gradient(135deg, #FDF2F8 0%, #EDE9FE 50%, #DBEAFE 100%)',
-    fontFamily: 'poppins', cardStyle: 'solid', animation: 'slide-up', borderRadius: 'full', spacing: 'relaxed',
+    fontFamily: 'poppins', cardStyle: 'solid', animation: 'slide-up', borderRadius: 'lg', spacing: 'relaxed',
     blocks: [
       { link_type: 'header', title: 'The Weekly Brief', metadata: { subtitle: 'Curated insights on design & tech', alignment: 'center', size: 'xl' } },
       { link_type: 'text', metadata: { content: 'Join 10,000+ readers getting actionable tips every Thursday.', alignment: 'center', size: 'base' } },
@@ -297,6 +297,7 @@ export default function EditLinkInBioPage() {
 
   // ── Site data ──
   const [site, setSite] = useState<any>(null);
+  const [isPublished, setIsPublished] = useState(true);
 
   // ── Slug ──
   const [slug, setSlug] = useState('');
@@ -339,6 +340,80 @@ export default function EditLinkInBioPage() {
   // ── Products ──
   const [products, setProducts] = useState<{ id: string; name: string; price: number; thumbnail_url: string | null }[]>([]);
 
+  // ── Undo / Redo ──
+  type EditorSnapshot = { profile: BioProfileData; links: BioLink[]; appearance: BioAppearanceData; palette: Record<string, string>; seo: { title: string; description: string; image: string } };
+  const historyRef = useRef<EditorSnapshot[]>([]);
+  const historyIndexRef = useRef(-1);
+  const isRestoringRef = useRef(false);
+
+  const pushSnapshot = useCallback(() => {
+    if (isRestoringRef.current) return;
+    const snap: EditorSnapshot = {
+      profile: JSON.parse(JSON.stringify(profile)),
+      links: JSON.parse(JSON.stringify(links)),
+      appearance: { ...appearance },
+      palette: { ...palette },
+      seo: { ...seo },
+    };
+    const idx = historyIndexRef.current;
+    // Trim any future states if we diverged
+    historyRef.current = historyRef.current.slice(0, idx + 1);
+    historyRef.current.push(snap);
+    // Cap at 50 snapshots
+    if (historyRef.current.length > 50) historyRef.current.shift();
+    historyIndexRef.current = historyRef.current.length - 1;
+  }, [profile, links, appearance, palette, seo]);
+
+  // Push snapshot on meaningful state changes (debounced)
+  const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (loading) return;
+    if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
+    pushTimerRef.current = setTimeout(pushSnapshot, 400);
+    return () => { if (pushTimerRef.current) clearTimeout(pushTimerRef.current); };
+  }, [profile, links, appearance, palette, seo, loading, pushSnapshot]);
+
+  const canUndo = historyIndexRef.current > 0;
+  const canRedo = historyIndexRef.current < historyRef.current.length - 1;
+
+  const handleUndo = useCallback(() => {
+    if (historyIndexRef.current <= 0) return;
+    isRestoringRef.current = true;
+    historyIndexRef.current -= 1;
+    const snap = historyRef.current[historyIndexRef.current];
+    setProfile(snap.profile);
+    setLinks(snap.links);
+    setAppearance(snap.appearance);
+    setPalette(snap.palette);
+    setSeo(snap.seo);
+    // Allow new snapshots again after state settles
+    requestAnimationFrame(() => { isRestoringRef.current = false; });
+  }, []);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndexRef.current >= historyRef.current.length - 1) return;
+    isRestoringRef.current = true;
+    historyIndexRef.current += 1;
+    const snap = historyRef.current[historyIndexRef.current];
+    setProfile(snap.profile);
+    setLinks(snap.links);
+    setAppearance(snap.appearance);
+    setPalette(snap.palette);
+    setSeo(snap.seo);
+    requestAnimationFrame(() => { isRestoringRef.current = false; });
+  }, []);
+
+  // Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); handleUndo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) { e.preventDefault(); handleRedo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); handleRedo(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleUndo, handleRedo]);
+
   // ── Load data ──
   useEffect(() => {
     const load = async () => {
@@ -353,6 +428,7 @@ export default function EditLinkInBioPage() {
 
         setSlug(s?.slug ?? '');
         setOriginalSlug(s?.slug ?? null);
+        setIsPublished(s?.is_active ?? true);
 
         // ── V2: Fetch from linkinbio_pages ──
         const { data: page } = await (supabase.from('linkinbio_pages' as any) as any)
@@ -379,6 +455,7 @@ export default function EditLinkInBioPage() {
             coverImageUrl: page.cover_url ?? '',
             socialLinks: (settings.socialLinks as SocialLink[]) ?? [],
             avatarShape: (settings.avatarShape as 'circular' | 'rounded' | 'square') ?? 'circular',
+            avatarBorder: settings.avatarBorder ?? true,
           });
           setAppearance({
             layoutStyle: layout.style ?? 'classic',
@@ -565,6 +642,7 @@ export default function EditLinkInBioPage() {
         border_radius: appearance.borderRadius || 'md',
         spacing: appearance.spacing || 'default',
         avatar_shape: profile.avatarShape ?? 'circular',
+        avatar_border: profile.avatarBorder ?? true,
       };
 
       const previewLinks = links.filter(l => l.is_visible).map(l => ({
@@ -609,14 +687,16 @@ export default function EditLinkInBioPage() {
       if (Object.keys(palette).length > 0) {
         await supabase
           .from('site_design_tokens')
-          .upsert({ site_id: siteId, color_palette: palette } as any, { onConflict: 'site_id' });
+          .upsert({ site_id: siteId, color_palette: palette, creator_id: site?.creator_id } as any, { onConflict: 'site_id' });
       }
 
-      // Slug
+      // Slug + published status
+      const siteUpdates: Record<string, any> = { is_active: isPublished };
       if (slug && slug !== originalSlug) {
-        await supabase.from('sites').update({ slug }).eq('id', siteId);
+        siteUpdates.slug = slug;
         setOriginalSlug(slug);
       }
+      await supabase.from('sites').update(siteUpdates).eq('id', siteId);
 
       // ── V2: Upsert linkinbio_pages ──
       const pagePayload = {
@@ -647,6 +727,7 @@ export default function EditLinkInBioPage() {
           showShareButton: appearance.showShareButton,
           socialLinks: profile.socialLinks,
           avatarShape: profile.avatarShape ?? 'circular',
+          avatarBorder: profile.avatarBorder ?? true,
         },
       };
 
@@ -820,7 +901,7 @@ export default function EditLinkInBioPage() {
     } finally {
       setSaving(false);
     }
-  }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo]);
+  }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo, isPublished]);
 
   // ── Derived ──
   const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
@@ -918,6 +999,17 @@ export default function EditLinkInBioPage() {
 
           {/* ── Editor Header ── */}
           <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-3 gap-2">
+            {/* Undo / Redo */}
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition">
+                <Undo2 className="w-4 h-4" />
+              </button>
+              <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)"
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition">
+                <Redo2 className="w-4 h-4" />
+              </button>
+            </div>
             {/* Site name — centered */}
             <div className="flex-1 flex items-center justify-center min-w-0">
               <div className="flex items-center gap-1.5">
@@ -978,7 +1070,7 @@ export default function EditLinkInBioPage() {
             {activeTab === 'templates' && (
               <div className="space-y-5">
                 <div>
-                  <p className="text-xs text-gray-500">Each template applies a complete page layout with pre-built sections, theme, and styling.</p>
+                  <p className="text-xs text-gray-500">Pick a template to set your page&apos;s layout, theme, and sections instantly.</p>
                 </div>
 
                 {/* Category groups */}
@@ -987,104 +1079,107 @@ export default function EditLinkInBioPage() {
                   if (catTemplates.length === 0) return null;
                   const catLabel = { starter: 'Get Started', creative: 'Creative', business: 'Business', social: 'Social & Store' }[cat];
                   return (
-                    <div key={cat} className="space-y-2.5">
+                    <div key={cat} className="space-y-3">
                       <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{catLabel}</h3>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-4">
                         {catTemplates.map(tpl => {
-                          const btnRadius = tpl.buttonStyle === 'pill' ? '9999px' : tpl.buttonStyle === 'sharp' ? '0' : tpl.borderRadius === 'full' ? '9999px' : tpl.borderRadius === 'lg' ? '12px' : tpl.borderRadius === 'sm' ? '4px' : tpl.borderRadius === 'none' ? '0' : '8px';
+                          const btnRadius = tpl.buttonStyle === 'pill' ? '9999px' : tpl.buttonStyle === 'sharp' ? '0' : tpl.borderRadius === 'lg' ? '12px' : tpl.borderRadius === 'sm' ? '4px' : tpl.borderRadius === 'none' ? '0' : '8px';
                           const bgStyle = tpl.backgroundType === 'gradient' ? tpl.backgroundValue : tpl.preview.bg;
                           const isGlass = tpl.cardStyle === 'glass';
+                          const { accent, text: textC, card } = tpl.preview;
+                          const avatarRadius = tpl.profileShape === 'square' ? '3px' : tpl.profileShape === 'rounded' ? '6px' : '9999px';
+
                           return (
                             <button
                               key={tpl.name}
                               onClick={() => applyTemplate(tpl)}
-                              className="group relative rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 overflow-hidden transition-all hover:shadow-lg text-left"
+                              className="group relative flex flex-col items-center text-left transition-all"
                             >
                               {tpl.tag && (
-                                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-pink-500 text-white text-[8px] font-bold rounded-md uppercase z-10">
+                                <span className="absolute -top-1.5 right-2 px-2 py-0.5 bg-pink-500 text-white text-[7px] font-bold rounded-full uppercase z-10 shadow-sm shadow-pink-500/30">
                                   {tpl.tag}
                                 </span>
                               )}
-                              {/* Block wireframe preview */}
-                              <div className="h-40 px-4 py-3 flex flex-col items-center gap-[3px] overflow-hidden" style={{ background: bgStyle }}>
-                                {tpl.blocks.slice(0, 8).map((b, i) => {
-                                  const accent = tpl.preview.accent;
-                                  const text = tpl.preview.text;
-                                  const card = tpl.preview.card;
 
-                                  if (b.link_type === 'header') {
-                                    const avatarRadius = tpl.profileShape === 'square' ? '2px' : tpl.profileShape === 'rounded' ? '5px' : '9999px';
-                                    return (
-                                      <div key={i} className="flex flex-col items-center gap-[2px] mb-0.5 shrink-0">
-                                        <div className="w-5 h-5 overflow-hidden" style={{ backgroundColor: accent, borderRadius: avatarRadius }} />
-                                        <div className="w-14 h-[5px] rounded-full" style={{ backgroundColor: text, opacity: 0.8 }} />
-                                        <div className="w-10 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.4 }} />
+                              {/* Phone frame */}
+                              <div className="w-full rounded-2xl border-2 border-gray-200 dark:border-gray-700 group-hover:border-pink-400 dark:group-hover:border-pink-500 overflow-hidden transition-all group-hover:shadow-xl group-hover:shadow-pink-500/10 group-hover:scale-[1.02]">
+                                {/* Notch bar */}
+                                <div className="h-4 flex items-center justify-center" style={{ background: bgStyle }}>
+                                  <div className="w-10 h-1.5 rounded-full" style={{ backgroundColor: textC, opacity: 0.15 }} />
+                                </div>
+
+                                {/* Screen content */}
+                                <div className="px-3.5 pb-3 pt-1 flex flex-col items-center gap-[5px] overflow-hidden" style={{ background: bgStyle, minHeight: '180px' }}>
+                                  {tpl.blocks.slice(0, 8).map((b, i) => {
+                                    if (b.link_type === 'header') return (
+                                      <div key={i} className="flex flex-col items-center gap-[3px] mb-1 shrink-0">
+                                        <div className="w-7 h-7 shadow-sm" style={{ backgroundColor: accent, borderRadius: avatarRadius, border: `1.5px solid ${bgStyle === textC ? accent : textC}20` }} />
+                                        <div className="w-16 h-[5px] rounded-full mt-0.5" style={{ backgroundColor: textC, opacity: 0.85 }} />
+                                        <div className="w-11 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.35 }} />
                                       </div>
                                     );
-                                  }
-                                  if (b.link_type === 'heading') return (
-                                    <div key={i} className="w-12 h-[4px] rounded-sm self-start shrink-0 mt-0.5" style={{ backgroundColor: text, opacity: 0.6 }} />
-                                  );
-                                  if (b.link_type === 'url') return (
-                                    <div key={i} className="w-full h-[10px] shrink-0" style={{
-                                      backgroundColor: isGlass ? card : card,
-                                      borderRadius: btnRadius,
-                                      border: tpl.buttonStyle === 'outline' ? `1px solid ${accent}` : tpl.cardStyle === 'bordered' ? `1px solid ${text}30` : 'none',
-                                      boxShadow: tpl.buttonStyle === 'shadow' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
-                                      backdropFilter: isGlass ? 'blur(4px)' : 'none',
-                                    }} />
-                                  );
-                                  if (b.link_type === 'divider') return (
-                                    <div key={i} className="w-12 shrink-0 my-[1px]" style={{ height: '1px', backgroundColor: text, opacity: 0.15 }} />
-                                  );
-                                  if (b.link_type === 'text') return (
-                                    <div key={i} className="flex flex-col gap-[2px] w-full px-1 shrink-0">
-                                      <div className="w-full h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.25 }} />
-                                      <div className="w-3/4 h-[3px] rounded-full" style={{ backgroundColor: text, opacity: 0.15 }} />
-                                    </div>
-                                  );
-                                  if (b.link_type === 'social_icons') return (
-                                    <div key={i} className="flex gap-[3px] justify-center shrink-0 my-[1px]">
-                                      {Array.from({ length: Math.min(b.metadata?.links?.length || 4, 4) }).map((_, j) => (
-                                        <div key={j} className="w-[7px] h-[7px] rounded-full" style={{ backgroundColor: accent, opacity: 0.7 }} />
-                                      ))}
-                                    </div>
-                                  );
-                                  if (b.link_type === 'lead_form') return (
-                                    <div key={i} className="w-full flex gap-[3px] shrink-0">
-                                      <div className="flex-1 h-[10px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${text}20` }} />
-                                      <div className="w-8 h-[10px] rounded-sm" style={{ backgroundColor: accent, opacity: 0.8 }} />
-                                    </div>
-                                  );
-                                  if (b.link_type === 'spotify') return (
-                                    <div key={i} className="w-full h-[12px] rounded-sm shrink-0" style={{ backgroundColor: '#1DB954', opacity: 0.6 }} />
-                                  );
-                                  if (b.link_type === 'video_embed') return (
-                                    <div key={i} className="w-full h-[18px] rounded-sm shrink-0 flex items-center justify-center" style={{ backgroundColor: `${text}15` }}>
-                                      <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: `6px solid ${accent}` }} />
-                                    </div>
-                                  );
-                                  if (b.link_type === 'banner') return (
-                                    <div key={i} className="w-full h-[12px] rounded-sm shrink-0" style={{ backgroundColor: b.metadata?.bg_color || accent, opacity: 0.75 }} />
-                                  );
-                                  return <div key={i} className="w-full h-[8px] rounded-sm shrink-0" style={{ backgroundColor: card }} />;
-                                })}
+                                    if (b.link_type === 'heading') return (
+                                      <div key={i} className="w-14 h-[4px] rounded-sm self-start shrink-0 mt-1" style={{ backgroundColor: textC, opacity: 0.55 }} />
+                                    );
+                                    if (b.link_type === 'url') {
+                                      const featured = b.style_variant === 'featured';
+                                      return (
+                                        <div key={i} className="w-full shrink-0 flex items-center gap-[5px] px-[5px]" style={{
+                                          height: featured ? '14px' : '12px',
+                                          backgroundColor: isGlass ? card : card,
+                                          borderRadius: btnRadius,
+                                          border: tpl.buttonStyle === 'outline' ? `1px solid ${accent}` : tpl.cardStyle === 'bordered' ? `1px solid ${textC}25` : 'none',
+                                          boxShadow: tpl.buttonStyle === 'shadow' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                                          backdropFilter: isGlass ? 'blur(4px)' : 'none',
+                                        }}>
+                                          <div className="w-[6px] h-[6px] rounded-sm shrink-0" style={{ backgroundColor: accent, opacity: 0.5 }} />
+                                          <div className="flex-1 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.4 }} />
+                                        </div>
+                                      );
+                                    }
+                                    if (b.link_type === 'divider') return (
+                                      <div key={i} className="w-10 shrink-0 my-[2px]" style={{ height: '1px', backgroundColor: textC, opacity: 0.12 }} />
+                                    );
+                                    if (b.link_type === 'text') return (
+                                      <div key={i} className="flex flex-col gap-[2px] w-full px-1 shrink-0">
+                                        <div className="w-full h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.2 }} />
+                                        <div className="w-2/3 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
+                                      </div>
+                                    );
+                                    if (b.link_type === 'social_icons') return (
+                                      <div key={i} className="flex gap-[4px] justify-center shrink-0 my-[2px]">
+                                        {Array.from({ length: Math.min(b.metadata?.links?.length || 4, 5) }).map((_, j) => (
+                                          <div key={j} className="w-[8px] h-[8px] rounded-full" style={{ backgroundColor: accent, opacity: 0.6 }} />
+                                        ))}
+                                      </div>
+                                    );
+                                    if (b.link_type === 'lead_form') return (
+                                      <div key={i} className="w-full flex gap-[4px] shrink-0">
+                                        <div className="flex-1 h-[11px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${textC}15` }} />
+                                        <div className="w-9 h-[11px] shrink-0" style={{ backgroundColor: accent, opacity: 0.8, borderRadius: btnRadius }} />
+                                      </div>
+                                    );
+                                    if (b.link_type === 'banner') return (
+                                      <div key={i} className="w-full h-[14px] shrink-0 flex items-center justify-between px-[5px]" style={{ backgroundColor: b.metadata?.bg_color || accent, opacity: 0.8, borderRadius: btnRadius }}>
+                                        <div className="w-10 h-[3px] rounded-full bg-white" style={{ opacity: 0.7 }} />
+                                        <div className="w-6 h-[7px] rounded-sm bg-white" style={{ opacity: 0.4 }} />
+                                      </div>
+                                    );
+                                    if (b.link_type === 'space') return <div key={i} className="h-[4px] shrink-0" />;
+                                    return <div key={i} className="w-full h-[8px] rounded-sm shrink-0" style={{ backgroundColor: card }} />;
+                                  })}
+                                </div>
+
+                                {/* Bottom nav dots */}
+                                <div className="h-3 flex items-center justify-center" style={{ background: bgStyle }}>
+                                  <div className="w-8 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
+                                </div>
                               </div>
-                              {/* Label + description */}
-                              <div className="px-3 py-2 bg-white dark:bg-[#0A0A1A] border-t border-gray-200 dark:border-gray-700">
+
+                              {/* Label */}
+                              <div className="w-full mt-2.5 px-0.5">
                                 <p className="text-xs font-semibold text-gray-900 dark:text-white">{tpl.name}</p>
                                 <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{tpl.description}</p>
-                                <div className="flex items-center gap-1.5 mt-1">
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium">
-                                    {tpl.blocks.length} sections
-                                  </span>
-                                  {tpl.blocks.some(b => b.link_type === 'lead_form') && (
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-500 font-medium">email</span>
-                                  )}
-                                  {tpl.blocks.some(b => b.link_type === 'spotify' || b.link_type === 'video_embed') && (
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/10 text-purple-500 font-medium">media</span>
-                                  )}
-                                </div>
                               </div>
                             </button>
                           );
@@ -1235,6 +1330,40 @@ export default function EditLinkInBioPage() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Activate / Deactivate Link */}
+                <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        {isPublished ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-gray-400" />
+                        )}
+                        {isPublished ? 'Link is Active' : 'Link is Inactive'}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {isPublished
+                          ? 'Your page is live and accessible to visitors.'
+                          : 'Your page is hidden. Visitors will see a 404 page.'}
+                      </p>
+                    </div>
+                    <button
+                      role="switch"
+                      aria-checked={isPublished}
+                      aria-label={isPublished ? 'Deactivate link' : 'Activate link'}
+                      onClick={() => setIsPublished(!isPublished)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        isPublished ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'
+                      }`}
+                    >
+                      <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                        isPublished ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
                 </div>
 
               </div>

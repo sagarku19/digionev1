@@ -20,6 +20,7 @@ export type BioProfileData = {
   coverImageUrl: string;
   socialLinks: SocialLink[];
   avatarShape?: 'circular' | 'rounded' | 'square';
+  avatarBorder?: boolean;
 };
 
 const PLATFORMS = [
@@ -153,6 +154,23 @@ export default function BioProfileEditor({
                 );
               })}
             </div>
+          </div>
+          {/* Avatar border toggle */}
+          <div className="mt-3 flex items-center justify-between">
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Avatar Border</label>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={data.avatarBorder !== false}
+              onClick={() => onChange({ ...data, avatarBorder: data.avatarBorder === false ? true : false })}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                data.avatarBorder !== false ? 'bg-pink-500' : 'bg-gray-300 dark:bg-gray-700'
+              }`}
+            >
+              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${
+                data.avatarBorder !== false ? 'translate-x-4.5' : 'translate-x-0.75'
+              }`} />
+            </button>
           </div>
         </div>
 

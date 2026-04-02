@@ -83,11 +83,10 @@ const ANIMATIONS = [
 ];
 
 const BORDER_RADII = [
-  { id: 'none', label: 'None',   preview: 'rounded-none' },
-  { id: 'sm',   label: 'Small',  preview: 'rounded-md' },
-  { id: 'md',   label: 'Medium', preview: 'rounded-xl' },
-  { id: 'lg',   label: 'Large',  preview: 'rounded-2xl' },
-  { id: 'full', label: 'Full',   preview: 'rounded-full' },
+  { id: 'none', label: 'Sharp',    preview: 'rounded-none' },
+  { id: 'sm',   label: 'Subtle',   preview: 'rounded-md' },
+  { id: 'md',   label: 'Smooth',   preview: 'rounded-xl' },
+  { id: 'lg',   label: 'Rounded',  preview: 'rounded-2xl' },
 ];
 
 const SPACINGS = [
@@ -121,6 +120,7 @@ const PALETTE_COLORS = [
   { key: 'primary', label: 'Primary', desc: 'Buttons & accents' },
   { key: 'text',    label: 'Text',    desc: 'Headings & body' },
   { key: 'muted',   label: 'Muted',   desc: 'Secondary text' },
+  { key: 'border',  label: 'Border',  desc: 'Avatar & card borders' },
 ];
 
 // ─── Main ────────────────────────────────────────────────

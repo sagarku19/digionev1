@@ -10,6 +10,7 @@ import {
   Users, ChevronDown, ChevronRight, MessageCircle, Mail, ExternalLink,
   Zap, ShoppingCart, BarChart2, Image, Gift, Ticket, Network,
   FileText, Video, Globe, CreditCard, Bell, Shield, Star,
+  GraduationCap, AlertCircle, Headset, ArrowRight, Lightbulb,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -25,6 +26,14 @@ type HelpSection = {
 };
 
 // ─── Help Content ─────────────────────────────────────────────────────────────
+
+const QUICK_LINKS = [
+  { label: 'Learn', description: 'Browse our tutorials and guides to master your store operations.', icon: GraduationCap, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10', href: '#' },
+  { label: 'Register Complaint', description: 'Facing an issue? Submit a ticket and our team will resolve it.', icon: AlertCircle, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-500/10', href: '#' },
+  { label: 'Contact Option', description: 'Reach out to our support team via email or live chat directly.', icon: Headset, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10', href: '#' },
+  { label: 'Docs', description: 'View detailed developer documentation and technical references.', icon: FileText, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-500/10', href: 'https://docs.digione.ai' },
+  { label: 'Feature Request', description: 'Have an idea? Ask for new features and vote on the roadmap.', icon: Lightbulb, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10', href: '#' },
+];
 
 const HELP_SECTIONS: HelpSection[] = [
   {
@@ -325,7 +334,7 @@ export default function HelpPage() {
     : HELP_SECTIONS;
 
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div className="space-y-8 max-w-full">
 
       {/* Header */}
       <div>
@@ -336,6 +345,30 @@ export default function HelpPage() {
         <p className="text-sm text-gray-500 mt-1">
           Find answers to common questions or reach out to our support team.
         </p>
+      </div>
+
+      {/* Quick Links */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {QUICK_LINKS.map(link => (
+          <a
+            key={link.label}
+            href={link.href}
+            target={link.href.startsWith('http') ? '_blank' : undefined}
+            rel="noopener noreferrer"
+            className="group bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-4 cursor-pointer"
+          >
+            <div className={`w-12 h-12 ${link.bg} ${link.color} rounded-xl flex items-center justify-center`}>
+              <link.icon className="w-6 h-6" />
+            </div>
+            <div className="flex-1 text-left">
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">{link.label}</h2>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{link.description}</p>
+            </div>
+            <div className={`flex items-center gap-1 text-sm font-semibold ${link.color} group-hover:gap-2 transition-all`}>
+              Open <ArrowRight className="w-4 h-4" />
+            </div>
+          </a>
+        ))}
       </div>
 
       {/* Search */}

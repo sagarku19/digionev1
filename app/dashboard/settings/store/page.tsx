@@ -11,14 +11,14 @@ import {
   Phone, Image as ImageIcon, Loader2, AlertCircle
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-[var(--text-primary)] placeholder-[var(--text-secondary)] transition';
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 space-y-5">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 dark:text-white">{title}</h2>
-        {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+        <h2 className="text-base font-bold text-[var(--text-primary)]">{title}</h2>
+        {subtitle && <p className="text-xs text-[var(--text-secondary)] mt-0.5">{subtitle}</p>}
       </div>
       {children}
     </div>
@@ -28,9 +28,9 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">{label}</label>
       {children}
-      {hint && <p className="text-xs text-gray-400 mt-1.5">{hint}</p>}
+      {hint && <p className="text-xs text-[var(--text-secondary)] mt-1.5">{hint}</p>}
     </div>
   );
 }
@@ -147,16 +147,16 @@ export default function StoreSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6 pt-6">
+    <div className="max-w-full space-y-6 pt-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/settings" className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
+          <Link href="/dashboard/settings" className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Store Settings</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Your public profile and store details</p>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Store Settings</h1>
+            <p className="text-sm text-[var(--text-secondary)] mt-0.5">Your public profile and store details</p>
           </div>
         </div>
         <button
@@ -206,21 +206,21 @@ export default function StoreSettingsPage() {
 
         <Field label="Full Name">
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
             <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your display name" className={`${INPUT} pl-10`} />
           </div>
         </Field>
 
         <Field label="Email" hint="Used for order notifications and creator communications">
           <div className="relative">
-            <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className={`${INPUT} pl-10`} />
           </div>
         </Field>
 
         <Field label="Mobile" hint="For OTP login and WhatsApp notifications">
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
             <input type="tel" value={mobile} onChange={e => setMobile(e.target.value)} placeholder="+91 98765 43210" className={`${INPUT} pl-10`} />
           </div>
         </Field>
@@ -231,18 +231,18 @@ export default function StoreSettingsPage() {
         <Card title="Main Store" subtitle="Branding and metadata for your primary store page">
           <Field label="Store Name" hint="Shown in header, browser tab, and emails">
             <div className="relative">
-              <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
               <input type="text" value={siteTitle} onChange={e => setSiteTitle(e.target.value)} placeholder="My Awesome Store" className={`${INPUT} pl-10`} />
             </div>
           </Field>
 
           <Field label="Store URL" hint={`Your public address: digione.ai/p/${siteSlug}`}>
             <div className="relative">
-              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-gray-400 select-none">digione.ai/p/</span>
+              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+              <span className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-[var(--text-secondary)] select-none">digione.ai/p/</span>
               <input
                 type="text" value={siteSlug} readOnly
-                className={`${INPUT} pl-[120px] bg-gray-100 dark:bg-gray-800 cursor-not-allowed`}
+                className={`${INPUT} pl-[120px] bg-[var(--bg-tertiary)] cursor-not-allowed text-[var(--text-secondary)]`}
               />
             </div>
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">To change your slug, contact support.</p>
@@ -254,16 +254,16 @@ export default function StoreSettingsPage() {
               placeholder="A brief description of what your store sells..."
               className={`${INPUT} resize-none`}
             />
-            <p className="text-xs text-gray-400 mt-1">{siteDescription.length}/160</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-1">{siteDescription.length}/160</p>
           </Field>
 
           <Field label="Logo URL" hint="Paste a hosted image URL for your store logo">
             <div className="relative">
-              <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
               <input type="url" value={logoUrl} onChange={e => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" className={`${INPUT} pl-10`} />
             </div>
             {logoUrl && (
-              <img src={logoUrl} alt="Logo preview" className="mt-2 h-10 object-contain rounded-lg border border-gray-200 dark:border-gray-700 p-1" />
+              <img src={logoUrl} alt="Logo preview" className="mt-2 h-10 object-contain rounded-lg border border-[var(--border)] p-1 bg-[var(--bg-primary)]" />
             )}
           </Field>
         </Card>
