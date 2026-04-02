@@ -1,6 +1,5 @@
-// POST /api/leads — captures email leads from EmailCapture section.
-// DB tables written: site_page_views (as a lightweight lead signal; no guest_leads table in schema yet).
-// TODO: Add a dedicated `guest_leads` table to schema for proper lead management.
+// POST /api/leads — captures lead form submissions into lead_form table.
+// Requires form_id (linked to forms table) and site_id.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
@@ -13,35 +12,61 @@ const supabase = createClient<Database>(
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json() as { email?: string; siteId?: string; source?: string };
-    const { email, siteId } = body;
+    const body = await req.json() as {
+      formId?: string;
+      siteId?: string;
+      name?: string;
+      email?: string;
+      mobile?: string;
+      custom?: Record<string, string>;
+    };
 
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'email is required' }, { status: 400 });
+    const { formId, siteId, name, email, mobile, custom } = body;
+
+    if (!formId || !siteId) {
+      return NextResponse.json({ error: 'formId and siteId are required' }, { status: 400 });
     }
 
-    // Basic email format check
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+    // At least one contact field must be provided
+    if (!email && !mobile && !name) {
+      return NextResponse.json({ error: 'At least one contact field is required' }, { status: 400 });
     }
 
-    // Log the lead as a page view event with page_slug = 'email_capture'
-    // and session_id holding the email (until a proper guest_leads table is added).
-    if (siteId) {
-      const { error } = await supabase.from('site_page_views').insert({
-        site_id: siteId,
-        page_slug: 'email_capture',
-        session_id: email.toLowerCase().trim(),
-      });
-
-      if (error) {
-        // Non-fatal: log server-side but still return success to user
-        console.error('[api/leads] insert error', error.message);
+    // Basic email validation if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
       }
     }
 
-    // Always return success — even if DB insert failed, the lead is captured in server logs.
+    // Verify form exists and belongs to this site
+    const { data: form, error: formError } = await supabase
+      .from('forms')
+      .select('id')
+      .eq('id', formId)
+      .eq('site_id', siteId)
+      .single();
+
+    if (formError || !form) {
+      console.error('[api/leads] form lookup error', formError?.message);
+      return NextResponse.json({ error: 'Invalid form' }, { status: 400 });
+    }
+
+    const { error } = await supabase.from('lead_form').insert({
+      form_id: formId,
+      site_id: siteId,
+      full_name: name?.trim() || null,
+      email: email?.toLowerCase().trim() || null,
+      mobile: mobile?.trim() || null,
+      other: custom && Object.keys(custom).length > 0 ? custom : {},
+    });
+
+    if (error) {
+      console.error('[api/leads] insert error', error.message);
+      return NextResponse.json({ error: 'Failed to save lead' }, { status: 500 });
+    }
+
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (err: unknown) {
     console.error('[api/leads]', err);

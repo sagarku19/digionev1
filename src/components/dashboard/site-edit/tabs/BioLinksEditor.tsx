@@ -7,10 +7,11 @@
 import React, { useState } from 'react';
 import {
   GripVertical, Eye, EyeOff, Trash2, ChevronDown, ChevronRight,
-  Plus, Link as LinkIcon, Package, Type, Minus, Play, Mail, Image,
+  Plus, Link as LinkIcon, Package, Type, Minus, Play, Image,
   ExternalLink, Star, Code, Share2, Music2, Megaphone, AlignLeft,
   AlignCenter, AlignRight, Heading1, FileText, Globe, Instagram,
-  Twitter, Youtube, Linkedin, Github, Music, ImagePlus,
+  Twitter, Youtube, Linkedin, Github, Music, ImagePlus, ArrowUpDown,
+  ClipboardList, X,
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
@@ -43,6 +44,7 @@ const BLOCK_CATEGORIES = [
       { id: 'text',          label: 'Text',          icon: FileText,     desc: 'Paragraph block' },
       { id: 'heading',       label: 'Section Title', icon: Type,         desc: 'Simple label' },
       { id: 'divider',       label: 'Divider',       icon: Minus,        desc: 'Visual separator' },
+      { id: 'space',         label: 'Space',         icon: ArrowUpDown,  desc: 'Empty vertical gap' },
     ],
   },
   {
@@ -58,7 +60,7 @@ const BLOCK_CATEGORIES = [
     label: 'Commerce & Social',
     types: [
       { id: 'product',       label: 'Product',       icon: Package,      desc: 'Sell a product' },
-      { id: 'email_capture', label: 'Email Signup',  icon: Mail,         desc: 'Collect emails' },
+      { id: 'lead_form',     label: 'Lead Form',     icon: ClipboardList, desc: 'Collect visitor info' },
       { id: 'social_icons',  label: 'Social Icons',  icon: Share2,       desc: 'Icon row' },
       { id: 'banner',        label: 'Banner CTA',    icon: Megaphone,    desc: 'Call-to-action card' },
     ],
@@ -175,6 +177,16 @@ export default function BioLinksEditor({
       html_embed: { html: '', height: '300' },
       spotify: { spotify_url: '', embed_type: 'track' },
       banner: { description: '', button_text: 'Learn More', button_url: '', bg_color: '' },
+      space: { height: 'md' },
+      lead_form: {
+        fields: [
+          { type: 'name', label: 'Full Name', required: false, placeholder: 'Your name' },
+          { type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' },
+        ],
+        button_text: 'Submit',
+        description: '',
+        success_message: 'Thanks! We\'ll be in touch.',
+      },
       product: { layout: 'horizontal', button_position: 'right', show_price: true, badge: '', cta_text: 'Buy Now' },
     };
     const newLink: BioLink = {
@@ -229,7 +241,7 @@ export default function BioLinksEditor({
   };
 
   // ─── No-title block types ─────────────────────────────
-  const NO_TITLE_TYPES = ['divider', 'html_embed', 'social_icons', 'text', 'product'];
+  const NO_TITLE_TYPES = ['divider', 'space', 'html_embed', 'social_icons', 'text', 'product'];
 
   return (
     <div className="space-y-4">
@@ -409,6 +421,31 @@ export default function BioLinksEditor({
                         <span className="text-xs text-gray-600 dark:text-gray-400">Show line below</span>
                       </label>
                     </>
+                  )}
+
+                  {/* ════════════════════════════════════════════════
+                      SPACE block — empty vertical gap
+                     ════════════════════════════════════════════════ */}
+                  {link.link_type === 'space' && (
+                    <div>
+                      <FieldLabel>Height</FieldLabel>
+                      <div className="flex gap-2">
+                        {[
+                          { id: 'sm', label: 'Small',   px: '16px' },
+                          { id: 'md', label: 'Medium',  px: '32px' },
+                          { id: 'lg', label: 'Large',   px: '64px' },
+                          { id: 'xl', label: 'X-Large', px: '96px' },
+                        ].map(h => (
+                          <button key={h.id} onClick={() => updateMeta(link.id, 'height', h.id)}
+                            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 transition ${
+                              (link.metadata?.height || 'md') === h.id ? CHIP_ON : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                            }`}>
+                            <span className="text-xs font-semibold">{h.label}</span>
+                            <span className="text-[10px] text-gray-400">{h.px}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
 
                   {/* ════════════════════════════════════════════════
@@ -712,28 +749,102 @@ export default function BioLinksEditor({
                   )}
 
                   {/* ════════════════════════════════════════════════
-                      EMAIL CAPTURE (enhanced) — + description
+                      LEAD FORM — dynamic fields (name, email, mobile, custom)
                      ════════════════════════════════════════════════ */}
-                  {link.link_type === 'email_capture' && (
-                    <>
-                      <div>
-                        <FieldLabel>Description (optional)</FieldLabel>
-                        <input type="text" value={link.metadata?.description || ''}
-                          onChange={e => updateMeta(link.id, 'description', e.target.value)}
-                          className={INPUT} placeholder="Get weekly updates on..." />
-                      </div>
-                      <div>
-                        <FieldLabel>Button Text</FieldLabel>
-                        <input type="text" value={link.metadata?.button_text || ''} onChange={e => updateMeta(link.id, 'button_text', e.target.value)}
-                          className={INPUT} placeholder="Subscribe" />
-                      </div>
-                      <div>
-                        <FieldLabel>Input Placeholder</FieldLabel>
-                        <input type="text" value={link.metadata?.placeholder || ''} onChange={e => updateMeta(link.id, 'placeholder', e.target.value)}
-                          className={INPUT} placeholder="Enter your email" />
-                      </div>
-                    </>
-                  )}
+                  {link.link_type === 'lead_form' && (() => {
+                    const fields: { type: string; label: string; required: boolean; placeholder: string }[] = link.metadata?.fields ?? [];
+                    const setFields = (next: typeof fields) => updateMeta(link.id, 'fields', next);
+
+                    const FIELD_PRESETS = [
+                      { type: 'name',   label: 'Full Name', placeholder: 'Your name' },
+                      { type: 'email',  label: 'Email',     placeholder: 'your@email.com' },
+                      { type: 'mobile', label: 'Mobile',    placeholder: '+91 98765 43210' },
+                      { type: 'other',  label: 'Other',     placeholder: 'Type here...' },
+                    ];
+                    const usedTypes = fields.map(f => f.type);
+
+                    return (
+                      <>
+                        <div>
+                          <FieldLabel>Form Description (optional)</FieldLabel>
+                          <input type="text" value={link.metadata?.description || ''}
+                            onChange={e => updateMeta(link.id, 'description', e.target.value)}
+                            className={INPUT} placeholder="Fill this form to get in touch" />
+                        </div>
+
+                        {/* Field list */}
+                        <div>
+                          <FieldLabel>Form Fields</FieldLabel>
+                          <div className="space-y-2">
+                            {fields.map((field, fi) => (
+                              <div key={fi} className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl">
+                                <GripVertical className="w-3.5 h-3.5 text-gray-300 shrink-0 cursor-grab" />
+                                <div className="flex-1 min-w-0 grid grid-cols-2 gap-2">
+                                  <input type="text" value={field.label}
+                                    onChange={e => { const n = [...fields]; n[fi] = { ...n[fi], label: e.target.value }; setFields(n); }}
+                                    className="px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
+                                    placeholder="Label" />
+                                  <input type="text" value={field.placeholder}
+                                    onChange={e => { const n = [...fields]; n[fi] = { ...n[fi], placeholder: e.target.value }; setFields(n); }}
+                                    className="px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
+                                    placeholder="Placeholder" />
+                                </div>
+                                <button
+                                  onClick={() => { const n = [...fields]; n[fi] = { ...n[fi], required: !n[fi].required }; setFields(n); }}
+                                  className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold transition ${
+                                    field.required
+                                      ? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400'
+                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                                  }`}
+                                  title={field.required ? 'Required' : 'Optional'}
+                                >
+                                  {field.required ? 'Required' : 'Optional'}
+                                </button>
+                                <button onClick={() => setFields(fields.filter((_, i) => i !== fi))}
+                                  className="shrink-0 p-1 text-gray-400 hover:text-red-500 transition">
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Add field buttons */}
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {FIELD_PRESETS.map(preset => {
+                              const alreadyUsed = preset.type !== 'other' && usedTypes.includes(preset.type);
+                              return (
+                                <button key={preset.type}
+                                  disabled={alreadyUsed}
+                                  onClick={() => setFields([...fields, { type: preset.type, label: preset.label, required: preset.type === 'email', placeholder: preset.placeholder }])}
+                                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${
+                                    alreadyUsed
+                                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                                      : 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 border border-pink-200 dark:border-pink-500/30'
+                                  }`}>
+                                  <Plus className="w-3 h-3" /> {preset.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <FieldLabel>Button Text</FieldLabel>
+                            <input type="text" value={link.metadata?.button_text || ''}
+                              onChange={e => updateMeta(link.id, 'button_text', e.target.value)}
+                              className={INPUT} placeholder="Submit" />
+                          </div>
+                          <div>
+                            <FieldLabel>Success Message</FieldLabel>
+                            <input type="text" value={link.metadata?.success_message || ''}
+                              onChange={e => updateMeta(link.id, 'success_message', e.target.value)}
+                              className={INPUT} placeholder="Thanks! We'll be in touch." />
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   {/* ════════════════════════════════════════════════
                       IMAGE block (enhanced) — + caption, radius, ratio

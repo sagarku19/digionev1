@@ -125,7 +125,7 @@ const TEMPLATES: BioTemplate[] = [
       { link_type: 'url', title: 'My Online Course', url: '', icon_type: 'external' },
       { link_type: 'url', title: 'Support My Work', url: '', icon_type: 'external' },
       { link_type: 'divider' },
-      { link_type: 'email_capture', title: 'Join My Newsletter', metadata: { description: 'Get weekly tips straight to your inbox', button_text: 'Subscribe', placeholder: 'your@email.com' } },
+      { link_type: 'lead_form', title: 'Join My Newsletter', metadata: { description: 'Get weekly tips straight to your inbox', button_text: 'Subscribe', fields: [{ type: 'name', label: 'Name', required: false, placeholder: 'Your name' }, { type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' }] } },
     ],
   },
   {
@@ -184,7 +184,7 @@ const TEMPLATES: BioTemplate[] = [
       { link_type: 'video_embed', metadata: { embed_url: '', aspect_ratio: '16/9', caption: '' } },
       { link_type: 'url', title: 'Brand Collaborations', url: '', icon_type: 'external', style_variant: 'featured' },
       { link_type: 'url', title: 'My Favorites on Amazon', url: '', icon_type: 'external' },
-      { link_type: 'email_capture', title: 'Join My Community', metadata: { description: 'Exclusive content and early access', button_text: 'Join Free', placeholder: 'your@email.com' } },
+      { link_type: 'lead_form', title: 'Join My Community', metadata: { description: 'Exclusive content and early access', button_text: 'Join Free', fields: [{ type: 'name', label: 'Name', required: false, placeholder: 'Your name' }, { type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' }] } },
     ],
   },
   // ── Business ──
@@ -203,7 +203,7 @@ const TEMPLATES: BioTemplate[] = [
       { link_type: 'url', title: 'Visit Our Website', url: '', icon_type: 'external' },
       { link_type: 'url', title: 'Book a Consultation', url: '', icon_type: 'external' },
       { link_type: 'url', title: 'Our Services', url: '', icon_type: 'external' },
-      { link_type: 'email_capture', title: 'Get in Touch', metadata: { description: 'Leave your email and we will reach out', button_text: 'Contact Us', placeholder: 'your@email.com' } },
+      { link_type: 'lead_form', title: 'Get in Touch', metadata: { description: 'Leave your email and we will reach out', button_text: 'Contact Us', fields: [{ type: 'name', label: 'Name', required: true, placeholder: 'Your name' }, { type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' }, { type: 'mobile', label: 'Mobile', required: false, placeholder: '+91 98765 43210' }] } },
       { link_type: 'social_icons', metadata: { links: [{ platform: 'linkedin', url: '' }, { platform: 'twitter', url: '' }], style: 'pill', size: 'md', alignment: 'center' } },
     ],
   },
@@ -219,7 +219,7 @@ const TEMPLATES: BioTemplate[] = [
     blocks: [
       { link_type: 'header', title: 'The Weekly Brief', metadata: { subtitle: 'Curated insights on design & tech', alignment: 'center', size: 'xl' } },
       { link_type: 'text', metadata: { content: 'Join 10,000+ readers getting actionable tips every Thursday.', alignment: 'center', size: 'base' } },
-      { link_type: 'email_capture', title: 'Subscribe', metadata: { description: 'Free weekly newsletter', button_text: 'Subscribe', placeholder: 'your@email.com' } },
+      { link_type: 'lead_form', title: 'Subscribe', metadata: { description: 'Free weekly newsletter', button_text: 'Subscribe', fields: [{ type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' }] } },
       { link_type: 'divider' },
       { link_type: 'heading', title: 'Recent Issues', metadata: { alignment: 'left', size: 'md', show_divider: false } },
       { link_type: 'url', title: 'Issue #42 \u2014 Design Systems at Scale', url: '', icon_type: 'external' },
@@ -703,11 +703,32 @@ export default function EditLinkInBioPage() {
             blockContent.aspect_ratio = l.metadata?.aspect_ratio || '16/9';
             blockContent.caption = l.metadata?.caption || null;
           }
-          if (l.link_type === 'email_capture') {
-            blockContent.title = l.title || null;
+          if (l.link_type === 'lead_form') {
+            // Upsert a forms record for this lead form block
+            const formTitle = l.title || 'Lead Form';
+            const formDesc = l.metadata?.description || null;
+            let formId = l.metadata?.form_id || null;
+
+            if (formId) {
+              // Update existing form
+              await supabase.from('forms').update({
+                title: formTitle,
+                description: formDesc,
+              }).eq('id', formId);
+            } else {
+              // Create new form
+              const { data: newForm } = await supabase.from('forms')
+                .insert({ site_id: siteId, title: formTitle, description: formDesc })
+                .select('id')
+                .single();
+              if (newForm) formId = newForm.id;
+            }
+
+            blockContent.form_id = formId;
+            blockContent.fields = l.metadata?.fields || [];
             blockContent.description = l.metadata?.description || null;
-            blockContent.button_text = l.metadata?.button_text || null;
-            blockContent.placeholder = l.metadata?.placeholder || null;
+            blockContent.button_text = l.metadata?.button_text || 'Submit';
+            blockContent.success_message = l.metadata?.success_message || null;
           }
           if (l.link_type === 'image') {
             blockContent.thumbnail_url = l.thumbnail_url || null;
@@ -716,6 +737,9 @@ export default function EditLinkInBioPage() {
             blockContent.caption = l.metadata?.caption || null;
             blockContent.border_radius = l.metadata?.border_radius || 'lg';
             blockContent.aspect_ratio = l.metadata?.aspect_ratio || 'auto';
+          }
+          if (l.link_type === 'space') {
+            blockContent.height = l.metadata?.height || 'md';
           }
           if (l.link_type === 'html_embed') {
             blockContent.html = l.metadata?.html || null;
@@ -1026,7 +1050,7 @@ export default function EditLinkInBioPage() {
                                       ))}
                                     </div>
                                   );
-                                  if (b.link_type === 'email_capture') return (
+                                  if (b.link_type === 'lead_form') return (
                                     <div key={i} className="w-full flex gap-[3px] shrink-0">
                                       <div className="flex-1 h-[10px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${text}20` }} />
                                       <div className="w-8 h-[10px] rounded-sm" style={{ backgroundColor: accent, opacity: 0.8 }} />
@@ -1054,7 +1078,7 @@ export default function EditLinkInBioPage() {
                                   <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium">
                                     {tpl.blocks.length} sections
                                   </span>
-                                  {tpl.blocks.some(b => b.link_type === 'email_capture') && (
+                                  {tpl.blocks.some(b => b.link_type === 'lead_form') && (
                                     <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-500 font-medium">email</span>
                                   )}
                                   {tpl.blocks.some(b => b.link_type === 'spotify' || b.link_type === 'video_embed') && (

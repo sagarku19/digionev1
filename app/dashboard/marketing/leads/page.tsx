@@ -1,6 +1,6 @@
 'use client';
-// Lead Management — captured emails with CSV export, segmentation, and broadcast modal.
-// DB tables: guest_leads (read via useGuestLeads), sites (read)
+// Lead Management — captured leads with CSV export, site filter, and broadcast modal.
+// DB tables: lead_form (joined with forms, sites via hook)
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -10,7 +10,7 @@ import { DataTable, ColumnDef } from '@/components/ui/DataTable';
 import {
   Users, Mail, ArrowDownToLine, Send, X, Filter,
   MailOpen, AlertCircle, CheckCircle2, Tag, Search,
-  Ticket, Network, Gift,
+  Ticket, Network, Gift, Globe, FileText,
 } from 'lucide-react';
 
 // ─── Marketing Hub Nav ────────────────────────────────────────
@@ -47,13 +47,14 @@ function MarketingHubNav() {
 }
 
 function exportCSV(leads: any[]) {
-  const header = ['Email', 'Full Name', 'Mobile', 'Product', 'Event Type', 'Captured On'];
+  const header = ['Full Name', 'Email', 'Mobile', 'Other', 'Form', 'Site', 'Captured On'];
   const rows = leads.map(l => [
-    l.email ?? '',
     l.full_name ?? '',
+    l.email ?? '',
     l.mobile ?? '',
-    l.products?.name ?? 'General Form',
-    l.conversion_event_type?.replace(/_/g, ' ') ?? 'newsletter',
+    l.other && Object.keys(l.other).length > 0 ? Object.entries(l.other).map(([k, v]) => `${k}: ${v}`).join('; ') : '',
+    l.forms?.title ?? '',
+    l.sites?.slug ?? '',
     l.created_at ? new Date(l.created_at).toLocaleDateString('en-IN') : '',
   ]);
   const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -64,10 +65,8 @@ function exportCSV(leads: any[]) {
 }
 
 export default function LeadsPage() {
-  const { leads, isLoading } = useGuestLeads();
-
   const [search, setSearch] = useState('');
-  const [filterSource, setFilterSource] = useState('all');
+  const [filterSite, setFilterSite] = useState('all');
   const [showBroadcast, setShowBroadcast] = useState(false);
   const [broadcastSubject, setBroadcastSubject] = useState('');
   const [broadcastBody, setBroadcastBody] = useState('');
@@ -75,19 +74,25 @@ export default function LeadsPage() {
   const [broadcastError, setBroadcastError] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  // Unique sources
-  const sources = useMemo(() => {
-    const s = new Set<string>();
-    leads.forEach((l: any) => s.add(l.conversion_event_type ?? 'newsletter'));
-    return ['all', ...Array.from(s)];
-  }, [leads]);
+  // Pass site filter to hook — 'all' fetches all sites
+  const { leads, isLoading } = useGuestLeads(filterSite === 'all' ? undefined : filterSite);
+
+  // Unique sites for filter (always fetch all leads to build the site list)
+  const { leads: allLeads } = useGuestLeads();
+  const sites = useMemo(() => {
+    const s = new Map<string, string>();
+    allLeads.forEach((l: any) => {
+      if (l.sites?.slug) s.set(l.site_id, l.sites.slug);
+    });
+    return [{ id: 'all', slug: 'All Sites' }, ...Array.from(s, ([id, slug]) => ({ id, slug }))];
+  }, [allLeads]);
 
   const filtered = leads.filter((l: any) => {
     const matchSearch = !search ||
-      l.email?.includes(search.toLowerCase()) ||
-      l.full_name?.toLowerCase().includes(search.toLowerCase());
-    const matchSource = filterSource === 'all' || (l.conversion_event_type ?? 'newsletter') === filterSource;
-    return matchSearch && matchSource;
+      l.email?.toLowerCase().includes(search.toLowerCase()) ||
+      l.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      l.mobile?.includes(search);
+    return matchSearch;
   });
 
   const handleBroadcast = async (e: React.FormEvent) => {
@@ -107,7 +112,7 @@ export default function LeadsPage() {
 
   const columns: ColumnDef<any>[] = [
     {
-      header: 'Email',
+      header: 'Lead',
       accessorKey: 'email',
       sortable: true,
       cell: (row: any) => (
@@ -117,7 +122,7 @@ export default function LeadsPage() {
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900 dark:text-white">{row.full_name || '—'}</p>
-            <p className="text-xs text-gray-500">{row.email}</p>
+            <p className="text-xs text-gray-500">{row.email || '—'}</p>
           </div>
         </div>
       )
@@ -128,21 +133,39 @@ export default function LeadsPage() {
       cell: (row: any) => <span className="text-sm text-gray-500">{row.mobile || '—'}</span>
     },
     {
-      header: 'Source',
-      accessorKey: 'conversion_event_type',
+      header: 'Other',
+      accessorKey: 'other',
+      cell: (row: any) => {
+        const other = row.other as Record<string, string> | null;
+        if (!other || Object.keys(other).length === 0) return <span className="text-sm text-gray-400">—</span>;
+        return (
+          <div className="space-y-0.5">
+            {Object.entries(other).map(([key, val]) => (
+              <p key={key} className="text-xs text-gray-600 dark:text-gray-400">
+                <span className="font-medium text-gray-700 dark:text-gray-300">{key}:</span> {val}
+              </p>
+            ))}
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Form',
+      accessorKey: 'form_id',
       cell: (row: any) => (
-        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:text-[var(--text-secondary)] capitalize">
-          <Tag className="w-3 h-3" />
-          {(row.conversion_event_type ?? 'newsletter').replace(/_/g, ' ')}
+        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400">
+          <FileText className="w-3 h-3" />
+          {row.forms?.title || 'Untitled'}
         </span>
       )
     },
     {
-      header: 'Product',
-      accessorKey: 'products',
+      header: 'Site',
+      accessorKey: 'site_id',
       cell: (row: any) => (
-        <span className="text-sm text-gray-500 truncate max-w-[140px] block">
-          {row.products?.name || 'General'}
+        <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          <Globe className="w-3 h-3" />
+          {row.sites?.slug || '—'}
         </span>
       )
     },
@@ -173,7 +196,7 @@ export default function LeadsPage() {
               <Users className="w-6 h-6 text-gray-400" />
               Lead Management
             </h1>
-            <p className="text-sm text-gray-500 mt-1">{leads.length} leads captured across all stores</p>
+            <p className="text-sm text-gray-500 mt-1">{leads.length} leads captured across all sites</p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -222,23 +245,23 @@ export default function LeadsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or email…"
+                placeholder="Search by name, email, or mobile…"
                 className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
               />
             </div>
-            {sources.length > 2 && (
+            {sites.length > 2 && (
               <div className="flex items-center gap-2 flex-wrap">
                 <Filter className="w-4 h-4 text-gray-400 shrink-0" />
-                {sources.map(s => (
+                {sites.map(s => (
                   <button
-                    key={s} onClick={() => setFilterSource(s)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition capitalize ${
-                      filterSource === s
+                    key={s.id} onClick={() => setFilterSite(s.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                      filterSite === s.id
                         ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
                         : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-[var(--accent)]'
                     }`}
                   >
-                    {s === 'all' ? 'All Sources' : s.replace(/_/g, ' ')}
+                    {s.slug === 'All Sites' ? 'All Sites' : s.slug}
                   </button>
                 ))}
               </div>
@@ -251,8 +274,8 @@ export default function LeadsPage() {
           <DataTable
             data={filtered}
             columns={columns}
-            searchKeys={['email', 'full_name']}
-            emptyState="No leads captured yet. Add Email Capture sections to your storefront to start building your list."
+            searchKeys={['email', 'full_name', 'mobile']}
+            emptyState="No leads captured yet. Add Lead Form blocks to your link-in-bio pages to start collecting leads."
           />
         </div>
       </div>
@@ -274,7 +297,7 @@ export default function LeadsPage() {
               <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)]">
                 <Mail className="w-4 h-4 shrink-0" />
                 Sending to <strong className="ml-1">{filtered.filter((l: any) => l.email).length} leads</strong>
-                {filterSource !== 'all' && <span className="ml-1 opacity-70">(filtered by: {filterSource.replace(/_/g, ' ')})</span>}
+                {filterSite !== 'all' && <span className="ml-1 opacity-70">(filtered by site)</span>}
               </div>
 
               {broadcastError && (
@@ -293,7 +316,7 @@ export default function LeadsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Subject Line</label>
                 <input
                   type="text" required value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)}
-                  placeholder="🎉 Special offer just for you!"
+                  placeholder="Special offer just for you!"
                   className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400"
                 />
               </div>
@@ -301,7 +324,7 @@ export default function LeadsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Message</label>
                 <textarea
                   required rows={6} value={broadcastBody} onChange={e => setBroadcastBody(e.target.value)}
-                  placeholder="Hi {{name}},&#10;&#10;I wanted to share something special with you...&#10;&#10;Use code SPECIAL20 for 20% off.&#10;&#10;— Your Name"
+                  placeholder={"Hi {{name}},\n\nI wanted to share something special with you...\n\nUse code SPECIAL20 for 20% off.\n\n— Your Name"}
                   className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 resize-none"
                 />
                 <p className="text-xs text-gray-400 mt-1">Use {'{{name}}'} to personalize. Plain text only.</p>

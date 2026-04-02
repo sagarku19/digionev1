@@ -34,7 +34,8 @@
       "Bash(grep -r \"\\\\bindigo\\\\b\\\\|\\\\bviolet\\\\b\" --include=*.tsx C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src/components/dashboard C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/dashboard)",
       "Bash(find \"C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(marketing\\)\" -name \"*.tsx\")",
       "Bash(find /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
-      "Bash(find c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 -type f -name *linkinbio* -o -name *link-in-bio*)"
+      "Bash(find c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 -type f -name *linkinbio* -o -name *link-in-bio*)",
+      "Bash(grep -r \"from ''@/lib/supabase/server''\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/api --include=\"*.ts\" --include=\"*.tsx\")"
     ]
   }
 }

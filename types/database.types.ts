@@ -892,6 +892,38 @@ export type Database = {
         }
         Relationships: []
       }
+      forms: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          site_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          site_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          site_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forms_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_leads: {
         Row: {
           created_at: string | null
@@ -930,6 +962,47 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      lead_form: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          form_id: string
+          full_name: string | null
+          id: string
+          mobile: string | null
+          other: Json | null
+          site_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          form_id: string
+          full_name?: string | null
+          id?: string
+          mobile?: string | null
+          other?: Json | null
+          site_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          form_id?: string
+          full_name?: string | null
+          id?: string
+          mobile?: string | null
+          other?: Json | null
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_form_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       linkinbio_blocks: {
         Row: {
@@ -3798,12 +3871,12 @@ export type Database = {
     Enums: {
       ab_test_status: "draft" | "running" | "paused" | "concluded"
       builder_asset_type:
-      | "icon_set"
-      | "font"
-      | "lottie_animation"
-      | "pattern"
-      | "illustration"
-      | "stock_image"
+        | "icon_set"
+        | "font"
+        | "lottie_animation"
+        | "pattern"
+        | "illustration"
+        | "stock_image"
       content_status: "draft" | "published" | "archived"
       conversion_event_type: "add_to_cart" | "checkout_start" | "purchase"
       device_type: "desktop" | "mobile" | "tablet"
@@ -3813,60 +3886,60 @@ export type Database = {
       layout_role_type: "section" | "row" | "column" | "block"
       offer_type: "percentage" | "fixed_amount" | "free_period"
       order_status:
-      | "pending"
-      | "completed"
-      | "failed"
-      | "refunded"
-      | "cancelled"
+        | "pending"
+        | "completed"
+        | "failed"
+        | "refunded"
+        | "cancelled"
       page_block_type:
-      | "hero"
-      | "text"
-      | "image"
-      | "image_gallery"
-      | "video"
-      | "product_showcase"
-      | "cta_button"
-      | "testimonial"
-      | "faq"
-      | "newsletter"
-      | "columns"
-      | "divider"
-      | "pricing_table"
-      | "form"
-      | "countdown"
-      | "rich_text"
-      | "embed"
-      | "custom_html"
+        | "hero"
+        | "text"
+        | "image"
+        | "image_gallery"
+        | "video"
+        | "product_showcase"
+        | "cta_button"
+        | "testimonial"
+        | "faq"
+        | "newsletter"
+        | "columns"
+        | "divider"
+        | "pricing_table"
+        | "form"
+        | "countdown"
+        | "rich_text"
+        | "embed"
+        | "custom_html"
       page_type: "landing" | "product" | "about" | "contact" | "blog" | "custom"
       payout_status: "pending" | "initiated" | "processed" | "failed"
       payout_type: "upi" | "bank_transfer"
       product_relation_type: "upsell" | "cross_sell" | "bundle"
       site_section_type:
-      | "hero_banner"
-      | "featured_products"
-      | "product_grid"
-      | "testimonials"
-      | "about_creator"
-      | "faq_accordion"
-      | "countdown_timer"
-      | "social_proof"
-      | "email_capture"
-      | "video_showcase"
-      | "rich_text"
-      | "image_gallery"
-      | "product_comparison"
-      | "pricing_table"
-      | "announcement_bar"
-      | "sticky_cta"
-      | "trust_badges"
-      | "custom_html"
+        | "hero_banner"
+        | "featured_products"
+        | "product_grid"
+        | "testimonials"
+        | "about_creator"
+        | "faq_accordion"
+        | "countdown_timer"
+        | "social_proof"
+        | "email_capture"
+        | "video_showcase"
+        | "rich_text"
+        | "image_gallery"
+        | "product_comparison"
+        | "pricing_table"
+        | "announcement_bar"
+        | "sticky_cta"
+        | "trust_badges"
+        | "custom_html"
       storage_provider_type:
-      | "supabase"
-      | "digitalocean"
-      | "aws_s3"
-      | "cloudflare_r2"
-      | "gcs"
-      | "bunny"
+        | "supabase"
+        | "digitalocean"
+        | "aws_s3"
+        | "cloudflare_r2"
+        | "gcs"
+        | "bunny"
       subscription_plan_type: "free" | "plus" | "pro"
       user_role_type: "super_admin" | "creator" | "user"
       wallet_direction: "credit" | "debit"
@@ -3883,116 +3956,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   public: {
