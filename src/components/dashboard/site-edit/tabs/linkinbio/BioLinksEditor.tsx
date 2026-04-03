@@ -15,9 +15,9 @@ import {
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
-const INPUT = 'w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
-const CHIP_ON = 'bg-pink-100 dark:bg-pink-500/20 text-pink-700 dark:text-pink-300 border border-pink-300 dark:border-pink-500/40';
-const CHIP_OFF = 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-transparent';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
+const CHIP_ON = 'bg-white dark:bg-[#1A1A2E] text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-100';
+const CHIP_OFF = 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 scale-95 hover:scale-100';
 
 export type BioLink = {
   id: string;
@@ -39,28 +39,28 @@ const BLOCK_CATEGORIES = [
   {
     label: 'Content',
     types: [
-      { id: 'url',           label: 'Link',          icon: LinkIcon,     desc: 'External URL' },
-      { id: 'header',        label: 'Header',        icon: Heading1,     desc: 'Title + subtitle' },
-      { id: 'text',          label: 'Text',          icon: FileText,     desc: 'Paragraph block' },
-      { id: 'heading',       label: 'Section Title', icon: Type,         desc: 'Simple label' },
-      { id: 'divider',       label: 'Divider',       icon: Minus,        desc: 'Visual separator' },
-      { id: 'space',         label: 'Space',         icon: ArrowUpDown,  desc: 'Empty vertical gap' },
+      { id: 'url', label: 'Link', icon: LinkIcon, desc: 'External URL' },
+      { id: 'header', label: 'Header', icon: Heading1, desc: 'Title + subtitle' },
+      { id: 'text', label: 'Text', icon: FileText, desc: 'Paragraph block' },
+      { id: 'heading', label: 'Section Title', icon: Type, desc: 'Simple label' },
+      { id: 'divider', label: 'Divider', icon: Minus, desc: 'Visual separator' },
+      { id: 'space', label: 'Space', icon: ArrowUpDown, desc: 'Empty vertical gap' },
     ],
   },
-    {
+  {
     label: 'Commerce & Social',
     types: [
-      { id: 'product',       label: 'Product',       icon: Package,      desc: 'Sell a product' },
-      { id: 'lead_form',     label: 'Lead Form',     icon: ClipboardList, desc: 'Collect visitor info' },
-      { id: 'social_icons',  label: 'Social Icons',  icon: Share2,       desc: 'Icon row' },
-      { id: 'banner',        label: 'Banner CTA',    icon: Megaphone,    desc: 'Call-to-action card' },
+      { id: 'product', label: 'Product', icon: Package, desc: 'Sell a product' },
+      { id: 'lead_form', label: 'Lead Form', icon: ClipboardList, desc: 'Collect visitor info' },
+      { id: 'social_icons', label: 'Social Icons', icon: Share2, desc: 'Icon row' },
+      { id: 'banner', label: 'Banner CTA', icon: Megaphone, desc: 'Call-to-action card' },
     ],
   },
   {
     label: 'Media & Embeds',
     types: [
-      { id: 'image',         label: 'Image',         icon: Image,        desc: 'Full-width image' },
-      { id: 'html_embed',    label: 'HTML / Iframe',  icon: Code,         desc: 'Custom embed code' },
+      { id: 'image', label: 'Image', icon: Image, desc: 'Full-width image' },
+      { id: 'html_embed', label: 'HTML / Iframe', icon: Code, desc: 'Custom embed code' },
     ],
   },
 
@@ -70,45 +70,45 @@ const BLOCK_CATEGORIES = [
 const ALL_TYPES = BLOCK_CATEGORIES.flatMap(c => c.types);
 
 const STYLE_VARIANTS = [
-  { id: 'default',   label: 'Default' },
-  { id: 'featured',  label: 'Featured' },
-  { id: 'outline',   label: 'Outline' },
+  { id: 'default', label: 'Default' },
+  { id: 'featured', label: 'Featured' },
+  { id: 'outline', label: 'Outline' },
   { id: 'highlight', label: 'Highlight' },
 ];
 
 const ICON_TYPES = [
-  { id: 'external',  label: 'Link',      icon: ExternalLink },
-  { id: 'youtube',   label: 'YouTube',   icon: Play },
+  { id: 'external', label: 'Link', icon: ExternalLink },
+  { id: 'youtube', label: 'YouTube', icon: Play },
   { id: 'instagram', label: 'Instagram', icon: Instagram },
-  { id: 'twitter',   label: 'Twitter',   icon: Twitter },
-  { id: 'spotify',   label: 'Spotify',   icon: Music2 },
-  { id: 'tiktok',    label: 'TikTok',    icon: Music },
-  { id: 'github',    label: 'GitHub',    icon: Github },
-  { id: 'linkedin',  label: 'LinkedIn',  icon: Linkedin },
+  { id: 'twitter', label: 'Twitter', icon: Twitter },
+  { id: 'spotify', label: 'Spotify', icon: Music2 },
+  { id: 'tiktok', label: 'TikTok', icon: Music },
+  { id: 'github', label: 'GitHub', icon: Github },
+  { id: 'linkedin', label: 'LinkedIn', icon: Linkedin },
 ];
 
 const ANIMATIONS = [
-  { id: 'none',  label: 'None' },
+  { id: 'none', label: 'None' },
   { id: 'pulse', label: 'Pulse' },
   { id: 'shine', label: 'Shine' },
-  { id: 'glow',  label: 'Glow' },
+  { id: 'glow', label: 'Glow' },
 ];
 
 const SOCIAL_PLATFORMS = [
   { id: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/you' },
-  { id: 'twitter',   label: 'Twitter/X', icon: Twitter,   placeholder: 'https://x.com/you' },
-  { id: 'youtube',   label: 'YouTube',   icon: Youtube,   placeholder: 'https://youtube.com/@you' },
-  { id: 'linkedin',  label: 'LinkedIn',  icon: Linkedin,  placeholder: 'https://linkedin.com/in/you' },
-  { id: 'github',    label: 'GitHub',    icon: Github,    placeholder: 'https://github.com/you' },
-  { id: 'tiktok',    label: 'TikTok',    icon: Music,     placeholder: 'https://tiktok.com/@you' },
-  { id: 'website',   label: 'Website',   icon: Globe,     placeholder: 'https://your-site.com' },
-  { id: 'spotify',   label: 'Spotify',   icon: Music2,    placeholder: 'https://open.spotify.com/artist/...' },
+  { id: 'twitter', label: 'Twitter/X', icon: Twitter, placeholder: 'https://x.com/you' },
+  { id: 'youtube', label: 'YouTube', icon: Youtube, placeholder: 'https://youtube.com/@you' },
+  { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/in/you' },
+  { id: 'github', label: 'GitHub', icon: Github, placeholder: 'https://github.com/you' },
+  { id: 'tiktok', label: 'TikTok', icon: Music, placeholder: 'https://tiktok.com/@you' },
+  { id: 'website', label: 'Website', icon: Globe, placeholder: 'https://your-site.com' },
+  { id: 'spotify', label: 'Spotify', icon: Music2, placeholder: 'https://open.spotify.com/artist/...' },
 ];
 
 // ─── Chip button helper ──────────────────────────────────
 function Chip({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
   return (
-    <button onClick={onClick} className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${active ? CHIP_ON : CHIP_OFF}`}>
+    <button onClick={onClick} className={`flex-1 px-3 py-1.5 rounded-[10px] text-[11px] font-semibold transition-all duration-300 ${active ? CHIP_ON : CHIP_OFF}`}>
       {children}
     </button>
   );
@@ -122,11 +122,11 @@ function AlignPicker({ value, onChange }: { value: string; onChange: (v: string)
     { id: 'right', icon: AlignRight },
   ];
   return (
-    <div className="flex gap-1">
+    <div className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl">
       {opts.map(o => (
         <button key={o.id} onClick={() => onChange(o.id)}
-          className={`p-2 rounded-lg transition ${value === o.id ? CHIP_ON : CHIP_OFF}`}>
-          <o.icon className="w-3.5 h-3.5" />
+          className={`flex-1 flex items-center justify-center p-2 rounded-[10px] transition-all duration-300 ${value === o.id ? CHIP_ON : CHIP_OFF}`}>
+          <o.icon className="w-4 h-4" strokeWidth={value === o.id ? 2.5 : 2} />
         </button>
       ))}
     </div>
@@ -135,7 +135,7 @@ function AlignPicker({ value, onChange }: { value: string; onChange: (v: string)
 
 // ─── Section label ───────────────────────────────────────
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{children}</label>;
+  return <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
 }
 
 // ─── Main component ──────────────────────────────────────
@@ -306,9 +306,8 @@ export default function BioLinksEditor({
           return (
             <div
               key={link.id}
-              className={`relative bg-white dark:bg-[#0A0A1A] border rounded-xl transition-all ${
-                isExpanded ? 'border-pink-300 dark:border-pink-700 shadow-sm shadow-pink-500/5' : 'border-gray-200 dark:border-gray-800'
-              } ${dragIdx === idx ? 'opacity-50' : ''}`}
+              className={`relative bg-white dark:bg-[#151525] border-2 rounded-[1.25rem] transition-all duration-300 ${isExpanded ? 'border-pink-200 dark:border-pink-500/30' : 'border-gray-100 dark:border-gray-800/60'
+                } ${dragIdx === idx ? 'opacity-50 scale-95 shadow-md' : 'shadow-sm hover:shadow-md'}`}
               draggable
               onDragStart={() => setDragIdx(idx)}
               onDragOver={e => e.preventDefault()}
@@ -322,7 +321,7 @@ export default function BioLinksEditor({
                   <TypeIcon className="w-3.5 h-3.5 text-gray-500" />
                 </div>
                 <button onClick={() => setExpandedId(isExpanded ? null : link.id)} className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                     {link.title || link.metadata?.content?.slice(0, 40) || typeInfo?.label || 'Untitled'}
                   </p>
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">{typeInfo?.label}</p>
@@ -362,7 +361,7 @@ export default function BioLinksEditor({
 
               {/* Expanded editor */}
               {isExpanded && (
-                <div className="px-4 pb-4 pt-1 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                <div className="px-4 pb-5 pt-2 border-t border-gray-100 dark:border-gray-800/60 space-y-4">
 
                   {/* ── Title — most types ── */}
                   {!NO_TITLE_TYPES.includes(link.link_type) && link.link_type !== 'header' && (
@@ -391,7 +390,7 @@ export default function BioLinksEditor({
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <FieldLabel>Size</FieldLabel>
-                          <div className="flex gap-1.5">
+                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                             {['sm', 'md', 'lg', 'xl', '2xl'].map(s => (
                               <Chip key={s} active={(link.metadata?.size || 'xl') === s} onClick={() => updateMeta(link.id, 'size', s)}>
                                 {s.toUpperCase()}
@@ -427,7 +426,7 @@ export default function BioLinksEditor({
                       <div className="flex items-center gap-4">
                         <div>
                           <FieldLabel>Size</FieldLabel>
-                          <div className="flex gap-1.5">
+                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                             {['sm', 'base', 'lg'].map(s => (
                               <Chip key={s} active={(link.metadata?.size || 'base') === s} onClick={() => updateMeta(link.id, 'size', s)}>
                                 {s === 'sm' ? 'Small' : s === 'base' ? 'Normal' : 'Large'}
@@ -456,7 +455,7 @@ export default function BioLinksEditor({
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <FieldLabel>Size</FieldLabel>
-                          <div className="flex gap-1.5">
+                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                             {['sm', 'md', 'lg'].map(s => (
                               <Chip key={s} active={(link.metadata?.size || 'md') === s} onClick={() => updateMeta(link.id, 'size', s)}>
                                 {s.toUpperCase()}
@@ -486,15 +485,14 @@ export default function BioLinksEditor({
                       <FieldLabel>Height</FieldLabel>
                       <div className="flex gap-2">
                         {[
-                          { id: 'sm', label: 'Small',   px: '16px' },
-                          { id: 'md', label: 'Medium',  px: '32px' },
-                          { id: 'lg', label: 'Large',   px: '64px' },
+                          { id: 'sm', label: 'Small', px: '16px' },
+                          { id: 'md', label: 'Medium', px: '32px' },
+                          { id: 'lg', label: 'Large', px: '64px' },
                           { id: 'xl', label: 'X-Large', px: '96px' },
                         ].map(h => (
                           <button key={h.id} onClick={() => updateMeta(link.id, 'height', h.id)}
-                            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 transition ${
-                              (link.metadata?.height || 'md') === h.id ? CHIP_ON : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                            }`}>
+                            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 transition ${(link.metadata?.height || 'md') === h.id ? CHIP_ON : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                              }`}>
                             <span className="text-xs font-semibold">{h.label}</span>
                             <span className="text-[10px] text-gray-400">{h.px}</span>
                           </button>
@@ -531,7 +529,7 @@ export default function BioLinksEditor({
                       </div>
                       <div>
                         <FieldLabel>Icon</FieldLabel>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                           {ICON_TYPES.map(it => (
                             <Chip key={it.id} active={link.icon_type === it.id} onClick={() => updateLink(link.id, { icon_type: it.id })}>
                               {it.label}
@@ -541,7 +539,7 @@ export default function BioLinksEditor({
                       </div>
                       <div>
                         <FieldLabel>Animation</FieldLabel>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                           {ANIMATIONS.map(a => (
                             <Chip key={a.id} active={(link.metadata?.animation || 'none') === a.id}
                               onClick={() => updateMeta(link.id, 'animation', a.id)}>
@@ -552,7 +550,7 @@ export default function BioLinksEditor({
                       </div>
                       <div>
                         <FieldLabel>Width in Grid</FieldLabel>
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                           <Chip active={(link.metadata?.col_span || 'full') === 'full'} onClick={() => updateMeta(link.id, 'col_span', 'full')}>
                             Full Width
                           </Chip>
@@ -699,7 +697,7 @@ export default function BioLinksEditor({
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <FieldLabel>Card Layout</FieldLabel>
-                            <div className="flex gap-1.5 flex-wrap">
+                            <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                               {[{ id: 'horizontal', label: 'Row' }, { id: 'split', label: 'Split' }, { id: 'vertical', label: 'Card' }].map(l => (
                                 <Chip key={l.id}
                                   active={(link.metadata?.layout || 'horizontal') === l.id}
@@ -711,7 +709,7 @@ export default function BioLinksEditor({
                           </div>
                           <div>
                             <FieldLabel>Button Position</FieldLabel>
-                            <div className="flex gap-1.5 flex-wrap">
+                            <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                               {[{ id: 'right', label: 'Right' }, { id: 'center', label: 'Center' }, { id: 'full', label: 'Full' }].map(b => (
                                 <Chip key={b.id}
                                   active={(link.metadata?.button_position || 'right') === b.id}
@@ -745,7 +743,7 @@ export default function BioLinksEditor({
                             <div className="grid grid-cols-2 gap-2">
                               <div>
                                 <FieldLabel>Price Position</FieldLabel>
-                                <div className="flex gap-1.5 flex-wrap">
+                                <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
                                   {[{ id: 'below', label: 'Below title' }, { id: 'inline', label: 'Right of title' }].map(p => (
                                     <Chip key={p.id}
                                       active={(link.metadata?.price_position || 'below') === p.id}
@@ -811,10 +809,10 @@ export default function BioLinksEditor({
                     const setFields = (next: typeof fields) => updateMeta(link.id, 'fields', next);
 
                     const FIELD_PRESETS = [
-                      { type: 'name',   label: 'Full Name', placeholder: 'Your name' },
-                      { type: 'email',  label: 'Email',     placeholder: 'your@email.com' },
-                      { type: 'mobile', label: 'Mobile',    placeholder: '+91 98765 43210' },
-                      { type: 'other',  label: 'Other',     placeholder: 'Type here...' },
+                      { type: 'name', label: 'Full Name', placeholder: 'Your name' },
+                      { type: 'email', label: 'Email', placeholder: 'your@email.com' },
+                      { type: 'mobile', label: 'Mobile', placeholder: '+91 98765 43210' },
+                      { type: 'other', label: 'Other', placeholder: 'Type here...' },
                     ];
                     const usedTypes = fields.map(f => f.type);
 
@@ -846,11 +844,10 @@ export default function BioLinksEditor({
                                 </div>
                                 <button
                                   onClick={() => { const n = [...fields]; n[fi] = { ...n[fi], required: !n[fi].required }; setFields(n); }}
-                                  className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold transition ${
-                                    field.required
+                                  className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold transition ${field.required
                                       ? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400'
                                       : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
-                                  }`}
+                                    }`}
                                   title={field.required ? 'Required' : 'Optional'}
                                 >
                                   {field.required ? 'Required' : 'Optional'}
@@ -871,11 +868,10 @@ export default function BioLinksEditor({
                                 <button key={preset.type}
                                   disabled={alreadyUsed}
                                   onClick={() => setFields([...fields, { type: preset.type, label: preset.label, required: preset.type === 'email', placeholder: preset.placeholder }])}
-                                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${
-                                    alreadyUsed
+                                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${alreadyUsed
                                       ? 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600 cursor-not-allowed'
                                       : 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 border border-pink-200 dark:border-pink-500/30'
-                                  }`}>
+                                    }`}>
                                   <Plus className="w-3 h-3" /> {preset.label}
                                 </button>
                               );
@@ -1122,8 +1118,7 @@ export default function BioLinksEditor({
                       <div className="flex gap-2">
                         {STYLE_VARIANTS.map(sv => (
                           <button key={sv.id} onClick={() => updateLink(link.id, { style_variant: sv.id })}
-                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                              link.style_variant === sv.id ? CHIP_ON : CHIP_OFF}`}>
+                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition ${link.style_variant === sv.id ? CHIP_ON : CHIP_OFF}`}>
                             {sv.id === 'featured' && <Star className="w-3 h-3" />}
                             {sv.label}
                           </button>

@@ -7,9 +7,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
-import BioProfileEditor, { type BioProfileData, type SocialLink } from '@/components/dashboard/site-edit/tabs/BioProfileEditor';
-import BioLinksEditor, { type BioLink } from '@/components/dashboard/site-edit/tabs/BioLinksEditor';
-import BioAppearanceEditor, { type BioAppearanceData } from '@/components/dashboard/site-edit/tabs/BioAppearanceEditor';
+import BioProfileEditor, { type BioProfileData, type SocialLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioProfileEditor';
+import BioLinksEditor, { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioLinksEditor';
+import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioAppearanceEditor';
 import {
   Link2, User, LinkIcon, Sparkles, Paintbrush,
   ArrowLeft, Save, Loader2, CheckCircle2, ExternalLink,
@@ -32,12 +32,22 @@ const DEVICES = [
 
 // ─── Tabs ────────────────────────────────────────────────────
 type Tab = 'profile' | 'templates' | 'section' | 'appearance' | 'settings';
-const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'templates', label: 'Templates', icon: Paintbrush },
-  { id: 'section', label: 'Section', icon: LinkIcon },
-  { id: 'appearance', label: 'Appearance', icon: Sparkles },
-  { id: 'settings', label: 'Settings', icon: Settings },
+
+type TabDef = {
+  id: Tab;
+  label: string;
+  icon: React.ElementType;
+  activeColor: string;
+  activeBg: string;
+  activeBorder: string;
+};
+
+const TABS: TabDef[] = [
+  { id: 'profile', label: 'Profile', icon: User, activeColor: 'text-blue-600 dark:text-blue-400', activeBg: 'bg-blue-50 dark:bg-blue-500/10', activeBorder: 'ring-1 ring-blue-200 dark:ring-blue-500/20' },
+  { id: 'templates', label: 'Template', icon: Paintbrush, activeColor: 'text-indigo-600 dark:text-indigo-400', activeBg: 'bg-indigo-50 dark:bg-indigo-500/10', activeBorder: 'ring-1 ring-indigo-200 dark:ring-indigo-500/20' },
+  { id: 'section', label: 'Section', icon: LinkIcon, activeColor: 'text-emerald-600 dark:text-emerald-400', activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeBorder: 'ring-1 ring-emerald-200 dark:ring-emerald-500/20' },
+  { id: 'appearance', label: 'Appearance', icon: Sparkles, activeColor: 'text-rose-600 dark:text-rose-400', activeBg: 'bg-rose-50 dark:bg-rose-500/10', activeBorder: 'ring-1 ring-rose-200 dark:ring-rose-500/20' },
+  { id: 'settings', label: 'Settings', icon: Settings, activeColor: 'text-amber-600 dark:text-amber-400', activeBg: 'bg-amber-50 dark:bg-amber-500/10', activeBorder: 'ring-1 ring-amber-200 dark:ring-amber-500/20' },
 ];
 
 // ─── Templates ──────────────────────────────────────────────────────────
@@ -288,6 +298,7 @@ export default function EditLinkInBioPage() {
 
   // ── UI state ──
   const [activeTab, setActiveTab] = useState<Tab>('profile');
+  const [isScrolled, setIsScrolled] = useState(false);
   const [device, setDevice] = useState<string>('mobile');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -907,14 +918,7 @@ export default function EditLinkInBioPage() {
   const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
   const displayTitle = profile.displayName || site?.slug || 'Untitled';
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
-        <span className="text-sm text-gray-500">Loading editor...</span>
-      </div>
-    );
-  }
+  // The main layout remains visible during loading.
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[#060610]">
@@ -1037,336 +1041,370 @@ export default function EditLinkInBioPage() {
           </div>
 
           {/* ── Tab Bar ── */}
-          <div className="shrink-0 border-b border-gray-200 dark:border-gray-800 px-3 py-2.5">
-            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-              {TABS.map(tab => {
-                const active = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition ${active
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                      }`}
-                  >
-                    <tab.icon className="w-3.5 h-3.5" />
-                    {tab.label}
-                  </button>
-                );
-              })}
+          <div className={`shrink-0 border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out origin-top overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 border-b-0' : 'max-h-24 opacity-100 border-b'}`}>
+            <div className="px-3 py-3">
+              <div className="flex gap-1.5 p-1.5 bg-gray-100/80 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-x-auto hide-scrollbar">
+                {TABS.map(tab => {
+                  const active = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`group relative flex-1 min-w-[72px] flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] font-semibold transition-all duration-300
+                      ${active
+                          ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm scale-100`
+                          : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-700/50 scale-[0.98] hover:scale-100'
+                        }`}
+                    >
+                      <div className={`transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+                        <tab.icon className="w-4 h-4" strokeWidth={active ? 2.5 : 2} />
+                      </div>
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* ── Editor Content (scrollable) ── */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-5">
-
-            {/* ── Profile Tab ── */}
-            {activeTab === 'profile' && (
-              <BioProfileEditor data={profile} onChange={setProfile} />
-            )}
-
-            {/* ── Templates Tab ── */}
-            {activeTab === 'templates' && (
-              <div className="space-y-5">
-                <div>
-                  <p className="text-xs text-gray-500">Pick a template to set your page&apos;s layout, theme, and sections instantly.</p>
+          <div
+            className="flex-1 overflow-y-auto p-5 space-y-5"
+            onScroll={(e) => setIsScrolled(e.currentTarget.scrollTop > 20)}
+          >
+            {loading ? (
+              <div className="w-full space-y-8 opacity-70">
+                <div className="space-y-3">
+                  <div className="h-4 w-28 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="h-11 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
                 </div>
-
-                {/* Category groups */}
-                {(['starter', 'creative', 'business', 'social'] as const).map(cat => {
-                  const catTemplates = TEMPLATES.filter(t => t.category === cat);
-                  if (catTemplates.length === 0) return null;
-                  const catLabel = { starter: 'Get Started', creative: 'Creative', business: 'Business', social: 'Social & Store' }[cat];
-                  return (
-                    <div key={cat} className="space-y-3">
-                      <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{catLabel}</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        {catTemplates.map(tpl => {
-                          const btnRadius = tpl.buttonStyle === 'pill' ? '9999px' : tpl.buttonStyle === 'sharp' ? '0' : tpl.borderRadius === 'lg' ? '12px' : tpl.borderRadius === 'sm' ? '4px' : tpl.borderRadius === 'none' ? '0' : '8px';
-                          const bgStyle = tpl.backgroundType === 'gradient' ? tpl.backgroundValue : tpl.preview.bg;
-                          const isGlass = tpl.cardStyle === 'glass';
-                          const { accent, text: textC, card } = tpl.preview;
-                          const avatarRadius = tpl.profileShape === 'square' ? '3px' : tpl.profileShape === 'rounded' ? '6px' : '9999px';
-
-                          return (
-                            <button
-                              key={tpl.name}
-                              onClick={() => applyTemplate(tpl)}
-                              className="group relative flex flex-col items-center text-left transition-all"
-                            >
-                              {tpl.tag && (
-                                <span className="absolute -top-1.5 right-2 px-2 py-0.5 bg-pink-500 text-white text-[7px] font-bold rounded-full uppercase z-10 shadow-sm shadow-pink-500/30">
-                                  {tpl.tag}
-                                </span>
-                              )}
-
-                              {/* Phone frame */}
-                              <div className="w-full rounded-2xl border-2 border-gray-200 dark:border-gray-700 group-hover:border-pink-400 dark:group-hover:border-pink-500 overflow-hidden transition-all group-hover:shadow-xl group-hover:shadow-pink-500/10 group-hover:scale-[1.02]">
-                                {/* Notch bar */}
-                                <div className="h-4 flex items-center justify-center" style={{ background: bgStyle }}>
-                                  <div className="w-10 h-1.5 rounded-full" style={{ backgroundColor: textC, opacity: 0.15 }} />
-                                </div>
-
-                                {/* Screen content */}
-                                <div className="px-3.5 pb-3 pt-1 flex flex-col items-center gap-[5px] overflow-hidden" style={{ background: bgStyle, minHeight: '180px' }}>
-                                  {tpl.blocks.slice(0, 8).map((b, i) => {
-                                    if (b.link_type === 'header') return (
-                                      <div key={i} className="flex flex-col items-center gap-[3px] mb-1 shrink-0">
-                                        <div className="w-7 h-7 shadow-sm" style={{ backgroundColor: accent, borderRadius: avatarRadius, border: `1.5px solid ${bgStyle === textC ? accent : textC}20` }} />
-                                        <div className="w-16 h-[5px] rounded-full mt-0.5" style={{ backgroundColor: textC, opacity: 0.85 }} />
-                                        <div className="w-11 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.35 }} />
-                                      </div>
-                                    );
-                                    if (b.link_type === 'heading') return (
-                                      <div key={i} className="w-14 h-[4px] rounded-sm self-start shrink-0 mt-1" style={{ backgroundColor: textC, opacity: 0.55 }} />
-                                    );
-                                    if (b.link_type === 'url') {
-                                      const featured = b.style_variant === 'featured';
-                                      return (
-                                        <div key={i} className="w-full shrink-0 flex items-center gap-[5px] px-[5px]" style={{
-                                          height: featured ? '14px' : '12px',
-                                          backgroundColor: isGlass ? card : card,
-                                          borderRadius: btnRadius,
-                                          border: tpl.buttonStyle === 'outline' ? `1px solid ${accent}` : tpl.cardStyle === 'bordered' ? `1px solid ${textC}25` : 'none',
-                                          boxShadow: tpl.buttonStyle === 'shadow' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                                          backdropFilter: isGlass ? 'blur(4px)' : 'none',
-                                        }}>
-                                          <div className="w-[6px] h-[6px] rounded-sm shrink-0" style={{ backgroundColor: accent, opacity: 0.5 }} />
-                                          <div className="flex-1 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.4 }} />
-                                        </div>
-                                      );
-                                    }
-                                    if (b.link_type === 'divider') return (
-                                      <div key={i} className="w-10 shrink-0 my-[2px]" style={{ height: '1px', backgroundColor: textC, opacity: 0.12 }} />
-                                    );
-                                    if (b.link_type === 'text') return (
-                                      <div key={i} className="flex flex-col gap-[2px] w-full px-1 shrink-0">
-                                        <div className="w-full h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.2 }} />
-                                        <div className="w-2/3 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
-                                      </div>
-                                    );
-                                    if (b.link_type === 'social_icons') return (
-                                      <div key={i} className="flex gap-[4px] justify-center shrink-0 my-[2px]">
-                                        {Array.from({ length: Math.min(b.metadata?.links?.length || 4, 5) }).map((_, j) => (
-                                          <div key={j} className="w-[8px] h-[8px] rounded-full" style={{ backgroundColor: accent, opacity: 0.6 }} />
-                                        ))}
-                                      </div>
-                                    );
-                                    if (b.link_type === 'lead_form') return (
-                                      <div key={i} className="w-full flex gap-[4px] shrink-0">
-                                        <div className="flex-1 h-[11px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${textC}15` }} />
-                                        <div className="w-9 h-[11px] shrink-0" style={{ backgroundColor: accent, opacity: 0.8, borderRadius: btnRadius }} />
-                                      </div>
-                                    );
-                                    if (b.link_type === 'banner') return (
-                                      <div key={i} className="w-full h-[14px] shrink-0 flex items-center justify-between px-[5px]" style={{ backgroundColor: b.metadata?.bg_color || accent, opacity: 0.8, borderRadius: btnRadius }}>
-                                        <div className="w-10 h-[3px] rounded-full bg-white" style={{ opacity: 0.7 }} />
-                                        <div className="w-6 h-[7px] rounded-sm bg-white" style={{ opacity: 0.4 }} />
-                                      </div>
-                                    );
-                                    if (b.link_type === 'space') return <div key={i} className="h-[4px] shrink-0" />;
-                                    return <div key={i} className="w-full h-[8px] rounded-sm shrink-0" style={{ backgroundColor: card }} />;
-                                  })}
-                                </div>
-
-                                {/* Bottom nav dots */}
-                                <div className="h-3 flex items-center justify-center" style={{ background: bgStyle }}>
-                                  <div className="w-8 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
-                                </div>
-                              </div>
-
-                              {/* Label */}
-                              <div className="w-full mt-2.5 px-0.5">
-                                <p className="text-xs font-semibold text-gray-900 dark:text-white">{tpl.name}</p>
-                                <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{tpl.description}</p>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+                <div className="space-y-3">
+                  <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="h-28 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                </div>
+                <div className="space-y-3">
+                  <div className="h-4 w-40 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="flex gap-4">
+                    <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                    <div className="h-24 flex-1 rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-4 w-48 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="h-12 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                </div>
               </div>
-            )}
+            ) : (
+              <>
+                {/* ── Profile Tab ── */}
+                {activeTab === 'profile' && (
+                  <BioProfileEditor data={profile} onChange={setProfile} />
+                )}
 
-            {/* ── Section Tab (formerly Links) ── */}
-            {activeTab === 'section' && (
-              <BioLinksEditor links={links} onChange={setLinks} products={products} />
-            )}
-
-            {/* ── Appearance Tab ── */}
-            {activeTab === 'appearance' && (
-              <BioAppearanceEditor
-                data={appearance}
-                onChange={setAppearance}
-                palette={palette}
-                onPaletteChange={updatePalette}
-              />
-            )}
-
-            {/* ── Settings Tab ── */}
-            {activeTab === 'settings' && (
-              <div className="space-y-5">
-
-                {/* URL Slug */}
-                <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Your link-in-bio page address</p>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg mb-2">
-                      <span className="text-xs text-gray-400 shrink-0">digione.ai/link/</span>
-                      <input
-                        type="text"
-                        value={slug}
-                        onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                        className="flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-white placeholder-gray-400 min-w-0"
-                        placeholder="your-name"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 min-h-5">
-                      {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
-                      {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
-                        <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Your current URL</span>
-                      )}
-                      {slugStatus === 'available' && (
-                        <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available — save to apply</span>
-                      )}
-                      {slugStatus === 'taken' && (
-                        <span className="flex items-center gap-1 text-xs text-red-500"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
-                      )}
-                      {slugStatus === 'invalid' && (
-                        <span className="text-xs text-red-500">3+ chars, letters, numbers, hyphens only</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* SEO & Social Sharing */}
-                <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                      <Search className="w-4 h-4 text-pink-500" /> SEO & Social Sharing
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">How your page looks when shared on WhatsApp, Twitter, etc.</p>
-                  </div>
-
-                  <div className="space-y-3">
+                {/* ── Templates Tab ── */}
+                {activeTab === 'templates' && (
+                  <div className="space-y-5">
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                        Page Title <span className="text-gray-400 font-normal">(overrides your display name)</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={seo.title}
-                        onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
-                        maxLength={70}
-                        className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition"
-                        placeholder={profile.displayName || 'Your Name · Link in Bio'}
-                      />
-                      <p className="text-[10px] text-gray-400 mt-1">{seo.title.length}/70 characters</p>
+                      <p className="text-xs text-gray-500">Pick a template to set your page&apos;s layout, theme, and sections instantly.</p>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                        Meta Description <span className="text-gray-400 font-normal">(overrides your bio)</span>
-                      </label>
-                      <textarea
-                        value={seo.description}
-                        onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
-                        maxLength={160}
-                        rows={2}
-                        className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition resize-none"
-                        placeholder={profile.bioText || 'A short description of your page...'}
-                      />
-                      <p className="text-[10px] text-gray-400 mt-1">{seo.description.length}/160 characters</p>
-                    </div>
+                    {/* Category groups */}
+                    {(['starter', 'creative', 'business', 'social'] as const).map(cat => {
+                      const catTemplates = TEMPLATES.filter(t => t.category === cat);
+                      if (catTemplates.length === 0) return null;
+                      const catLabel = { starter: 'Get Started', creative: 'Creative', business: 'Business', social: 'Social & Store' }[cat];
+                      return (
+                        <div key={cat} className="space-y-3">
+                          <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{catLabel}</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            {catTemplates.map(tpl => {
+                              const btnRadius = tpl.buttonStyle === 'pill' ? '9999px' : tpl.buttonStyle === 'sharp' ? '0' : tpl.borderRadius === 'lg' ? '12px' : tpl.borderRadius === 'sm' ? '4px' : tpl.borderRadius === 'none' ? '0' : '8px';
+                              const bgStyle = tpl.backgroundType === 'gradient' ? tpl.backgroundValue : tpl.preview.bg;
+                              const isGlass = tpl.cardStyle === 'glass';
+                              const { accent, text: textC, card } = tpl.preview;
+                              const avatarRadius = tpl.profileShape === 'square' ? '3px' : tpl.profileShape === 'rounded' ? '6px' : '9999px';
 
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                        Share Preview Image <span className="text-gray-400 font-normal">(OG image)</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="url"
-                          value={seo.image}
-                          onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
-                          className="flex-1 px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition"
-                          placeholder="https://... (defaults to your avatar)"
-                        />
-                      </div>
-                      {(seo.image || profile.avatarUrl) && (
-                        <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-16 bg-gray-50 dark:bg-gray-900">
-                          <img src={seo.image || profile.avatarUrl} alt="OG preview" className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                              return (
+                                <button
+                                  key={tpl.name}
+                                  onClick={() => applyTemplate(tpl)}
+                                  className="group relative flex flex-col items-center text-left transition-all"
+                                >
+                                  {tpl.tag && (
+                                    <span className="absolute -top-1.5 right-2 px-2 py-0.5 bg-pink-500 text-white text-[7px] font-bold rounded-full uppercase z-10 shadow-sm shadow-pink-500/30">
+                                      {tpl.tag}
+                                    </span>
+                                  )}
 
-                  {/* Live share preview card */}
-                  {(seo.title || profile.displayName) && (
-                    <div className="mt-2">
-                      <p className="text-[10px] font-medium text-gray-400 mb-2 uppercase tracking-wide">Preview when shared</p>
-                      <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden text-left">
-                        {(seo.image || profile.avatarUrl) && (
-                          <div className="h-24 bg-gray-100 dark:bg-gray-800">
-                            <img src={seo.image || profile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                  {/* Phone frame */}
+                                  <div className="w-full rounded-[1.5rem] border-[6px] border-gray-100 dark:border-gray-800 group-hover:border-pink-100 dark:group-hover:border-pink-900/40 overflow-hidden transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-pink-500/20 group-hover:-translate-y-1">
+                                    {/* Inner bezel */}
+                                    <div className="w-full bg-white dark:bg-black overflow-hidden relative" style={{ borderRadius: '1.1rem' }}>
+                                      {/* Notch bar */}
+                                      <div className="h-4 flex items-center justify-center" style={{ background: bgStyle }}>
+                                        <div className="w-10 h-1.5 rounded-full" style={{ backgroundColor: textC, opacity: 0.15 }} />
+                                      </div>
+
+                                      {/* Screen content */}
+                                      <div className="px-3.5 pb-3 pt-1 flex flex-col items-center gap-[5px] overflow-hidden" style={{ background: bgStyle, minHeight: '180px' }}>
+                                        {tpl.blocks.slice(0, 8).map((b, i) => {
+                                          if (b.link_type === 'header') return (
+                                            <div key={i} className="flex flex-col items-center gap-[3px] mb-1 shrink-0">
+                                              <div className="w-7 h-7 shadow-sm" style={{ backgroundColor: accent, borderRadius: avatarRadius, border: `1.5px solid ${bgStyle === textC ? accent : textC}20` }} />
+                                              <div className="w-16 h-[5px] rounded-full mt-0.5" style={{ backgroundColor: textC, opacity: 0.85 }} />
+                                              <div className="w-11 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.35 }} />
+                                            </div>
+                                          );
+                                          if (b.link_type === 'heading') return (
+                                            <div key={i} className="w-14 h-[4px] rounded-sm self-start shrink-0 mt-1" style={{ backgroundColor: textC, opacity: 0.55 }} />
+                                          );
+                                          if (b.link_type === 'url') {
+                                            const featured = b.style_variant === 'featured';
+                                            return (
+                                              <div key={i} className="w-full shrink-0 flex items-center gap-[5px] px-[5px]" style={{
+                                                height: featured ? '14px' : '12px',
+                                                backgroundColor: isGlass ? card : card,
+                                                borderRadius: btnRadius,
+                                                border: tpl.buttonStyle === 'outline' ? `1px solid ${accent}` : tpl.cardStyle === 'bordered' ? `1px solid ${textC}25` : 'none',
+                                                boxShadow: tpl.buttonStyle === 'shadow' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                                                backdropFilter: isGlass ? 'blur(4px)' : 'none',
+                                              }}>
+                                                <div className="w-[6px] h-[6px] rounded-sm shrink-0" style={{ backgroundColor: accent, opacity: 0.5 }} />
+                                                <div className="flex-1 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.4 }} />
+                                              </div>
+                                            );
+                                          }
+                                          if (b.link_type === 'divider') return (
+                                            <div key={i} className="w-10 shrink-0 my-[2px]" style={{ height: '1px', backgroundColor: textC, opacity: 0.12 }} />
+                                          );
+                                          if (b.link_type === 'text') return (
+                                            <div key={i} className="flex flex-col gap-[2px] w-full px-1 shrink-0">
+                                              <div className="w-full h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.2 }} />
+                                              <div className="w-2/3 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
+                                            </div>
+                                          );
+                                          if (b.link_type === 'social_icons') return (
+                                            <div key={i} className="flex gap-[4px] justify-center shrink-0 my-[2px]">
+                                              {Array.from({ length: Math.min(b.metadata?.links?.length || 4, 5) }).map((_, j) => (
+                                                <div key={j} className="w-[8px] h-[8px] rounded-full" style={{ backgroundColor: accent, opacity: 0.6 }} />
+                                              ))}
+                                            </div>
+                                          );
+                                          if (b.link_type === 'lead_form') return (
+                                            <div key={i} className="w-full flex gap-[4px] shrink-0">
+                                              <div className="flex-1 h-[11px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${textC}15` }} />
+                                              <div className="w-9 h-[11px] shrink-0" style={{ backgroundColor: accent, opacity: 0.8, borderRadius: btnRadius }} />
+                                            </div>
+                                          );
+                                          if (b.link_type === 'banner') return (
+                                            <div key={i} className="w-full h-[14px] shrink-0 flex items-center justify-between px-[5px]" style={{ backgroundColor: b.metadata?.bg_color || accent, opacity: 0.8, borderRadius: btnRadius }}>
+                                              <div className="w-10 h-[3px] rounded-full bg-white" style={{ opacity: 0.7 }} />
+                                              <div className="w-6 h-[7px] rounded-sm bg-white" style={{ opacity: 0.4 }} />
+                                            </div>
+                                          );
+                                          if (b.link_type === 'space') return <div key={i} className="h-[4px] shrink-0" />;
+                                          return <div key={i} className="w-full h-[8px] rounded-sm shrink-0" style={{ backgroundColor: card }} />;
+                                        })}
+                                      </div>
+
+                                      {/* Bottom nav dots */}
+                                      <div className="h-3 flex items-center justify-center" style={{ background: bgStyle }}>
+                                        <div className="w-8 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Label */}
+                                  <div className="w-full mt-3 px-1">
+                                    <p className="text-xs font-semibold text-gray-900 dark:text-white">{tpl.name}</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{tpl.description}</p>
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
-                        )}
-                        <div className="px-3 py-2.5">
-                          <p className="text-[10px] text-gray-400 mb-0.5">digione.ai</p>
-                          <p className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">
-                            {seo.title || profile.displayName || 'Your page title'}
-                          </p>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
-                            {seo.description || profile.bioText || 'Your page description will appear here.'}
-                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* ── Section Tab (formerly Links) ── */}
+                {activeTab === 'section' && (
+                  <BioLinksEditor links={links} onChange={setLinks} products={products} />
+                )}
+
+                {/* ── Appearance Tab ── */}
+                {activeTab === 'appearance' && (
+                  <BioAppearanceEditor
+                    data={appearance}
+                    onChange={setAppearance}
+                    palette={palette}
+                    onPaletteChange={updatePalette}
+                  />
+                )}
+
+                {/* ── Settings Tab ── */}
+                {activeTab === 'settings' && (
+                  <div className="space-y-5">
+
+                    {/* URL Slug */}
+                    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">Your link-in-bio page address</p>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all duration-300">
+                          <span className="text-[13px] font-medium text-gray-400 shrink-0 select-none">digione.ai/link/</span>
+                          <input
+                            type="text"
+                            value={slug}
+                            onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                            className="flex-1 bg-transparent text-[13px] font-semibold outline-none text-gray-900 dark:text-white placeholder-gray-400 min-w-0"
+                            placeholder="your-name"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 min-h-5">
+                          {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
+                          {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
+                            <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Your current URL</span>
+                          )}
+                          {slugStatus === 'available' && (
+                            <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available — save to apply</span>
+                          )}
+                          {slugStatus === 'taken' && (
+                            <span className="flex items-center gap-1 text-xs text-red-500"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
+                          )}
+                          {slugStatus === 'invalid' && (
+                            <span className="text-xs text-red-500">3+ chars, letters, numbers, hyphens only</span>
+                          )}
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
 
-                {/* Activate / Deactivate Link */}
-                <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        {isPublished ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-gray-400" />
-                        )}
-                        {isPublished ? 'Link is Active' : 'Link is Inactive'}
-                      </h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {isPublished
-                          ? 'Your page is live and accessible to visitors.'
-                          : 'Your page is hidden. Visitors will see a 404 page.'}
-                      </p>
+                    {/* SEO & Social Sharing */}
+                    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <Search className="w-4 h-4 text-pink-500" /> SEO & Social Sharing
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">How your page looks when shared on WhatsApp, Twitter, etc.</p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            Page Title <span className="text-gray-400 font-normal ml-1">(overrides your display name)</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={seo.title}
+                            onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
+                            maxLength={70}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300"
+                            placeholder={profile.displayName || 'Your Name · Link in Bio'}
+                          />
+                          <p className="text-[11px] font-medium text-gray-400 mt-1.5">{seo.title.length}/70 characters</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            Meta Description <span className="text-gray-400 font-normal ml-1">(overrides your bio)</span>
+                          </label>
+                          <textarea
+                            value={seo.description}
+                            onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
+                            maxLength={160}
+                            rows={2}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300 resize-none"
+                            placeholder={profile.bioText || 'A short description of your page...'}
+                          />
+                          <p className="text-[11px] font-medium text-gray-400 mt-1.5">{seo.description.length}/160 characters</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            Share Preview Image <span className="text-gray-400 font-normal ml-1">(OG image)</span>
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="url"
+                              value={seo.image}
+                              onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
+                              className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300"
+                              placeholder="https://... (defaults to your avatar)"
+                            />
+                          </div>
+                          {(seo.image || profile.avatarUrl) && (
+                            <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-16 bg-gray-50 dark:bg-gray-900">
+                              <img src={seo.image || profile.avatarUrl} alt="OG preview" className="w-full h-full object-cover" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Live share preview card */}
+                      {(seo.title || profile.displayName) && (
+                        <div className="mt-2">
+                          <p className="text-[10px] font-medium text-gray-400 mb-2 uppercase tracking-wide">Preview when shared</p>
+                          <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden text-left">
+                            {(seo.image || profile.avatarUrl) && (
+                              <div className="h-24 bg-gray-100 dark:bg-gray-800">
+                                <img src={seo.image || profile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                            <div className="px-3 py-2.5">
+                              <p className="text-[10px] text-gray-400 mb-0.5">digione.ai</p>
+                              <p className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">
+                                {seo.title || profile.displayName || 'Your page title'}
+                              </p>
+                              <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                                {seo.description || profile.bioText || 'Your page description will appear here.'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <button
-                      role="switch"
-                      aria-checked={isPublished}
-                      aria-label={isPublished ? 'Deactivate link' : 'Activate link'}
-                      onClick={() => setIsPublished(!isPublished)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        isPublished ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'
-                      }`}
-                    >
-                      <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
-                        isPublished ? 'translate-x-6' : 'translate-x-1'
-                      }`} />
-                    </button>
-                  </div>
-                </div>
 
-              </div>
+                    {/* Activate / Deactivate Link */}
+                    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            {isPublished ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            ) : (
+                              <XCircle className="w-4 h-4 text-gray-400" />
+                            )}
+                            {isPublished ? 'Link is Active' : 'Link is Inactive'}
+                          </h3>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {isPublished
+                              ? 'Your page is live and accessible to visitors.'
+                              : 'Your page is hidden. Visitors will see a 404 page.'}
+                          </p>
+                        </div>
+                        <button
+                          role="switch"
+                          aria-checked={isPublished}
+                          aria-label={isPublished ? 'Deactivate link' : 'Activate link'}
+                          onClick={() => setIsPublished(!isPublished)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isPublished ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'
+                            }`}
+                        >
+                          <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${isPublished ? 'translate-x-6' : 'translate-x-1'
+                            }`} />
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -1470,7 +1508,19 @@ export default function EditLinkInBioPage() {
                   }}
                 >
                   <BrowserChrome />
-                  {previewUrl ? (
+                  {loading ? (
+                    <div className="flex-1 flex flex-col items-center pt-24 px-6 gap-5 bg-white dark:bg-gray-900 border-0">
+                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
+                      <div className="w-48 h-6 rounded-md bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
+                      <div className="w-64 h-3 rounded-md bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0 mt-1" />
+
+                      <div className="w-full max-w-[320px] mt-10 space-y-3.5">
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                      </div>
+                    </div>
+                  ) : previewUrl ? (
                     <iframe ref={iframeRef} key={previewKey} src={previewUrl}
                       className="w-full flex-1 border-0" title="Bio Preview" />
                   ) : (
