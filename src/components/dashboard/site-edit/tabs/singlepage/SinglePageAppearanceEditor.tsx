@@ -24,6 +24,9 @@ export type BioAppearanceData = {
   animation: string;
   borderRadius: string;
   spacing: string;
+  headingStyle?: 'minimal' | 'bold' | 'gradient';
+  sectionSpacing?: 'compact' | 'comfortable' | 'spacious';
+  shadowIntensity?: 'none' | 'light' | 'medium' | 'strong';
 };
 
 // ─── Selection helpers ───────────────────────────────────
@@ -82,6 +85,12 @@ const ANIMATIONS = [
   { id: 'scale', label: 'Scale' },
 ];
 
+const BUTTON_STYLES = [
+  { id: 'pill', label: 'Pill', preview: 'rounded-full' },
+  { id: 'rounded', label: 'Rounded', preview: 'rounded-2xl' },
+  { id: 'sharp', label: 'Sharp', preview: 'rounded-none' },
+];
+
 const BORDER_RADII = [
   { id: 'none', label: 'Sharp', preview: 'rounded-none' },
   { id: 'sm', label: 'Subtle', preview: 'rounded-md' },
@@ -93,6 +102,25 @@ const SPACINGS = [
   { id: 'compact', label: 'Compact', desc: 'Tight spacing' },
   { id: 'default', label: 'Default', desc: 'Balanced' },
   { id: 'relaxed', label: 'Relaxed', desc: 'Airy' },
+];
+
+const HEADING_STYLES = [
+  { id: 'minimal', label: 'Minimal', desc: 'Clean and simple' },
+  { id: 'bold', label: 'Bold', desc: 'Strong and prominent' },
+  { id: 'gradient', label: 'Gradient', desc: 'Colorful gradient' },
+];
+
+const SECTION_SPACINGS = [
+  { id: 'compact', label: 'Compact', desc: '12-16px gap' },
+  { id: 'comfortable', label: 'Comfortable', desc: '20-24px gap' },
+  { id: 'spacious', label: 'Spacious', desc: '32-40px gap' },
+];
+
+const SHADOW_INTENSITIES = [
+  { id: 'none', label: 'None', desc: 'No shadows' },
+  { id: 'light', label: 'Light', desc: 'Subtle shadows' },
+  { id: 'medium', label: 'Medium', desc: 'Standard shadows' },
+  { id: 'strong', label: 'Strong', desc: 'Bold shadows' },
 ];
 
 const BG_TYPES = [
@@ -151,6 +179,22 @@ export default function BioAppearanceEditor({
                 className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
                 <p className={`text-sm font-semibold ${f.preview} ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-700 dark:text-gray-300'}`}>Aa</p>
                 <p className={`text-[10px] mt-0.5 ${sel ? 'text-pink-600 dark:text-pink-400' : 'text-gray-400'}`}>{f.label}</p>
+              </button>
+            );
+          })}
+        </div>
+      </SectionCard>
+
+      {/* ─── Button Style ─── */}
+      <SectionCard icon={Sparkles} title="Button Style" desc="Shape of action buttons">
+        <div className="flex gap-2">
+          {BUTTON_STYLES.map(bs => {
+            const sel = (data.buttonStyle || 'rounded') === bs.id;
+            return (
+              <button key={bs.id} onClick={() => set('buttonStyle', bs.id)}
+                className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition ${sel ? CHIP_ON : CHIP_OFF}`}>
+                <div className={`w-16 h-9 bg-gray-300 dark:bg-gray-600 ${bs.preview}`} />
+                <span className={`text-[10px] font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-500'}`}>{bs.label}</span>
               </button>
             );
           })}
@@ -306,6 +350,54 @@ export default function BioAppearanceEditor({
                 className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
                 <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{sp.label}</p>
                 <p className="text-[10px] text-gray-400 mt-0.5">{sp.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </SectionCard>
+
+      {/* ─── Heading Style ─── */}
+      <SectionCard icon={Sparkles} title="Heading Style" desc="Section titles appearance">
+        <div className="grid grid-cols-3 gap-2">
+          {HEADING_STYLES.map(hs => {
+            const sel = (data.headingStyle || 'minimal') === hs.id;
+            return (
+              <button key={hs.id} onClick={() => set('headingStyle', hs.id)}
+                className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
+                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{hs.label}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{hs.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </SectionCard>
+
+      {/* ─── Section Spacing ─── */}
+      <SectionCard icon={Space} title="Section Spacing" desc="Gap between major sections">
+        <div className="grid grid-cols-3 gap-2">
+          {SECTION_SPACINGS.map(ss => {
+            const sel = (data.sectionSpacing || 'comfortable') === ss.id;
+            return (
+              <button key={ss.id} onClick={() => set('sectionSpacing', ss.id)}
+                className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
+                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{ss.label}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{ss.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </SectionCard>
+
+      {/* ─── Shadow Intensity ─── */}
+      <SectionCard icon={Sparkles} title="Shadow Intensity" desc="Card and element shadows">
+        <div className="grid grid-cols-2 gap-2">
+          {SHADOW_INTENSITIES.map(si => {
+            const sel = (data.shadowIntensity || 'medium') === si.id;
+            return (
+              <button key={si.id} onClick={() => set('shadowIntensity', si.id)}
+                className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
+                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{si.label}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{si.desc}</p>
               </button>
             );
           })}

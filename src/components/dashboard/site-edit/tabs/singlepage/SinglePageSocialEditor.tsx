@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Share2, Plus, X, Globe, Instagram, Twitter, Youtube, Linkedin, Github, Music } from 'lucide-react';
+import { Share2, Plus, X, Globe, Instagram, Twitter, Youtube, Linkedin, Github, Music, MessageCircle, Send, Phone, AtSign } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
 
 const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
@@ -13,6 +13,9 @@ const PLATFORMS = [
   { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/in/you' },
   { id: 'github', label: 'GitHub', icon: Github, placeholder: 'https://github.com/you' },
   { id: 'tiktok', label: 'TikTok', icon: Music, placeholder: 'https://tiktok.com/@you' },
+  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, placeholder: 'https://wa.me/919876543210' },
+  { id: 'telegram', label: 'Telegram', icon: Send, placeholder: 'https://t.me/yourchannel' },
+  { id: 'threads', label: 'Threads', icon: AtSign, placeholder: 'https://threads.net/@you' },
   { id: 'website', label: 'Website', icon: Globe, placeholder: 'https://your-site.com' },
 ];
 
@@ -60,7 +63,8 @@ export default function SinglePageSocialEditor({
   return (
     <div className="space-y-6">
 
-      <SectionCard icon={Share2} title="Social Links" desc="Add your social media links to the landing page.">
+      {/* ── Social Links ── */}
+      <SectionCard icon={Share2} title="Social Links" desc="Add your social media & messaging links.">
         {links.length > 0 && (
           <div className="space-y-3">
             {links.map((link, i) => {
@@ -85,7 +89,6 @@ export default function SinglePageSocialEditor({
           </div>
         )}
 
-        {/* Add platforms */}
         <div className="flex flex-wrap gap-2 pt-2">
           {PLATFORMS.filter(p => !usedPlatforms.has(p.id)).map(p => (
             <button key={p.id} onClick={() => addLink(p.id)}
@@ -94,6 +97,54 @@ export default function SinglePageSocialEditor({
               {p.label}
             </button>
           ))}
+        </div>
+      </SectionCard>
+
+      {/* ── Display Options ── */}
+      <SectionCard icon={Share2} title="Display Style" desc="How social links appear on your page.">
+        <div>
+          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-2">Icon Style</label>
+          <div className="flex gap-2">
+            {([
+              { id: 'icons-only', label: 'Icons Only', desc: 'Clean minimal icons' },
+              { id: 'icons-labels', label: 'With Labels', desc: 'Icon + platform name' },
+              { id: 'pills', label: 'Pill Buttons', desc: 'Rounded pill badges' },
+            ] as const).map(s => {
+              const active = (data.socialDisplayStyle || 'icons-only') === s.id;
+              return (
+                <button key={s.id}
+                  onClick={() => onChange({ ...data, socialDisplayStyle: s.id })}
+                  className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
+                    active ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                  }`}>
+                  <span className="text-[11px] font-semibold">{s.label}</span>
+                  <span className="text-[9px] opacity-60">{s.desc}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-2">Position</label>
+          <div className="flex gap-2">
+            {([
+              { id: 'header', label: 'Header' },
+              { id: 'footer', label: 'Footer' },
+              { id: 'both', label: 'Both' },
+            ] as const).map(p => {
+              const active = (data.socialPosition || 'footer') === p.id;
+              return (
+                <button key={p.id}
+                  onClick={() => onChange({ ...data, socialPosition: p.id })}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
+                    active ? 'border-violet-500 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                  }`}>
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </SectionCard>
 

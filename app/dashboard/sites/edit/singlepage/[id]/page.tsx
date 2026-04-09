@@ -12,9 +12,9 @@ import type { SinglePageContentData } from '@/src/components/dashboard/site-edit
 import SinglePageLogoEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageLogoEditor';
 import SinglePageProductEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageProductEditor';
 import SinglePageContentEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageContentEditor';
-import SinglePageHeroEditor from '@/components/dashboard/site-edit/tabs/singlepage/SinglePageHeroEditor';
-import SinglePageTrustEditor from '@/components/dashboard/site-edit/tabs/singlepage/SinglePageTrustEditor';
-import SinglePageThemeEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageThemeEditor';
+import SinglePageHeroEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageHeroEditor';
+import SinglePageTrustEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageTrustEditor';
+import SinglePageTemplateEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageTemplateEditor';
 import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageAppearanceEditor';
 import SinglePageSocialEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageSocialEditor';
 import SinglePageCheckoutEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageCheckoutEditor';
@@ -31,14 +31,14 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 
-type Tab = 'logo' | 'product' | 'content' | 'theme' | 'appearance' | 'social' | 'checkout' | 'settings' | 'advanced';
+type Tab = 'logo' | 'product' | 'content' | 'template' | 'appearance' | 'social' | 'checkout' | 'settings' | 'advanced';
 
 const TABS: { id: Tab; label: string; icon: any; activeBg: string; activeColor: string; activeBorder: string }[] = [
   { id: 'logo', label: 'Logo', icon: Image, activeBg: 'bg-indigo-50 dark:bg-indigo-500/10', activeColor: 'text-indigo-600 dark:text-indigo-300', activeBorder: 'border border-indigo-200 dark:border-indigo-500/30' },
   { id: 'product', label: 'Product', icon: Package, activeBg: 'bg-blue-50 dark:bg-blue-500/10', activeColor: 'text-blue-600 dark:text-blue-300', activeBorder: 'border border-blue-200 dark:border-blue-500/30' },
   { id: 'content', label: 'Content', icon: FileText, activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeColor: 'text-emerald-600 dark:text-emerald-300', activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
-  { id: 'theme', label: 'Theme', icon: Palette, activeBg: 'bg-pink-50 dark:bg-pink-500/10', activeColor: 'text-pink-600 dark:text-pink-300', activeBorder: 'border border-pink-200 dark:border-pink-500/30' },
-  { id: 'appearance', label: 'Appearance', icon: Sparkles, activeBg: 'bg-rose-50 dark:bg-rose-500/10', activeColor: 'text-rose-600 dark:text-rose-300', activeBorder: 'border border-rose-200 dark:border-rose-500/30' },
+  { id: 'template', label: 'Template', icon: Sparkles, activeBg: 'bg-indigo-50 dark:bg-indigo-500/10', activeColor: 'text-indigo-600 dark:text-indigo-300', activeBorder: 'border border-indigo-200 dark:border-indigo-500/30' },
+  { id: 'appearance', label: 'Appearance', icon: Palette, activeBg: 'bg-rose-50 dark:bg-rose-500/10', activeColor: 'text-rose-600 dark:text-rose-300', activeBorder: 'border border-rose-200 dark:border-rose-500/30' },
   { id: 'social', label: 'Social', icon: Share2, activeBg: 'bg-violet-50 dark:bg-violet-500/10', activeColor: 'text-violet-600 dark:text-violet-300', activeBorder: 'border border-violet-200 dark:border-violet-500/30' },
   { id: 'checkout', label: 'Checkout', icon: ShoppingCart, activeBg: 'bg-orange-50 dark:bg-orange-500/10', activeColor: 'text-orange-600 dark:text-orange-300', activeBorder: 'border border-orange-200 dark:border-orange-500/30' },
   { id: 'settings', label: 'Settings', icon: Settings, activeBg: 'bg-gray-100 dark:bg-gray-800', activeColor: 'text-gray-900 dark:text-white', activeBorder: 'border border-gray-300 dark:border-gray-600' },
@@ -98,6 +98,7 @@ export default function EditSinglePagePage() {
     stats: [],
     productId: null,
     upsellProductIds: [],
+    fakePrice: 0,
     features: [],
     whatsIncluded: [],
     contentBlocks: [],
@@ -105,18 +106,38 @@ export default function EditSinglePagePage() {
     faqs: [],
     testimonials: [],
     logoUrl: '',
+    logoShape: 'free',
+    headerText: '',
     headerAlignment: 'center',
     showLogo: true,
     headerStyle: 'standard',
+    logoPlacement: 'top-bar',
+    logoHeaderGap: 'md',
+    headerDivider: false,
+    headerWidth: 'full',
     socialLinks: [],
+    socialDisplayStyle: 'icons-only',
+    socialPosition: 'footer',
     checkoutStyle: 'embedded',
     checkoutAlignment: 'center',
     ctaText: '',
     ctaSubtext: '',
+    ctaButtonStyle: 'solid',
+    ctaButtonSize: 'lg',
+    showTrustBadges: true,
+    trustBadges: [],
+    showPaymentIcons: true,
     customCss: '',
     customJs: '',
+    customHeadTags: '',
     contactEmail: '',
     contactMobile: '',
+    contactWhatsApp: '',
+    redirectAfterPurchase: '',
+    passwordProtection: false,
+    pagePassword: '',
+    analyticsGoogleId: '',
+    analyticsFbPixelId: '',
   });
 
   // ── Settings state ──
@@ -125,6 +146,10 @@ export default function EditSinglePagePage() {
     showAddToCart: true,
     enableReviews: false,
     countdownEnd: '',
+    passwordProtection: false,
+    pagePassword: '',
+    analyticsGoogleId: '',
+    analyticsFbPixelId: '',
   });
 
   // ── Appearance state ──
@@ -140,6 +165,9 @@ export default function EditSinglePagePage() {
     animation: 'none',
     borderRadius: 'md',
     spacing: 'default',
+    headingStyle: 'minimal',
+    sectionSpacing: 'comfortable',
+    shadowIntensity: 'medium',
   });
 
   // ── SEO ──
@@ -243,6 +271,7 @@ export default function EditSinglePagePage() {
             stats: pageMeta?.stats || [],
             productId: page.product_id || null,
             upsellProductIds: pageMeta?.upsell_product_ids || [],
+            fakePrice: pageMeta?.fake_price || 0,
             features: pageMeta?.features || [],
             whatsIncluded: (page.guarantee_badges as string[]) || [],
             contentBlocks: pageMeta?.content_blocks || [],
@@ -250,18 +279,38 @@ export default function EditSinglePagePage() {
             faqs: (page.faq_items as any[]) || [],
             testimonials: (page.testimonials as any[]) || [],
             logoUrl: pageMeta?.logo_url || '',
+            logoShape: pageMeta?.logo_shape || 'free',
+            headerText: pageMeta?.header_text || '',
             headerAlignment: pageMeta?.header_alignment || 'center',
             showLogo: pageMeta?.show_logo ?? true,
             headerStyle: pageMeta?.header_style || 'standard',
+            logoPlacement: pageMeta?.logo_placement || 'top-bar',
+            logoHeaderGap: pageMeta?.logo_header_gap || 'md',
+            headerDivider: pageMeta?.header_divider ?? false,
+            headerWidth: pageMeta?.header_width || 'full',
             socialLinks: pageMeta?.social_links || [],
+            socialDisplayStyle: pageMeta?.social_display_style || 'icons-only',
+            socialPosition: pageMeta?.social_position || 'footer',
             checkoutStyle: pageMeta?.checkout_style || 'embedded',
             checkoutAlignment: pageMeta?.checkout_alignment || 'center',
             ctaText: pageMeta?.cta_text || '',
             ctaSubtext: pageMeta?.cta_subtext || '',
+            ctaButtonStyle: pageMeta?.cta_button_style || 'solid',
+            ctaButtonSize: pageMeta?.cta_button_size || 'lg',
+            showTrustBadges: pageMeta?.show_trust_badges ?? true,
+            trustBadges: pageMeta?.trust_badges || [],
+            showPaymentIcons: pageMeta?.show_payment_icons ?? true,
             customCss: pageMeta?.custom_css || '',
             customJs: pageMeta?.custom_js || '',
+            customHeadTags: pageMeta?.custom_head_tags || '',
             contactEmail: pageMeta?.contact_email || '',
             contactMobile: pageMeta?.contact_mobile || '',
+            contactWhatsApp: pageMeta?.contact_whatsapp || '',
+            redirectAfterPurchase: pageMeta?.redirect_after_purchase || '',
+            passwordProtection: pageMeta?.password_protection ?? false,
+            pagePassword: pageMeta?.page_password || '',
+            analyticsGoogleId: pageMeta?.analytics_google_id || '',
+            analyticsFbPixelId: pageMeta?.analytics_fb_pixel_id || '',
           });
 
           setSiteSettings({
@@ -269,6 +318,10 @@ export default function EditSinglePagePage() {
             showAddToCart: page.show_add_to_cart ?? true,
             enableReviews: page.enable_reviews ?? false,
             countdownEnd: page.countdown_end_at || '',
+            passwordProtection: pageMeta?.password_protection ?? false,
+            pagePassword: pageMeta?.page_password || '',
+            analyticsGoogleId: pageMeta?.analytics_google_id || '',
+            analyticsFbPixelId: pageMeta?.analytics_fb_pixel_id || '',
           });
 
           setSeo({
@@ -290,6 +343,9 @@ export default function EditSinglePagePage() {
             animation: theme.animation ?? 'none',
             borderRadius: theme.borderRadius ?? 'md',
             spacing: theme.spacing ?? 'default',
+            headingStyle: theme.headingStyle ?? 'minimal',
+            sectionSpacing: theme.sectionSpacing ?? 'comfortable',
+            shadowIntensity: theme.shadowIntensity ?? 'medium',
           });
         }
       } finally {
@@ -317,18 +373,27 @@ export default function EditSinglePagePage() {
     return () => clearTimeout(timer);
   }, [slug, originalSlug]);
 
-  const updatePalette = useCallback((key: string, value: string) => {
-    setPalette(prev => {
-      const next = { ...prev, [key]: value };
+  // ── Push live content to iframe (debounced, no dep array — fires every render) ──
+  const sendTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const latestPreviewRef = useRef({ content, appearance, palette });
+  latestPreviewRef.current = { content, appearance, palette };
+
+  useEffect(() => {
+    if (loading) return;
+    clearTimeout(sendTimerRef.current);
+    sendTimerRef.current = setTimeout(() => {
+      const { content, appearance, palette } = latestPreviewRef.current;
+      const iframe = iframeRef.current;
+      if (!iframe?.contentWindow) return;
       try {
-        iframeRef.current?.contentWindow?.postMessage(
-          { type: 'theme-update', palette: next },
+        iframe.contentWindow.postMessage(
+          { type: 'sp-content-update', content, appearance, palette },
           window.location.origin,
         );
       } catch { /* cross-origin guard */ }
-      return next;
-    });
-  }, []);
+    }, 16);
+    return () => clearTimeout(sendTimerRef.current);
+  }); // intentionally no deps — runs every render, debounced to ~1 frame
 
   const handleSave = async () => {
     if (!siteId) return;
@@ -383,23 +448,44 @@ export default function EditSinglePagePage() {
           custom_image: seo.image,
           video_url: content.videoUrl,
           stats: content.stats,
+          fake_price: content.fakePrice,
           features: content.features,
           creator_profile: content.creatorProfile,
           upsell_product_ids: content.upsellProductIds,
           content_blocks: content.contentBlocks,
           logo_url: content.logoUrl,
+          logo_shape: content.logoShape,
+          header_text: content.headerText,
           header_alignment: content.headerAlignment,
           show_logo: content.showLogo,
           header_style: content.headerStyle,
+          logo_placement: content.logoPlacement,
+          logo_header_gap: content.logoHeaderGap,
+          header_divider: content.headerDivider,
+          header_width: content.headerWidth,
           social_links: content.socialLinks,
+          social_display_style: content.socialDisplayStyle,
+          social_position: content.socialPosition,
           checkout_style: content.checkoutStyle,
           checkout_alignment: content.checkoutAlignment,
           cta_text: content.ctaText,
           cta_subtext: content.ctaSubtext,
+          cta_button_style: content.ctaButtonStyle,
+          cta_button_size: content.ctaButtonSize,
+          show_trust_badges: content.showTrustBadges,
+          trust_badges: content.trustBadges,
+          show_payment_icons: content.showPaymentIcons,
           custom_css: content.customCss,
           custom_js: content.customJs,
+          custom_head_tags: content.customHeadTags,
           contact_email: content.contactEmail,
           contact_mobile: content.contactMobile,
+          contact_whatsapp: content.contactWhatsApp,
+          redirect_after_purchase: content.redirectAfterPurchase,
+          password_protection: content.passwordProtection ?? siteSettings.passwordProtection,
+          page_password: content.pagePassword ?? siteSettings.pagePassword,
+          analytics_google_id: content.analyticsGoogleId ?? siteSettings.analyticsGoogleId,
+          analytics_fb_pixel_id: content.analyticsFbPixelId ?? siteSettings.analyticsFbPixelId,
         },
         theme: appearance,
         updated_at: new Date().toISOString(),
@@ -579,13 +665,15 @@ export default function EditSinglePagePage() {
                     </div>
                   )}
 
-                  {/* ── Theme Tab ── */}
-                  {activeTab === 'theme' && (
-                    <SinglePageThemeEditor
-                      fontFamily={appearance.fontFamily}
-                      onFontChange={(font) => setAppearance(a => ({ ...a, fontFamily: font }))}
-                      palette={palette}
-                      onPaletteChange={updatePalette}
+                  {/* ── Template Tab ── */}
+                  {activeTab === 'template' && (
+                    <SinglePageTemplateEditor
+                      currentAppearance={appearance}
+                      currentPalette={palette}
+                      onApply={(newPalette, newAppearance) => {
+                        setPalette(newPalette);
+                        setAppearance(newAppearance);
+                      }}
                     />
                   )}
 
@@ -594,6 +682,8 @@ export default function EditSinglePagePage() {
                     <BioAppearanceEditor
                       data={appearance}
                       onChange={setAppearance}
+                      palette={palette}
+                      onPaletteChange={(key, value) => setPalette(prev => ({ ...prev, [key]: value }))}
                     />
                   )}
 
