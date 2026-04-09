@@ -52,9 +52,11 @@ export async function middleware(request: NextRequest) {
   const isMainDomain =
     hostname.includes('digione.ai') ||
     hostname.includes('localhost') ||
-    hostname.startsWith('192.168.') ||   // ✅ ADD THIS
-    hostname.startsWith('10.') ||        // ✅ ADD THIS (optional)
+    hostname.includes('vercel.app') ||            // ✅ Vercel preview deployments
+    hostname.startsWith('192.168.') ||            // ✅ Local network
+    hostname.startsWith('10.') ||                 // ✅ Local network (optional)
     hostname.includes(process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000');
+
 
   // If this is a custom domain, rewrite the request to /_custom/[domain]/[path]
   // Provide an escape hatch for /api paths and static files natively supported by Next.js
