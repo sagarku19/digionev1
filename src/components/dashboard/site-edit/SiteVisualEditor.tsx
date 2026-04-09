@@ -1,6 +1,7 @@
 'use client';
-// SiteVisualEditor — split-screen layout: left editor panel + right iframe preview.
-// All state is local. DB writes happen only on Save. Theme changes push to iframe via postMessage.
+// SiteVisualEditor — split-screen layout matching the singlepage/main-store editor pattern.
+// Left panel (w-1/2): owns header + vertical tab sidebar + scrollable editor.
+// Right panel (flex-1): owns preview header + zoom-aware browser-chrome iframe.
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,7 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Save, Loader2, CheckCircle2, ExternalLink, Monitor, Tablet, Smartphone,
-  RefreshCw, Layers, Paintbrush, Settings, PanelLeft, ArrowLeft,
+  RefreshCw, Layers, Paintbrush, Settings, ArrowLeft, Copy, Check,
   Navigation as NavIcon, Footprints,
 } from 'lucide-react';
 import HeaderEditor, { type HeaderData } from './tabs/HeaderEditor';
@@ -30,22 +31,17 @@ type SiteVisualEditorProps = {
   showSlug?: boolean;
 };
 
-// ─── Device presets ───────────────────────────────────────────
-
-const DEVICES = [
-  { id: 'desktop',  icon: Monitor,    width: '100%',  label: 'Desktop' },
-  { id: 'tablet',   icon: Tablet,     width: '768px', label: 'Tablet'  },
-  { id: 'mobile',   icon: Smartphone, width: '375px', label: 'Mobile'  },
-] as const;
-
 // ─── Tab definitions ─────────────────────────────────────────
 
-const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'content',  label: 'Content',  icon: Layers     },
-  { id: 'header',   label: 'Header',   icon: NavIcon    },
-  { id: 'footer',   label: 'Footer',   icon: Footprints },
-  { id: 'theme',    label: 'Theme',    icon: Paintbrush },
-  { id: 'settings', label: 'Settings', icon: Settings   },
+const TABS: {
+  id: Tab; label: string; icon: React.ElementType;
+  activeBg: string; activeColor: string; activeBorder: string;
+}[] = [
+  { id: 'content',  label: 'Content',  icon: Layers,     activeBg: 'bg-indigo-50 dark:bg-indigo-500/10',  activeColor: 'text-indigo-600 dark:text-indigo-300',  activeBorder: 'border border-indigo-200 dark:border-indigo-500/30' },
+  { id: 'header',   label: 'Header',   icon: NavIcon,    activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeColor: 'text-emerald-600 dark:text-emerald-300', activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
+  { id: 'footer',   label: 'Footer',   icon: Footprints, activeBg: 'bg-amber-50 dark:bg-amber-500/10',    activeColor: 'text-amber-600 dark:text-amber-300',    activeBorder: 'border border-amber-200 dark:border-amber-500/30' },
+  { id: 'theme',    label: 'Theme',    icon: Paintbrush, activeBg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', activeColor: 'text-fuchsia-600 dark:text-fuchsia-300', activeBorder: 'border border-fuchsia-200 dark:border-fuchsia-500/30' },
+  { id: 'settings', label: 'Settings', icon: Settings,   activeBg: 'bg-gray-100 dark:bg-gray-800',         activeColor: 'text-gray-900 dark:text-white',          activeBorder: 'border border-gray-300 dark:border-gray-600' },
 ];
 
 // ─── Component ────────────────────────────────────────────────
@@ -59,44 +55,54 @@ export default function SiteVisualEditor({
   onTypeSave,
   showSlug = true,
 }: SiteVisualEditorProps) {
-  const router = useRouter();
-  const supabase = createClient();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const router    = useRouter();
+  const supabase  = createClient();
+  const iframeRef         = useRef<HTMLIFrameElement>(null);
+  const previewWrapperRef = useRef<HTMLDivElement>(null);
 
   // ── UI state ──
-  const [activeTab, setActiveTab] = useState<Tab>('content');
-  const [device, setDevice] = useState<string>('desktop');
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab]   = useState<Tab>('content');
+  const [tabSidebarOpen, setTabSidebarOpen] = useState(true);
+  const [device, setDevice]         = useState<string>('desktop');
+  const [saving, setSaving]         = useState(false);
+  const [saved, setSaved]           = useState(false);
+  const [loading, setLoading]       = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
-  const [showPreview, setShowPreview] = useState(true);
+  const [copied, setCopied]         = useState(false);
+  const [previewW, setPreviewW]     = useState(0);
 
-  // ── Data state (all local until Save) ──
-  const [site, setSite] = useState<any>(null);
+  // ── Data state ──
+  const [site, setSite]         = useState<any>(null);
   const [siteMain, setSiteMain] = useState<any>(null);
 
-  // Header
   const [headerData, setHeaderData] = useState<HeaderData>({
     logoUrl: '', logoAlt: '', navItems: [],
     showSearch: false, showCart: true, stickyHeader: true,
   });
 
-  // Footer
   const [footerData, setFooterData] = useState<FooterData>({
     social: { instagram: '', youtube: '', twitter: '', linkedin: '' },
     legal: { about: false, terms: false, privacy: false, refund: false },
     contactEmail: '', contactPhone: '', copyrightText: '',
   });
 
-  // Settings
   const [settingsData, setSettingsData] = useState<SettingsData>({
     metaTitle: '', metaDesc: '', customDomain: '',
     slug: '', originalSlug: null,
   });
 
-  // Theme (local palette — pushed to iframe in real time)
   const [palette, setPalette] = useState<Record<string, string>>({});
+
+  // ── Measure right panel for zoom ──
+  useEffect(() => {
+    const el = previewWrapperRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) setPreviewW(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // ── Load data ──
   useEffect(() => {
@@ -112,7 +118,6 @@ export default function SiteVisualEditor({
         setSite(s);
         setSiteMain(sm);
 
-        // Header
         setHeaderData({
           logoUrl: nav?.header_logo_url ?? '',
           logoAlt: nav?.header_logo_alt ?? '',
@@ -122,7 +127,6 @@ export default function SiteVisualEditor({
           stickyHeader: nav?.sticky_header ?? true,
         });
 
-        // Footer
         setFooterData({
           social: (sm?.social_links as Record<string, string>) ?? { instagram: '', youtube: '', twitter: '', linkedin: '' },
           legal: (sm?.legal_pages as Record<string, boolean>) ?? { about: false, terms: false, privacy: false, refund: false },
@@ -131,7 +135,6 @@ export default function SiteVisualEditor({
           copyrightText: nav?.footer_bottom_text ?? '',
         });
 
-        // Settings
         setSettingsData({
           metaTitle: sm?.meta_keywords ?? '',
           metaDesc: sm?.meta_description ?? '',
@@ -140,7 +143,6 @@ export default function SiteVisualEditor({
           originalSlug: s?.slug ?? null,
         });
 
-        // Theme
         if (tokens?.color_palette) {
           setPalette(tokens.color_palette as Record<string, string>);
         }
@@ -149,13 +151,12 @@ export default function SiteVisualEditor({
       }
     };
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId]);
 
   // ── Push theme changes to iframe in real time ──
   const handlePaletteChange = useCallback((next: Record<string, string>) => {
     setPalette(next);
-    // postMessage to iframe for instant preview
     try {
       iframeRef.current?.contentWindow?.postMessage(
         { type: 'theme-update', palette: next },
@@ -169,7 +170,6 @@ export default function SiteVisualEditor({
     setSaving(true);
     setSaved(false);
     try {
-      // 1. site_main
       const smUpdates: Record<string, unknown> = {
         meta_keywords: settingsData.metaTitle,
         meta_description: settingsData.metaDesc,
@@ -188,7 +188,6 @@ export default function SiteVisualEditor({
         setSiteMain(newSm);
       }
 
-      // 2. site_navigation
       await supabase.from('site_navigation').upsert({
         site_id: siteId,
         nav_items: headerData.navItems,
@@ -200,25 +199,21 @@ export default function SiteVisualEditor({
         footer_bottom_text: footerData.copyrightText || null,
       }, { onConflict: 'site_id' });
 
-      // 3. site_design_tokens (theme)
       if (Object.keys(palette).length > 0) {
         await supabase
           .from('site_design_tokens')
           .upsert({ site_id: siteId, color_palette: palette } as any, { onConflict: 'site_id' });
       }
 
-      // 4. domain
       if (settingsData.customDomain !== site?.custom_domain) {
         await supabase.from('sites').update({ custom_domain: settingsData.customDomain || null }).eq('id', siteId);
       }
 
-      // 5. slug
       if (showSlug && settingsData.slug && settingsData.slug !== settingsData.originalSlug) {
         await supabase.from('sites').update({ slug: settingsData.slug }).eq('id', siteId);
         setSettingsData(prev => ({ ...prev, originalSlug: prev.slug }));
       }
 
-      // 6. type-specific
       if (onTypeSave) await onTypeSave();
 
       setSaved(true);
@@ -229,188 +224,190 @@ export default function SiteVisualEditor({
     }
   }, [supabase, siteId, siteMain, site, settingsData, footerData, headerData, palette, showSlug, onTypeSave]);
 
-  // ── Preview URL ──
-  const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
+  // ── Helpers ──
   const displayTitle = siteMain?.title ?? site?.slug ?? 'Untitled';
-  const isActive = site?.is_active !== false;
+  const previewUrl   = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
 
+  const copyUrl = () => {
+    if (!site) return;
+    navigator.clipboard.writeText(`https://${getSiteDisplayUrl(site)}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  // ── Loading ──
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="w-5 h-5 animate-spin text-[var(--text-secondary)]" />
-        <span className="text-sm text-gray-500">Loading editor...</span>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 dark:bg-[#060610] gap-3">
+        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+        <span className="text-sm text-gray-500">Loading editor…</span>
       </div>
     );
   }
 
+  // ── Render ──
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[#060610]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[#060610] text-gray-900 dark:text-white">
+      <div className="flex-1 flex min-h-0">
 
-      {/* ── Top Bar ── */}
-      <header className="shrink-0 bg-white dark:bg-[#0A0A1A] border-b border-gray-200 dark:border-gray-800 shadow-sm z-30">
-        <div className="flex items-center gap-3 px-4 h-14">
-          <button
-            onClick={() => router.push('/dashboard/sites')}
-            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <span className={`shrink-0 w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-          <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[160px]">{displayTitle}</h1>
-          <span className={`hidden sm:flex items-center gap-1 text-xs font-medium ${typeIconColor ?? 'text-gray-400'}`}>
-            <TypeIcon className="w-3.5 h-3.5" />
-            {typeLabel}
-          </span>
+        {/* ═══ LEFT PANEL ═══ */}
+        <div className="w-1/2 shrink-0 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-[#0A0A1A] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
 
-          {/* Center: device toggle */}
-          <div className="flex-1 flex justify-center">
-            <div className="hidden md:flex items-center gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-lg">
-              {DEVICES.map(d => (
+          {/* Left panel header */}
+          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 bg-white dark:bg-[#0A0A1A]">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push('/dashboard/sites')}
+                className="p-2 -ml-2 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[200px]">
+                  {displayTitle}
+                </h1>
+                <p className={`text-[11px] font-medium flex items-center gap-1 ${typeIconColor ?? 'text-gray-400'}`}>
+                  <TypeIcon className="w-3 h-3" /> {typeLabel}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Save */}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all focus:ring-4 focus:ring-indigo-500/20 active:scale-95 disabled:opacity-50 ${
+                  saved
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
+                }`}
+              >
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                {saved ? 'Saved!' : 'Save'}
+              </button>
+            </div>
+          </div>
+
+          {/* Body: vertical tab sidebar + scrollable editor */}
+          <div className="flex-1 flex min-h-0 overflow-hidden">
+
+            {/* Vertical Tab Sidebar */}
+            <div className={`shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-[#07071A] transition-all duration-200 ${tabSidebarOpen ? 'w-44' : 'w-14'}`}>
+              <button
+                onClick={() => setTabSidebarOpen(!tabSidebarOpen)}
+                className="h-10 flex items-center justify-end pr-3 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors shrink-0"
+                title={tabSidebarOpen ? 'Collapse tabs' : 'Expand tabs'}
+              >
+                <ArrowLeft className={`w-3.5 h-3.5 transition-transform duration-200 ${tabSidebarOpen ? '' : 'rotate-180'}`} />
+              </button>
+
+              <div className="flex flex-col gap-1 px-2 pb-4">
+                {TABS.map(tab => {
+                  const active = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      title={tab.label}
+                      className={`flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${
+                        active
+                          ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm`
+                          : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-800/50'
+                      } ${tabSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                    >
+                      <tab.icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.5 : 2} />
+                      {tabSidebarOpen && <span className="truncate">{tab.label}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Scrollable editor content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {activeTab === 'content'  && children({ siteId, site, siteMain })}
+              {activeTab === 'header'   && <HeaderEditor data={headerData} onChange={setHeaderData} />}
+              {activeTab === 'footer'   && <FooterEditor data={footerData} onChange={setFooterData} />}
+              {activeTab === 'theme'    && <ThemeEditor palette={palette} onChange={handlePaletteChange} />}
+              {activeTab === 'settings' && (
+                <SettingsPanel
+                  siteId={siteId}
+                  site={site}
+                  displayTitle={displayTitle}
+                  data={settingsData}
+                  onChange={setSettingsData}
+                  showSlug={showSlug}
+                />
+              )}
+            </div>
+          </div>
+        </div>{/* end LEFT PANEL */}
+
+        {/* ═══ RIGHT PANEL — full-height preview ═══ */}
+        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
+
+          {/* Preview Header */}
+          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3 relative">
+            {/* Open in browser */}
+            <a
+              href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
+              target="_blank" rel="noopener noreferrer"
+              className={`flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
+              title="Open in browser"
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Open
+            </a>
+
+            {/* Copy link */}
+            <button
+              onClick={copyUrl} disabled={!site}
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
+              title="Copy page link"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? 'Copied!' : 'Link'}
+            </button>
+
+            {/* Centered label */}
+            <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none">
+              <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                Website Preview
+              </span>
+            </div>
+
+            <div className="flex-1" />
+
+            {/* Device toggles */}
+            <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
+              {[
+                { id: 'desktop', icon: Monitor,    label: 'Desktop' },
+                { id: 'tablet',  icon: Tablet,     label: 'Tablet'  },
+                { id: 'mobile',  icon: Smartphone, label: 'Mobile'  },
+              ].map(dev => (
                 <button
-                  key={d.id}
-                  onClick={() => setDevice(d.id)}
-                  className={`p-1.5 rounded-md transition ${
-                    device === d.id
-                      ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                  }`}
-                  title={d.label}
+                  key={dev.id}
+                  onClick={() => setDevice(dev.id)}
+                  className={`p-1.5 rounded-md transition ${device === dev.id ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  title={dev.label}
                 >
-                  <d.icon className="w-4 h-4" />
+                  <dev.icon className="w-4 h-4" />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Right: actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            {saved && (
-              <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Saved
-              </span>
-            )}
+          {/* Zoom-aware preview iframe */}
+          {(() => {
+            const DESKTOP_W = 1280;
+            const DESKTOP_H = Math.round(DESKTOP_W * 10 / 16); // ≈800px
+            const isDesktop = device === 'desktop';
+            const isMobile  = device === 'mobile';
+            const devicePx  = isDesktop ? DESKTOP_W : isMobile ? 375 : 768;
+            const zoom = isDesktop && previewW > 0 ? Math.min(1, (previewW - 48) / DESKTOP_W) : 1;
 
-            <button
-              onClick={() => setShowPreview(p => !p)}
-              className="hidden md:flex items-center gap-1.5 text-xs font-medium text-gray-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-              title={showPreview ? 'Hide preview' : 'Show preview'}
-            >
-              <PanelLeft className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={() => setPreviewKey(Date.now())}
-              className="hidden md:flex items-center gap-1.5 text-xs font-medium text-gray-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-              title="Refresh preview"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-
-            {previewUrl && (
-              <a
-                href={getSitePublicPath(site)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-500 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-              >
-                <ExternalLink className="w-3.5 h-3.5" /> Live
-              </a>
-            )}
-
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-1.5 text-xs font-semibold bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-[var(--accent-fg)] px-4 py-2 rounded-lg shadow-sm transition-all"
-            >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              Save
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Body: editor + preview ── */}
-      <div className="flex flex-1 min-h-0">
-
-        {/* ── Left: Tab bar + editor panel ── */}
-        <div className={`flex ${showPreview ? 'w-[420px] min-w-[380px]' : 'flex-1'} shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A]`}>
-
-          {/* Vertical tab bar */}
-          <div className="hidden md:flex flex-col items-center gap-1 w-14 shrink-0 border-r border-gray-100 dark:border-gray-800 py-3 bg-gray-50 dark:bg-[#060610]">
-            {TABS.map(tab => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-10 h-10 flex flex-col items-center justify-center rounded-lg transition-all ${
-                    active
-                      ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                      : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300'
-                  }`}
-                  title={tab.label}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  <span className="text-[9px] font-medium mt-0.5 leading-none">{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Scrollable editor content */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-5">
-            {/* Mobile tab bar */}
-            <div className="md:hidden flex gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl overflow-x-auto">
-              {TABS.map(tab => {
-                const active = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
-                      active
-                        ? 'bg-white dark:bg-gray-800 text-[var(--text-primary)] shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    <tab.icon className="w-3.5 h-3.5" />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Tab content */}
-            {activeTab === 'content' && children({ siteId, site, siteMain })}
-            {activeTab === 'header'  && <HeaderEditor data={headerData} onChange={setHeaderData} />}
-            {activeTab === 'footer'  && <FooterEditor data={footerData} onChange={setFooterData} />}
-            {activeTab === 'theme'   && <ThemeEditor palette={palette} onChange={handlePaletteChange} />}
-            {activeTab === 'settings' && (
-              <SettingsPanel
-                siteId={siteId}
-                site={site}
-                displayTitle={displayTitle}
-                data={settingsData}
-                onChange={setSettingsData}
-                showSlug={showSlug}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* ── Right: iframe preview ── */}
-        {showPreview && (
-          <div className="hidden md:flex flex-1 flex-col items-center justify-start bg-gray-100 dark:bg-[#080818] p-6 overflow-auto">
-            <div
-              className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 flex-1"
-              style={{
-                width: DEVICES.find(d => d.id === device)?.width ?? '100%',
-                maxWidth: '100%',
-                minHeight: 0,
-              }}
-            >
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            const BrowserChrome = () => (
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400" />
                   <span className="w-3 h-3 rounded-full bg-amber-400" />
@@ -418,36 +415,52 @@ export default function SiteVisualEditor({
                 </div>
                 <div className="flex-1 px-3 py-1 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
                   <p className="text-[10px] text-gray-400 font-mono truncate">
-                    {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
+                    {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading…'}
                   </p>
                 </div>
-                <button
-                  onClick={() => setPreviewKey(Date.now())}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                  title="Refresh"
-                >
+                <button onClick={() => setPreviewKey(Date.now())}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition" title="Refresh">
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
               </div>
+            );
 
-              {/* iframe */}
-              {previewUrl ? (
-                <iframe
-                  ref={iframeRef}
-                  key={previewKey}
-                  src={previewUrl}
-                  className="w-full flex-1 border-0"
-                  style={{ height: 'calc(100vh - 8rem)' }}
-                  title="Site Preview"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-64 text-sm text-gray-400">
-                  No preview available
+            return (
+              <div
+                ref={previewWrapperRef}
+                className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-10' : 'pt-6'}`}
+              >
+                <div
+                  className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
+                  style={{
+                    width: devicePx,
+                    maxWidth: '100%',
+                    height: isDesktop ? DESKTOP_H : '100%',
+                    zoom: isDesktop ? zoom : undefined,
+                    transformOrigin: 'top left',
+                  }}
+                >
+                  <BrowserChrome />
+                  {previewUrl ? (
+                    <iframe
+                      ref={iframeRef}
+                      key={previewKey}
+                      src={previewUrl}
+                      className="w-full flex-1 border-0"
+                      title="Site Preview"
+                    />
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+                      No preview available
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-        )}
+              </div>
+            );
+          })()}
+
+        </div>{/* end RIGHT PANEL */}
+
       </div>
     </div>
   );

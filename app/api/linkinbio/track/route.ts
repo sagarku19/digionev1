@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
 
     // Increment click_count on link if applicable
     if (link_id && (event_type === 'link_click' || event_type === 'product_click')) {
-      await db.rpc('increment_link_click_count' as any, { p_link_id: link_id } as any).maybeSingle();
+      await (db as any).rpc('increment_link_click_count', { p_link_id: link_id }).maybeSingle();
+
       // Fallback if RPC doesn't exist: direct update
       // await db.from('linkinbio_items').update({ click_count: db.raw('click_count + 1') }).eq('id', link_id);
     }
