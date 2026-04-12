@@ -20,28 +20,28 @@ export const metadata: Metadata = {
     default: "DigiOne.ai",
     template: "%s | DigiOne.ai",
   },
-  description: "Sell digital products in India. Built for serious creators.",
+  description: "Built for Digital Creators.",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
     ],
-    apple: "/apple-touch-icon.webp", // optional, add later
+    apple: "/apple-touch-icon.webp",
   },
   openGraph: {
     title: "DigiOne.ai",
-    description: "Sell digital products in India. Built for serious creators.",
+    description: "Built for Digital Creators.",
     url: "https://digione.ai",
     siteName: "DigiOne.ai",
-    images: [{ url: "/og.webp", width: 1200, height: 630, type: "image/webp" }],
+    images: [{ url: "/og-square.webp", width: 1200, height: 1200, type: "image/webp" }],
     locale: "en_IN",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "DigiOne.ai",
-    description: "Sell digital products in India. Built for serious creators.",
-    images: ["/og.webp"],
+    description: "Built for Digital Creators.",
+    images: ["/og-square.webp"],
   },
 };
 
