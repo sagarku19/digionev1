@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   description: "Built for Digital Creators.",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
     ],
     apple: "/apple-touch-icon.webp",
   },
@@ -33,7 +33,9 @@ export const metadata: Metadata = {
     description: "Built for Digital Creators.",
     url: "https://digione.ai",
     siteName: "DigiOne.ai",
-    images: [{ url: "/og-square.webp", width: 1200, height: 1200, type: "image/webp" }],
+    images: [
+      { url: "/og-square.webp", width: 1200, height: 1200, type: "image/webp" },
+    ],
     locale: "en_IN",
     type: "website",
   },
