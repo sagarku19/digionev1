@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { DigiOneLogo, DigiOneLogoDark } from '@/src/components/assets/DigiOneLogo';
 import {
   LayoutDashboard, Package, Store, BarChart2, DollarSign,
   Megaphone, Settings, Menu, X,
@@ -158,7 +158,10 @@ export default function Sidebar() {
         {/* ── Logo ── */}
         <div className="h-14 flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1 bg-[var(--bg-primary)]/50">
           <Link href="/dashboard" onClick={close} className="flex items-center gap-2 shrink-0 group">
-            <Image src="/logo.webp" alt="DigiOne" width={28} height={28} className="rounded-lg group-hover:scale-105 transition-transform" />
+            {/* Light mode logo */}
+            <DigiOneLogo width={26} height={26} className="block dark:hidden group-hover:scale-105 transition-transform" />
+            {/* Dark mode logo */}
+            <DigiOneLogoDark width={26} height={26} className="hidden dark:block group-hover:scale-105 transition-transform" />
             <span className="text-[16px] font-bold tracking-tight text-[var(--text-primary)]">
               DigiOne<sup className="text-[9px] text-[var(--text-secondary)] font-medium ml-0.5 -top-1.5 relative">.ai</sup>
             </span>

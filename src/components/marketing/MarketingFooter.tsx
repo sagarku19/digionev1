@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 
 export default function MarketingFooter() {
   return (
@@ -8,7 +8,7 @@ export default function MarketingFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1 md:border-r border-[var(--border)] md:pr-4">
             <div className="flex items-center gap-2 mb-4">
-              <Image src="/logo.webp" alt="DigiOne" width={24} height={24} className="rounded" />
+              <DigiOneLogo width={22} height={22} />
               <span className="text-base font-bold text-[var(--text-primary)] tracking-tight">DigiOne<sup className="text-[10px] text-[var(--text-secondary)] font-medium ml-0.5 -top-2 relative">.ai</sup></span>
             </div>
             <p className="text-sm text-[var(--text-secondary)] mb-6 leading-relaxed">

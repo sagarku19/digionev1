@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -106,17 +106,16 @@ export default function MarketingNav() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 sm:px-6 pt-3 sm:pt-4">
         <div
-          className={`w-full max-w-6xl rounded-2xl sm:rounded-full border transition-all duration-500 ${
-            isScrolled
+          className={`w-full max-w-6xl rounded-2xl sm:rounded-full border transition-all duration-500 ${isScrolled
               ? 'bg-white/85 backdrop-blur-2xl border-gray-200/70 shadow-lg shadow-black/[0.06]'
               : 'bg-white/50 backdrop-blur-lg border-gray-200/30 shadow-sm shadow-black/[0.02]'
-          }`}
+            }`}
         >
           <div className="flex h-14 items-center justify-between px-4 sm:px-6">
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0 group">
-              <Image src="/logo.webp" alt="DigiOne" width={30} height={30} className="rounded-lg group-hover:scale-105 transition-transform" />
+              <DigiOneLogo width={25} height={25} className="group-hover:scale-105 transition-transform" />
               <span className="text-[18px] font-bold tracking-tight text-[var(--text-primary)]">
                 DigiOne<sup className="text-[10px] text-[var(--text-secondary)] font-medium ml-0.5 -top-2 relative">.ai</sup>
               </span>
@@ -142,11 +141,10 @@ export default function MarketingNav() {
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={() => setProfileDropdownOpen(o => !o)}
-                    className={`flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full transition-all duration-200 ${
-                      profileDropdownOpen
+                    className={`flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full transition-all duration-200 ${profileDropdownOpen
                         ? 'bg-gray-100 shadow-inner'
                         : 'hover:bg-gray-100/70'
-                    }`}
+                      }`}
                   >
                     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center text-white font-bold text-xs overflow-hidden ring-2 ring-white">
                       {userProfile?.avatar_url ? (
@@ -224,28 +222,25 @@ export default function MarketingNav() {
 
       {/* Mobile Menu — slide-in overlay */}
       <div
-        className={`fixed inset-0 z-[60] transition-all duration-300 ${
-          mobileMenuOpen ? 'visible' : 'invisible'
-        }`}
+        className={`fixed inset-0 z-[60] transition-all duration-300 ${mobileMenuOpen ? 'visible' : 'invisible'
+          }`}
       >
         {/* Backdrop */}
         <div
-          className={`absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${
-            mobileMenuOpen ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'
+            }`}
           onClick={() => setMobileMenuOpen(false)}
         />
 
         {/* Panel */}
         <div
-          className={`absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
-            mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+          className={`absolute right-0 top-0 bottom-0 w-full max-w-sm bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-gray-100">
             <div className="flex items-center gap-2">
-              <Image src="/logo.webp" alt="DigiOne" width={28} height={28} className="rounded-lg" />
+              <DigiOneLogo width={24} height={24} />
               <span className="text-lg font-bold text-gray-900">
                 DigiOne<sup className="text-[9px] text-gray-400 font-medium ml-0.5 -top-1.5 relative">.ai</sup>
               </span>
