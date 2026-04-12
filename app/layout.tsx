@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     description: "Sell digital products in India. Built for serious creators.",
     url: "https://digione.ai",
     siteName: "DigiOne.ai",
-    images: [{ url: "/og.webp", width: 1500, height: 500 }],
+    images: [{ url: "/og.webp", width: 1200, height: 630, type: "image/webp" }],
     locale: "en_IN",
     type: "website",
   },
