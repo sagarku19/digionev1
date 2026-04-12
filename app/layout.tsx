@@ -16,6 +16,10 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://digione.ai"
+  ),
+  manifest: "/manifest.json",
   title: {
     default: "DigiOne.ai",
     template: "%s | DigiOne.ai",
@@ -26,7 +30,7 @@ export const metadata: Metadata = {
       { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    apple: "/apple-touch-icon.webp",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: "DigiOne.ai",
