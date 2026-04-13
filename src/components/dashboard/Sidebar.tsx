@@ -9,7 +9,7 @@ import {
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
   Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, LogOut, MessageCircle, HelpCircle,
-  Instagram, Zap, Server,
+  Instagram, Zap, Server, Calendar,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -57,6 +57,7 @@ const NAV: NavGroup[] = [
           { label: 'Leads', href: '/dashboard/marketing/leads', icon: BookOpen },
           { label: 'Affiliates', href: '/dashboard/marketing/affiliates', icon: Network },
           { label: 'Referrals', href: '/dashboard/marketing/referrals', icon: Gift },
+          { label: 'Services', href: '/dashboard/marketing/services', icon: Calendar },
         ],
       },
     ],
@@ -136,24 +137,28 @@ export default function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-40 p-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-[var(--text-secondary)] shadow-sm"
+        className="md:hidden fixed top-2.5 left-3 p-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/80 dark:border-zinc-800/80 rounded-xl text-gray-700 dark:text-gray-300 shadow-sm transition-all active:scale-95"
+        style={{ zIndex: 9999 }}
       >
         <Menu className="w-5 h-5" />
       </button>
 
       {/* Mobile backdrop */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden" onClick={close} />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md md:hidden transition-opacity duration-300" style={{ zIndex: 99998 }} onClick={close} />
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        fixed top-0 left-0 h-full bg-[var(--bg-secondary)]
-        border-r border-[var(--border)]
-        w-[248px] z-50 flex flex-col
-        transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
-        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}>
+      <aside 
+        className={`
+          fixed top-0 left-0 h-full bg-[var(--bg-primary)]
+          border-r border-[var(--border)]
+          w-[256px] flex flex-col shadow-2xl md:shadow-none
+          transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
+          ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+        style={{ zIndex: 99999 }}
+      >
 
         {/* ── Logo ── */}
         <div className="h-14 flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1 bg-[var(--bg-primary)]/50">

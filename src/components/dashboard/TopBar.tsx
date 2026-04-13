@@ -36,31 +36,31 @@ export default function TopBar() {
     : 'Overview';
 
   return (
-    <header className="h-14 w-full bg-[var(--bg-primary)]/90 backdrop-blur-md border-b border-[var(--border)] flex items-center justify-between px-6 sticky top-0 z-30">
+    <header className="h-14 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-gray-200/80 dark:border-zinc-800/80 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 shadow-sm">
       {/* Left: Title */}
-      <div className="flex items-center gap-4 pl-10 md:pl-0">
-        <h1 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">{pageTitle}</h1>
+      <div className="flex items-center gap-4 pl-[52px] md:pl-0">
+        <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[140px] sm:max-w-none">{pageTitle}</h1>
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3">
         {/* Search */}
         <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search..."
-            className="w-48 h-9 pl-9 pr-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand)]/20 transition-all placeholder:text-[var(--text-secondary)]"
+            className="w-48 h-9 pl-9 pr-4 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-[13px] font-medium text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400"
           />
         </div>
-        <button className="md:hidden w-9 h-9 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition">
+        <button className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center text-gray-500 hover:text-indigo-600 transition-colors">
           <Search className="w-4 h-4" />
         </button>
 
         {/* Notifications */}
         <Link
           href="/dashboard/notifications"
-          className="relative px-3 h-9 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center gap-2 text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition"
+          className="relative px-2 sm:px-3 h-8 sm:h-9 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center gap-2 text-gray-500 hover:text-indigo-600 transition-colors"
         >
           <Bell className="w-4 h-4" />
           <span className="text-[13px] font-medium hidden sm:block">Notifications</span>
@@ -75,7 +75,7 @@ export default function TopBar() {
         <div className="relative">
           <button
             onClick={() => setShowThemeDropdown(!showThemeDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] text-[13px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition focus:outline-none"
+            className="flex items-center justify-center sm:justify-start gap-2 w-8 h-8 sm:w-auto sm:h-9 sm:px-3 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-[13px] font-medium text-gray-500 hover:text-indigo-600 transition-colors focus:outline-none"
             title="Dashboard Theme"
           >
             {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
@@ -115,15 +115,15 @@ export default function TopBar() {
         </div>
 
         {/* Profile */}
-        <div className="relative ml-1">
+        <div className="relative ml-0.5 sm:ml-1 border-l border-gray-200 dark:border-zinc-800 pl-2 sm:pl-3">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] transition focus:outline-none"
+            className="flex items-center gap-2 pr-0 sm:pr-1 py-1 rounded-full transition focus:outline-none group"
           >
-            <span className="text-[13px] font-medium hidden sm:block pl-1 text-[var(--text-primary)]">
+            <span className="text-[13px] font-bold hidden sm:block pl-1 text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 transition-colors">
               {fullName}
             </span>
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center font-bold overflow-hidden shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold overflow-hidden shrink-0 shadow-sm group-hover:scale-105 transition-transform">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (

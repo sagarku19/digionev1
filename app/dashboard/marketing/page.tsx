@@ -1,68 +1,91 @@
 'use client';
 
-// Marketing Tools page — hub linking to Coupons, Affiliates, and Referrals sections.
+// Marketing Tools page — hub linking to Coupons, Affiliates, Referrals, and Services sections.
 // DB tables: none (links to sub-pages)
 
 import React from 'react';
 import Link from 'next/link';
-import { Ticket, Users, Share2, ArrowRight, Megaphone } from 'lucide-react';
+import { Ticket, Users, Share2, ArrowRight, Megaphone, Calendar, ChevronRight } from 'lucide-react';
 
 const tools = [
   {
     icon: Ticket,
     label: 'Discount Coupons',
     description: 'Create percentage or fixed-amount promo codes to drive conversions and reward loyal buyers.',
-    href: '/dashboard/coupons',
-    color: 'text-[var(--text-primary)]',
-    bg: 'bg-[var(--bg-tertiary)]',
+    href: '/dashboard/marketing/coupons',
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bg: 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20',
   },
   {
     icon: Users,
     label: 'Affiliates',
     description: 'Recruit affiliates to market your products. Set custom commission rates and track their performance.',
-    href: '/dashboard/affiliates',
-    color: 'text-[var(--text-primary)]',
-    bg: 'bg-[var(--bg-tertiary)]',
+    href: '/dashboard/marketing/affiliates',
+    color: 'text-purple-600 dark:text-purple-400',
+    bg: 'bg-purple-50 dark:bg-purple-500/10 border-purple-100 dark:border-purple-500/20',
   },
   {
     icon: Share2,
     label: 'Referral Program',
     description: 'Let your buyers earn rewards by referring new customers. Grow your store through word-of-mouth.',
-    href: '/dashboard/referrals',
-    color: 'text-sky-600 dark:text-sky-400',
-    bg: 'bg-sky-50 dark:bg-sky-500/10',
+    href: '/dashboard/marketing/referrals',
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20',
+  },
+  {
+    icon: Calendar,
+    label: 'Services',
+    description: 'Manage 1:1 calls, consulting bookings, and custom service packages directly with your audience.',
+    href: '/dashboard/marketing/services',
+    color: 'text-rose-600 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20',
   },
 ];
 
 export default function MarketingPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Megaphone className="w-6 h-6 text-[var(--text-secondary)]" />
-          Marketing Tools
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Grow your audience and boost sales with promotions, affiliates, and referral programs.
-        </p>
+    <div className="pt-6 sm:pt-8 pb-16 min-h-screen max-w-[1200px] mx-auto">
+      {/* Dynamic Header Box */}
+      <div className="relative mb-8 sm:mb-10 overflow-hidden rounded-3xl border border-gray-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-950 p-6 sm:px-8 sm:py-10 shadow-sm transition-all">
+        <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-40 pointer-events-none fade-in">
+          <div className="w-64 h-64 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-3xl opacity-50 mix-blend-multiply dark:mix-blend-screen" />
+        </div>
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-xs font-bold text-gray-700 dark:text-zinc-300 mb-4 shadow-sm backdrop-blur-md">
+              <Megaphone className="w-3.5 h-3.5" /> Growth Engine
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+              Marketing Tools
+            </h1>
+            <p className="text-base font-medium text-gray-500 dark:text-gray-400 mt-2 max-w-lg">
+              Grow your audience, orchestrate powerful promotions, and launch interactive service bookings.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
         {tools.map((tool) => (
           <Link
             key={tool.href}
             href={tool.href}
-            className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:border-[var(--accent)] dark:hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-4"
+            className="group relative isolate bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[32px] p-6 sm:p-8 hover:border-indigo-400/50 dark:hover:border-indigo-500/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-indigo-500/10 transition-all duration-300 overflow-hidden flex flex-col"
           >
-            <div className={`w-12 h-12 ${tool.bg} ${tool.color} rounded-xl flex items-center justify-center`}>
-              <tool.icon className="w-6 h-6" />
+            <div className={`absolute inset-0 bg-gradient-to-br from-black/0 to-black/0 group-hover:from-${tool.color.split('-')[1]}-500/5 group-hover:to-transparent dark:group-hover:from-${tool.color.split('-')[1]}-500/10 transition-colors duration-500 -z-10`} />
+            
+            <div className="flex items-start justify-between mb-6">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border shadow-inner ${tool.bg}`}>
+                <tool.icon className={`w-7 h-7 flex-shrink-0 ${tool.color}`} />
+              </div>
+              <div className="w-10 h-10 rounded-full border border-gray-200 dark:border-zinc-800 flex items-center justify-center bg-gray-50 dark:bg-zinc-900 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-500/10 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-colors">
+                <ChevronRight className={`w-5 h-5 text-gray-400 group-hover:${tool.color} transition-colors translate-x-px`} />
+              </div>
             </div>
+            
             <div className="flex-1">
-              <h2 className="text-base font-bold text-gray-900 dark:text-white mb-1">{tool.label}</h2>
-              <p className="text-sm text-gray-500 leading-relaxed">{tool.description}</p>
-            </div>
-            <div className={`flex items-center gap-1 text-sm font-semibold ${tool.color} group-hover:gap-2 transition-all`}>
-              Open <ArrowRight className="w-4 h-4" />
+              <h2 className={`text-xl font-extrabold text-gray-900 dark:text-white mb-2 group-hover:${tool.color} transition-colors`}>{tool.label}</h2>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 leading-relaxed pr-4">{tool.description}</p>
             </div>
           </Link>
         ))}

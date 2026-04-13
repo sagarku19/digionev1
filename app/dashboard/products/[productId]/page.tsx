@@ -193,6 +193,12 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
     }
   }, [products, isLoading, productId, formData]);
 
+  useEffect(() => {
+    if (!isLoading && !formData) {
+      router.replace(productId === 'new' ? '/dashboard/products?new=1' : '/dashboard/products');
+    }
+  }, [isLoading, formData, router, productId]);
+
   if (isLoading || !formData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
