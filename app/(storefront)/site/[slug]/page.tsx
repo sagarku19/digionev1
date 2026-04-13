@@ -1,4 +1,4 @@
-// Route: /s/{slug} — Single product page
+// Route: /site/{slug} — Product Site page
 // Looks up by slug first, then falls back to id (for legacy sites without a custom slug)
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
@@ -57,7 +57,7 @@ export async function generateMetadata({
       description: description || undefined,
       images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : [],
       type: 'website',
-      url: `https://digione.ai/s/${slug}`,
+      url: `https://digione.ai/site/${slug}`,
     },
     twitter: {
       card: imageUrl ? 'summary_large_image' : 'summary',

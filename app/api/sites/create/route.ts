@@ -1,15 +1,13 @@
 // API Route: POST /api/sites/create
 // Creates a new site with all required sub-tables.
-// DB tables written: sites, site_main OR site_singlepage OR site_blog,
+// DB tables written: sites, site_main OR site_singlepage,
 //                    site_sections_config, site_design_tokens, site_navigation
 // Auth via createClient (anon) — all DB writes via createServiceClient (service role, bypasses RLS).
 //
 // URL scheme:
-//   main    → /p/{slug}
+//   main    → /store/{slug}
 //   payment → /pay/{siteId}          (not renamable)
-//   blog    → /blog/{siteId}         (not renamable)
-//   single  → /s/{slug}              (renamable)
-//   builder → /w/{slug}              (renamable)
+//   single  → /site/{slug}           (renamable)
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -49,22 +47,15 @@ const DEFAULT_SECTIONS_SINGLE = [
   { id: crypto.randomUUID(), type: 'testimonials',  sort_order: 4, is_visible: true, settings: {} },
 ];
 
-const DEFAULT_SECTIONS_BLOG = [
-  { id: crypto.randomUUID(), type: 'hero_banner', sort_order: 1, is_visible: true, settings: { title: 'My Blog', subtitle: 'Insights and tutorials' } },
-];
-
 const DEFAULT_SECTIONS_PAYMENT = [
   { id: crypto.randomUUID(), type: 'trust_badges', sort_order: 1, is_visible: true, settings: {} },
 ];
 
-const DEFAULT_SECTIONS_BUILDER: any[] = [];
 const DEFAULT_SECTIONS_LINKINBIO: any[] = [];
 
 function sectionsFor(type: string) {
   if (type === 'single')    return DEFAULT_SECTIONS_SINGLE;
-  if (type === 'blog')      return DEFAULT_SECTIONS_BLOG;
   if (type === 'payment')   return DEFAULT_SECTIONS_PAYMENT;
-  if (type === 'builder')   return DEFAULT_SECTIONS_BUILDER;
   if (type === 'linkinbio') return DEFAULT_SECTIONS_LINKINBIO;
   return DEFAULT_SECTIONS_MAIN;
 }
@@ -158,9 +149,9 @@ async function createSite(
     return NextResponse.json({ error: 'Missing required fields: site_type, title' }, { status: 400 });
   }
 
-  // Slug is required for: main, single, builder
-  // Not required for: payment, blog (URL uses siteId)
-  const needsSlug = site_type === 'main' || site_type === 'single' || site_type === 'builder' || site_type === 'linkinbio';
+  // Slug is required for: main, single, linkinbio
+  // Not required for: payment (URL uses siteId)
+  const needsSlug = site_type === 'main' || site_type === 'single' || site_type === 'linkinbio';
 
   if (needsSlug && !slug) {
     return NextResponse.json({ error: `Slug is required for ${site_type} sites` }, { status: 400 });
@@ -223,7 +214,7 @@ async function createSite(
   const siteId = site.id;
 
   // Insert type-specific sub-table
-  if (site_type === 'main' || site_type === 'payment' || site_type === 'builder') {
+  if (site_type === 'main' || site_type === 'payment') {
     const { error: smErr } = await db.from('site_main').insert({
       site_id: siteId,
       title,
@@ -237,13 +228,6 @@ async function createSite(
       product_id: product_id ?? '',
     });
     if (ssErr) console.error('[sites/create] site_singlepage insert error:', ssErr.message);
-  } else if (site_type === 'blog') {
-    const { error: sbErr } = await db.from('site_blog').insert({
-      site_id: siteId,
-      title,
-      description: description ?? null,
-    });
-    if (sbErr) console.error('[sites/create] site_blog insert error:', sbErr.message);
   } else if (site_type === 'linkinbio') {
     const { error: slErr } = await db.from('linkinbio_pages' as any).insert({
       site_id: siteId,
@@ -297,19 +281,13 @@ async function createSite(
   let responseUrlPath: string;
   switch (site_type) {
     case 'main':
-      responseUrlPath = `p/${slug}`;
+      responseUrlPath = `store/${slug}`;
       break;
     case 'payment':
       responseUrlPath = `pay/${siteId}`;
       break;
-    case 'blog':
-      responseUrlPath = `blog/${siteId}`;
-      break;
     case 'single':
-      responseUrlPath = `s/${slug}`;
-      break;
-    case 'builder':
-      responseUrlPath = `w/${slug}`;
+      responseUrlPath = `site/${slug}`;
       break;
     case 'linkinbio':
       responseUrlPath = `link/${slug}`;

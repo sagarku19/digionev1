@@ -1,4 +1,4 @@
-// Storefront Layout — Main sites served at /p/{slug}
+// Storefront Layout — Main Store sites served at /store/{slug}
 // DB tables read: sites, site_main, site_design_tokens, site_navigation
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';

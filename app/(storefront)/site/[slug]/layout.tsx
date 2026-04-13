@@ -1,4 +1,4 @@
-// Storefront Layout — Single page sites at /s/{slug}
+// Storefront Layout — Product Site pages at /site/{slug}
 // Minimal layout — the ProductSalesPage component handles its own styling.
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';

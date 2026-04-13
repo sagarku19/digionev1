@@ -1,13 +1,10 @@
 // Centralised URL helpers for all site types.
 //
 // URL scheme:
-//   Main store   → /p/{slug}
-//   Product      → /p/product/{productId}
+//   Main store   → /store/{slug}
+//   Product      → /store/product/{productId}
 //   Payment      → /pay/{siteId}           (not renamable)
-//   Blog         → /blog/{siteId}          (not renamable)
-//   Blog post    → /blog/{siteId}/{post}   (not renamable)
-//   Single page  → /s/{slug}               (renamable)
-//   Builder      → /w/{slug}               (renamable)
+//   Product Site → /site/{slug}            (renamable)
 
 export type SiteUrlInfo = {
   id: string;
@@ -23,19 +20,15 @@ export function getSitePublicPath(site: SiteUrlInfo): string {
 
   switch (site.site_type) {
     case 'main':
-      return `/p/${site.slug}`;
+      return `/store/${site.slug}`;
     case 'payment':
       return `/pay/${site.id}`;
-    case 'blog':
-      return `/blog/${site.id}`;
     case 'single':
-      return `/s/${site.slug ?? site.id}`;
-    case 'builder':
-      return `/w/${site.slug ?? site.id}`;
+      return `/site/${site.slug ?? site.id}`;
     case 'linkinbio':
       return `/link/${site.slug ?? site.id}`;
     default:
-      return `/p/${site.slug}`;
+      return `/store/${site.slug}`;
   }
 }
 
@@ -45,19 +38,15 @@ export function getSiteDisplayUrl(site: SiteUrlInfo): string {
 
   switch (site.site_type) {
     case 'main':
-      return `digione.ai/p/${site.slug}`;
+      return `digione.ai/store/${site.slug}`;
     case 'payment':
       return `digione.ai/pay/${shortId(site.id)}`;
-    case 'blog':
-      return `digione.ai/blog/${shortId(site.id)}`;
     case 'single':
-      return `digione.ai/s/${site.slug ?? shortId(site.id)}`;
-    case 'builder':
-      return `digione.ai/w/${site.slug ?? shortId(site.id)}`;
+      return `digione.ai/site/${site.slug ?? shortId(site.id)}`;
     case 'linkinbio':
       return `digione.ai/link/${site.slug ?? shortId(site.id)}`;
     default:
-      return `digione.ai/p/${site.slug}`;
+      return `digione.ai/store/${site.slug}`;
   }
 }
 
@@ -83,15 +72,11 @@ export function getUpsellDisplayUrl(slug: string): string {
 const DB_TO_URL_LEGACY: Record<string, string> = {
   single: 'singlepage',
   payment: 'payment',
-  blog: 'blog',
-  builder: 'app',
 };
 
 const URL_TO_DB_LEGACY: Record<string, string> = {
   singlepage: 'single',
   payment: 'payment',
-  blog: 'blog',
-  app: 'builder',
 };
 
 /** Converts a legacy URL segment to DB site_type */

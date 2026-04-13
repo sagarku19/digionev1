@@ -12,8 +12,8 @@ import { StatusPill } from '@/components/ui/StatusPill';
 import {
   DollarSign, Package, ShoppingCart, TrendingUp,
   ArrowUpRight, Plus, Zap, Store, ChevronRight,
-  ShoppingBag, User2, AlertCircle, Hammer, CreditCard,
-  FileText, Layers,
+  ShoppingBag, User2, AlertCircle, CreditCard,
+  Layers,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -109,9 +109,7 @@ const QUICK_ACTIONS = [
   { label: 'Add Product',   href: '/dashboard/products/new',         icon: Package,    bg: 'bg-[var(--bg-tertiary)]',  fg: 'text-[var(--text-primary)]'  },
   { label: 'Main Store',    href: '/dashboard/sites/new/store',      icon: Store,      bg: 'bg-[var(--bg-tertiary)]',  fg: 'text-[var(--text-primary)]'  },
   { label: 'Payment Link',  href: '/dashboard/sites/new/payment',    icon: CreditCard, bg: 'bg-emerald-50 dark:bg-emerald-500/10', fg: 'text-emerald-600 dark:text-emerald-400' },
-  { label: 'Blog',          href: '/dashboard/sites/new/blog',       icon: FileText,   bg: 'bg-amber-50 dark:bg-amber-500/10',    fg: 'text-amber-600 dark:text-amber-400'    },
-  { label: 'Single Page',   href: '/dashboard/sites/new/singlepage', icon: Layers,     bg: 'bg-sky-50 dark:bg-sky-500/10',        fg: 'text-sky-600 dark:text-sky-400'        },
-  { label: 'Builder App',   href: '/dashboard/sites/new/builder',    icon: Hammer,     bg: 'bg-rose-50 dark:bg-rose-500/10',      fg: 'text-rose-600 dark:text-rose-400'      },
+  { label: 'Product Site',  href: '/dashboard/sites/new/singlepage', icon: Layers,     bg: 'bg-sky-50 dark:bg-sky-500/10',        fg: 'text-sky-600 dark:text-sky-400'        },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────
@@ -224,8 +222,8 @@ export default function DashboardHome() {
                 <p className="text-xs text-gray-500">{stats.totalSales} sales</p>
               </div>
             </div>
-            <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[200px] min-w-0 w-full">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <AreaChart data={chartData} margin={{ top: 2, right: 4, bottom: 0, left: 0 }}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">

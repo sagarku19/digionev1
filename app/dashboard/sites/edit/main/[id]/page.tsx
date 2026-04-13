@@ -525,7 +525,7 @@ export default function EditMainStorePage() {
       }
 
       // 7. revalidate ISR
-      try { await revalidateStorefrontPaths([`/s/${slug}`, '/']); } catch { /* non-fatal */ }
+      try { await revalidateStorefrontPaths([`/store/${slug}`, '/']); } catch { /* non-fatal */ }
 
       setPreviewKey(Date.now());
       setSaved(true);
@@ -851,7 +851,7 @@ export default function EditMainStorePage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all">
-                        <span className="text-[13px] font-medium text-gray-400 shrink-0 select-none">digione.ai/s/</span>
+                        <span className="text-[13px] font-medium text-gray-400 shrink-0 select-none">digione.ai/store/</span>
                         <input type="text" value={slug}
                           onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                           className="flex-1 bg-transparent outline-none text-[13px] font-semibold text-gray-900 dark:text-white placeholder-gray-400 min-w-0"

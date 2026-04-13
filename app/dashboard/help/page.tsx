@@ -103,7 +103,7 @@ const HELP_SECTIONS: HelpSection[] = [
     faqs: [
       {
         q: 'What types of sites can I create?',
-        a: 'DigiOne offers four site types: Link-in-Bio (a single page with all your links and products), Storefront (a full product listing page), Blog (publish articles with a built-in CMS), and Page Builder (drag-and-drop custom pages).',
+        a: 'DigiOne offers four site types: Link-in-Bio (a single page with all your links and products), Main Store (a full product listing page), Product Site (a high-converting landing page for a single product), and Payment Link (accept payments for services).',
       },
       {
         q: 'Can I use a custom domain?',

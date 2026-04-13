@@ -7,7 +7,7 @@ import { useSites, SiteWithMain } from '@/hooks/useSites';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Plus, ExternalLink, MoreVertical, Store, Layers,
-  CreditCard, FileText, Hammer, Link2, Globe, Copy, Check,
+  CreditCard, Link2, Globe, Copy, Check,
   Trash2, EyeOff, Eye, Clock, Pencil, AlertTriangle, X,
 } from 'lucide-react';
 
@@ -15,24 +15,20 @@ import {
 const FILTER_TABS = [
   { key: 'all',       label: 'All Sites',     icon: Globe },
   { key: 'main',      label: 'Main Store',    icon: Store },
-  { key: 'single',    label: 'Single Page',   icon: Layers },
+  { key: 'single',    label: 'Product Site',  icon: Layers },
   { key: 'payment',   label: 'Payment Link',  icon: CreditCard },
-  { key: 'blog',      label: 'Blog',          icon: FileText },
-  { key: 'builder',   label: 'Builder',       icon: Hammer },
   { key: 'linkinbio', label: 'Link in Bio',   icon: Link2 },
 ] as const;
 
 const SITE_TYPE_META: Record<string, { label: string; color: string; dot: string }> = {
   main:      { label: 'Main Store',    color: 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] dark:bg-[var(--accent)]/15 dark:text-[var(--text-secondary)]',  dot: 'bg-[var(--accent)]' },
-  single:    { label: 'Single Page',   color: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-secondary)]',  dot: 'bg-[var(--bg-tertiary)]' },
+  single:    { label: 'Product Site',  color: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] dark:bg-[var(--bg-tertiary)] dark:text-[var(--text-secondary)]',  dot: 'bg-[var(--bg-tertiary)]' },
   payment:   { label: 'Payment Link',  color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400', dot: 'bg-emerald-500' },
-  blog:      { label: 'Blog',          color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',    dot: 'bg-amber-500' },
-  builder:   { label: 'Builder',       color: 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',       dot: 'bg-rose-500' },
   linkinbio: { label: 'Link in Bio',   color: 'bg-pink-50 text-pink-600 dark:bg-pink-500/15 dark:text-pink-400',      dot: 'bg-pink-500' },
 };
 
 const SITE_TYPE_ICON: Record<string, React.ElementType> = {
-  main: Store, single: Layers, payment: CreditCard, blog: FileText, builder: Hammer, linkinbio: Link2,
+  main: Store, single: Layers, payment: CreditCard, linkinbio: Link2,
 };
 
 // ─── Delete Confirmation Modal ──────────────────────────────
@@ -119,14 +115,12 @@ function SiteRow({ site, onRequestDelete, onToggle }: {
   const [copied, setCopied] = useState(false);
 
   const sm = Array.isArray(site.site_main) ? site.site_main[0] : site.site_main;
-  const sb = (site as any).site_blog;
   const sp = (site as any).site_singlepage;
   const sl = (site as any).linkinbio_pages;
-  const blogTitle = Array.isArray(sb) ? sb[0]?.title : sb?.title;
   const singleTitle = Array.isArray(sp) ? sp[0]?.title : sp?.title;
   const bioName = Array.isArray(sl) ? sl[0]?.display_name : sl?.display_name;
 
-  const title = sm?.title ?? blogTitle ?? singleTitle ?? bioName ?? 'Untitled';
+  const title = sm?.title ?? singleTitle ?? bioName ?? 'Untitled';
   const truncatedTitle = title.length > 30 ? title.slice(0, 30) + '...' : title;
   const displayUrl = getSiteDisplayUrl(site);
   const publicPath = getSitePublicPath(site);

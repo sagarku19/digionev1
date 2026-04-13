@@ -1,7 +1,7 @@
 // API Route: GET /api/sites/check-slug?slug=xxx&type=xxx
 // Checks slug availability:
-//   main, single, builder → checks slug column in sites table
-//   payment, blog → slug not needed (URL uses siteId), always available
+//   main, single, linkinbio → checks slug column in sites table
+//   payment → slug not needed (URL uses siteId), always available
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
@@ -16,12 +16,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ available: false, error: 'No type provided' }, { status: 400 });
     }
 
-    // Payment and blog don't use slugs — URL is /pay/{siteId} or /blog/{siteId}
-    if (type === 'payment' || type === 'blog') {
+    // Payment doesn't use slugs — URL is /pay/{siteId}
+    if (type === 'payment') {
       return NextResponse.json({ available: true });
     }
 
-    // main, single, builder need slug check
+    // main, single, linkinbio need a slug — payment uses siteId
     if (!slug) {
       return NextResponse.json({ available: false, error: 'No slug provided' }, { status: 400 });
     }

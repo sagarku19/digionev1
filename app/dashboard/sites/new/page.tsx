@@ -5,7 +5,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSites } from '@/hooks/useSites';
 import {
-  Store, Layers, CreditCard, FileText, Hammer, Link2,
+  Store, Layers, CreditCard, Link2,
   ChevronRight, Sparkles, ArrowLeft,
 } from 'lucide-react';
 
@@ -33,7 +33,7 @@ const SITE_TYPES: SiteTypeOption[] = [
   },
   {
     id: 'single',
-    label: 'Single Page',
+    label: 'Product Site',
     desc: 'High-converting landing page for a single product. Countdown, FAQ, testimonials.',
     best: 'Course launches, premium products',
     icon: Layers,
@@ -50,26 +50,6 @@ const SITE_TYPES: SiteTypeOption[] = [
     gradient: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
     iconBg: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
     href: '/dashboard/sites/new/payment',
-  },
-  {
-    id: 'blog',
-    label: 'Blog',
-    desc: 'A clean, readable blog. Mix free and gated content. Connects to your main store.',
-    best: 'Content marketing, gated tutorials',
-    icon: FileText,
-    gradient: 'from-amber-500/10 via-amber-500/5 to-transparent',
-    iconBg: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
-    href: '/dashboard/sites/new/blog',
-  },
-  {
-    id: 'builder',
-    label: 'Builder App',
-    desc: 'Build a custom page from scratch using our drag-and-drop section builder.',
-    best: 'Landing pages, custom apps',
-    icon: Hammer,
-    gradient: 'from-rose-500/10 via-rose-500/5 to-transparent',
-    iconBg: 'bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400',
-    href: '/dashboard/sites/new/builder',
   },
   {
     id: 'linkinbio',

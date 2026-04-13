@@ -1,4 +1,4 @@
-// Route: /p/product/{productId} — Product detail page
+// Route: /store/product/{productId} — Product detail page
 // Shows full product details when clicking on a product from the main store
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
@@ -62,7 +62,7 @@ export default async function ProductDetailPage({
     `;
   }
 
-  const backPath = mainSite ? `/p/${mainSite.slug}` : '/';
+  const backPath = mainSite ? `/store/${mainSite.slug}` : '/';
 
   // Get additional images from the images JSON field
   const imageList = (product.images as string[] | null) ?? [];

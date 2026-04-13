@@ -11,7 +11,7 @@ import CtaBanner from '@/components/marketing/sections/CtaBanner';
 
 export const metadata = {
   title: 'DigiOne | Sell Digital Products in India',
-  description: 'The platform serious Indian creators use to build their business. Store, Blog, Payments, GST compliance ready.',
+  description: 'The platform serious Indian creators use to build their business. Store, Payments, GST compliance ready.',
 };
 
 export default function MarketingPage() {

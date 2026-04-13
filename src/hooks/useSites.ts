@@ -1,6 +1,6 @@
 "use client";
 // useSites hook — fetches all sites belonging to the current creator.
-// DB tables: sites, site_main (read)
+// DB tables: sites, site_main, site_singlepage, linkinbio_pages (read)
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -23,7 +23,6 @@ export type SiteWithMain = {
     logo_url: string | null;
     meta_description: string | null;
   } | null;
-  site_blog: { title: string | null } | null;
   site_singlepage: { title: string | null } | null;
   linkinbio_pages: { display_name: string | null } | null;
 };
@@ -61,7 +60,6 @@ export function useSites() {
         .select(`
           id, slug, child_slug, parent_site_id, creator_id, site_type, is_active, custom_domain, ssl_status, created_at,
           site_main(title, banner_url, logo_url, meta_description),
-          site_blog(title),
           site_singlepage(title),
           linkinbio_pages(display_name),
           parent_site:sites(slug)

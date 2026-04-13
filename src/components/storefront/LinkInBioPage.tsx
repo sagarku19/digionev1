@@ -608,7 +608,7 @@ function LinkCard({
     const buttonPos = link.metadata?.button_position || 'right';
     const ctaText = link.metadata?.cta_text || 'Buy Now';
     const badge = link.metadata?.badge || null;
-    const href = product ? `/p/product/${product.id}` : (link.url || '#');
+    const href = product ? `/store/product/${product.id}` : (link.url || '#');
     const rClass = getRadiusClass(bio.border_radius);
     const pri = palette.primary || '#EC4899';
 
