@@ -17,7 +17,6 @@ interface CartStore {
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
-  total: number;
 }
 
 export const useCart = create<CartStore>()(
@@ -34,12 +33,13 @@ export const useCart = create<CartStore>()(
         set({ items: get().items.filter(i => i.id !== id) });
       },
       clearCart: () => set({ items: [] }),
-      get total() {
-        return get().items.reduce((sum, item) => sum + item.price, 0);
-      }
     }),
-    {
-      name: 'digione-cart',
-    }
+    { name: 'digione-cart' }
   )
 );
+
+/** Derived total — use this instead of store.total */
+export function useCartTotal() {
+  const items = useCart(s => s.items);
+  return items.reduce((sum, item) => sum + item.price, 0);
+}

@@ -82,14 +82,15 @@ export default function UpsellCheckoutClient({ page, primaryProduct, upsellProdu
       if (!res.ok) throw new Error(data.error ?? 'Checkout failed');
 
       if (data.status === 'completed') {
-        // Free product — already fulfilled
-        window.location.href = `/payment/status?order_id=${data.orderId}&status=success`;
+        window.location.href = `/payment/status?order_id=${data.orderId}`;
       } else if (data.payment_session_id) {
-        // Use Cashfree JS SDK (same as PaymentLinkPage)
         const cashfree = await load({
           mode: data.environment === 'production' ? 'production' : 'sandbox',
         });
-        cashfree.checkout({ paymentSessionId: data.payment_session_id });
+        cashfree.checkout({
+          paymentSessionId: data.payment_session_id,
+          returnUrl: `${window.location.origin}/payment/status?order_id=${data.orderId}`,
+        });
       } else {
         throw new Error('No payment session received');
       }

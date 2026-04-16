@@ -1,363 +1,382 @@
 'use client';
+// Community — real DB-backed posts with likes, category filter, compose, delete.
+// DB: community_posts, community_reactions (tables from migration)
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import {
-  Users, MessageCircle, TrendingUp, Heart, Eye, Share2,
-  PenLine, Image, Send, MoreHorizontal, Pin, Bookmark,
-  Award, Zap, Bell, ChevronRight, ExternalLink,
-  ThumbsUp, MessageSquare, Plus, Filter, ArrowRight,
-} from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import { useCreator } from '@/hooks/useCreator';
+import {
+  MessageCircle, Send, ThumbsUp, Pin, Share2,
+  X, Loader2, AlertCircle, Zap, ChevronRight,
+  ExternalLink, Trash2, TrendingUp,
+} from 'lucide-react';
 
-// ── Types ───────────────────────────────────────────────────────
-interface Post {
-  id: number;
-  content: string;
-  author: string;
-  avatar: string | null;
-  time: string;
-  likes: number;
-  comments: number;
-  views: number;
-  pinned?: boolean;
-  category: string;
-}
-
-// ── Sample Data ─────────────────────────────────────────────────
-const SAMPLE_POSTS: Post[] = [
-  {
-    id: 1,
-    content: 'Just crossed ₹1L in total revenue on DigiOne! Started with a simple Notion template pack 3 months ago. Consistency is key. Happy to answer any questions!',
-    author: 'You',
-    avatar: null,
-    time: '2 hours ago',
-    likes: 24,
-    comments: 8,
-    views: 156,
-    pinned: true,
-    category: 'Milestone',
-  },
-  {
-    id: 2,
-    content: 'Pro tip: Bundle your products together and offer a slight discount. My bundles convert 3x better than individual products. Try it!',
-    author: 'Meera Joshi',
-    avatar: null,
-    time: '5 hours ago',
-    likes: 45,
-    comments: 12,
-    views: 320,
-    category: 'Tip',
-  },
-  {
-    id: 3,
-    content: 'Looking for feedback on my new course landing page. I switched from a long-form page to a minimal design. Thoughts? Link in my profile.',
-    author: 'Aditya Kumar',
-    avatar: null,
-    time: '1 day ago',
-    likes: 18,
-    comments: 23,
-    views: 210,
-    category: 'Feedback',
-  },
-  {
-    id: 4,
-    content: 'The new analytics dashboard is amazing. Finally can see which traffic sources actually convert. Shoutout to the DigiOne team!',
-    author: 'Sneha Patel',
-    avatar: null,
-    time: '1 day ago',
-    likes: 67,
-    comments: 5,
-    views: 445,
-    category: 'General',
-  },
-  {
-    id: 5,
-    content: 'Hosting a free workshop on "Building a profitable digital product in 30 days" next Saturday. DM me to get the link!',
-    author: 'Rohit Menon',
-    avatar: null,
-    time: '2 days ago',
-    likes: 89,
-    comments: 31,
-    views: 720,
-    category: 'Event',
-  },
-];
-
-const CATEGORY_COLORS: Record<string, string> = {
-  Milestone: 'bg-emerald-500/10 text-emerald-400',
-  Tip: 'bg-amber-500/10 text-amber-400',
-  Feedback: 'bg-blue-500/10 text-blue-400',
-  General: 'bg-slate-500/10 text-slate-400',
-  Event: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]',
+// ─── Constants ────────────────────────────────────────────────────────────────
+const CATEGORIES = ['General', 'Tip', 'Milestone', 'Feedback', 'Event'];
+const CATEGORY_STYLES: Record<string, string> = {
+  Milestone: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  Tip:       'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  Feedback:  'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+  Event:     'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+  General:   'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
 };
 
-const LEADERBOARD = [
-  { name: 'Priya Sharma', points: 2840, badge: 'Top Creator' },
-  { name: 'Rahul Verma', points: 2350, badge: 'Rising Star' },
-  { name: 'Ananya Reddy', points: 1920, badge: 'Helpful' },
-  { name: 'Karthik Nair', points: 1680, badge: 'Active' },
-  { name: 'Vikram Singh', points: 1450, badge: 'Contributor' },
-];
+function timeAgo(dateStr: string) {
+  const d = new Date(dateStr);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
 
-export default function DashboardCommunityPage() {
+function Avatar({ name, url, size = 'md' }: { name: string; url?: string | null; size?: 'sm' | 'md' }) {
+  const letter = name[0].toUpperCase();
+  const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
+  if (url) return <img src={url} alt={name} className={`${sz} rounded-full object-cover shrink-0`} />;
+  return (
+    <div className={`${sz} rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 text-white font-bold`}>
+      {letter}
+    </div>
+  );
+}
+
+type Post = {
+  id: string; content: string; category: string; is_pinned: boolean;
+  created_at: string; creator_id: string;
+  profiles?: { full_name: string; avatar_url: string | null };
+  reaction_count: number; my_reaction: boolean;
+};
+
+export default function CommunityPage() {
+  const supabase = createClient();
   const { profile } = useCreator();
-  const [newPost, setNewPost] = useState('');
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [posts, setPosts]         = useState<Post[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [posting, setPosting]     = useState(false);
+  const [newContent, setNewContent] = useState('');
+  const [newCategory, setNewCategory] = useState('General');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [posts] = useState<Post[]>(SAMPLE_POSTS);
+  const [error, setError]         = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const userName = profile?.full_name || 'Creator';
+  const userName   = profile?.full_name || 'Creator';
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
-  const avatarUrl = (profile as any)?.avatar_url;
+  const avatarUrl  = (profile as any)?.avatar_url;
 
-  const filteredPosts = activeFilter === 'all' ? posts : posts.filter(p => p.category.toLowerCase() === activeFilter);
+  const loadPosts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const pid = await getCreatorProfileId(supabase);
+      setProfileId(pid);
+
+      // Load posts with author profile
+      const { data: postsData, error: postsErr } = await (supabase as any)
+        .from('community_posts')
+        .select('*, profiles(full_name, avatar_url)')
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (postsErr) throw postsErr;
+
+      // Load my reactions
+      const { data: myReactions } = await (supabase as any)
+        .from('community_reactions')
+        .select('post_id')
+        .eq('creator_id', pid);
+
+      const mySet = new Set((myReactions as any[])?.map((r: any) => r.post_id) ?? []);
+
+      // Count reactions per post
+      const { data: reactionCounts } = await (supabase as any)
+        .from('community_reactions')
+        .select('post_id');
+
+      const countMap: Record<string, number> = {};
+      (reactionCounts as any[])?.forEach((r: any) => { countMap[r.post_id] = (countMap[r.post_id] || 0) + 1; });
+
+      setPosts((postsData ?? []).map((p: any) => ({
+        ...p,
+        reaction_count: countMap[p.id] || 0,
+        my_reaction: mySet.has(p.id),
+      })));
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
+
+  useEffect(() => { loadPosts(); }, [loadPosts]);
+
+  const handlePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newContent.trim() || !profileId) return;
+    setPosting(true);
+    try {
+      const { error } = await (supabase as any).from('community_posts').insert({
+        creator_id: profileId,
+        content: newContent.trim(),
+        category: newCategory,
+        is_pinned: false,
+      });
+      if (error) throw error;
+      setNewContent('');
+      setNewCategory('General');
+      await loadPosts();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const toggleLike = async (post: Post) => {
+    if (!profileId) return;
+    if (post.my_reaction) {
+      await (supabase as any).from('community_reactions').delete()
+        .eq('post_id', post.id).eq('creator_id', profileId);
+    } else {
+      await (supabase as any).from('community_reactions').insert({
+        post_id: post.id, creator_id: profileId, reaction: 'like',
+      });
+    }
+    // Optimistic update
+    setPosts(prev => prev.map(p => p.id === post.id ? {
+      ...p,
+      my_reaction: !p.my_reaction,
+      reaction_count: p.my_reaction ? p.reaction_count - 1 : p.reaction_count + 1,
+    } : p));
+  };
+
+  const deletePost = async (id: string) => {
+    await (supabase as any).from('community_posts').delete().eq('id', id);
+    setPosts(prev => prev.filter(p => p.id !== id));
+    setDeleteTarget(null);
+  };
+
+  const filtered = posts.filter(p =>
+    activeFilter === 'all' || p.category.toLowerCase() === activeFilter
+  );
+
+  const myPosts    = posts.filter(p => p.creator_id === profileId);
+  const myLikes    = posts.reduce((s, p) => s + (p.my_reaction ? 0 : 0) + p.reaction_count, 0);
+  const totalLikes = posts.filter(p => p.creator_id === profileId).reduce((s, p) => s + p.reaction_count, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#07070f]">
-      {/* Page Header */}
-      <div className="border-b border-gray-200 dark:border-white/[0.06] bg-white dark:bg-[#07070f]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Community</h1>
-                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-md">
-                  New
-                </span>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Connect, share, and grow with fellow creators</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/community"
-                target="_blank"
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-all"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Public page
-              </Link>
-              <button className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-all">
-                <Bell className="w-3.5 h-3.5" />
-                Notifications
-              </button>
-            </div>
-          </div>
+    <div className="pb-16 pt-4 space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Community</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Connect, share, and grow with fellow creators</p>
         </div>
+        <Link href="/community" target="_blank"
+          className="flex items-center gap-2 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:border-indigo-400 transition">
+          <ExternalLink className="w-4 h-4" /> Public page
+        </Link>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {error && (
+        <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl text-sm text-amber-700 dark:text-amber-400">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error.includes('does not exist') ? 'Community tables not yet created. Run the DB migration first.' : error}
+        </div>
+      )}
 
-          {/* Main Feed */}
-          <div className="lg:col-span-2 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
 
-            {/* Compose */}
-            <div className="bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-5">
+        {/* Main Feed */}
+        <div className="lg:col-span-2 space-y-4">
+
+          {/* Compose */}
+          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+            <form onSubmit={handlePost}>
               <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-white text-sm font-bold">{userInitials}</span>
-                  )}
-                </div>
+                <Avatar name={userName} url={avatarUrl} />
                 <div className="flex-1">
-                  <textarea
-                    value={newPost}
-                    onChange={e => setNewPost(e.target.value)}
-                    placeholder="Share something with the community..."
-                    rows={3}
-                    className="w-full bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:border-[var(--accent)]/50 focus:ring-1 focus:ring-[var(--accent)]/20 transition-all resize-none"
-                  />
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] rounded-lg transition-all">
-                        <Image className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] rounded-lg transition-all">
-                        <PenLine className="w-4 h-4" />
-                      </button>
+                  <textarea value={newContent} onChange={e => setNewContent(e.target.value)}
+                    placeholder="Share a tip, milestone, or ask the community…" rows={3}
+                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition resize-none" />
+                  <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {CATEGORIES.map(cat => (
+                        <button key={cat} type="button" onClick={() => setNewCategory(cat)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                            newCategory === cat ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}>{cat}</button>
+                      ))}
                     </div>
-                    <button
-                      disabled={!newPost.trim()}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-lg text-sm font-semibold transition-all shadow-sm disabled:shadow-none"
-                    >
-                      <Send className="w-3.5 h-3.5" />
+                    <button type="submit" disabled={!newContent.trim() || posting}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-lg text-sm font-semibold transition shadow-sm disabled:shadow-none">
+                      {posting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                       Post
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
+          </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {['all', 'milestone', 'tip', 'feedback', 'event', 'general'].map(f => (
-                <button
-                  key={f}
-                  onClick={() => setActiveFilter(f)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize whitespace-nowrap transition-all ${
-                    activeFilter === f
-                      ? 'bg-[var(--accent)] text-[var(--accent-fg)] shadow-sm'
-                      : 'bg-white dark:bg-white/[0.03] text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-white/[0.06] hover:bg-gray-50 dark:hover:bg-white/[0.06]'
-                  }`}
-                >
-                  {f === 'all' ? 'All Posts' : f}
-                </button>
-              ))}
-            </div>
+          {/* Filter pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {['all', ...CATEGORIES.map(c => c.toLowerCase())].map(f => (
+              <button key={f} onClick={() => setActiveFilter(f)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition ${
+                  activeFilter === f
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-white dark:bg-[#0A0A1A] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900'
+                }`}>{f === 'all' ? 'All Posts' : f}</button>
+            ))}
+          </div>
 
-            {/* Posts Feed */}
-            <div className="space-y-4">
-              {filteredPosts.map(post => (
-                <div
-                  key={post.id}
-                  className="bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-5 hover:border-gray-300 dark:hover:border-white/10 transition-all"
-                >
-                  {post.pinned && (
+          {/* Feed */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center py-20 text-center bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl">
+              <MessageCircle className="w-10 h-10 text-gray-300 dark:text-gray-700 mb-3" />
+              <p className="font-semibold text-gray-700 dark:text-gray-300">No posts yet</p>
+              <p className="text-sm text-gray-500 mt-1">Be the first to share something with the community!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filtered.map(post => (
+                <div key={post.id}
+                  className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition group">
+                  {post.is_pinned && (
                     <div className="flex items-center gap-1.5 text-xs text-amber-500 dark:text-amber-400 font-medium mb-3">
-                      <Pin className="w-3 h-3" />
-                      Pinned post
+                      <Pin className="w-3 h-3" /> Pinned
                     </div>
                   )}
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0">
-                      <span className="text-white text-xs font-bold">{post.author.charAt(0)}</span>
-                    </div>
+                    <Avatar name={post.profiles?.full_name ?? 'Creator'} url={post.profiles?.avatar_url} />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-semibold text-gray-900 dark:text-white">{post.author}</span>
-                        <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded ${CATEGORY_COLORS[post.category] || CATEGORY_COLORS.General}`}>
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {post.profiles?.full_name ?? 'Creator'}
+                          {post.creator_id === profileId && <span className="ml-1 text-[10px] text-indigo-500 font-bold">You</span>}
+                        </span>
+                        <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded ${CATEGORY_STYLES[post.category] ?? CATEGORY_STYLES.General}`}>
                           {post.category}
                         </span>
-                        <span className="text-xs text-gray-400 dark:text-slate-600">{post.time}</span>
+                        <span className="text-xs text-gray-400">{timeAgo(post.created_at)}</span>
                       </div>
-                      <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed mb-3">{post.content}</p>
-                      <div className="flex items-center gap-5">
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors">
-                          <ThumbsUp className="w-3.5 h-3.5" />
-                          {post.likes}
+                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-3 whitespace-pre-line">{post.content}</p>
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => toggleLike(post)}
+                          className={`flex items-center gap-1.5 text-xs transition ${
+                            post.my_reaction ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+                          }`}>
+                          <ThumbsUp className={`w-3.5 h-3.5 ${post.my_reaction ? 'fill-current' : ''}`} />
+                          {post.reaction_count > 0 ? post.reaction_count : ''}
                         </button>
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors">
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          {post.comments}
-                        </button>
-                        <span className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500">
-                          <Eye className="w-3.5 h-3.5" />
-                          {post.views}
-                        </span>
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors ml-auto">
-                          <Bookmark className="w-3.5 h-3.5" />
-                        </button>
-                        <button className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500 hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors">
+                        <button className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
                           <Share2 className="w-3.5 h-3.5" />
                         </button>
+                        {post.creator_id === profileId && (
+                          <button onClick={() => setDeleteTarget(post.id)} className="ml-auto flex items-center gap-1 text-xs text-gray-300 dark:text-gray-700 hover:text-red-500 dark:hover:text-red-400 transition opacity-0 group-hover:opacity-100">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-4">
+          {/* My stats */}
+          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Your Stats</h3>
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { label: 'Posts', value: myPosts.length },
+                { label: 'Likes Received', value: totalLikes },
+              ].map(s => (
+                <div key={s.label} className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
+                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">{s.value}</p>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="space-y-5">
-
-            {/* Your Stats */}
-            <div className="bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Your Community Stats</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="text-center p-3 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">12</p>
-                  <p className="text-[10px] text-gray-500 dark:text-slate-500 uppercase tracking-wider mt-0.5">Posts</p>
-                </div>
-                <div className="text-center p-3 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">89</p>
-                  <p className="text-[10px] text-gray-500 dark:text-slate-500 uppercase tracking-wider mt-0.5">Likes</p>
-                </div>
-                <div className="text-center p-3 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">34</p>
-                  <p className="text-[10px] text-gray-500 dark:text-slate-500 uppercase tracking-wider mt-0.5">Comments</p>
-                </div>
-                <div className="text-center p-3 bg-gray-50 dark:bg-white/[0.03] rounded-xl">
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">#42</p>
-                  <p className="text-[10px] text-gray-500 dark:text-slate-500 uppercase tracking-wider mt-0.5">Rank</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Leaderboard */}
-            <div className="bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-amber-400" />
-                  Leaderboard
-                </h3>
-                <span className="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider">This month</span>
-              </div>
-              <div className="space-y-2.5">
-                {LEADERBOARD.map((user, i) => (
-                  <div key={user.name} className="flex items-center gap-3 py-1.5">
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                      i === 0 ? 'bg-amber-500/10 text-amber-400' :
-                      i === 1 ? 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-slate-400' :
-                      i === 2 ? 'bg-orange-500/10 text-orange-400' :
-                      'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-slate-500'
-                    }`}>
-                      {i + 1}
-                    </span>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0">
-                      <span className="text-white text-[9px] font-bold">{user.name.charAt(0)}</span>
+          {/* Categories breakdown */}
+          {posts.length > 0 && (
+            <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4 text-indigo-500" /> Post Breakdown
+              </h3>
+              <div className="space-y-2">
+                {CATEGORIES.map(cat => {
+                  const count = posts.filter(p => p.category === cat).length;
+                  if (!count) return null;
+                  const pct = Math.round((count / posts.length) * 100);
+                  return (
+                    <div key={cat}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">{cat}</span>
+                        <span className="text-gray-400">{count}</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-slate-500">{user.points} pts</p>
-                    </div>
-                    <span className={`px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded ${
-                      i === 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-gray-100 dark:bg-white/[0.04] text-gray-400 dark:text-slate-500'
-                    }`}>
-                      {user.badge}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
+          )}
 
-            {/* Quick Links */}
-            <div className="bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Quick Links</h3>
-              <div className="space-y-1.5">
-                {[
-                  { label: 'Community Guidelines', icon: MessageCircle },
-                  { label: 'How to earn points', icon: Zap },
-                  { label: 'Report an issue', icon: MoreHorizontal },
-                ].map(link => (
-                  <button
-                    key={link.label}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-white/[0.04] hover:text-gray-900 dark:hover:text-white transition-all"
-                  >
-                    <link.icon className="w-3.5 h-3.5" />
-                    {link.label}
-                    <ChevronRight className="w-3 h-3 ml-auto" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Invite CTA */}
-            <div className="bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-2xl p-5 text-center">
-              <Users className="w-8 h-8 text-[var(--text-secondary)] dark:text-[var(--text-secondary)] mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-1">Invite Creators</h4>
-              <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">
-                Earn bonus points for every creator you invite!
-              </p>
-              <button className="w-full py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-lg text-xs font-semibold transition-all shadow-sm">
-                Copy Invite Link
-              </button>
+          {/* Quick links */}
+          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Quick Links</h3>
+            <div className="space-y-1.5">
+              {[
+                { label: 'Community Guidelines', icon: MessageCircle },
+                { label: 'How to earn points',   icon: Zap           },
+                { label: 'Report an issue',       icon: AlertCircle   },
+              ].map(link => (
+                <button key={link.label}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white transition">
+                  <link.icon className="w-3.5 h-3.5" />
+                  {link.label}
+                  <ChevronRight className="w-3 h-3 ml-auto" />
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete confirm */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
+              <Trash2 className="w-5 h-5 text-red-500" />
+            </div>
+            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Delete post?</h3>
+            <p className="text-sm text-gray-500 mb-5">This post and all its reactions will be permanently removed.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancel</button>
+              <button onClick={() => deletePost(deleteTarget)} className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
+                <Trash2 className="w-4 h-4" /> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

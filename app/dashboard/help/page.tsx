@@ -338,7 +338,7 @@ export default function HelpPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 pt-4">
           <HelpCircle className="w-6 h-6 text-[var(--text-secondary)]" />
           Help & Support
         </h1>

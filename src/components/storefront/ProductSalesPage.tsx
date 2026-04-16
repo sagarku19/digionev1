@@ -3,6 +3,7 @@
 // DB tables: site_singlepage, products (read via props)
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ShoppingCart, Shield, Star, ChevronDown,
   Quote, CheckCircle2, Clock, Sparkles,
@@ -10,6 +11,7 @@ import {
   BookOpen, Code, Globe, Layers, Lightbulb, TrendingUp, Users,
   MessageCircle,
 } from 'lucide-react';
+import { useCart } from '@/hooks/useCart';
 
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
 
@@ -41,6 +43,21 @@ const FEATURE_ICONS: Record<string, React.ElementType> = {
 
 export default function ProductSalesPage({ singlePage, palette }: { siteId?: string; singlePage: any; palette?: any }) {
   const product = Array.isArray(singlePage?.products) ? singlePage.products[0] : singlePage?.products;
+  const router = useRouter();
+  const { addItem } = useCart();
+
+  const handleBuyNow = () => {
+    if (!product?.id) return;
+    addItem({
+      id: product.id,
+      title: product.name || 'Product',
+      price: product.price || 0,
+      creatorId: product.creator_id || '',
+      coverImage: product.thumbnail_url || null,
+      slug: product.id,
+    });
+    router.push('/checkout');
+  };
 
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ d: number; h: number; m: number; s: number } | null>(null);
@@ -515,8 +532,8 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
       {/* ─── Mobile Bottom CTA ─── */}
       {showBuyNow && (
         <div className="fixed bottom-0 left-0 right-0 lg:hidden p-3 bg-[var(--bg-primary)]/95 backdrop-blur-lg border-t border-[var(--border-color)] z-40 shadow-2xl">
-          <a
-            href={product?.id ? `/api/checkout?productId=${product.id}` : '#'}
+          <button
+            onClick={handleBuyNow}
             className={cn(
               'flex items-center justify-center gap-2 w-full bg-[var(--brand-primary)] hover:opacity-90 text-[var(--brand-foreground)] font-bold py-3 text-base transition-all shadow-[0_4px_12px_-4px_var(--brand-primary)]',
               getButtonRadius()
@@ -524,15 +541,15 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
           >
             <ShoppingCart className="w-4 h-4" />
             Buy Now
-          </a>
+          </button>
         </div>
       )}
 
       {/* ─── Desktop Right CTA ─── */}
       {showBuyNow && (
         <div className="hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-40">
-          <a
-            href={product?.id ? `/api/checkout?productId=${product.id}` : '#'}
+          <button
+            onClick={handleBuyNow}
             className={cn(
               'flex items-center justify-center gap-2 bg-[var(--brand-primary)] hover:opacity-90 text-[var(--brand-foreground)] font-bold px-6 py-4 transition-all shadow-[0_8px_20px_-8px_var(--brand-primary)] hover:shadow-[0_12px_28px_-8px_var(--brand-primary)]',
               getButtonRadius()
@@ -540,7 +557,7 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
           >
             <ShoppingCart className="w-4 h-4" />
             <span className="whitespace-nowrap">Buy Now</span>
-          </a>
+          </button>
         </div>
       )}
 

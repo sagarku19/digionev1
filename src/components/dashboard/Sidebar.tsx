@@ -9,7 +9,7 @@ import {
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
   Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, LogOut, MessageCircle, HelpCircle,
-  Instagram, Zap, Server, Calendar,
+  Instagram, Zap, Server, Calendar, ShoppingBag,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -28,6 +28,7 @@ const NAV: NavGroup[] = [
       { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
       { label: 'Products', href: '/dashboard/products', icon: Package },
       { label: 'My Sites', href: '/dashboard/sites', icon: Store },
+      { label: 'Orders', href: '/dashboard/orders', icon: ShoppingBag },
       { label: 'Customers', href: '/dashboard/customers', icon: Users },
       { label: 'Media', href: '/dashboard/media', icon: ImageIcon },
     ],
@@ -80,6 +81,9 @@ export default function Sidebar() {
 
   const { profile } = useCreator();
   const { unreadCount } = useNotifications();
+
+  // Hide sidebar entirely on full-screen editor pages
+  if (pathname?.startsWith('/dashboard/sites/edit')) return null;
 
   const close = () => setIsOpen(false);
 

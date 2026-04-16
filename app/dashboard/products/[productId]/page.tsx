@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useProducts } from '@/hooks/useProducts';
 import {
   FileText, DollarSign, HardDrive, Megaphone, Settings,
-  ArrowLeft, Save, UploadCloud, Trash2, Image as ImageIcon,
+  ArrowLeft, Save, UploadCloud, Image as ImageIcon,
   CheckCircle2, AlertCircle, Eye, Globe, Lock, Zap,
   Plus, X, Package, TrendingUp, Tag, Calendar,
 } from 'lucide-react';
@@ -160,7 +160,7 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
       <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-2">
         <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Quick Actions</p>
         <a
-          href={`/product/${product.id}`}
+          href={`/store/product/${product.id}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
@@ -184,20 +184,20 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   const [activeTab, setActiveTab] = useState('basic');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [formData, setFormData] = useState<any>(null);
+  // Local edits layered on top of the DB row
+  const [edits, setEdits] = useState<Record<string, any>>({});
 
-  useEffect(() => {
-    if (!isLoading && products.length > 0) {
-      const p = products.find((x: any) => x.id === productId);
-      if (p && !formData) setFormData(p);
-    }
-  }, [products, isLoading, productId, formData]);
+  // The source product from the query
+  const sourceProduct = products.find((x: any) => x.id === productId) ?? null;
+  // Merged: source fields + any local edits
+  const formData: any = sourceProduct ? { ...sourceProduct, ...edits } : null;
 
+  // Redirect only after query has finished AND product genuinely not found
   useEffect(() => {
-    if (!isLoading && !formData) {
+    if (!isLoading && !sourceProduct) {
       router.replace(productId === 'new' ? '/dashboard/products?new=1' : '/dashboard/products');
     }
-  }, [isLoading, formData, router, productId]);
+  }, [isLoading, sourceProduct, router, productId]);
 
   if (isLoading || !formData) {
     return (
@@ -208,72 +208,86 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
     );
   }
 
-  const patch = (updates: any) => setFormData((prev: any) => ({ ...prev, ...updates }));
+  const patch = (updates: any) => setEdits((prev: any) => ({ ...prev, ...updates }));
 
   const handleSave = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      const { id, created_at, updated_at, creator_id, ...updates } = formData;
+      // Allowlist only columns that exist in the products DB schema
+      const updates = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.is_free ? 0 : (Number(formData.price) || 0),
+        category: formData.category,
+        thumbnail_url: formData.thumbnail_url ?? null,
+        is_published: formData.is_published ?? false,
+        is_on_discover_page: formData.is_on_discover_page ?? true,
+        product_link: formData.product_link ?? null,
+        post_purchase_url: formData.post_purchase_url ?? null,
+        post_purchase_instructions: formData.post_purchase_instructions ?? null,
+        metadata: formData.metadata ?? null,
+        images: formData.images ?? [],
+        is_licensable: formData.is_licensable ?? false,
+        license_type: formData.license_type ?? null,
+        license_terms: formData.license_terms ?? null,
+      };
+
       await updateProduct({ id: productId, updates });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to save. Please try again.');
+    } catch (err: any) {
+      console.error('Save failed:', err);
+      alert(`Failed to save: ${err?.message ?? 'Please try again.'}`);
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="pb-24">
-      {/* ── Fixed Header ── */}
-      <div className="fixed top-16 left-0 md:left-[240px] right-0 z-20 px-4 md:px-6 py-3.5 bg-white/95 dark:bg-[#060612]/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
-            <button
-              onClick={() => router.push('/dashboard/products')}
-              className="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Product Editor</p>
-              <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">{formData.name}</h1>
-            </div>
-            <span className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${formData.is_published
-              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-              : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-            }`}>
-              {formData.is_published ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-              {formData.is_published ? 'Published' : 'Draft'}
-            </span>
+    <div className="pt-6 pb-24">
+      {/* ── Inline Page Header ── */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={() => router.push('/dashboard/products')}
+            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Product Editor</p>
+            <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">{formData.name}</h1>
           </div>
+          <span className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${formData.is_published
+            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+          }`}>
+            {formData.is_published ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+            {formData.is_published ? 'Published' : 'Draft'}
+          </span>
+        </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {saveSuccess && (
-              <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Saved
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all"
-            >
-              <Save className="w-4 h-4" />
-              {isSaving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {saveSuccess && (
+            <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Saved
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all"
+          >
+            <Save className="w-4 h-4" />
+            {isSaving ? 'Saving…' : 'Save'}
+          </button>
         </div>
       </div>
-      {/* Spacer for fixed header */}
-      <div className="h-[57px]" />
 
       {/* ── Layout ── */}
-      <div className="flex flex-col md:flex-row gap-6 mt-4">
+      <div className="flex flex-col md:flex-row gap-6">
 
         {/* Left tab nav */}
         <aside className="w-full md:w-52 shrink-0">
@@ -409,28 +423,45 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
 
             {/* ── TAB: CONTENT FILES ── */}
             {activeTab === 'content' && (
-              <Card title="Digital Delivery" subtitle="Files buyers receive after purchase — protected by zero-trust access">
-                <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-800 mb-4">
-                  <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900 group">
-                    <div className="w-9 h-9 bg-[var(--bg-tertiary)] rounded-lg flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4 text-[var(--text-primary)]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">Sample_Module_1.zip</p>
-                      <p className="text-xs text-gray-500">24.5 MB · Uploaded 2 mins ago</p>
-                    </div>
-                    <button className="opacity-0 group-hover:opacity-100 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+              <div className="space-y-5">
+                <Card title="Product Access Link" subtitle="Where buyers go after a successful purchase">
+                  <Field label="Post-Purchase URL" hint="Redirect buyers here after payment — e.g. a Google Drive link, Notion page, Gumroad download, or your own page.">
+                    <input
+                      type="url"
+                      value={formData.post_purchase_url || ''}
+                      onChange={e => patch({ post_purchase_url: e.target.value || null })}
+                      className={INPUT}
+                      placeholder="https://drive.google.com/file/..."
+                    />
+                  </Field>
+                  <Field label="Access Instructions" hint="Optional message shown to buyers on the payment success page.">
+                    <textarea
+                      rows={3}
+                      value={formData.post_purchase_instructions || ''}
+                      onChange={e => patch({ post_purchase_instructions: e.target.value || null })}
+                      className={`${INPUT} resize-none`}
+                      placeholder="e.g. Download from the link above. Password: digione2024"
+                    />
+                  </Field>
+                  <Field label="Preview / Demo Link" hint="Public link shown before purchase (e.g. a sample or demo). Optional.">
+                    <input
+                      type="url"
+                      value={formData.product_link || ''}
+                      onChange={e => patch({ product_link: e.target.value || null })}
+                      className={INPUT}
+                      placeholder="https://..."
+                    />
+                  </Field>
+                </Card>
 
-                <button className="w-full border-2 border-dashed border-[var(--border)] dark:border-[var(--border)] hover:border-[var(--accent)] bg-[var(--bg-tertiary)]/50 dark:bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] py-8 rounded-xl flex flex-col items-center justify-center gap-2 transition">
-                  <UploadCloud className="w-7 h-7" />
-                  <span className="font-semibold text-sm">Upload New Asset</span>
-                  <span className="text-xs opacity-70">PDF · ZIP · MP4 · MP3 · Max 2GB per file</span>
-                </button>
-              </Card>
+                <Card title="File Uploads" subtitle="Upload files buyers can download — coming soon">
+                  <button className="w-full border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-(--accent) bg-gray-50/50 dark:bg-gray-900/50 text-gray-400 py-10 rounded-xl flex flex-col items-center justify-center gap-2 transition cursor-not-allowed opacity-60">
+                    <UploadCloud className="w-7 h-7" />
+                    <span className="font-semibold text-sm">Upload New Asset</span>
+                    <span className="text-xs">PDF · ZIP · MP4 · MP3 · Max 2GB per file · Coming soon</span>
+                  </button>
+                </Card>
+              </div>
             )}
 
             {/* ── TAB: MARKETING ── */}

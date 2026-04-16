@@ -2,7 +2,7 @@
 // Products list page — product grid (left) + upsell panel (right) + create modals.
 // DB tables: products (via useProducts), upsell_pages (via useUpsellPages)
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useProducts } from '@/hooks/useProducts';
 import { useUpsellPages } from '@/hooks/useUpsellPages';
@@ -28,6 +28,14 @@ function formatINR(n: number) {
 
 // ─── Page ────────────────────────────────────────────────────
 export default function ProductsPage() {
+  return (
+    <Suspense>
+      <ProductsPageInner />
+    </Suspense>
+  );
+}
+
+function ProductsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { products, isLoading, createProduct, isCreating } = useProducts();
@@ -256,7 +264,11 @@ export default function ProductsPage() {
                         <Edit3 className="w-4 h-4" />
                         Edit
                       </button>
-                      <button className="flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 py-2.5 rounded-xl transition-all shadow-sm" title="Preview Product">
+                      <button
+                        onClick={() => window.open(`/store/product/${product.id}`, '_blank')}
+                        className="flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 py-2.5 rounded-xl transition-all shadow-sm"
+                        title="Preview Product"
+                      >
                         <Eye className="w-4 h-4" />
                         View
                       </button>

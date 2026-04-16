@@ -49,6 +49,7 @@ export default function PaymentLinkPage({ siteId, siteMain }: { siteId: string; 
         });
         cashfree.checkout({
           paymentSessionId: json.payment_session_id,
+          returnUrl: `${window.location.origin}/payment/status?order_id=${json.order_id}&sub=${json.submission_id}`,
         });
       } else {
          throw new Error('No payment session received');

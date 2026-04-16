@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useCart } from '@/hooks/useCart';
+import { useCart, useCartTotal } from '@/hooks/useCart';
 import { Trash2, ArrowRight, Tag, ShieldCheck } from 'lucide-react';
 
 export default function CartPage() {
-  const { items, removeItem, total } = useCart();
+  const { items, removeItem } = useCart();
+  const total = useCartTotal();
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
 
