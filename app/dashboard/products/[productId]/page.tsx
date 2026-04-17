@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Product editor — edit basic info, pricing, files, marketing, settings for a single product.
 // DB tables: products (read/write via useProducts)
 
@@ -14,7 +14,7 @@ import {
 
 // ─── Shared constants & sub-components ───────────────────────
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
 
 function formatINR(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -30,9 +30,9 @@ const TABS = [
 
 function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 space-y-5">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gray-900 dark:text-white">{title}</h2>
+        <h2 className="text-base font-bold text-[var(--text-primary)]">{title}</h2>
         {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
       </div>
       {children}
@@ -43,7 +43,7 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{label}</label>
       {children}
       {hint && <p className="text-xs text-gray-400 mt-1.5">{hint}</p>}
     </div>
@@ -64,7 +64,7 @@ function WhatsIncludedEditor({ items, onChange }: { items: string[]; onChange: (
       {items.length > 0 && (
         <ul className="space-y-2">
           {items.map((item, i) => (
-            <li key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 px-3 py-2 rounded-lg">
+            <li key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-3 py-2 rounded-lg">
               <Package className="w-3.5 h-3.5 text-[var(--text-secondary)] shrink-0" />
               <span className="flex-1">{item}</span>
               <button onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 transition">
@@ -100,13 +100,13 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
   return (
     <aside className="hidden xl:flex flex-col gap-4 w-56 shrink-0 sticky top-36">
       {/* Status card */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-3">
         <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Status</p>
         <div
           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold ${
             product.is_published
               ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+              : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)]'
           }`}
         >
           {product.is_published
@@ -118,7 +118,7 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
           onClick={onTogglePublish}
           className={`w-full text-xs font-semibold py-1.5 rounded-lg transition ${
             product.is_published
-              ? 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+              ? 'border border-gray-200 dark:border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]'
               : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
           }`}
         >
@@ -127,43 +127,43 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
       </div>
 
       {/* Product details */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-3">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-3">
         <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Details</p>
         <div className="space-y-2.5 text-sm">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-gray-500 dark:text-gray-400 text-xs">Price</span>
-            <span className="font-semibold text-gray-900 dark:text-white text-xs">
+            <span className="text-[var(--text-secondary)] text-xs">Price</span>
+            <span className="font-semibold text-[var(--text-primary)] text-xs">
               {product.is_free ? 'Free' : product.price ? formatINR(product.price) : '—'}
             </span>
           </div>
           {product.compare_at_price && !product.is_free && (
             <div className="flex items-center justify-between gap-2">
-              <span className="text-gray-500 dark:text-gray-400 text-xs">Original</span>
+              <span className="text-[var(--text-secondary)] text-xs">Original</span>
               <span className="font-medium text-gray-400 line-through text-xs">{formatINR(product.compare_at_price)}</span>
             </div>
           )}
           <div className="flex items-center justify-between gap-2">
-            <span className="text-gray-500 dark:text-gray-400 text-xs">Category</span>
+            <span className="text-[var(--text-secondary)] text-xs">Category</span>
             <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] capitalize">
               <Tag className="w-2.5 h-2.5" />
               {product.category || 'digital'}
             </span>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-gray-500 dark:text-gray-400 text-xs">Created</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{created}</span>
+            <span className="text-[var(--text-secondary)] text-xs">Created</span>
+            <span className="text-xs text-[var(--text-secondary)]">{created}</span>
           </div>
         </div>
       </div>
 
       {/* Quick actions */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-2">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-2">
         <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Quick Actions</p>
         <a
           href={`/store/product/${product.id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
+          className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
         >
           <Eye className="w-3.5 h-3.5" />
           Preview product page
@@ -251,17 +251,17 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => router.push('/dashboard/products')}
-            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
+            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)] hover:text-gray-900 dark:hover:text-[var(--text-primary)] transition"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="min-w-0">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Product Editor</p>
-            <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">{formData.name}</h1>
+            <h1 className="text-base font-bold text-[var(--text-primary)] truncate">{formData.name}</h1>
           </div>
           <span className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${formData.is_published
             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+            : 'bg-gray-100 text-gray-600 dark:bg-[var(--bg-secondary)] dark:text-[var(--text-secondary)]'
           }`}>
             {formData.is_published ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
             {formData.is_published ? 'Published' : 'Draft'}
@@ -300,7 +300,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${active
                     ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    : 'text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] hover:text-gray-900 dark:hover:text-[var(--text-primary)]'
                   }`}
                 >
                   <tab.icon className={`w-4 h-4 shrink-0 ${active ? 'text-[var(--text-primary)]' : 'text-gray-400'}`} />
@@ -345,7 +345,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                 </Card>
 
                 <Card title="Thumbnail" subtitle="First impression matters — use a 16:9 image">
-                  <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:border-[var(--accent)] transition cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-200 dark:border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] transition cursor-pointer">
                     {formData.thumbnail_url ? (
                       <div className="relative group">
                         <img src={formData.thumbnail_url} alt="Thumbnail" className="w-full max-h-52 object-contain" />
@@ -381,9 +381,9 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
             {activeTab === 'pricing' && (
               <div className="space-y-5">
                 <Card title="Pricing Strategy" subtitle="Choose how buyers pay for this product">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">Make this product Free</p>
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">Make this product Free</p>
                       <p className="text-xs text-gray-500 mt-0.5">Buyers can download without paying. Good for lead magnets.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -455,7 +455,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                 </Card>
 
                 <Card title="File Uploads" subtitle="Upload files buyers can download — coming soon">
-                  <button className="w-full border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-(--accent) bg-gray-50/50 dark:bg-gray-900/50 text-gray-400 py-10 rounded-xl flex flex-col items-center justify-center gap-2 transition cursor-not-allowed opacity-60">
+                  <button className="w-full border-2 border-dashed border-gray-200 dark:border-[var(--border)] hover:border-(--accent) bg-gray-50/50 dark:bg-[var(--bg-secondary)]/50 text-gray-400 py-10 rounded-xl flex flex-col items-center justify-center gap-2 transition cursor-not-allowed opacity-60">
                     <UploadCloud className="w-7 h-7" />
                     <span className="font-semibold text-sm">Upload New Asset</span>
                     <span className="text-xs">PDF · ZIP · MP4 · MP3 · Max 2GB per file · Coming soon</span>
@@ -483,14 +483,14 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
             {activeTab === 'settings' && (
               <div className="space-y-5">
                 <Card title="Visibility" subtitle="Control whether buyers can see and purchase this product">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
                     <div className="flex items-center gap-3">
                       {formData.is_published
                         ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                         : <AlertCircle className="w-5 h-5 text-amber-500" />
                       }
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">
                           {formData.is_published ? 'Published — live on your store' : 'Draft — hidden from buyers'}
                         </p>
                         <p className="text-xs text-gray-500 mt-0.5">
@@ -515,11 +515,11 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                       placeholder="figma, design, ui, template"
                     />
                   </Field>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
                     <div className="flex items-center gap-3">
                       <Globe className="w-5 h-5 text-[var(--text-secondary)]" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">Show on Discover Page</p>
+                        <p className="text-sm font-semibold text-[var(--text-primary)]">Show on Discover Page</p>
                         <p className="text-xs text-gray-500 mt-0.5">Make this product visible on the public Discover page</p>
                       </div>
                     </div>
@@ -534,7 +534,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   </div>
                 </Card>
 
-                <div className="border border-red-200 dark:border-red-900/40 rounded-2xl p-6 bg-white dark:bg-[#0A0A1A]">
+                <div className="border border-red-200 dark:border-red-900/40 rounded-2xl p-6 bg-[var(--bg-primary)]">
                   <h3 className="text-sm font-bold text-red-600 dark:text-red-400 mb-1 uppercase tracking-wide">Danger Zone</h3>
                   <p className="text-sm text-gray-500 mb-4">
                     Deleting this product is permanent and immediately removes buyer access. Existing orders are preserved for records.

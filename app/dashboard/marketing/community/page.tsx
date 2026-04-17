@@ -171,11 +171,11 @@ export default function CommunityPage() {
     <div className="pb-16 pt-4 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Community</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Connect, share, and grow with fellow creators</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Community</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5">Connect, share, and grow with fellow creators</p>
         </div>
         <Link href="/community" target="_blank"
-          className="flex items-center gap-2 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:border-indigo-400 transition">
+          className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border)] text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-semibold hover:border-indigo-400 transition">
           <ExternalLink className="w-4 h-4" /> Public page
         </Link>
       </div>
@@ -193,14 +193,14 @@ export default function CommunityPage() {
         <div className="lg:col-span-2 space-y-4">
 
           {/* Compose */}
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
             <form onSubmit={handlePost}>
               <div className="flex gap-3">
                 <Avatar name={userName} url={avatarUrl} />
                 <div className="flex-1">
                   <textarea value={newContent} onChange={e => setNewContent(e.target.value)}
                     placeholder="Share a tip, milestone, or ask the community…" rows={3}
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition resize-none" />
+                    className="w-full bg-[var(--bg-secondary)] border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition resize-none" />
                   <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {CATEGORIES.map(cat => (
@@ -228,7 +228,7 @@ export default function CommunityPage() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition ${
                   activeFilter === f
                     ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'bg-white dark:bg-[#0A0A1A] text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900'
+                    : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-gray-50 dark:hover:bg-gray-900'
                 }`}>{f === 'all' ? 'All Posts' : f}</button>
             ))}
           </div>
@@ -239,7 +239,7 @@ export default function CommunityPage() {
               <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center py-20 text-center bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl">
+            <div className="flex flex-col items-center py-20 text-center bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl">
               <MessageCircle className="w-10 h-10 text-gray-300 dark:text-gray-700 mb-3" />
               <p className="font-semibold text-gray-700 dark:text-gray-300">No posts yet</p>
               <p className="text-sm text-gray-500 mt-1">Be the first to share something with the community!</p>
@@ -248,7 +248,7 @@ export default function CommunityPage() {
             <div className="space-y-3">
               {filtered.map(post => (
                 <div key={post.id}
-                  className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition group">
+                  className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 transition group">
                   {post.is_pinned && (
                     <div className="flex items-center gap-1.5 text-xs text-amber-500 dark:text-amber-400 font-medium mb-3">
                       <Pin className="w-3 h-3" /> Pinned
@@ -258,7 +258,7 @@ export default function CommunityPage() {
                     <Avatar name={post.profiles?.full_name ?? 'Creator'} url={post.profiles?.avatar_url} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        <span className="text-sm font-semibold text-[var(--text-primary)]">
                           {post.profiles?.full_name ?? 'Creator'}
                           {post.creator_id === profileId && <span className="ml-1 text-[10px] text-indigo-500 font-bold">You</span>}
                         </span>
@@ -296,15 +296,15 @@ export default function CommunityPage() {
         {/* Sidebar */}
         <div className="space-y-4">
           {/* My stats */}
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Your Stats</h3>
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
+            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">Your Stats</h3>
             <div className="grid grid-cols-2 gap-2.5">
               {[
                 { label: 'Posts', value: myPosts.length },
                 { label: 'Likes Received', value: totalLikes },
               ].map(s => (
-                <div key={s.label} className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white">{s.value}</p>
+                <div key={s.label} className="text-center p-3 bg-[var(--bg-secondary)] rounded-xl">
+                  <p className="text-xl font-extrabold text-[var(--text-primary)]">{s.value}</p>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{s.label}</p>
                 </div>
               ))}
@@ -313,8 +313,8 @@ export default function CommunityPage() {
 
           {/* Categories breakdown */}
           {posts.length > 0 && (
-            <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-1.5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-1.5">
                 <TrendingUp className="w-4 h-4 text-indigo-500" /> Post Breakdown
               </h3>
               <div className="space-y-2">
@@ -339,8 +339,8 @@ export default function CommunityPage() {
           )}
 
           {/* Quick links */}
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Quick Links</h3>
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
+            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3">Quick Links</h3>
             <div className="space-y-1.5">
               {[
                 { label: 'Community Guidelines', icon: MessageCircle },
@@ -348,7 +348,7 @@ export default function CommunityPage() {
                 { label: 'Report an issue',       icon: AlertCircle   },
               ].map(link => (
                 <button key={link.label}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white transition">
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-[var(--text-primary)] transition">
                   <link.icon className="w-3.5 h-3.5" />
                   {link.label}
                   <ChevronRight className="w-3 h-3 ml-auto" />
@@ -362,14 +362,14 @@ export default function CommunityPage() {
       {/* Delete confirm */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
               <Trash2 className="w-5 h-5 text-red-500" />
             </div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Delete post?</h3>
+            <h3 className="font-bold text-[var(--text-primary)] mb-1">Delete post?</h3>
             <p className="text-sm text-gray-500 mb-5">This post and all its reactions will be permanently removed.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancel</button>
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
               <button onClick={() => deletePost(deleteTarget)} className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete
               </button>

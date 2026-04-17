@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // BioProfileEditor — controlled profile editor for Link in Bio.
 // Upgraded UI: Visual Header Mockup, Premium Inputs, Refined Spacing
 
@@ -9,8 +9,8 @@ import {
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
-const INPUT = 'w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-sm focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400/80 transition-all duration-300';
-const CARD = 'bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-6 shadow-sm';
+const INPUT = 'w-full px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-sm focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400/80 transition-all duration-300';
+const CARD = 'bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-6 shadow-sm';
 
 export type SocialLink = { platform: string; url: string; is_visible: boolean };
 
@@ -69,19 +69,19 @@ export default function BioProfileEditor({
       {/* ─── VISUAL HEADER (Cover & Avatar) ─── */}
       <div className={CARD}>
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <ImagePlus className="w-4 h-4 text-pink-500" /> Identity Media
           </h3>
           <p className="text-[13px] text-gray-500 mt-1">Tap the layout below to upload your cover and avatar.</p>
         </div>
 
         {/* Visual Mock Header */}
-        <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-gray-50 dark:bg-gray-900">
+        <div className="relative rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--bg-secondary)]">
 
           {/* Cover Area */}
           <div
             onClick={() => setImagePicker({ open: true, field: 'cover' })}
-            className="group relative w-full h-36 bg-gray-200 dark:bg-gray-800 cursor-pointer overflow-hidden flex items-center justify-center transition-all"
+            className="group relative w-full h-36 bg-gray-200 dark:bg-[var(--bg-secondary)] cursor-pointer overflow-hidden flex items-center justify-center transition-all"
           >
             {data.coverImageUrl ? (
               <img src={data.coverImageUrl} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -105,9 +105,9 @@ export default function BioProfileEditor({
               className="group relative -mt-12 cursor-pointer z-10"
             >
               <div
-                className={`w-24 h-24 bg-white dark:bg-gray-900 shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300
+                className={`w-24 h-24 bg-white dark:bg-[var(--bg-secondary)] shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300
                   ${data.avatarShape === 'square' ? 'rounded-xl' : data.avatarShape === 'rounded' ? 'rounded-[2rem]' : 'rounded-full'}
-                  ${data.avatarBorder !== false ? 'border-4 border-white dark:border-gray-900' : 'border border-gray-200 dark:border-gray-800'}
+                  ${data.avatarBorder !== false ? 'border-4 border-white dark:border-gray-900' : 'border border-[var(--border)]'}
                 `}
               >
                 {data.avatarUrl ? (
@@ -122,7 +122,7 @@ export default function BioProfileEditor({
             </div>
 
             {/* Shape toggles */}
-            <div className="flex gap-1.5 bg-gray-100/80 dark:bg-gray-800/50 p-1.5 rounded-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm">
+            <div className="flex gap-1.5 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 p-1.5 rounded-xl border border-gray-200/50 dark:border-[var(--border)]/50 backdrop-blur-sm">
               {[
                 { id: 'circular', label: 'Circle' },
                 { id: 'rounded', label: 'Rounded' },
@@ -133,7 +133,7 @@ export default function BioProfileEditor({
                   <button key={s.id} onClick={() => onChange({ ...data, avatarShape: s.id as any })}
                     className={`px-3 py-1.5 text-[11px] font-semibold transition-all duration-300 rounded-lg flex items-center gap-1.5
                         ${active
-                        ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white scale-100'
+                        ? 'bg-white dark:bg-gray-700 shadow-sm text-[var(--text-primary)] scale-100'
                         : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 scale-95 hover:scale-100'
                       }`}>
                     {active && <Check className="w-3 h-3 text-pink-500" />}
@@ -149,7 +149,7 @@ export default function BioProfileEditor({
       {/* ─── PROFILE INFO ─── */}
       <div className={CARD}>
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <User className="w-4 h-4 text-pink-500" /> About You
           </h3>
           <p className="text-[13px] text-gray-500 mt-1">The primary details displayed on your page.</p>
@@ -157,7 +157,7 @@ export default function BioProfileEditor({
 
         <div className="space-y-4">
           <div>
-            <label className="block text[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">Profile Title</label>
+            <label className="block text[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Profile Title</label>
             <input
               type="text"
               value={data.displayName || ''}
@@ -169,8 +169,8 @@ export default function BioProfileEditor({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text[13px] font-medium text-gray-700 dark:text-gray-300">Bio Description</label>
-              <span className={`text-[11px] font-medium tabular-nums px-2 py-0.5 rounded-full ${(data.bioText || '').length > 200 ? 'bg-red-100 text-red-600 dark:bg-red-500/20' : 'bg-gray-100 text-gray-500 dark:bg-gray-800'}`}>
+              <label className="text[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)]">Bio Description</label>
+              <span className={`text-[11px] font-medium tabular-nums px-2 py-0.5 rounded-full ${(data.bioText || '').length > 200 ? 'bg-red-100 text-red-600 dark:bg-red-500/20' : 'bg-gray-100 text-gray-500 dark:bg-[var(--bg-secondary)]'}`}>
                 {(data.bioText || '').length}/200
               </span>
             </div>
@@ -188,7 +188,7 @@ export default function BioProfileEditor({
       {/* ─── SOCIAL LINKS ─── */}
       <div className={CARD}>
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <Globe className="w-4 h-4 text-pink-500" /> Social Icons
           </h3>
           <p className="text-[13px] text-gray-500 mt-1">Add your social profiles to show as a refined row of icons.</p>
@@ -201,16 +201,16 @@ export default function BioProfileEditor({
             const isVisible = social.is_visible !== false;
 
             return (
-              <div key={i} className={`flex items-center gap-3 p-2 border rounded-2xl transition-all duration-300 ${isVisible ? 'bg-gray-50/50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-800' : 'bg-gray-50/20 dark:bg-gray-900/20 border-gray-100 dark:border-gray-800/30 opacity-60'}`}>
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-center shrink-0">
-                  <Icon className={`w-4 h-4 ${isVisible ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400'}`} />
+              <div key={i} className={`flex items-center gap-3 p-2 border rounded-2xl transition-all duration-300 ${isVisible ? 'bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border-[var(--border)]' : 'bg-gray-50/20 dark:bg-[var(--bg-secondary)]/20 border-[var(--border)]/30 opacity-60'}`}>
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[var(--bg-secondary)] shadow-sm border border-gray-100 dark:border-[var(--border)] flex items-center justify-center shrink-0">
+                  <Icon className={`w-4 h-4 ${isVisible ? 'text-gray-700 dark:text-[var(--text-secondary)]' : 'text-gray-400'}`} />
                 </div>
 
                 <input
                   type="url"
                   value={social.url || ''}
                   onChange={e => updateSocial(i, 'url', e.target.value)}
-                  className="flex-1 bg-transparent border-none text-[13px] outline-none focus:ring-0 text-gray-900 dark:text-white placeholder-gray-400 w-full"
+                  className="flex-1 bg-transparent border-none text-[13px] outline-none focus:ring-0 text-[var(--text-primary)] placeholder-gray-400 w-full"
                   placeholder={platform?.placeholder || 'https://...'}
                 />
 
@@ -242,7 +242,7 @@ export default function BioProfileEditor({
                 <button
                   key={p.id}
                   onClick={() => addSocial(p.id)}
-                  className="group flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-xl text-[12px] font-semibold transition-all duration-300"
+                  className="group flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)] hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-xl text-[12px] font-semibold transition-all duration-300"
                 >
                   <Plus className="w-3.5 h-3.5 group-hover:text-pink-500 transition-colors" />
                   {p.label}

@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 // HeaderEditor — edit header logo, nav items, and toggles.
 
 import React from 'react';
 import { Plus, X, GripVertical } from 'lucide-react';
 
-const INPUT = 'w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
 
 export type HeaderData = {
   logoUrl: string;
@@ -37,33 +37,33 @@ export default function HeaderEditor({
   return (
     <div className="space-y-6">
       {/* Logo */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Logo</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Logo</h3>
           <p className="text-xs text-gray-500 mt-0.5">Your brand logo shown in the header</p>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Logo Image URL</label>
+          <label className="block text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] mb-1.5">Logo Image URL</label>
           <input type="url" value={data.logoUrl} onChange={e => set('logoUrl', e.target.value)}
             className={INPUT} placeholder="https://..." />
         </div>
         {data.logoUrl && (
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
-            <img src={data.logoUrl} alt="Logo preview" className="w-10 h-10 rounded-lg object-contain bg-white dark:bg-gray-800" />
+          <div className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] rounded-xl border border-gray-200 dark:border-[var(--border)]">
+            <img src={data.logoUrl} alt="Logo preview" className="w-10 h-10 rounded-lg object-contain bg-white dark:bg-[var(--bg-secondary)]" />
             <span className="text-xs text-gray-500 truncate flex-1">{data.logoUrl}</span>
           </div>
         )}
         <div>
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Alt Text</label>
+          <label className="block text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] mb-1.5">Alt Text</label>
           <input type="text" value={data.logoAlt} onChange={e => set('logoAlt', e.target.value)}
             className={INPUT} placeholder="My Store" />
         </div>
       </div>
 
       {/* Navigation Links */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Navigation Links</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Navigation Links</h3>
           <p className="text-xs text-gray-500 mt-0.5">Links shown in your storefront header</p>
         </div>
         <div className="space-y-2.5">
@@ -91,9 +91,9 @@ export default function HeaderEditor({
       </div>
 
       {/* Header Options */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Header Options</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Header Options</h3>
           <p className="text-xs text-gray-500 mt-0.5">Configure header behavior and features</p>
         </div>
         {[
@@ -101,9 +101,9 @@ export default function HeaderEditor({
           { key: 'showCart' as const,      label: 'Show Cart Icon', desc: 'Shopping cart icon with badge' },
           { key: 'stickyHeader' as const,  label: 'Sticky Header',  desc: 'Header stays fixed on scroll' },
         ].map(opt => (
-          <div key={opt.key} className="flex items-center justify-between px-4 py-3.5 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div key={opt.key} className="flex items-center justify-between px-4 py-3.5 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{opt.label}</p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">{opt.label}</p>
               <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">

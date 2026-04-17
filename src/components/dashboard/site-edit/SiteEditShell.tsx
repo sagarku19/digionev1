@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // SiteEditShell — shared layout for all type-specific site edit pages.
 // Provides: top bar, tab sidebar, and all common tabs (Navigation, Domain, SEO, Social, Legal, Danger).
 // Each type-specific page supplies only the "General" tab content via children.
@@ -24,11 +24,11 @@ export function Card({
     <div className={`rounded-2xl p-6 space-y-5 shadow-sm ${
       danger
         ? 'bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50'
-        : 'bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800'
+        : 'bg-[var(--bg-primary)] border border-[var(--border)]'
     }`}>
       <div>
         <h2 className={`text-sm font-semibold ${
-          danger ? 'text-red-700 dark:text-red-400' : 'text-gray-900 dark:text-white'
+          danger ? 'text-red-700 dark:text-red-400' : 'text-[var(--text-primary)]'
         }`}>{title}</h2>
         {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
       </div>
@@ -45,7 +45,7 @@ export function Field({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)]">{label}</label>
         {counter && (
           <span className={`text-xs tabular-nums ${
             counter.current > counter.max ? 'text-red-500'
@@ -60,7 +60,7 @@ export function Field({
 }
 
 export const INPUT =
-  'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+  'w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
 
 // ─── Tab definitions ─────────────────────────────────────────
 
@@ -236,17 +236,17 @@ export default function SiteEditShell({
   const displayTitle = siteMain?.title ?? site?.slug ?? 'Untitled';
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#060610]">
+    <div className="flex flex-col min-h-screen bg-[var(--bg-secondary)]">
 
       {/* ── Sticky top bar ── */}
-      <header className="sticky top-0 z-30 bg-white dark:bg-[#0A0A1A] border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <header className="sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border)] shadow-sm">
         <div className="flex items-center gap-4 px-6 h-14">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <span
               className={`shrink-0 w-2.5 h-2.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}
               title={isActive ? 'Active' : 'Inactive'}
             />
-            <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[200px]" title={displayTitle}>
+            <h1 className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[200px]" title={displayTitle}>
               {displayTitle}
             </h1>
             {TypeIcon && (
@@ -273,7 +273,7 @@ export default function SiteEditShell({
               href={site ? getSitePublicPath(site) : '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] border border-gray-200 dark:border-[var(--border)] px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition"
             >
               View Live <ExternalLink className="w-3 h-3" />
             </a>
@@ -296,14 +296,14 @@ export default function SiteEditShell({
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── Left sidebar nav ── */}
-        <aside className="hidden md:flex flex-col w-48 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A] pt-4 pb-6">
+        <aside className="hidden md:flex flex-col w-48 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto border-r border-[var(--border)] bg-[var(--bg-primary)] pt-4 pb-6">
           <nav className="flex flex-col gap-0.5 px-3">
             {TABS.map(tab => {
               const active = activeTab === tab.id;
               const isDanger = tab.id === 'danger';
               return (
                 <React.Fragment key={tab.id}>
-                  {isDanger && <div className="my-2 border-t border-gray-200 dark:border-gray-800" />}
+                  {isDanger && <div className="my-2 border-t border-[var(--border)]" />}
                   <button
                     onClick={() => setActiveTab(tab.id)}
                     className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all w-full text-left ${
@@ -313,7 +313,7 @@ export default function SiteEditShell({
                           : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                         : isDanger
                         ? 'text-red-500 dark:text-red-500/80 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                        : 'text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] hover:text-gray-900 dark:hover:text-[var(--text-primary)]'
                     }`}
                   >
                     {active && (
@@ -333,7 +333,7 @@ export default function SiteEditShell({
         </aside>
 
         {/* Mobile tab strip */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-[#0A0A1A] border-t border-gray-200 dark:border-gray-800 px-2 py-2 overflow-x-auto">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-[var(--bg-primary)] border-t border-[var(--border)] px-2 py-2 overflow-x-auto">
           <div className="flex gap-1 min-w-max mx-auto">
             {TABS.map(tab => {
               const active = activeTab === tab.id;
@@ -349,7 +349,7 @@ export default function SiteEditShell({
                         : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                       : isDanger
                       ? 'text-red-500 hover:bg-red-50'
-                      : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)]'
                   }`}
                 >
                   <tab.icon className="w-3.5 h-3.5 shrink-0" />
@@ -399,19 +399,19 @@ export default function SiteEditShell({
           {activeTab === 'domain' && (
             <div className="space-y-5">
               <Card title="Default URL" subtitle="Your automatically assigned DigiOne URL">
-                <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] rounded-xl border border-gray-200 dark:border-[var(--border)]">
                   <Globe className="w-4 h-4 text-gray-400 shrink-0" />
                   <span className="text-sm font-medium text-[var(--text-primary)] flex-1 truncate">
                     {site ? getSiteDisplayUrl(site) : '\u2014'}
                   </span>
                   <button
                     onClick={() => site && navigator.clipboard.writeText(`https://${getSiteDisplayUrl(site)}`)}
-                    className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition p-1 rounded hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)]"
                     title="Copy URL">
                     <Copy className="w-4 h-4" />
                   </button>
                   <a href={site ? getSitePublicPath(site) : '#'} target="_blank" rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                    className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition p-1 rounded hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)]"
                     title="Open in new tab">
                     <ExternalLink className="w-4 h-4" />
                   </a>
@@ -431,20 +431,20 @@ export default function SiteEditShell({
                       <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">DNS Configuration Required</p>
                     </div>
                     <div className="px-4 py-3 bg-white dark:bg-amber-950/10 space-y-3">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">
                         Add the following <strong>CNAME</strong> record in your domain registrar&apos;s DNS settings:
                       </p>
                       <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-xs">
                         <span className="font-medium text-gray-500">Type</span>
-                        <code className="font-mono text-gray-900 dark:text-gray-200">CNAME</code>
+                        <code className="font-mono text-gray-900 dark:text-[var(--text-primary)]">CNAME</code>
                         <span className="font-medium text-gray-500">Name</span>
-                        <code className="font-mono text-gray-900 dark:text-gray-200 break-all">
+                        <code className="font-mono text-gray-900 dark:text-[var(--text-primary)] break-all">
                           {customDomain.split('.').slice(0, -2).join('.') || customDomain}
                         </code>
                         <span className="font-medium text-gray-500">Value</span>
-                        <code className="font-mono text-gray-900 dark:text-gray-200">cname.digione.ai</code>
+                        <code className="font-mono text-gray-900 dark:text-[var(--text-primary)]">cname.digione.ai</code>
                         <span className="font-medium text-gray-500">TTL</span>
-                        <code className="font-mono text-gray-900 dark:text-gray-200">Auto</code>
+                        <code className="font-mono text-gray-900 dark:text-[var(--text-primary)]">Auto</code>
                       </div>
                       <p className="text-xs text-gray-400">DNS changes can take up to 48 hours to propagate globally.</p>
                     </div>
@@ -457,7 +457,7 @@ export default function SiteEditShell({
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
                       : site?.ssl_status === 'pending'
                       ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      : 'bg-gray-100 text-gray-600 dark:bg-[var(--bg-secondary)] dark:text-[var(--text-secondary)]'
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${
                       site?.ssl_status === 'active' ? 'bg-emerald-500'
@@ -491,12 +491,12 @@ export default function SiteEditShell({
               </Card>
 
               <Card title="Search Preview" subtitle="How this site looks on Google">
-                <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#0D0E1A] space-y-1">
+                <div className="p-4 border border-gray-200 dark:border-[var(--border)] rounded-xl bg-[var(--bg-primary)] space-y-1">
                   <p className="text-xs text-gray-400">{site ? getSiteDisplayUrl(site) : '\u2014'}</p>
                   <p className="text-base font-medium text-blue-700 dark:text-blue-400 hover:underline cursor-pointer leading-snug">
                     {metaTitle || displayTitle}
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <p className="text-xs text-gray-600 dark:text-[var(--text-secondary)] leading-relaxed">
                     {metaDesc || 'No description set yet.'}
                   </p>
                 </div>
@@ -527,9 +527,9 @@ export default function SiteEditShell({
                 { key: 'refund',  label: 'Refund policy',  desc: 'Your refund and cancellation policy' },
               ].map(({ key, label, desc }) => (
                 <div key={key}
-                  className="flex items-center justify-between px-4 py-3.5 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition">
+                  className="flex items-center justify-between px-4 py-3.5 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] hover:border-gray-300 dark:hover:border-gray-700 transition">
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{label}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{label}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
@@ -546,9 +546,9 @@ export default function SiteEditShell({
           {/* DANGER */}
           {activeTab === 'danger' && (
             <div className="space-y-5">
-              <div className="rounded-2xl p-6 bg-white dark:bg-[#0A0A1A] border border-amber-200 dark:border-amber-900/40 shadow-sm space-y-4">
+              <div className="rounded-2xl p-6 bg-[var(--bg-primary)] border border-amber-200 dark:border-amber-900/40 shadow-sm space-y-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Deactivate site</h3>
+                  <h3 className="text-sm font-semibold text-[var(--text-primary)]">Deactivate site</h3>
                   <p className="text-xs text-gray-500 mt-0.5">
                     Hides your site from public view. You can reactivate it at any time from the sites list.
                   </p>
@@ -564,9 +564,9 @@ export default function SiteEditShell({
               </div>
 
               <Card title="Delete site permanently" danger>
-                <p className="text-sm text-gray-600 dark:text-gray-400 -mt-2">
+                <p className="text-sm text-gray-600 dark:text-[var(--text-secondary)] -mt-2">
                   This will permanently delete this site and all its data. This action{' '}
-                  <strong className="text-gray-900 dark:text-white">cannot be undone</strong>.
+                  <strong className="text-[var(--text-primary)]">cannot be undone</strong>.
                 </p>
                 <div className="space-y-3">
                   <p className="text-xs text-gray-500">
@@ -577,7 +577,7 @@ export default function SiteEditShell({
                   </p>
                   <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
                     placeholder={`Type "${site?.slug ?? site?.id}" to confirm`}
-                    className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-red-300 dark:border-red-800 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm" />
+                    className="w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-red-300 dark:border-red-800 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm" />
                   <button disabled={deleteConfirm !== (site?.slug ?? site?.id) || deleting} onClick={handleDelete}
                     className="flex items-center gap-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg shadow-sm shadow-red-500/20 transition">
                     {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}

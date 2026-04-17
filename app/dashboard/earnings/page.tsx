@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo } from 'react';
 import { useEarnings } from '@/hooks/useEarnings';
@@ -26,10 +26,10 @@ function formatINRCompact(amount: number) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 animate-pulse">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse">
       <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
       <div className="h-9 w-36 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
-      <div className="h-2 w-20 bg-gray-100 dark:bg-gray-800 rounded" />
+      <div className="h-2 w-20 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded" />
     </div>
   );
 }
@@ -104,8 +104,8 @@ export default function EarningsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white pt-4">Earnings & Payouts</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)] pt-4">Earnings & Payouts</h1>
+            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
               Track your balance, request withdrawals, and manage payout history.
             </p>
           </div>
@@ -151,47 +151,47 @@ export default function EarningsPage() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-semibold text-indigo-200 uppercase tracking-wider">Available</span>
-                    <Wallet size={16} className="text-indigo-200" />
+                    <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Available</span>
+                    <Wallet size={16} className="text-gray-300" />
                   </div>
                   <p className="text-3xl font-bold tracking-tight mb-1">{formatINRCompact(available)}</p>
-                  <p className="text-xs text-indigo-200">Ready to withdraw</p>
+                  <p className="text-xs text-gray-300">Ready to withdraw</p>
                 </div>
               </div>
 
               {/* Pending */}
-              <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pending</span>
+                  <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Pending</span>
                   <span className="p-1.5 bg-amber-100 dark:bg-amber-500/20 rounded-lg">
                     <Clock size={14} className="text-amber-600 dark:text-amber-400" />
                   </span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-1">{formatINRCompact(pending)}</p>
+                <p className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1">{formatINRCompact(pending)}</p>
                 <p className="text-xs text-gray-400">Under 48hr settlement</p>
               </div>
 
               {/* Total Earnings */}
-              <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Earned</span>
+                  <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Total Earned</span>
                   <span className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg">
                     <TrendingUp size={14} className="text-emerald-600 dark:text-emerald-400" />
                   </span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-1">{formatINRCompact(totalEarnings)}</p>
+                <p className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1">{formatINRCompact(totalEarnings)}</p>
                 <p className="text-xs text-gray-400">Lifetime gross revenue</p>
               </div>
 
               {/* Total Paid Out */}
-              <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Withdrawn</span>
+                  <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Withdrawn</span>
                   <span className="p-1.5 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
                     <ArrowDownLeft size={14} className="text-blue-600 dark:text-blue-400" />
                   </span>
                 </div>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-1">{formatINRCompact(totalPaidOut)}</p>
+                <p className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-1">{formatINRCompact(totalPaidOut)}</p>
                 <p className="text-xs text-gray-400">Total disbursed</p>
               </div>
             </>
@@ -200,8 +200,8 @@ export default function EarningsPage() {
 
         {/* Ledger Breakdown */}
         {!isLoading && totalEarnings > 0 && (
-          <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Balance Breakdown</h3>
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)] mb-4">Balance Breakdown</h3>
             <div className="space-y-3">
               {[
                 { label: 'Gross Earnings', amount: totalEarnings, color: 'bg-emerald-500', icon: IndianRupee },
@@ -213,16 +213,16 @@ export default function EarningsPage() {
                   <div className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Icon size={13} className="text-gray-400 shrink-0" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{label}</span>
+                    <span className="text-sm text-gray-600 dark:text-[var(--text-secondary)] truncate">{label}</span>
                   </div>
-                  <span className={`text-sm font-semibold ${amount < 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
+                  <span className={`text-sm font-semibold ${amount < 0 ? 'text-red-500 dark:text-red-400' : 'text-[var(--text-primary)]'}`}>
                     {amount < 0 ? `- ${formatINR(-amount)}` : formatINR(amount)}
                   </span>
                 </div>
               ))}
-              <div className="border-t border-gray-100 dark:border-gray-800 pt-3 flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Net Available</span>
-                <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{formatINR(available)}</span>
+              <div className="border-t border-[var(--border)] pt-3 flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)]">Net Available</span>
+                <span className="text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)]">{formatINR(available)}</span>
               </div>
             </div>
           </div>
@@ -230,7 +230,7 @@ export default function EarningsPage() {
 
         {/* KYC Status Card */}
         {!isLoading && (
-          <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 flex items-center justify-between gap-4">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               {isKycVerified ? (
                 <div className="p-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-xl">
@@ -242,7 +242,7 @@ export default function EarningsPage() {
                 </div>
               )}
               <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">
                   KYC & Bank Account
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
@@ -256,7 +256,7 @@ export default function EarningsPage() {
               <StatusPill status={kyc?.status ?? 'pending'} type="kyc" />
               <Link
                 href="/dashboard/settings/billing"
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap flex items-center gap-1"
+                className="text-xs font-semibold text-gray-700 dark:text-[var(--text-secondary)] hover:underline whitespace-nowrap flex items-center gap-1"
               >
                 Manage <ChevronRight size={12} />
               </Link>
@@ -265,13 +265,13 @@ export default function EarningsPage() {
         )}
 
         {/* Payout History */}
-        <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+          <div className="px-6 py-5 border-b border-[var(--border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <History size={16} className="text-indigo-500" />
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white">Withdrawal History</h2>
+              <History size={16} className="text-gray-600 dark:text-[var(--text-secondary)]" />
+              <h2 className="text-base font-semibold text-[var(--text-primary)]">Withdrawal History</h2>
               {payouts.length > 0 && (
-                <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-secondary)] px-2 py-0.5 rounded-full">
                   {payouts.length}
                 </span>
               )}
@@ -286,8 +286,8 @@ export default function EarningsPage() {
                       onClick={() => setStatusFilter(s)}
                       className={`px-3 py-1 text-xs font-medium rounded-lg capitalize transition-all ${
                         statusFilter === s
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                          : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700'
                       }`}
                     >
                       {s} {s !== 'all' && statusCounts[s] ? `(${statusCounts[s]})` : s === 'all' && payouts.length ? `(${payouts.length})` : ''}
@@ -299,13 +299,13 @@ export default function EarningsPage() {
           </div>
 
           {isLoading ? (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-[var(--border)]">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="px-6 py-4 flex items-center gap-4 animate-pulse">
                   <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3.5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
-                    <div className="h-2.5 w-24 bg-gray-100 dark:bg-gray-800 rounded" />
+                    <div className="h-2.5 w-24 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded" />
                   </div>
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full" />
                   <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
@@ -314,23 +314,23 @@ export default function EarningsPage() {
             </div>
           ) : filteredPayouts.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Banknote size={24} className="text-gray-400" />
               </div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <p className="text-sm font-medium text-[var(--text-secondary)]">
                 {statusFilter === 'all' ? "No withdrawals yet" : `No ${statusFilter} payouts`}
               </p>
               {statusFilter === 'all' && available > 0 && (
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="mt-3 text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                  className="mt-3 text-xs text-gray-700 dark:text-[var(--text-secondary)] font-semibold hover:underline"
                 >
                   Request your first payout
                 </button>
               )}
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-[var(--border)]">
               {(filteredPayouts as any[]).map((payout) => (
                 <div key={payout.id} className="px-6 py-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                   {/* Icon */}
@@ -352,7 +352,7 @@ export default function EarningsPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
                       Withdrawal Request
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -371,7 +371,7 @@ export default function EarningsPage() {
                   <StatusPill status={payout.status} type="payout" />
 
                   {/* Amount */}
-                  <p className="text-sm font-bold text-gray-900 dark:text-white shrink-0 min-w-20 text-right">
+                  <p className="text-sm font-bold text-[var(--text-primary)] shrink-0 min-w-20 text-right">
                     {formatINR(payout.amount)}
                   </p>
                 </div>
@@ -381,11 +381,11 @@ export default function EarningsPage() {
 
           {/* Footer summary */}
           {!isLoading && (filteredPayouts as any[]).length > 0 && (
-            <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-white/[0.02] flex items-center justify-between">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="px-6 py-3 border-t border-[var(--border)] bg-gray-50 dark:bg-white/[0.02] flex items-center justify-between">
+              <span className="text-xs text-[var(--text-secondary)]">
                 {filteredPayouts.length} transaction{filteredPayouts.length !== 1 ? 's' : ''}
               </span>
-              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              <span className="text-xs font-semibold text-gray-700 dark:text-[var(--text-secondary)]">
                 Total withdrawn: {formatINR(totalWithdrawn)}
               </span>
             </div>
@@ -396,18 +396,18 @@ export default function EarningsPage() {
       {/* Payout Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
             {/* Modal Header */}
-            <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+            <div className="flex justify-between items-center px-6 py-5 border-b border-[var(--border)]">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl">
-                  <Wallet size={16} className="text-indigo-600 dark:text-indigo-400" />
+                <div className="p-2 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl">
+                  <Wallet size={16} className="text-gray-700 dark:text-[var(--text-secondary)]" />
                 </div>
-                <h2 className="text-base font-bold text-gray-900 dark:text-white">Withdraw Funds</h2>
+                <h2 className="text-base font-bold text-[var(--text-primary)]">Withdraw Funds</h2>
               </div>
               <button
                 onClick={() => { setIsModalOpen(false); setPayoutAmount(''); setErrorMsg(''); }}
-                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition"
               >
                 <X size={16} />
               </button>
@@ -419,13 +419,13 @@ export default function EarningsPage() {
                   <div className="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Building2 size={28} className="text-amber-500" />
                   </div>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">KYC Required</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                  <h3 className="text-base font-bold text-[var(--text-primary)] mb-2">KYC Required</h3>
+                  <p className="text-sm text-[var(--text-secondary)] mb-6">
                     Complete your KYC verification and add a bank account before making withdrawals.
                   </p>
                   <Link
                     href="/dashboard/settings/billing"
-                    className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition text-center"
+                    className="block w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 font-semibold py-3 rounded-xl transition text-center"
                   >
                     Complete KYC
                   </Link>
@@ -433,9 +433,9 @@ export default function EarningsPage() {
               ) : (
                 <div className="space-y-5">
                   {/* Available Balance pill */}
-                  <div className="flex items-center justify-between bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-xl px-4 py-3">
-                    <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">Available Balance</span>
-                    <span className="text-base font-bold text-indigo-700 dark:text-indigo-300">{formatINR(available)}</span>
+                  <div className="flex items-center justify-between bg-gray-100 dark:bg-[var(--bg-secondary)] border border-indigo-100 dark:border-gray-900 dark:border-white/20 rounded-xl px-4 py-3">
+                    <span className="text-sm text-gray-700 dark:text-[var(--text-secondary)] font-medium">Available Balance</span>
+                    <span className="text-base font-bold text-gray-700 dark:text-[var(--text-secondary)]">{formatINR(available)}</span>
                   </div>
 
                   {errorMsg && (
@@ -446,11 +446,11 @@ export default function EarningsPage() {
 
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Amount (INR)</label>
+                      <label className="text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)]">Amount (INR)</label>
                       <button
                         type="button"
                         onClick={() => setPayoutAmount(String(available))}
-                        className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                        className="text-xs font-semibold text-gray-700 dark:text-[var(--text-secondary)] hover:underline"
                       >
                         Withdraw all
                       </button>
@@ -465,7 +465,7 @@ export default function EarningsPage() {
                         max={available}
                         value={payoutAmount}
                         onChange={(e) => setPayoutAmount(e.target.value)}
-                        className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500/40 outline-none text-gray-900 dark:text-white font-mono text-lg"
+                        className="w-full pl-8 pr-4 py-3 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] font-mono text-lg"
                         placeholder="0"
                         autoFocus
                       />

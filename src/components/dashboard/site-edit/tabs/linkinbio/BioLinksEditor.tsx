@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // BioLinksEditor V2 — block-based editor for Link in Bio.
 // New: header, text, html_embed, social_icons, spotify, banner blocks.
 // Enhanced: heading (subtitle/align/size/divider), url (animation),
@@ -15,9 +15,9 @@ import {
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
-const CHIP_ON = 'bg-white dark:bg-[#1A1A2E] text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-100';
-const CHIP_OFF = 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 scale-95 hover:scale-100';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
+const CHIP_ON = 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-100';
+const CHIP_OFF = 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50 scale-95 hover:scale-100';
 
 export type BioLink = {
   id: string;
@@ -122,7 +122,7 @@ function AlignPicker({ value, onChange }: { value: string; onChange: (v: string)
     { id: 'right', icon: AlignRight },
   ];
   return (
-    <div className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl">
+    <div className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl">
       {opts.map(o => (
         <button key={o.id} onClick={() => onChange(o.id)}
           className={`flex-1 flex items-center justify-center p-2 rounded-[10px] transition-all duration-300 ${value === o.id ? CHIP_ON : CHIP_OFF}`}>
@@ -135,7 +135,7 @@ function AlignPicker({ value, onChange }: { value: string; onChange: (v: string)
 
 // ─── Section label ───────────────────────────────────────
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
+  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
 }
 
 // ─── Main component ──────────────────────────────────────
@@ -289,7 +289,7 @@ export default function BioLinksEditor({
 
       {/* Empty state */}
       {links.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl text-center">
+        <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-[var(--border)] rounded-2xl text-center">
           <LinkIcon className="w-8 h-8 text-gray-300 dark:text-gray-700 mb-3" />
           <p className="text-sm font-medium text-gray-500">No blocks yet</p>
           <p className="text-xs text-gray-400 mt-1">Add your first block below</p>
@@ -306,7 +306,7 @@ export default function BioLinksEditor({
           return (
             <div
               key={link.id}
-              className={`relative bg-white dark:bg-[#151525] border-2 rounded-[1.25rem] transition-all duration-300 ${isExpanded ? 'border-pink-200 dark:border-pink-500/30' : 'border-gray-100 dark:border-gray-800/60'
+              className={`relative bg-[var(--bg-primary)] border-2 rounded-[1.25rem] transition-all duration-300 ${isExpanded ? 'border-pink-200 dark:border-pink-500/30' : 'border-[var(--border)]/60'
                 } ${dragIdx === idx ? 'opacity-50 scale-95 shadow-md' : 'shadow-sm hover:shadow-md'}`}
               draggable
               onDragStart={() => setDragIdx(idx)}
@@ -317,11 +317,11 @@ export default function BioLinksEditor({
               {/* Row header */}
               <div className="flex items-center gap-2 px-3 py-2.5">
                 <GripVertical className="w-4 h-4 text-gray-300 dark:text-gray-600 cursor-grab shrink-0" />
-                <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
                   <TypeIcon className="w-3.5 h-3.5 text-gray-500" />
                 </div>
                 <button onClick={() => setExpandedId(isExpanded ? null : link.id)} className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
                     {link.title || link.metadata?.content?.slice(0, 40) || typeInfo?.label || 'Untitled'}
                   </p>
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide">{typeInfo?.label}</p>
@@ -337,11 +337,11 @@ export default function BioLinksEditor({
                     <MoreVertical className="w-3.5 h-3.5" />
                   </button>
                   {menuOpenId === link.id && (
-                    <div role="menu" className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1 overflow-hidden"
+                    <div role="menu" className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl shadow-lg z-50 py-1 overflow-hidden"
                       onDragStart={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
                       <button role="menuitem"
                         onClick={() => { duplicateLink(link.id); setMenuOpenId(null); }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition"
                       >
                         <Copy className="w-3.5 h-3.5" /> Duplicate
                       </button>
@@ -361,7 +361,7 @@ export default function BioLinksEditor({
 
               {/* Expanded editor */}
               {isExpanded && (
-                <div className="px-4 pb-5 pt-2 border-t border-gray-100 dark:border-gray-800/60 space-y-4">
+                <div className="px-4 pb-5 pt-2 border-t border-[var(--border)]/60 space-y-4">
 
                   {/* ── Title — most types ── */}
                   {!NO_TITLE_TYPES.includes(link.link_type) && link.link_type !== 'header' && (
@@ -390,7 +390,7 @@ export default function BioLinksEditor({
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <FieldLabel>Size</FieldLabel>
-                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                             {['sm', 'md', 'lg', 'xl', '2xl'].map(s => (
                               <Chip key={s} active={(link.metadata?.size || 'xl') === s} onClick={() => updateMeta(link.id, 'size', s)}>
                                 {s.toUpperCase()}
@@ -407,7 +407,7 @@ export default function BioLinksEditor({
                         <input type="checkbox" checked={link.metadata?.show_divider ?? false}
                           onChange={e => updateMeta(link.id, 'show_divider', e.target.checked)}
                           className="w-4 h-4 rounded border-gray-300 text-pink-500 focus:ring-pink-500" />
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Show decorative line</span>
+                        <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show decorative line</span>
                       </label>
                     </>
                   )}
@@ -426,7 +426,7 @@ export default function BioLinksEditor({
                       <div className="flex items-center gap-4">
                         <div>
                           <FieldLabel>Size</FieldLabel>
-                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                             {['sm', 'base', 'lg'].map(s => (
                               <Chip key={s} active={(link.metadata?.size || 'base') === s} onClick={() => updateMeta(link.id, 'size', s)}>
                                 {s === 'sm' ? 'Small' : s === 'base' ? 'Normal' : 'Large'}
@@ -455,7 +455,7 @@ export default function BioLinksEditor({
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <FieldLabel>Size</FieldLabel>
-                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                             {['sm', 'md', 'lg'].map(s => (
                               <Chip key={s} active={(link.metadata?.size || 'md') === s} onClick={() => updateMeta(link.id, 'size', s)}>
                                 {s.toUpperCase()}
@@ -472,7 +472,7 @@ export default function BioLinksEditor({
                         <input type="checkbox" checked={link.metadata?.show_divider ?? false}
                           onChange={e => updateMeta(link.id, 'show_divider', e.target.checked)}
                           className="w-4 h-4 rounded border-gray-300 text-pink-500 focus:ring-pink-500" />
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Show line below</span>
+                        <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show line below</span>
                       </label>
                     </>
                   )}
@@ -491,7 +491,7 @@ export default function BioLinksEditor({
                           { id: 'xl', label: 'X-Large', px: '96px' },
                         ].map(h => (
                           <button key={h.id} onClick={() => updateMeta(link.id, 'height', h.id)}
-                            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 transition ${(link.metadata?.height || 'md') === h.id ? CHIP_ON : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 transition ${(link.metadata?.height || 'md') === h.id ? CHIP_ON : 'border-gray-200 dark:border-[var(--border)] hover:border-gray-300'
                               }`}>
                             <span className="text-xs font-semibold">{h.label}</span>
                             <span className="text-[10px] text-gray-400">{h.px}</span>
@@ -529,7 +529,7 @@ export default function BioLinksEditor({
                       </div>
                       <div>
                         <FieldLabel>Icon</FieldLabel>
-                        <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                        <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                           {ICON_TYPES.map(it => (
                             <Chip key={it.id} active={link.icon_type === it.id} onClick={() => updateLink(link.id, { icon_type: it.id })}>
                               {it.label}
@@ -539,7 +539,7 @@ export default function BioLinksEditor({
                       </div>
                       <div>
                         <FieldLabel>Animation</FieldLabel>
-                        <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                        <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                           {ANIMATIONS.map(a => (
                             <Chip key={a.id} active={(link.metadata?.animation || 'none') === a.id}
                               onClick={() => updateMeta(link.id, 'animation', a.id)}>
@@ -550,7 +550,7 @@ export default function BioLinksEditor({
                       </div>
                       <div>
                         <FieldLabel>Width in Grid</FieldLabel>
-                        <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                        <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                           <Chip active={(link.metadata?.col_span || 'full') === 'full'} onClick={() => updateMeta(link.id, 'col_span', 'full')}>
                             Full Width
                           </Chip>
@@ -603,16 +603,16 @@ export default function BioLinksEditor({
 
                               {/* Selected product preview card */}
                               {sel && (
-                                <div className="mt-2 flex items-center gap-3 p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl">
+                                <div className="mt-2 flex items-center gap-3 p-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl">
                                   {sel.thumbnail_url ? (
-                                    <img src={sel.thumbnail_url} alt={sel.name} className="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-gray-700 shrink-0" />
+                                    <img src={sel.thumbnail_url} alt={sel.name} className="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-[var(--border)] shrink-0" />
                                   ) : (
                                     <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
                                       <Package className="w-5 h-5 text-gray-400" />
                                     </div>
                                   )}
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-semibold text-gray-900 dark:text-white truncate">{sel.name}</p>
+                                    <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{sel.name}</p>
                                     <p className="text-xs text-pink-600 dark:text-pink-400 font-medium">{'\u20B9'}{sel.price.toLocaleString('en-IN')}</p>
                                     {sel.is_published === false && <span className="text-[10px] text-amber-600 dark:text-amber-400">Draft</span>}
                                   </div>
@@ -654,7 +654,7 @@ export default function BioLinksEditor({
                             </button>
                           </div>
                           {link.thumbnail_url && (
-                            <div className="mt-2 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                            <div className="mt-2 rounded-xl overflow-hidden border border-gray-200 dark:border-[var(--border)] bg-[var(--bg-secondary)]">
                               <img src={link.thumbnail_url} alt="" className="w-full h-28 object-cover" />
                             </div>
                           )}
@@ -697,7 +697,7 @@ export default function BioLinksEditor({
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <FieldLabel>Card Layout</FieldLabel>
-                            <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                            <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                               {[{ id: 'horizontal', label: 'Row' }, { id: 'split', label: 'Split' }, { id: 'vertical', label: 'Card' }].map(l => (
                                 <Chip key={l.id}
                                   active={(link.metadata?.layout || 'horizontal') === l.id}
@@ -709,7 +709,7 @@ export default function BioLinksEditor({
                           </div>
                           <div>
                             <FieldLabel>Button Position</FieldLabel>
-                            <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                            <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                               {[{ id: 'right', label: 'Right' }, { id: 'center', label: 'Center' }, { id: 'full', label: 'Full' }].map(b => (
                                 <Chip key={b.id}
                                   active={(link.metadata?.button_position || 'right') === b.id}
@@ -724,9 +724,9 @@ export default function BioLinksEditor({
                         {/* ── Price controls ── */}
                         <div className="space-y-2">
                           {/* Show price toggle */}
-                          <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl">
+                          <div className="flex items-center justify-between px-3 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl">
                             <div>
-                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Show Price</p>
+                              <p className="text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)]">Show Price</p>
                               <p className="text-[10px] text-gray-400">Display product price on card</p>
                             </div>
                             <button
@@ -743,7 +743,7 @@ export default function BioLinksEditor({
                             <div className="grid grid-cols-2 gap-2">
                               <div>
                                 <FieldLabel>Price Position</FieldLabel>
-                                <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-xl items-center">
+                                <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
                                   {[{ id: 'below', label: 'Below title' }, { id: 'inline', label: 'Right of title' }].map(p => (
                                     <Chip key={p.id}
                                       active={(link.metadata?.price_position || 'below') === p.id}
@@ -830,23 +830,23 @@ export default function BioLinksEditor({
                           <FieldLabel>Form Fields</FieldLabel>
                           <div className="space-y-2">
                             {fields.map((field, fi) => (
-                              <div key={fi} className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl">
+                              <div key={fi} className="flex items-center gap-2 p-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl">
                                 <GripVertical className="w-3.5 h-3.5 text-gray-300 shrink-0 cursor-grab" />
                                 <div className="flex-1 min-w-0 grid grid-cols-2 gap-2">
                                   <input type="text" value={field.label}
                                     onChange={e => { const n = [...fields]; n[fi] = { ...n[fi], label: e.target.value }; setFields(n); }}
-                                    className="px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
+                                    className="px-2 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
                                     placeholder="Label" />
                                   <input type="text" value={field.placeholder}
                                     onChange={e => { const n = [...fields]; n[fi] = { ...n[fi], placeholder: e.target.value }; setFields(n); }}
-                                    className="px-2 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
+                                    className="px-2 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
                                     placeholder="Placeholder" />
                                 </div>
                                 <button
                                   onClick={() => { const n = [...fields]; n[fi] = { ...n[fi], required: !n[fi].required }; setFields(n); }}
                                   className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold transition ${field.required
                                       ? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400'
-                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
+                                      : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-400'
                                     }`}
                                   title={field.required ? 'Required' : 'Optional'}
                                 >
@@ -869,7 +869,7 @@ export default function BioLinksEditor({
                                   disabled={alreadyUsed}
                                   onClick={() => setFields([...fields, { type: preset.type, label: preset.label, required: preset.type === 'email', placeholder: preset.placeholder }])}
                                   className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${alreadyUsed
-                                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                                      ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-300 dark:text-gray-600 cursor-not-allowed'
                                       : 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 border border-pink-200 dark:border-pink-500/30'
                                     }`}>
                                   <Plus className="w-3 h-3" /> {preset.label}
@@ -913,7 +913,7 @@ export default function BioLinksEditor({
                           </button>
                         </div>
                         {link.thumbnail_url && (
-                          <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                          <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-[var(--border)]">
                             <img src={link.thumbnail_url} alt="" className="w-full h-24 object-cover" />
                           </div>
                         )}
@@ -1008,12 +1008,12 @@ export default function BioLinksEditor({
                           const Icon = platform?.icon || Globe;
                           return (
                             <div key={i} className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
                                 <Icon className="w-3.5 h-3.5 text-gray-500" />
                               </div>
                               <input type="url" value={s.url}
                                 onChange={e => updateSocialInBlock(link.id, i, 'url', e.target.value)}
-                                className="flex-1 px-2.5 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500 text-gray-900 dark:text-white placeholder-gray-400"
+                                className="flex-1 px-2.5 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500 text-[var(--text-primary)] placeholder-gray-400"
                                 placeholder={platform?.placeholder || 'URL'} />
                               <button onClick={() => removeSocialFromBlock(link.id, i)}
                                 className="p-1.5 text-gray-400 hover:text-red-500 transition">
@@ -1032,7 +1032,7 @@ export default function BioLinksEditor({
                           <div className="flex flex-wrap gap-1.5">
                             {avail.map(p => (
                               <button key={p.id} onClick={() => addSocialToBlock(link.id, p.id)}
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-[11px] font-medium text-gray-600 dark:text-gray-400 transition">
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-[11px] font-medium text-gray-600 dark:text-[var(--text-secondary)] transition">
                                 <Plus className="w-3 h-3" /> {p.label}
                               </button>
                             ))}
@@ -1101,10 +1101,10 @@ export default function BioLinksEditor({
                         <div className="flex items-center gap-2">
                           <input type="color" value={link.metadata?.bg_color || '#EC4899'}
                             onChange={e => updateMeta(link.id, 'bg_color', e.target.value)}
-                            className="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer p-0.5" />
+                            className="w-8 h-8 rounded-lg border border-gray-200 dark:border-[var(--border)] cursor-pointer p-0.5" />
                           <input type="text" value={link.metadata?.bg_color || ''}
                             onChange={e => updateMeta(link.id, 'bg_color', e.target.value)}
-                            className="flex-1 px-2.5 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-mono text-gray-700 dark:text-gray-300 outline-none focus:ring-2 focus:ring-pink-500"
+                            className="flex-1 px-2.5 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs font-mono text-gray-700 dark:text-[var(--text-secondary)] outline-none focus:ring-2 focus:ring-pink-500"
                             placeholder="Leave blank for theme color" />
                         </div>
                       </div>
@@ -1135,19 +1135,19 @@ export default function BioLinksEditor({
 
       {/* ── Add block picker (categorized) ── */}
       {showAddPicker ? (
-        <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-4">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-4">
           {BLOCK_CATEGORIES.map(cat => (
             <div key={cat.label}>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">{cat.label}</p>
               <div className="grid grid-cols-2 gap-2">
                 {cat.types.map(t => (
                   <button key={t.id} onClick={() => addLink(t.id)}
-                    className="flex items-center gap-2.5 p-3 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-left transition group">
+                    className="flex items-center gap-2.5 p-3 bg-[var(--bg-secondary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-xl text-left transition group">
                     <div className="w-8 h-8 rounded-lg bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                       <t.icon className="w-4 h-4 text-pink-600 dark:text-pink-400" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-900 dark:text-white">{t.label}</p>
+                      <p className="text-xs font-semibold text-[var(--text-primary)]">{t.label}</p>
                       <p className="text-[10px] text-gray-400">{t.desc}</p>
                     </div>
                   </button>
@@ -1162,7 +1162,7 @@ export default function BioLinksEditor({
         </div>
       ) : (
         <button onClick={() => setShowAddPicker(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 rounded-xl text-sm font-medium text-gray-500 hover:text-pink-600 transition">
+          className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 dark:border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 rounded-xl text-sm font-medium text-gray-500 hover:text-pink-600 transition">
           <Plus className="w-4 h-4" /> Add Block
         </button>
       )}

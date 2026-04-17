@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Profile Settings — creator name, email, phone, avatar + email/phone verification.
 // DB tables: profiles (read/write), auth (email OTP via supabase)
 
@@ -12,7 +12,7 @@ import {
   MapPin, Briefcase, Hash
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/60 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)]/60 border border-gray-200 dark:border-[var(--border)]/60 rounded-xl text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400 dark:placeholder-gray-600 transition';
 
 type Profile = {
   full_name: string | null;
@@ -104,26 +104,26 @@ function OtpModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl w-full max-w-sm p-6">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl">
-              {type === 'email' ? <Mail size={15} className="text-indigo-600 dark:text-indigo-400" /> : <Smartphone size={15} className="text-indigo-600 dark:text-indigo-400" />}
+            <div className="p-2 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl">
+              {type === 'email' ? <Mail size={15} className="text-gray-700 dark:text-[var(--text-secondary)]" /> : <Smartphone size={15} className="text-gray-700 dark:text-[var(--text-secondary)]" />}
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">Verify {type === 'email' ? 'Email' : 'Mobile'}</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Verify {type === 'email' ? 'Email' : 'Mobile'}</p>
               <p className="text-xs text-gray-400 truncate max-w-[180px]">{target}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition">
+          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition">
             <X size={15} />
           </button>
         </div>
 
         {sent ? (
           <div className="space-y-4">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              A 6-digit code was sent to <span className="font-medium text-gray-700 dark:text-gray-300">{target}</span>. Enter it below.
+            <p className="text-xs text-[var(--text-secondary)]">
+              A 6-digit code was sent to <span className="font-medium text-gray-700 dark:text-[var(--text-secondary)]">{target}</span>. Enter it below.
             </p>
             <input
               type="text"
@@ -132,14 +132,14 @@ function OtpModal({
               value={otp}
               onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
               placeholder="000000"
-              className="w-full text-center text-2xl font-mono tracking-[0.5em] px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500/40 outline-none text-gray-900 dark:text-white"
+              className="w-full text-center text-2xl font-mono tracking-[0.5em] px-4 py-3 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)]"
               autoFocus
             />
             {error && <p className="text-xs text-red-500">{error}</p>}
             <button
               onClick={verifyOtp}
               disabled={otp.length < 6 || verifying}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-2.5 rounded-xl transition text-sm"
+              className="w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 font-semibold py-2.5 rounded-xl transition text-sm"
             >
               {verifying ? 'Verifying…' : 'Confirm Code'}
             </button>
@@ -149,7 +149,7 @@ function OtpModal({
           </div>
         ) : (
           <div className="text-center py-4">
-            <Loader2 size={20} className="animate-spin text-indigo-500 mx-auto" />
+            <Loader2 size={20} className="animate-spin text-gray-600 dark:text-[var(--text-secondary)] mx-auto" />
             <p className="text-xs text-gray-400 mt-2">Sending code…</p>
             {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
           </div>
@@ -277,10 +277,10 @@ export default function ProfileSettingsPage() {
     return (
       <div className="max-w-2xl mx-auto space-y-4 pb-16 pt-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 animate-pulse space-y-4">
+          <div key={i} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse space-y-4">
             <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
             {Array.from({ length: 3 }).map((_, j) => (
-              <div key={j} className="h-10 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+              <div key={j} className="h-10 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl" />
             ))}
           </div>
         ))}
@@ -296,15 +296,15 @@ export default function ProfileSettingsPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 pt-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Profile</h1>
+            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
               Your public identity — shown on your store page and creator bio.
             </p>
           </div>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all shrink-0"
+            className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all shrink-0"
           >
             {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
             {saving ? 'Saving…' : 'Save Changes'}
@@ -323,7 +323,7 @@ export default function ProfileSettingsPage() {
         )}
 
         {/* ── Avatar + Identity ── */}
-        <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
           {/* Cover strip */}
           <div className="h-24 bg-linear-to-r from-indigo-500 via-violet-500 to-fuchsia-500 relative">
             <div className="absolute -bottom-8 left-6">
@@ -339,7 +339,7 @@ export default function ProfileSettingsPage() {
           <div className="px-6 pt-12 pb-6 space-y-5">
             {/* Avatar URL */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
                 Profile Photo URL
               </label>
               <div className="relative">
@@ -351,7 +351,7 @@ export default function ProfileSettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Full Name</label>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Full Name</label>
                 <div className="relative">
                   <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input type="text" value={form.full_name} onChange={e => set('full_name', e.target.value)}
@@ -359,7 +359,7 @@ export default function ProfileSettingsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Category</label>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Category</label>
                 <div className="relative">
                   <Briefcase size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
                   <select value={form.category} onChange={e => set('category', e.target.value)}
@@ -372,7 +372,7 @@ export default function ProfileSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Tagline</label>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tagline</label>
               <div className="relative">
                 <Hash size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input type="text" maxLength={100} value={form.tagline} onChange={e => set('tagline', e.target.value)}
@@ -382,7 +382,7 @@ export default function ProfileSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Location</label>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Location</label>
               <div className="relative">
                 <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input type="text" value={form.location} onChange={e => set('location', e.target.value)}
@@ -393,16 +393,16 @@ export default function ProfileSettingsPage() {
         </div>
 
         {/* ── Contact & Verification ── */}
-        <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">Contact & Verification</p>
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-[var(--border)]">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Contact & Verification</p>
             <p className="text-xs text-gray-400 mt-0.5">Verified contact details are required for payouts and notifications.</p>
           </div>
           <div className="px-6 py-6 space-y-5">
             {/* Email */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email Address</label>
+                <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Email Address</label>
                 {profile?.email_verified
                   ? <VerifiedBadge />
                   : form.email
@@ -425,7 +425,7 @@ export default function ProfileSettingsPage() {
             {/* Mobile */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mobile Number</label>
+                <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Mobile Number</label>
                 {profile?.mobile_verified
                   ? <VerifiedBadge />
                   : form.mobile
@@ -448,9 +448,9 @@ export default function ProfileSettingsPage() {
         </div>
 
         {/* ── Social & Web ── */}
-        <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">Links & Social</p>
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-[var(--border)]">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Links & Social</p>
             <p className="text-xs text-gray-400 mt-0.5">Shown on your public store / bio page.</p>
           </div>
           <div className="px-6 py-6 space-y-4">
@@ -463,7 +463,7 @@ export default function ProfileSettingsPage() {
               { key: 'telegram',  label: 'Telegram',   Icon: Send,      ph: 'https://t.me/username',           prefix: '' },
             ] as const).map(({ key, label, Icon, ph }) => (
               <div key={key}>
-                <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">{label}</label>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">{label}</label>
                 <div className="relative">
                   <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input type="url" value={(form as any)[key]} onChange={e => set(key, e.target.value)}
@@ -477,7 +477,7 @@ export default function ProfileSettingsPage() {
         {/* Save CTA at bottom */}
         <div className="flex justify-end">
           <button onClick={handleSave} disabled={saving}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all">
+            className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 px-6 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all">
             {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
             {saving ? 'Saving…' : 'Save Changes'}
           </button>

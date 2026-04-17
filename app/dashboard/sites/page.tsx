@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Dashboard: My Sites — list view with left-side type filter tabs.
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -8,8 +8,7 @@ import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Plus, ExternalLink, MoreVertical, Store, Layers,
   CreditCard, Link2, Globe, Copy, Check,
-  Trash2, EyeOff, Eye, Clock, Pencil, AlertTriangle, X,
-  ArrowRight, LayoutPanelTop
+  Trash2, EyeOff, Eye, Clock, Pencil, AlertTriangle, X
 } from 'lucide-react';
 
 // ─── Type filter config ─────────────────────────────────────
@@ -22,7 +21,7 @@ const FILTER_TABS = [
 ] as const;
 
 const SITE_TYPE_META: Record<string, { label: string; color: string; bg: string; text: string }> = {
-  main:      { label: 'Main Store',    bg: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-400', color: 'indigo' },
+  main:      { label: 'Main Store',    bg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', text: 'text-gray-700 dark:text-[var(--text-secondary)]', color: 'indigo' },
   single:    { label: 'Product Site',  bg: 'bg-purple-50 dark:bg-purple-500/10', text: 'text-purple-600 dark:text-purple-400', color: 'purple' },
   payment:   { label: 'Payment Link',  bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', color: 'emerald' },
   linkinbio: { label: 'Link in Bio',   bg: 'bg-pink-50 dark:bg-pink-500/10', text: 'text-pink-600 dark:text-pink-400', color: 'pink' },
@@ -55,7 +54,7 @@ function DeleteModal({ siteName, onConfirm, onCancel }: {
             <AlertTriangle className="w-7 h-7 text-red-500 dark:text-red-400" />
           </div>
           <div className="flex-1 pt-1">
-            <h3 className="text-xl font-extrabold text-gray-900 dark:text-white">Delete site</h3>
+            <h3 className="text-xl font-extrabold text-[var(--text-primary)]">Delete site</h3>
             <p className="text-sm text-gray-500 mt-1 leading-relaxed">
               This action is permanent and cannot be undone. All layout and setting data associated with this site will be lost.
             </p>
@@ -67,8 +66,8 @@ function DeleteModal({ siteName, onConfirm, onCancel }: {
 
         {/* Confirmation input */}
         <div className="mb-8">
-          <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2">
-            Type <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-gray-900 dark:text-white mx-1">{siteName}</span> to confirm
+          <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">
+            Type <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-[var(--text-primary)] mx-1">{siteName}</span> to confirm
           </label>
           <input
             ref={inputRef}
@@ -76,7 +75,7 @@ function DeleteModal({ siteName, onConfirm, onCancel }: {
             value={typed}
             onChange={e => setTyped(e.target.value)}
             placeholder={siteName}
-            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-red-500 transition-colors"
+            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-800 rounded-xl bg-gray-50/50 dark:bg-zinc-900/50 text-sm font-medium text-[var(--text-primary)] placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-red-500 transition-colors"
           />
         </div>
 
@@ -84,7 +83,7 @@ function DeleteModal({ siteName, onConfirm, onCancel }: {
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-3.5 text-sm font-bold text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-xl transition-colors"
+            className="flex-1 py-3.5 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] border-2 border-gray-200 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-xl transition-colors"
           >
             Keep Site
           </button>
@@ -144,153 +143,112 @@ function SiteRow({ site, onRequestDelete, onToggle }: {
   };
 
   return (
-    <div className="group flex flex-col sm:flex-row sm:items-center gap-4 px-5 py-4 sm:px-6 sm:py-5 bg-white dark:bg-zinc-950 border border-gray-200/80 dark:border-zinc-800 rounded-[20px] hover:border-indigo-500/50 dark:hover:border-indigo-400/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgba(99,102,241,0.05)] transition-all duration-300">
-      {/* Top Section on Mobile, Inline on Desktop */}
-      <div className="flex items-center gap-4 w-full sm:w-auto">
-        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-[16px] flex items-center justify-center shrink-0 border border-black/5 dark:border-white/5 shadow-inner ${meta.bg}`}>
-          {sm?.logo_url ? (
-            <img src={sm.logo_url} alt={title} className="w-full h-full object-cover rounded-[16px]" />
-          ) : (
-            <TypeIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${meta.text}`} />
+    <div className="group flex items-center gap-4 px-5 py-4 sm:px-6 sm:py-4 bg-white dark:bg-zinc-950 border border-gray-200/80 dark:border-zinc-800 rounded-[20px] hover:border-gray-300 dark:hover:border-zinc-600 hover:shadow-[0_4px_20px_rgb(0,0,0,0.06)] transition-all duration-200">
+      {/* Icon */}
+      <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 border border-black/5 dark:border-white/5 shadow-inner ${meta.bg}`}>
+        {sm?.logo_url ? (
+          <img src={sm.logo_url} alt={title} className="w-full h-full object-cover rounded-[14px]" />
+        ) : (
+          <TypeIcon className={`w-5 h-5 ${meta.text}`} />
+        )}
+      </div>
+
+      {/* Title + URL */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-sm text-[var(--text-primary)] truncate" title={title}>{truncatedTitle}</h3>
+          {!site.is_active && (
+            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 uppercase tracking-wider shrink-0">Draft</span>
           )}
         </div>
-
-        {/* Title + URL + Copy Link (Mobile inline wrap) */}
-        <div className="flex-1 min-w-0 pr-0 sm:pr-4">
-          <div className="flex items-center gap-3">
-            <h3 className="font-bold text-base text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" title={title}>{truncatedTitle}</h3>
-            {!site.is_active && (
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 uppercase tracking-wider shrink-0 shadow-sm hidden sm:inline-flex">Draft</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <p className="text-[13px] sm:text-sm font-medium text-gray-500 dark:text-gray-400 truncate max-w-[200px] sm:max-w-xs">{displayUrl}</p>
-            <div className="w-1 h-1 rounded-full bg-gray-300 dark:bg-zinc-700 shrink-0" />
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shrink-0"
-              title="Copy link"
-            >
-              {copied ? (
-                <span className="flex items-center gap-1 text-emerald-500">
-                  <Check className="w-3.5 h-3.5" /> Copied
-                </span>
-              ) : (
-                <span className="flex items-center gap-1">
-                  <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Copy
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Mobile View absolute Action Menu (Since mobile layout is flex-col wrapper) */}
-        <div className="sm:hidden -my-2 flex items-center">
-            <button
-              onClick={() => setMenuOpen(o => !o)}
-              className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <MoreVertical className="w-5 h-5" />
-            </button>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <p className="text-xs font-medium text-gray-400 dark:text-gray-500 truncate max-w-[180px]">{displayUrl}</p>
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 text-[11px] font-bold text-gray-300 dark:text-zinc-600 hover:text-indigo-500 transition-colors shrink-0"
+            title="Copy link"
+          >
+            {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+          </button>
         </div>
       </div>
 
-      {/* Badges / Stats Container */}
-      <div className="hidden lg:flex items-center gap-4 shrink-0">
+      {/* Right side: badge + date + actions */}
+      <div className="flex items-center gap-2 shrink-0">
         {/* Type badge */}
-        <span className={`text-xs font-bold px-3 py-1 rounded-lg ${meta.bg} ${meta.text} border border-black/5 dark:border-white/5 backdrop-blur-sm shadow-sm`}>
+        <span className={`hidden lg:inline-flex text-[11px] font-bold px-2.5 py-1 rounded-lg ${meta.bg} ${meta.text} border border-black/5 dark:border-white/5`}>
           {meta.label}
         </span>
 
-        {/* Created date */}
-        <span className="hidden xl:flex items-center justify-center w-32 border-l border-gray-100 dark:border-zinc-800 gap-1.5 text-xs font-semibold text-gray-400 tabular-nums">
-          <Clock className="w-3.5 h-3.5" />
+        {/* Date */}
+        <span className="hidden xl:flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-zinc-500 tabular-nums px-2">
+          <Clock className="w-3 h-3" />
           {createdDate}
         </span>
-      </div>
 
-      {/* Actions (Desktop only since Mobile handles it via the More vertical dot button we inserted above) */}
-      <div className="hidden sm:flex items-center gap-2 shrink-0 pl-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+        {/* Divider */}
+        <div className="hidden sm:block w-px h-6 bg-gray-100 dark:bg-zinc-800 mx-1" />
+
+        {/* Edit */}
         <button
           onClick={handleEdit}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-gray-900 dark:text-white bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-xl transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg transition-colors"
         >
-          <Pencil className="w-4 h-4" />
-          <span className="hidden sm:inline">Edit</span>
+          <Pencil className="w-3.5 h-3.5" />
+          Edit
         </button>
+
+        {/* View */}
         <a
           href={publicPath}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-gray-900 dark:bg-white dark:text-zinc-950 hover:bg-gray-800 dark:hover:bg-gray-100 rounded-xl transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-gray-900 dark:bg-white dark:text-zinc-950 hover:bg-gray-700 dark:hover:bg-gray-100 rounded-lg transition-colors"
         >
-          <ExternalLink className="w-4 h-4" />
-          <span className="hidden sm:inline">View</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+          View
         </a>
 
-        {/* More menu (Desktop version) */}
+        {/* More menu */}
         <div className="relative z-20">
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="p-2 ml-1 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shadow-sm bg-transparent data-[state=open]:bg-gray-100 dark:data-[state=open]:bg-zinc-800"
+            className="p-1.5 text-gray-400 hover:text-gray-900 dark:hover:text-[var(--text-primary)] rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
             data-state={menuOpen ? 'open' : 'closed'}
           >
-            <MoreVertical className="w-5 h-5" />
+            <MoreVertical className="w-4 h-4" />
           </button>
           
           {menuOpen && (
-            <div
-              className="absolute right-0 sm:right-0 top-full mt-2 w-56 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
-              onMouseLeave={() => setMenuOpen(false)}
-            >
-              <button
-                onClick={() => { handleEdit(); setMenuOpen(false); }}
-                className="sm:hidden w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800/80 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                  <Pencil className="w-4 h-4 text-gray-500" />
-                </div>
-                Edit Site
-              </button>
-              <a
-                href={publicPath} target="_blank" rel="noopener noreferrer"
-                onClick={() => setMenuOpen(false)}
-                className="sm:hidden w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800/80 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                  <ExternalLink className="w-4 h-4 text-gray-500" />
-                </div>
-                View Public Site
-              </a>
-              <button
-                onClick={() => { handleCopy(); setMenuOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800/80 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                  <Copy className="w-4 h-4 text-gray-500" />
-                </div>
-                Copy Sharable Link
-              </button>
-              <button
-                onClick={() => { onToggle(site.id, !site.is_active); setMenuOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800/80 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                  {site.is_active ? <EyeOff className="w-4 h-4 text-gray-500" /> : <Eye className="w-4 h-4 text-gray-500" />}
-                </div>
-                {site.is_active ? 'Unpublish Site' : 'Publish Site'}
-              </button>
-              <div className="my-2 mx-4 border-t border-gray-100 dark:border-zinc-800/80" />
-              <button
-                onClick={() => { onRequestDelete(site.id, title); setMenuOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center shrink-0 border border-red-100 dark:border-red-500/20">
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </div>
-                Permanently Delete
-              </button>
-            </div>
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                <button
+                  onClick={() => { handleCopy(); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <Copy className="w-4 h-4 text-gray-400 shrink-0" />
+                  Copy link
+                </button>
+                <button
+                  onClick={() => { onToggle(site.id, !site.is_active); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  {site.is_active
+                    ? <EyeOff className="w-4 h-4 text-gray-400 shrink-0" />
+                    : <Eye className="w-4 h-4 text-gray-400 shrink-0" />}
+                  {site.is_active ? 'Unpublish' : 'Publish'}
+                </button>
+                <div className="mx-3 border-t border-gray-100 dark:border-zinc-800" />
+                <button
+                  onClick={() => { onRequestDelete(site.id, title); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4 shrink-0" />
+                  Delete
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -303,15 +261,15 @@ function EmptyState({ label, onClick }: { label: string; onClick: () => void }) 
   return (
     <div className="flex flex-col items-center justify-center py-28 text-center bg-white/50 dark:bg-zinc-950/50 border border-dashed border-gray-300 dark:border-zinc-800 rounded-[32px] shadow-sm">
       <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-[24px] flex items-center justify-center mb-6 border border-white dark:border-white/5 shadow-inner">
-        <Globe className="w-10 h-10 text-indigo-500 dark:text-indigo-400" />
+        <Globe className="w-10 h-10 text-gray-600 dark:text-[var(--text-secondary)] dark:text-indigo-400" />
       </div>
-      <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">{label}</h2>
+      <h2 className="text-2xl font-extrabold text-[var(--text-primary)] mb-2">{label}</h2>
       <p className="text-base font-medium text-gray-500 max-w-sm mb-8">
         Your digital real estate starts here. Build a beautiful site, store, or landing page in minutes.
       </p>
       <button
         onClick={onClick}
-        className="group relative inline-flex items-center justify-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-8 py-4 rounded-2xl font-bold text-base shadow-lg transition-all active:scale-[0.98] overflow-hidden"
+        className="group relative inline-flex items-center justify-center gap-2 bg-(--text-primary) hover:bg-(--text-primary)/90 text-(--bg-primary) px-8 py-4 rounded-2xl font-bold text-base shadow-lg transition-all active:scale-[0.98] overflow-hidden"
       >
         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
         <Plus className="w-5 h-5 relative z-10" />
@@ -348,68 +306,112 @@ export default function SitesPage() {
   return (
     <>
       <div className="pt-6 sm:pt-8 pb-16 min-h-screen max-w-[1600px] mx-auto">
-        {/* Dynamic Header Box */}
-        <div className="relative mb-8 sm:mb-10 overflow-hidden rounded-3xl border border-gray-200/50 dark:border-zinc-800/50 bg-white dark:bg-zinc-950 p-6 sm:px-8 sm:py-10 shadow-sm transition-all">
-          <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-40 pointer-events-none fade-in">
-            <div className="w-64 h-64 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-3xl opacity-50 mix-blend-multiply dark:mix-blend-screen" />
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">My Sites</h1>
+            <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mt-1">
+              {sites.length > 0
+                ? `Managing ${sites.length} site${sites.length !== 1 ? 's' : ''}`
+                : 'No sites yet — create your first one.'}
+            </p>
           </div>
-          <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-xs font-bold text-gray-700 dark:text-zinc-300 mb-4 shadow-sm backdrop-blur-md">
-                <LayoutPanelTop className="w-3.5 h-3.5" /> Site Management
-              </div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                My Sites
-              </h1>
-              <p className="text-base font-medium text-gray-500 dark:text-gray-400 mt-2 max-w-lg">
-                {sites.length > 0
-                  ? `You are managing ${sites.length} active site${sites.length !== 1 ? 's' : ''} across your digital empire.`
-                  : 'Manage all your stores, landing pages, and biolinks from one unified dashboard.'}
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/dashboard/sites/new')}
-              className="group relative inline-flex items-center justify-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-6 py-3.5 rounded-2xl font-bold text-sm shadow-[0_8px_16px_rgba(0,0,0,0.1)] hover:shadow-[0_12px_24px_rgba(0,0,0,0.15)] transition-all active:scale-[0.98] overflow-hidden shrink-0"
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-              <Plus className="w-5 h-5 relative z-10" />
-              <span className="relative z-10">Create New Site</span>
-            </button>
-          </div>
+          <button
+            onClick={() => router.push('/dashboard/sites/new')}
+            className="inline-flex items-center gap-2 bg-(--text-primary) hover:bg-(--text-primary)/90 text-(--bg-primary) px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            Create New Site
+          </button>
         </div>
 
         {/* Layout: left tabs + right list */}
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Left filter tabs */}
-          <div className="hidden md:flex flex-col w-[240px] shrink-0">
-            <div className="sticky top-6 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border border-gray-200/80 dark:border-zinc-800 rounded-3xl p-3 space-y-1 shadow-sm">
-              {FILTER_TABS.map(tab => {
-                const count = typeCounts[tab.key] || 0;
-                const isActive = activeFilter === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveFilter(tab.key)}
-                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 ${
-                      isActive
-                        ? 'bg-gray-900 text-white dark:bg-white dark:text-zinc-900 shadow-md translate-x-1'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-900/50 hover:text-gray-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <tab.icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white/80 dark:text-zinc-900/80' : 'text-gray-400 group-hover:text-gray-500'}`} />
-                    <span className="flex-1 text-left truncate">{tab.label}</span>
-                    {count > 0 && (
-                      <span className={`text-[11px] font-extrabold min-w-[24px] text-center px-2 py-0.5 rounded-lg border ${
-                        isActive
-                          ? 'bg-white/20 border-transparent dark:bg-black/10 dark:text-zinc-900'
-                          : 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-gray-400 shadow-sm'
-                      }`}>
-                        {count}
+          {/* Sub-sidebar */}
+          <div className="hidden md:flex flex-col w-[220px] shrink-0">
+            <div className="sticky top-20 flex flex-col gap-3">
+
+              {/* Summary card */}
+              <div className="bg-white dark:bg-zinc-950 border border-gray-200/80 dark:border-zinc-800 rounded-2xl p-4 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500 mb-3">Overview</p>
+                <div className="flex items-end gap-2">
+                  <span className="text-4xl font-black text-[var(--text-primary)] leading-none">{sites.length}</span>
+                  <span className="text-sm font-semibold text-gray-400 dark:text-zinc-500 mb-0.5">total sites</span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {FILTER_TABS.filter(t => t.key !== 'all').map(tab => {
+                    const count = typeCounts[tab.key] || 0;
+                    if (!count) return null;
+                    const colorMap: Record<string, string> = {
+                      main:      'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-[var(--text-secondary)]',
+                      single:    'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400',
+                      payment:   'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+                      linkinbio: 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400',
+                    };
+                    return (
+                      <span key={tab.key} className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${colorMap[tab.key]}`}>
+                        {count} {tab.label}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Filter nav */}
+              <div className="bg-white dark:bg-zinc-950 border border-gray-200/80 dark:border-zinc-800 rounded-2xl p-2 shadow-sm flex flex-col gap-0.5">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-zinc-500 px-3 pt-1.5 pb-2">Filter by type</p>
+                {FILTER_TABS.map(tab => {
+                  const count = typeCounts[tab.key] || 0;
+                  const isActive = activeFilter === tab.key;
+                  const accentMap: Record<string, string> = {
+                    all:       'bg-gray-900 text-white dark:bg-white dark:text-zinc-900',
+                    main:      'bg-gray-900 text-white dark:bg-white dark:text-zinc-900',
+                    single:    'bg-purple-600 text-white',
+                    payment:   'bg-emerald-600 text-white',
+                    linkinbio: 'bg-pink-600 text-white',
+                  };
+                  const iconColorMap: Record<string, string> = {
+                    all:       isActive ? '' : 'text-gray-400',
+                    main:      isActive ? '' : 'text-gray-400',
+                    single:    isActive ? '' : 'text-purple-400',
+                    payment:   isActive ? '' : 'text-emerald-400',
+                    linkinbio: isActive ? '' : 'text-pink-400',
+                  };
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveFilter(tab.key)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
+                        isActive
+                          ? `${accentMap[tab.key]} shadow-sm`
+                          : 'text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-[var(--text-primary)]'
+                      }`}
+                    >
+                      <tab.icon className={`w-4 h-4 shrink-0 ${isActive ? 'opacity-80' : iconColorMap[tab.key]}`} />
+                      <span className="flex-1 text-left">{tab.label}</span>
+                      {count > 0 && (
+                        <span className={`text-[10px] font-extrabold min-w-5 text-center px-1.5 py-0.5 rounded-md ${
+                          isActive
+                            ? 'bg-white/20 dark:bg-black/15'
+                            : 'bg-gray-100 dark:bg-zinc-800 text-[var(--text-secondary)]'
+                        }`}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Quick create */}
+              <button
+                onClick={() => router.push('/dashboard/sites/new')}
+                className="group flex items-center justify-center gap-2 w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-zinc-800 text-sm font-bold text-gray-400 dark:text-zinc-500 hover:border-gray-900 dark:hover:border-zinc-400 hover:text-gray-900 dark:hover:text-[var(--text-primary)] hover:bg-gray-50 dark:hover:bg-zinc-900/50 transition-all duration-200"
+              >
+                <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" />
+                New Site
+              </button>
+
             </div>
           </div>
 
@@ -425,7 +427,7 @@ export default function SitesPage() {
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all shrink-0 border ${
                     isActive
                       ? 'bg-gray-900 text-white dark:bg-white dark:text-zinc-900 border-transparent shadow-md'
-                      : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-400'
+                      : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-[var(--text-secondary)]'
                   }`}
                 >
                   <tab.icon className="w-4 h-4 opacity-70" />

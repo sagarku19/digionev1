@@ -1,21 +1,21 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { ShoppingCart, AlignLeft, AlignCenter, AlignRight, Shield, CreditCard, Plus, X } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
+  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
 }
 
 function SectionCard({ icon: Icon, title, desc, color = 'orange', children }: { icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode }) {
   const colors: Record<string, string> = { orange: 'text-orange-500', emerald: 'text-emerald-500', blue: 'text-blue-500' };
   return (
-    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Icon className={`w-4 h-4 ${colors[color] ?? 'text-orange-500'}`} /> {title}
         </h3>
         {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
@@ -58,7 +58,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={s} onClick={() => onChange({ ...data, checkoutStyle: s })}
                   className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-300' : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
                   }`}>
                   <span className="text-xs font-semibold">{labels[s]}</span>
                   <span className="text-[10px] opacity-60">{descs[s]}</span>
@@ -80,7 +80,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={a.id} onClick={() => onChange({ ...data, checkoutAlignment: a.id })}
                   className={`p-2.5 rounded-xl border-2 transition-all ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-300' : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-300' : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
                   }`}>
                   <a.icon className="w-4 h-4" />
                 </button>
@@ -111,7 +111,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={s} onClick={() => onChange({ ...data, ctaButtonStyle: s })}
                   className={`py-2 rounded-xl text-[11px] font-semibold border-2 transition-all capitalize ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600' : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600' : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
                   }`}>
                   {s}
                 </button>
@@ -129,7 +129,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={s} onClick={() => onChange({ ...data, ctaButtonSize: s })}
                   className={`flex-1 py-2 rounded-xl text-[11px] font-semibold border-2 transition-all ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600' : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600' : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
                   }`}>
                   {labels[s]}
                 </button>
@@ -145,7 +145,7 @@ export default function SinglePageCheckoutEditor({
           <input type="checkbox" checked={data.showTrustBadges !== false}
             onChange={e => onChange({ ...data, showTrustBadges: e.target.checked })}
             className="w-4 h-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
-          <span className="text-xs text-gray-600 dark:text-gray-400">Show trust badges below checkout</span>
+          <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show trust badges below checkout</span>
         </label>
 
         {data.showTrustBadges !== false && (
@@ -172,7 +172,7 @@ export default function SinglePageCheckoutEditor({
                 {DEFAULT_TRUST_BADGES.filter(b => !trustBadges.includes(b)).map(badge => (
                   <button key={badge}
                     onClick={() => onChange({ ...data, trustBadges: [...trustBadges, badge] })}
-                    className="flex items-center gap-1 px-2.5 py-1.5 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-[10px] font-medium text-gray-500 hover:text-emerald-500 hover:border-emerald-300 transition-all">
+                    className="flex items-center gap-1 px-2.5 py-1.5 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-lg text-[10px] font-medium text-gray-500 hover:text-emerald-500 hover:border-emerald-300 transition-all">
                     <Plus className="w-2.5 h-2.5" />
                     {badge}
                   </button>
@@ -181,7 +181,7 @@ export default function SinglePageCheckoutEditor({
             </div>
 
             <button onClick={() => onChange({ ...data, trustBadges: [...trustBadges, ''] })}
-              className="flex items-center justify-center w-full gap-2 py-2.5 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-[13px] font-semibold text-gray-500 hover:text-emerald-500 hover:border-emerald-300 transition-all">
+              className="flex items-center justify-center w-full gap-2 py-2.5 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-xl text-[13px] font-semibold text-gray-500 hover:text-emerald-500 hover:border-emerald-300 transition-all">
               <Plus className="w-4 h-4" /> Add Custom Badge
             </button>
           </>
@@ -194,7 +194,7 @@ export default function SinglePageCheckoutEditor({
           <input type="checkbox" checked={data.showPaymentIcons ?? true}
             onChange={e => onChange({ ...data, showPaymentIcons: e.target.checked })}
             className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500" />
-          <span className="text-xs text-gray-600 dark:text-gray-400">Show payment method icons (UPI, Cards, Wallet)</span>
+          <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show payment method icons (UPI, Cards, Wallet)</span>
         </label>
         <p className="text-[11px] text-gray-400">Icons for UPI, Visa, Mastercard, and wallet will appear near checkout when enabled.</p>
       </SectionCard>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -34,15 +34,15 @@ import { useTheme } from '@/contexts/DashboardThemeContext';
 type Tab = 'logo' | 'product' | 'content' | 'template' | 'appearance' | 'social' | 'checkout' | 'settings' | 'advanced';
 
 const TABS: { id: Tab; label: string; icon: any; activeBg: string; activeColor: string; activeBorder: string }[] = [
-  { id: 'logo', label: 'Logo', icon: Image, activeBg: 'bg-indigo-50 dark:bg-indigo-500/10', activeColor: 'text-indigo-600 dark:text-indigo-300', activeBorder: 'border border-indigo-200 dark:border-indigo-500/30' },
+  { id: 'logo', label: 'Logo', icon: Image, activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]', activeBorder: 'border border-gray-300 dark:border-gray-600' },
   { id: 'product', label: 'Product', icon: Package, activeBg: 'bg-blue-50 dark:bg-blue-500/10', activeColor: 'text-blue-600 dark:text-blue-300', activeBorder: 'border border-blue-200 dark:border-blue-500/30' },
   { id: 'content', label: 'Content', icon: FileText, activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeColor: 'text-emerald-600 dark:text-emerald-300', activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
-  { id: 'template', label: 'Template', icon: Sparkles, activeBg: 'bg-indigo-50 dark:bg-indigo-500/10', activeColor: 'text-indigo-600 dark:text-indigo-300', activeBorder: 'border border-indigo-200 dark:border-indigo-500/30' },
+  { id: 'template', label: 'Template', icon: Sparkles, activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]', activeBorder: 'border border-gray-300 dark:border-gray-600' },
   { id: 'appearance', label: 'Appearance', icon: Palette, activeBg: 'bg-rose-50 dark:bg-rose-500/10', activeColor: 'text-rose-600 dark:text-rose-300', activeBorder: 'border border-rose-200 dark:border-rose-500/30' },
-  { id: 'social', label: 'Social', icon: Share2, activeBg: 'bg-violet-50 dark:bg-violet-500/10', activeColor: 'text-violet-600 dark:text-violet-300', activeBorder: 'border border-violet-200 dark:border-violet-500/30' },
+  { id: 'social', label: 'Social', icon: Share2, activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]', activeBorder: 'border border-gray-300 dark:border-gray-600' },
   { id: 'checkout', label: 'Checkout', icon: ShoppingCart, activeBg: 'bg-orange-50 dark:bg-orange-500/10', activeColor: 'text-orange-600 dark:text-orange-300', activeBorder: 'border border-orange-200 dark:border-orange-500/30' },
-  { id: 'settings', label: 'Settings', icon: Settings, activeBg: 'bg-gray-100 dark:bg-gray-800', activeColor: 'text-gray-900 dark:text-white', activeBorder: 'border border-gray-300 dark:border-gray-600' },
-  { id: 'advanced', label: 'Advanced', icon: Terminal, activeBg: 'bg-purple-50 dark:bg-purple-500/10', activeColor: 'text-purple-600 dark:text-purple-300', activeBorder: 'border border-purple-200 dark:border-purple-500/30' },
+  { id: 'settings', label: 'Settings', icon: Settings, activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeColor: 'text-[var(--text-primary)]', activeBorder: 'border border-gray-300 dark:border-gray-600' },
+  { id: 'advanced', label: 'Advanced', icon: Terminal, activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]', activeBorder: 'border border-gray-300 dark:border-gray-600' },
 ];
 
 export default function EditSinglePagePage() {
@@ -521,22 +521,22 @@ export default function EditSinglePagePage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[#060610]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[var(--bg-primary)]">
       {/* ═══ BODY — full height, panels own their headers ═══ */}
       <div className="flex-1 flex min-h-0">
 
 
 
         {/* ═══ LEFT PANEL ═══ */}
-        <div className="w-1/2 shrink-0 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-[#0A0A1A] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
+        <div className="w-1/2 shrink-0 border-r border-[var(--border)] flex flex-col bg-[var(--bg-primary)] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
           {/* Header */}
-          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 bg-white dark:bg-[#0A0A1A]">
+          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center justify-between px-4 bg-[var(--bg-primary)]">
             <div className="flex items-center gap-3">
-              <Link href="/dashboard/sites" className="p-2 -ml-2 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+              <Link href="/dashboard/sites" className="p-2 -ml-2 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <div>
-                <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[200px]">
+                <h1 className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[200px]">
                   {site?.name || slug || 'Untitled Page'}
                 </h1>
                 {!loading && <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">All changes autosaved locally</p>}
@@ -548,20 +548,20 @@ export default function EditSinglePagePage() {
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 title="Toggle Theme"
-                className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 shadow-sm"
+                className="p-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/50 hover:bg-white dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shadow-sm"
               >
                 {theme === 'dark' ? <Sun className="w-4 h-4 text-gray-500 hover:text-white transition-colors" /> : <Moon className="w-4 h-4 text-gray-500 hover:text-gray-900 transition-colors" />}
               </button>
 
               {/* Undo/Redo */}
-              <div className="flex items-center gap-1 border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900/50 p-1">
+              <div className="flex items-center gap-1 border border-[var(--border)] rounded-xl bg-[var(--bg-secondary)]/50 p-1">
                 <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)"
-                  className={`p-1.5 rounded-lg transition-all ${canUndo ? 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-gray-300 dark:text-gray-700 opacity-50'}`}>
+                  className={`p-1.5 rounded-lg transition-all ${canUndo ? 'text-gray-700 dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-gray-300 dark:text-gray-700 opacity-50'}`}>
                   <ArrowLeft className="w-4 h-4" />
                 </button>
-                <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-800" />
+                <div className="w-[1px] h-4 bg-gray-200 dark:bg-[var(--bg-secondary)]" />
                 <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)"
-                  className={`p-1.5 rounded-lg transition-all ${canRedo ? 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-gray-300 dark:text-gray-700 opacity-50'}`}>
+                  className={`p-1.5 rounded-lg transition-all ${canRedo ? 'text-gray-700 dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-gray-300 dark:text-gray-700 opacity-50'}`}>
                   <ArrowLeft className="w-4 h-4 rotate-180" />
                 </button>
               </div>
@@ -591,11 +591,11 @@ export default function EditSinglePagePage() {
           <div className="flex-1 flex min-h-0 overflow-hidden">
 
             {/* Vertical Tab Sidebar */}
-            <div className={`shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-[#07071A] transition-all duration-200 ${tabSidebarOpen ? 'w-44' : 'w-14'}`}>
+            <div className={`shrink-0 flex flex-col border-r border-[var(--border)] bg-gray-50/80 dark:bg-[var(--bg-secondary)] transition-all duration-200 ${tabSidebarOpen ? 'w-44' : 'w-14'}`}>
               {/* Collapse toggle */}
               <button
                 onClick={() => setTabSidebarOpen(!tabSidebarOpen)}
-                className="h-10 flex items-center justify-end pr-3 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors shrink-0"
+                className="h-10 flex items-center justify-end pr-3 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] transition-colors shrink-0"
                 title={tabSidebarOpen ? 'Collapse tabs' : 'Expand tabs'}
               >
                 <ArrowLeft className={`w-3.5 h-3.5 transition-transform duration-200 ${tabSidebarOpen ? '' : 'rotate-180'}`} />
@@ -612,7 +612,7 @@ export default function EditSinglePagePage() {
                       title={tab.label}
                       className={`flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${active
                         ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm`
-                        : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-800/50'
+                        : 'text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50'
                         } ${tabSidebarOpen ? 'justify-start' : 'justify-center'}`}
                     >
                       <tab.icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.5 : 2} />
@@ -628,18 +628,18 @@ export default function EditSinglePagePage() {
               {loading ? (
                 <div className="w-full space-y-8 opacity-70">
                   <div className="space-y-3">
-                    <div className="h-4 w-28 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                    <div className="h-11 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                    <div className="h-4 w-28 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
+                    <div className="h-11 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
                   </div>
                   <div className="space-y-3">
-                    <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                    <div className="h-28 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                    <div className="h-4 w-32 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
+                    <div className="h-28 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
                   </div>
                   <div className="space-y-3">
-                    <div className="h-4 w-40 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                    <div className="h-4 w-40 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
                     <div className="flex gap-4">
-                      <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
-                      <div className="h-24 flex-1 rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                      <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
+                      <div className="h-24 flex-1 rounded-xl bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
                     </div>
                   </div>
                 </div>
@@ -702,21 +702,21 @@ export default function EditSinglePagePage() {
                     <div className="space-y-5">
 
                       {/* URL Slug */}
-                      <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                      <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                             <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
                           </h3>
                           <p className="text-[13px] text-gray-500 mt-1">Your landing page address</p>
                         </div>
                         <div>
-                          <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all duration-300">
+                          <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all duration-300">
                             <span className="text-[13px] font-medium text-gray-400 shrink-0 select-none">digione.ai/site/</span>
                             <input
                               type="text"
                               value={slug}
                               onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                              className="flex-1 bg-transparent text-[13px] font-semibold outline-none text-gray-900 dark:text-white placeholder-gray-400 min-w-0"
+                              className="flex-1 bg-transparent text-[13px] font-semibold outline-none text-[var(--text-primary)] placeholder-gray-400 min-w-0"
                               placeholder="launch-deal"
                             />
                           </div>
@@ -741,16 +741,16 @@ export default function EditSinglePagePage() {
                       <SinglePageSettingsEditor data={siteSettings} onChange={setSiteSettings} />
 
                       {/* SEO & Social Sharing */}
-                      <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                      <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                             <Search className="w-4 h-4 text-pink-500" /> SEO & Social Sharing
                           </h3>
                           <p className="text-[13px] text-gray-500 mt-1">How your page looks on search engines and WhatsApp.</p>
                         </div>
                         <div className="space-y-3">
                           <div>
-                            <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">
                               Page Title
                             </label>
                             <input
@@ -758,12 +758,12 @@ export default function EditSinglePagePage() {
                               value={seo.title}
                               onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
                               maxLength={70}
-                              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300"
+                              className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300"
                               placeholder={content.title || 'Landing Page Title'}
                             />
                           </div>
                           <div>
-                            <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">
                               Meta Description
                             </label>
                             <textarea
@@ -771,19 +771,19 @@ export default function EditSinglePagePage() {
                               onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
                               maxLength={160}
                               rows={2}
-                              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300 resize-none"
+                              className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300 resize-none"
                               placeholder={content.description || 'A short pitch...'}
                             />
                           </div>
                           <div>
-                            <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">
                               Share Preview Image
                             </label>
                             <input
                               type="url"
                               value={seo.image}
                               onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
-                              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300"
+                              className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300"
                               placeholder="https://... (defaults to hero image)"
                             />
                           </div>
@@ -791,10 +791,10 @@ export default function EditSinglePagePage() {
                       </div>
 
                       {/* Activate / Deactivate Link */}
-                      <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 shadow-sm">
+                      <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 shadow-sm">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                               {isPublished ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-gray-400" />}
                               {isPublished ? 'Link is Active' : 'Link is Inactive'}
                             </h3>
@@ -830,16 +830,16 @@ export default function EditSinglePagePage() {
         </div>{/* end LEFT PANEL */}
 
         {/* ═══ RIGHT PANEL — full-height preview ═══ */}
-        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
+        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[var(--bg-secondary)]">
 
           {/* ── Preview Header ── */}
-          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3 relative">
+          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-4 gap-3 relative">
             {/* Open in Browser */}
             <a
               href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
+              className={`flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
               title="Open in browser"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -855,7 +855,7 @@ export default function EditSinglePagePage() {
                 }
               }}
               disabled={!site}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
               title="Copy page link"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -869,7 +869,7 @@ export default function EditSinglePagePage() {
             </div>
             <div className="flex-1" />
             {/* Device toggles */}
-            <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
+            <div className="flex items-center gap-1 bg-white dark:bg-[var(--bg-secondary)] p-1 rounded-lg border border-gray-200 dark:border-[var(--border)] shrink-0">
               {[
                 { id: 'desktop', icon: Monitor, label: 'Desktop' },
                 { id: 'tablet', icon: Tablet, label: 'Tablet' },
@@ -879,7 +879,7 @@ export default function EditSinglePagePage() {
                   key={dev.id}
                   onClick={() => setDevice(dev.id)}
                   className={`p-1.5 rounded-md transition ${device === dev.id
-                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                    ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
                     : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
                   title={dev.label}
@@ -902,13 +902,13 @@ export default function EditSinglePagePage() {
             const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
 
             const BrowserChrome = () => (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-[var(--bg-secondary)] border-b border-gray-200 dark:border-[var(--border)] shrink-0">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400" />
                   <span className="w-3 h-3 rounded-full bg-amber-400" />
                   <span className="w-3 h-3 rounded-full bg-emerald-400" />
                 </div>
-                <div className="flex-1 px-3 py-1 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
+                <div className="flex-1 px-3 py-1 bg-white dark:bg-[var(--bg-secondary)] rounded-md border border-gray-200 dark:border-[var(--border)]">
                   <p className="text-[10px] text-gray-400 font-mono truncate">
                     {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
                   </p>
@@ -924,7 +924,7 @@ export default function EditSinglePagePage() {
             return (
               <div ref={previewWrapperRef} className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-16' : 'pt-6'}`}>
                 <div
-                  className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
+                  className="bg-white dark:bg-[var(--bg-secondary)] rounded-xl shadow-2xl border border-gray-200 dark:border-[var(--border)] overflow-hidden flex flex-col"
                   style={{
                     width: devicePx,
                     maxWidth: '100%',
@@ -935,15 +935,15 @@ export default function EditSinglePagePage() {
                 >
                   <BrowserChrome />
                   {loading ? (
-                    <div className="flex-1 flex flex-col items-center pt-24 px-6 gap-5 bg-white dark:bg-gray-900 border-0">
-                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
-                      <div className="w-48 h-6 rounded-md bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
-                      <div className="w-64 h-3 rounded-md bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0 mt-1" />
+                    <div className="flex-1 flex flex-col items-center pt-24 px-6 gap-5 bg-white dark:bg-[var(--bg-secondary)] border-0">
+                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
+                      <div className="w-48 h-6 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
+                      <div className="w-64 h-3 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0 mt-1" />
 
                       <div className="w-full max-w-[320px] mt-10 space-y-3.5">
-                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] animate-pulse" />
                       </div>
                     </div>
                   ) : previewUrl ? (

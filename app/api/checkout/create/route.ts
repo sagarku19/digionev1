@@ -56,8 +56,8 @@ export async function POST(req: Request) {
         .eq('code', couponCode)
         .eq('is_active', true)
         .single();
-      if (coupon?.discount_percentage) discount = (subtotal * coupon.discount_percentage) / 100;
-      else if (coupon?.discount_amount) discount = coupon.discount_amount;
+      if (coupon?.discount_type === 'percentage') discount = (subtotal * coupon.discount_value) / 100;
+      else if (coupon?.discount_type === 'fixed') discount = Math.min(coupon.discount_value, subtotal);
     }
 
     const total = Math.max(0, subtotal - discount);

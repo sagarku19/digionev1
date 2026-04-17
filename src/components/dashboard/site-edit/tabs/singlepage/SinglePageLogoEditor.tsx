@@ -1,21 +1,21 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Image, AlignLeft, AlignCenter, AlignRight, X, LayoutTemplate, Type, Circle, Square, Minus, Maximize2, SeparatorHorizontal } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-gray-500 focus:ring-4 focus:ring-gray-400/20 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
+  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
 }
 
 function SectionCard({ icon: Icon, title, desc, children }: { icon: React.ElementType; title: string; desc?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <Icon className="w-4 h-4 text-indigo-500" /> {title}
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+          <Icon className="w-4 h-4 text-gray-500" /> {title}
         </h3>
         {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
       </div>
@@ -85,7 +85,7 @@ export default function SinglePageLogoEditor({
         </div>
 
         {data.logoUrl && (
-          <div className="relative group rounded-xl border border-gray-100 dark:border-gray-800 p-4 bg-gray-50 dark:bg-gray-800/30 flex items-center justify-center min-h-[80px]">
+          <div className="relative group rounded-xl border border-[var(--border)] p-4 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 flex items-center justify-center min-h-[80px]">
             <img
               src={data.logoUrl}
               alt="Logo preview"
@@ -106,9 +106,9 @@ export default function SinglePageLogoEditor({
             type="checkbox"
             checked={data.showLogo !== false}
             onChange={e => onChange({ ...data, showLogo: e.target.checked })}
-            className="w-4 h-4 rounded border-gray-300 text-indigo-500 focus:ring-indigo-500"
+            className="w-4 h-4 rounded border-gray-300 text-gray-700 focus:ring-gray-400"
           />
-          <span className="text-xs text-gray-600 dark:text-gray-400">Show logo on page</span>
+          <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show logo on page</span>
         </label>
       </SectionCard>
 
@@ -123,8 +123,8 @@ export default function SinglePageLogoEditor({
                 onClick={() => onChange({ ...data, logoShape: s.id })}
                 className={`flex-1 flex flex-col items-center gap-1.5 py-3.5 rounded-xl border-2 transition-all ${
                   active
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                    ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                    : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
                 }`}
               >
                 <s.icon className="w-5 h-5" />
@@ -145,7 +145,7 @@ export default function SinglePageLogoEditor({
                 const size = s.id === 'free' ? 'h-10 w-auto max-w-[80px]' : 'w-10 h-10';
                 return (
                   <div key={s.id} className={`flex flex-col items-center gap-1 ${logoShape === s.id ? 'opacity-100' : 'opacity-40'}`}>
-                    <img src={data.logoUrl} alt="" className={`${size} ${fit} ${cls} border border-gray-200 dark:border-gray-700`} />
+                    <img src={data.logoUrl} alt="" className={`${size} ${fit} ${cls} border border-gray-200 dark:border-[var(--border)]`} />
                     <span className="text-[9px] text-gray-400">{s.label}</span>
                   </div>
                 );
@@ -180,8 +180,8 @@ export default function SinglePageLogoEditor({
                 onClick={() => onChange({ ...data, logoHeaderGap: g.id })}
                 className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
                   active
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                    ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                    : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
                 }`}
               >
                 <span className="text-[11px] font-semibold">{g.label}</span>
@@ -193,14 +193,14 @@ export default function SinglePageLogoEditor({
 
         {/* Visual preview of gap */}
         <div className="flex items-center justify-center gap-0 pt-1">
-          <div className="w-8 h-8 rounded bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-            <Image className="w-4 h-4 text-indigo-400" />
+          <div className="w-8 h-8 rounded bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center">
+            <Image className="w-4 h-4 text-gray-500" />
           </div>
           <div
-            className="bg-indigo-200/50 dark:bg-indigo-500/10 h-1 rounded-full transition-all"
+            className="bg-gray-200 dark:bg-gray-700 h-1 rounded-full transition-all"
             style={{ width: gap === 'none' ? '0px' : gap === 'sm' ? '16px' : gap === 'lg' ? '48px' : '32px' }}
           />
-          <div className="w-14 h-4 rounded bg-indigo-100 dark:bg-indigo-500/20" />
+          <div className="w-14 h-4 rounded bg-gray-100 dark:bg-[var(--bg-secondary)]" />
         </div>
       </SectionCard>
 
@@ -219,8 +219,8 @@ export default function SinglePageLogoEditor({
                 onClick={() => onChange({ ...data, headerAlignment: a.id })}
                 className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-all ${
                   active
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                    ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                    : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
                 }`}
               >
                 <a.icon className="w-4 h-4" />
@@ -242,11 +242,11 @@ export default function SinglePageLogoEditor({
                 onClick={() => onChange({ ...data, logoPlacement: opt.id })}
                 className={`text-left p-3.5 rounded-2xl border-2 transition-all duration-200 ${
                   active
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-[var(--bg-secondary)]'
+                    : 'border-gray-200 dark:border-[var(--border)] hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
-                <p className={`text-[13px] font-semibold ${active ? 'text-indigo-600 dark:text-indigo-300' : 'text-gray-800 dark:text-gray-200'}`}>
+                <p className={`text-[13px] font-semibold ${active ? 'text-[var(--text-primary)]' : 'text-gray-800 dark:text-[var(--text-primary)]'}`}>
                   {opt.label}
                 </p>
                 <p className="text-[11px] text-gray-500 mt-0.5">{opt.desc}</p>
@@ -258,9 +258,9 @@ export default function SinglePageLogoEditor({
 
       {/* ── Header Divider ── */}
       <SectionCard icon={SeparatorHorizontal} title="Header Divider" desc="Add a horizontal line below the header area.">
-        <label className="flex items-center justify-between cursor-pointer px-4 py-3 bg-gray-50/80 dark:bg-gray-800/30 rounded-[1.25rem] border border-gray-100 dark:border-gray-800">
+        <label className="flex items-center justify-between cursor-pointer px-4 py-3 bg-gray-50/80 dark:bg-[var(--bg-secondary)]/30 rounded-[1.25rem] border border-[var(--border)]">
           <div>
-            <p className="text-[13px] font-semibold text-gray-900 dark:text-white">Show divider line</p>
+            <p className="text-[13px] font-semibold text-[var(--text-primary)]">Show divider line</p>
             <p className="text-[11px] text-gray-500 mt-0.5">A thin horizontal line below the header</p>
           </div>
           <button
@@ -268,7 +268,7 @@ export default function SinglePageLogoEditor({
             aria-checked={data.headerDivider ?? false}
             onClick={() => onChange({ ...data, headerDivider: !(data.headerDivider ?? false) })}
             className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-              data.headerDivider ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-gray-700'
+              data.headerDivider ? 'bg-gray-900 dark:bg-white' : 'bg-gray-300 dark:bg-gray-700'
             }`}
           >
             <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
@@ -303,8 +303,8 @@ export default function SinglePageLogoEditor({
                 onClick={() => onChange({ ...data, headerWidth: w.id })}
                 className={`flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
                   active
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                    ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                    : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
                 }`}
               >
                 <span className="text-[11px] font-semibold">{w.label}</span>
@@ -316,9 +316,9 @@ export default function SinglePageLogoEditor({
 
         {/* Width visual indicator */}
         <div className="pt-1 px-2">
-          <div className="relative h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+          <div className="relative h-3 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full overflow-hidden">
             <div
-              className="absolute left-0 top-0 h-full bg-indigo-400/50 rounded-full transition-all duration-300"
+              className="absolute left-0 top-0 h-full bg-gray-500/50 rounded-full transition-all duration-300"
               style={{ width: headerWidth === 'sm' ? '40%' : headerWidth === 'md' ? '60%' : headerWidth === 'lg' ? '80%' : '100%' }}
             />
           </div>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Edit page: Link in Bio — custom split-screen editor.
 // Mini sidebar + Left panel (header + tabs + editor) + Right panel (preview).
 
@@ -44,7 +44,7 @@ type TabDef = {
 
 const TABS: TabDef[] = [
   { id: 'profile', label: 'Profile', icon: User, activeColor: 'text-blue-600 dark:text-blue-400', activeBg: 'bg-blue-50 dark:bg-blue-500/10', activeBorder: 'ring-1 ring-blue-200 dark:ring-blue-500/20' },
-  { id: 'templates', label: 'Template', icon: Paintbrush, activeColor: 'text-indigo-600 dark:text-indigo-400', activeBg: 'bg-indigo-50 dark:bg-indigo-500/10', activeBorder: 'ring-1 ring-indigo-200 dark:ring-indigo-500/20' },
+  { id: 'templates', label: 'Template', icon: Paintbrush, activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]', activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeBorder: 'ring-1 ring-gray-300 dark:ring-gray-600' },
   { id: 'section', label: 'Section', icon: LinkIcon, activeColor: 'text-emerald-600 dark:text-emerald-400', activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeBorder: 'ring-1 ring-emerald-200 dark:ring-emerald-500/20' },
   { id: 'appearance', label: 'Appearance', icon: Sparkles, activeColor: 'text-rose-600 dark:text-rose-400', activeBg: 'bg-rose-50 dark:bg-rose-500/10', activeBorder: 'ring-1 ring-rose-200 dark:ring-rose-500/20' },
   { id: 'settings', label: 'Settings', icon: Settings, activeColor: 'text-amber-600 dark:text-amber-400', activeBg: 'bg-amber-50 dark:bg-amber-500/10', activeBorder: 'ring-1 ring-amber-200 dark:ring-amber-500/20' },
@@ -921,53 +921,53 @@ export default function EditLinkInBioPage() {
   // The main layout remains visible during loading.
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[#060610]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[var(--bg-primary)]">
 
       {/* ═══ BODY — full height, panels own their headers ═══ */}
       <div className="flex-1 flex min-h-0">
 
         {/* ═══ MINI SIDEBAR ═══ */}
         <div className="w-14 shrink-0 relative">
-          <div className="group/sidebar absolute inset-y-0 left-0 w-14 hover:w-48 bg-white dark:bg-[#0A0A1A] border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-200 overflow-hidden z-30 hover:shadow-xl hover:shadow-black/10">
+          <div className="group/sidebar absolute inset-y-0 left-0 w-14 hover:w-48 bg-[var(--bg-primary)] border-r border-[var(--border)] flex flex-col transition-all duration-200 overflow-hidden z-30 hover:shadow-xl hover:shadow-black/10">
             {/* Back button — h-14 aligns with panel headers */}
-            <div className="h-14 shrink-0 border-b border-gray-200 dark:border-gray-800 flex items-center justify-center group-hover/sidebar:justify-start group-hover/sidebar:px-4 gap-3">
+            <div className="h-14 shrink-0 border-b border-[var(--border)] flex items-center justify-center group-hover/sidebar:justify-start group-hover/sidebar:px-4 gap-3">
               <button
                 onClick={() => router.push('/dashboard/sites')}
-                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition shrink-0"
+                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition shrink-0"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Dashboard</span>
+              <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)] whitespace-nowrap">Dashboard</span>
             </div>
             {/* Top Nav links */}
             <div className="flex flex-col py-3 gap-1 flex-1 overflow-y-auto">
-              <Link href="/dashboard" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+              <Link href="/dashboard" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0">
                 <LayoutDashboard className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Overview</span>
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)] whitespace-nowrap">Overview</span>
               </Link>
 
-              <Link href="/dashboard/products" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+              <Link href="/dashboard/products" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0">
                 <Package className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Products</span>
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)] whitespace-nowrap">Products</span>
               </Link>
-              <Link href="/dashboard/products/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0 mb-1 group/addbtn">
+              <Link href="/dashboard/products/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0 mb-1 group/addbtn">
                 <div className="relative shrink-0 w-4 h-4 flex items-center justify-center">
                   <Package className="w-3.5 h-3.5" />
-                  <div className="absolute -bottom-1.5 -right-1.5 bg-white dark:bg-[#0A0A1A] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
+                  <div className="absolute -bottom-1.5 -right-1.5 bg-[var(--bg-primary)] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
                     <Plus className="w-[10px] h-[10px] stroke-[3]" />
                   </div>
                 </div>
                 <span className="hidden group-hover/sidebar:inline text-xs font-medium whitespace-nowrap">Add New Product</span>
               </Link>
 
-              <Link href="/dashboard/sites" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+              <Link href="/dashboard/sites" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0">
                 <Store className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Sites</span>
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)] whitespace-nowrap">Sites</span>
               </Link>
-              <Link href="/dashboard/sites/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0 mb-1 group/addbtn">
+              <Link href="/dashboard/sites/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0 mb-1 group/addbtn">
                 <div className="relative shrink-0 w-4 h-4 flex items-center justify-center">
                   <Store className="w-3.5 h-3.5" />
-                  <div className="absolute -bottom-1.5 -right-1.5 bg-white dark:bg-[#0A0A1A] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
+                  <div className="absolute -bottom-1.5 -right-1.5 bg-[var(--bg-primary)] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
                     <Plus className="w-[10px] h-[10px] stroke-[3]" />
                   </div>
                 </div>
@@ -976,41 +976,41 @@ export default function EditLinkInBioPage() {
             </div>
 
             {/* Bottom Nav links */}
-            <div className="flex flex-col py-3 gap-1 border-t border-gray-200 dark:border-gray-800">
+            <div className="flex flex-col py-3 gap-1 border-t border-[var(--border)]">
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0"
+                className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0"
               >
                 {theme === 'dark' ? <Sun className="w-4 h-4 shrink-0" /> : <Moon className="w-4 h-4 shrink-0" />}
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)] whitespace-nowrap">
                   Theme: {theme === 'dark' ? 'Dark' : 'Light'}
                 </span>
               </button>
-              <Link href="/dashboard/help" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+              <Link href="/dashboard/help" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0">
                 <HelpCircle className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Help Center</span>
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)] whitespace-nowrap">Help Center</span>
               </Link>
-              <Link href="/dashboard/settings" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 shrink-0">
+              <Link href="/dashboard/settings" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shrink-0">
                 <Settings className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Settings</span>
+                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)] whitespace-nowrap">Settings</span>
               </Link>
             </div>
           </div>
         </div>
 
         {/* ═══ LEFT PANEL ═══ */}
-        <div className="flex flex-col flex-1 min-w-80 max-w-[50%] border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A]">
+        <div className="flex flex-col flex-1 min-w-80 max-w-[50%] border-r border-[var(--border)] bg-[var(--bg-primary)]">
 
           {/* ── Editor Header ── */}
-          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-3 gap-2">
+          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-3 gap-2">
             {/* Undo / Redo */}
             <div className="flex items-center gap-0.5 shrink-0">
               <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)"
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition">
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] disabled:opacity-30 disabled:pointer-events-none transition">
                 <Undo2 className="w-4 h-4" />
               </button>
               <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)"
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition">
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] disabled:opacity-30 disabled:pointer-events-none transition">
                 <Redo2 className="w-4 h-4" />
               </button>
             </div>
@@ -1018,7 +1018,7 @@ export default function EditLinkInBioPage() {
             <div className="flex-1 flex items-center justify-center min-w-0">
               <div className="flex items-center gap-1.5">
                 <Link2 className="w-3.5 h-3.5 text-pink-500 shrink-0" />
-                <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[180px]">
+                <h1 className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[180px]">
                   {displayTitle}
                 </h1>
               </div>
@@ -1041,9 +1041,9 @@ export default function EditLinkInBioPage() {
           </div>
 
           {/* ── Tab Bar ── */}
-          <div className={`shrink-0 border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out origin-top overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 border-b-0' : 'max-h-24 opacity-100 border-b'}`}>
+          <div className={`shrink-0 border-[var(--border)] transition-all duration-300 ease-in-out origin-top overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 border-b-0' : 'max-h-24 opacity-100 border-b'}`}>
             <div className="px-3 py-3">
-              <div className="flex gap-1.5 p-1.5 bg-gray-100/80 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-x-auto hide-scrollbar">
+              <div className="flex gap-1.5 p-1.5 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-2xl border border-gray-200/50 dark:border-[var(--border)]/50 overflow-x-auto hide-scrollbar">
                 {TABS.map(tab => {
                   const active = activeTab === tab.id;
                   return (
@@ -1075,23 +1075,23 @@ export default function EditLinkInBioPage() {
             {loading ? (
               <div className="w-full space-y-8 opacity-70">
                 <div className="space-y-3">
-                  <div className="h-4 w-28 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="h-11 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                  <div className="h-4 w-28 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
+                  <div className="h-11 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
                 </div>
                 <div className="space-y-3">
-                  <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="h-28 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                  <div className="h-4 w-32 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
+                  <div className="h-28 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
                 </div>
                 <div className="space-y-3">
-                  <div className="h-4 w-40 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  <div className="h-4 w-40 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
                   <div className="flex gap-4">
-                    <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
-                    <div className="h-24 flex-1 rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
+                    <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
+                    <div className="h-24 flex-1 rounded-xl bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="h-4 w-48 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-                  <div className="h-12 w-full bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
+                  <div className="h-4 w-48 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
+                  <div className="h-12 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
                 </div>
               </div>
             ) : (
@@ -1137,7 +1137,7 @@ export default function EditLinkInBioPage() {
                                   )}
 
                                   {/* Phone frame */}
-                                  <div className="w-full rounded-[1.5rem] border-[6px] border-gray-100 dark:border-gray-800 group-hover:border-pink-100 dark:group-hover:border-pink-900/40 overflow-hidden transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-pink-500/20 group-hover:-translate-y-1">
+                                  <div className="w-full rounded-[1.5rem] border-[6px] border-[var(--border)] group-hover:border-pink-100 dark:group-hover:border-pink-900/40 overflow-hidden transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-pink-500/20 group-hover:-translate-y-1">
                                     {/* Inner bezel */}
                                     <div className="w-full bg-white dark:bg-black overflow-hidden relative" style={{ borderRadius: '1.1rem' }}>
                                       {/* Notch bar */}
@@ -1216,7 +1216,7 @@ export default function EditLinkInBioPage() {
 
                                   {/* Label */}
                                   <div className="w-full mt-3 px-1">
-                                    <p className="text-xs font-semibold text-gray-900 dark:text-white">{tpl.name}</p>
+                                    <p className="text-xs font-semibold text-[var(--text-primary)]">{tpl.name}</p>
                                     <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">{tpl.description}</p>
                                   </div>
                                 </button>
@@ -1249,21 +1249,21 @@ export default function EditLinkInBioPage() {
                   <div className="space-y-5">
 
                     {/* URL Slug */}
-                    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                    <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                           <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">Your link-in-bio page address</p>
                       </div>
                       <div>
-                        <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all duration-300">
+                        <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all duration-300">
                           <span className="text-[13px] font-medium text-gray-400 shrink-0 select-none">digione.ai/link/</span>
                           <input
                             type="text"
                             value={slug}
                             onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                            className="flex-1 bg-transparent text-[13px] font-semibold outline-none text-gray-900 dark:text-white placeholder-gray-400 min-w-0"
+                            className="flex-1 bg-transparent text-[13px] font-semibold outline-none text-[var(--text-primary)] placeholder-gray-400 min-w-0"
                             placeholder="your-name"
                           />
                         </div>
@@ -1286,9 +1286,9 @@ export default function EditLinkInBioPage() {
                     </div>
 
                     {/* SEO & Social Sharing */}
-                    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                    <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                           <Search className="w-4 h-4 text-pink-500" /> SEO & Social Sharing
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5">How your page looks when shared on WhatsApp, Twitter, etc.</p>
@@ -1296,7 +1296,7 @@ export default function EditLinkInBioPage() {
 
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">
                             Page Title <span className="text-gray-400 font-normal ml-1">(overrides your display name)</span>
                           </label>
                           <input
@@ -1304,14 +1304,14 @@ export default function EditLinkInBioPage() {
                             value={seo.title}
                             onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
                             maxLength={70}
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300"
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300"
                             placeholder={profile.displayName || 'Your Name · Link in Bio'}
                           />
                           <p className="text-[11px] font-medium text-gray-400 mt-1.5">{seo.title.length}/70 characters</p>
                         </div>
 
                         <div>
-                          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">
                             Meta Description <span className="text-gray-400 font-normal ml-1">(overrides your bio)</span>
                           </label>
                           <textarea
@@ -1319,14 +1319,14 @@ export default function EditLinkInBioPage() {
                             onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
                             maxLength={160}
                             rows={2}
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300 resize-none"
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300 resize-none"
                             placeholder={profile.bioText || 'A short description of your page...'}
                           />
                           <p className="text-[11px] font-medium text-gray-400 mt-1.5">{seo.description.length}/160 characters</p>
                         </div>
 
                         <div>
-                          <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                          <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">
                             Share Preview Image <span className="text-gray-400 font-normal ml-1">(OG image)</span>
                           </label>
                           <div className="flex gap-2">
@@ -1334,12 +1334,12 @@ export default function EditLinkInBioPage() {
                               type="url"
                               value={seo.image}
                               onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
-                              className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300"
+                              className="flex-1 px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300"
                               placeholder="https://... (defaults to your avatar)"
                             />
                           </div>
                           {(seo.image || profile.avatarUrl) && (
-                            <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-16 bg-gray-50 dark:bg-gray-900">
+                            <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-[var(--border)] h-16 bg-[var(--bg-secondary)]">
                               <img src={seo.image || profile.avatarUrl} alt="OG preview" className="w-full h-full object-cover" />
                             </div>
                           )}
@@ -1350,18 +1350,18 @@ export default function EditLinkInBioPage() {
                       {(seo.title || profile.displayName) && (
                         <div className="mt-2">
                           <p className="text-[10px] font-medium text-gray-400 mb-2 uppercase tracking-wide">Preview when shared</p>
-                          <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden text-left">
+                          <div className="border border-gray-200 dark:border-[var(--border)] rounded-xl overflow-hidden text-left">
                             {(seo.image || profile.avatarUrl) && (
-                              <div className="h-24 bg-gray-100 dark:bg-gray-800">
+                              <div className="h-24 bg-gray-100 dark:bg-[var(--bg-secondary)]">
                                 <img src={seo.image || profile.avatarUrl} alt="" className="w-full h-full object-cover" />
                               </div>
                             )}
                             <div className="px-3 py-2.5">
                               <p className="text-[10px] text-gray-400 mb-0.5">digione.ai</p>
-                              <p className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">
+                              <p className="text-xs font-semibold text-[var(--text-primary)] line-clamp-1">
                                 {seo.title || profile.displayName || 'Your page title'}
                               </p>
-                              <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                              <p className="text-[10px] text-[var(--text-secondary)] line-clamp-2 mt-0.5">
                                 {seo.description || profile.bioText || 'Your page description will appear here.'}
                               </p>
                             </div>
@@ -1371,10 +1371,10 @@ export default function EditLinkInBioPage() {
                     </div>
 
                     {/* Activate / Deactivate Link */}
-                    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 shadow-sm">
+                    <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 shadow-sm">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                             {isPublished ? (
                               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                             ) : (
@@ -1410,16 +1410,16 @@ export default function EditLinkInBioPage() {
         </div>
 
         {/* ═══ RIGHT PANEL — full-height preview ═══ */}
-        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
+        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[var(--bg-secondary)]">
 
           {/* ── Preview Header ── */}
-          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3 relative">
+          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-4 gap-3 relative">
             {/* Open in Browser */}
             <a
               href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
+              className={`flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
               title="Open in browser"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -1435,7 +1435,7 @@ export default function EditLinkInBioPage() {
                 }
               }}
               disabled={!site}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
               title="Copy page link"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -1449,13 +1449,13 @@ export default function EditLinkInBioPage() {
             </div>
             <div className="flex-1" />
             {/* Device toggles */}
-            <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
+            <div className="flex items-center gap-1 bg-white dark:bg-[var(--bg-secondary)] p-1 rounded-lg border border-gray-200 dark:border-[var(--border)] shrink-0">
               {DEVICES.map(d => (
                 <button
                   key={d.id}
                   onClick={() => setDevice(d.id)}
                   className={`p-1.5 rounded-md transition ${device === d.id
-                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                    ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
                     : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
                   title={d.label}
@@ -1476,13 +1476,13 @@ export default function EditLinkInBioPage() {
             const zoom = isDesktop ? Math.min(1, previewW / DESKTOP_W) : 1;
 
             const BrowserChrome = () => (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-[var(--bg-secondary)] border-b border-gray-200 dark:border-[var(--border)] shrink-0">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400" />
                   <span className="w-3 h-3 rounded-full bg-amber-400" />
                   <span className="w-3 h-3 rounded-full bg-emerald-400" />
                 </div>
-                <div className="flex-1 px-3 py-1 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
+                <div className="flex-1 px-3 py-1 bg-white dark:bg-[var(--bg-secondary)] rounded-md border border-gray-200 dark:border-[var(--border)]">
                   <p className="text-[10px] text-gray-400 font-mono truncate">
                     {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
                   </p>
@@ -1498,7 +1498,7 @@ export default function EditLinkInBioPage() {
             return (
               <div ref={previewWrapperRef} className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-16' : 'pt-6'}`}>
                 <div
-                  className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
+                  className="bg-white dark:bg-[var(--bg-secondary)] rounded-xl shadow-2xl border border-gray-200 dark:border-[var(--border)] overflow-hidden flex flex-col"
                   style={{
                     width: devicePx,
                     maxWidth: '100%',
@@ -1509,15 +1509,15 @@ export default function EditLinkInBioPage() {
                 >
                   <BrowserChrome />
                   {loading ? (
-                    <div className="flex-1 flex flex-col items-center pt-24 px-6 gap-5 bg-white dark:bg-gray-900 border-0">
-                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
-                      <div className="w-48 h-6 rounded-md bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0" />
-                      <div className="w-64 h-3 rounded-md bg-gray-200 dark:bg-gray-800 animate-pulse shrink-0 mt-1" />
+                    <div className="flex-1 flex flex-col items-center pt-24 px-6 gap-5 bg-white dark:bg-[var(--bg-secondary)] border-0">
+                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
+                      <div className="w-48 h-6 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
+                      <div className="w-64 h-3 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0 mt-1" />
 
                       <div className="w-full max-w-[320px] mt-10 space-y-3.5">
-                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] animate-pulse" />
+                        <div className="w-full h-14 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] animate-pulse" />
                       </div>
                     </div>
                   ) : previewUrl ? (

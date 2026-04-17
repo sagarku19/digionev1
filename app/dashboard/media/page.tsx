@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Dashboard: Media Library — real Supabase Storage integration.
 // Bucket: "uploads"  Path: uploads/creators/{profile_id}/{folder}/filename
 // Folder routing: images/ · files/pdf/ · files/zip/ · files/other/ · documents/ · profile/
@@ -43,7 +43,7 @@ const FOLDERS: { id: Folder; label: string; icon: React.ElementType; accept: str
 
 const KIND_COLORS: Record<FileKind, string> = {
   image:    'text-blue-500',
-  video:    'text-violet-500',
+  video:    'text-gray-600',
   audio:    'text-rose-500',
   pdf:      'text-amber-500',
   zip:      'text-emerald-500',
@@ -279,7 +279,7 @@ export default function MediaPage() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Media Library</h1>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Media Library</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {loading ? 'Loading…' : `${files.length} files · ${formatBytes(totalSize)} used`}
           </p>
@@ -287,7 +287,7 @@ export default function MediaPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => profileId && loadFiles(profileId)}
-            className="p-2 rounded-xl border border-gray-200 dark:border-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            className="p-2 rounded-xl border border-[var(--border)] text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition"
             title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -303,21 +303,21 @@ export default function MediaPage() {
         onDrop={onDrop}
         className={`relative border-2 border-dashed rounded-2xl p-6 transition-all ${
           isDragging
-            ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/5'
-            : 'border-gray-200 dark:border-gray-800 hover:border-indigo-400 dark:hover:border-indigo-600 bg-white dark:bg-[#0A0A1A]'
+            ? 'border-gray-900 dark:border-white bg-gray-100/50 dark:bg-gray-1000/5'
+            : 'border-[var(--border)] hover:border-gray-400 dark:hover:border-indigo-600 bg-[var(--bg-primary)]'
         }`}
       >
         <div className="flex flex-col sm:flex-row items-center gap-5">
           {/* Icon */}
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-            <Upload className="w-7 h-7 text-indigo-500" />
+          <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
+            <Upload className="w-7 h-7 text-gray-600 dark:text-[var(--text-secondary)]" />
           </div>
 
           {/* Text */}
           <div className="flex-1 text-center sm:text-left">
-            <p className="font-bold text-gray-900 dark:text-white text-sm">
+            <p className="font-bold text-[var(--text-primary)] text-sm">
               Drop files here or{' '}
-              <button onClick={() => inputRef.current?.click()} className="text-indigo-500 hover:underline">
+              <button onClick={() => inputRef.current?.click()} className="text-gray-600 dark:text-[var(--text-secondary)] hover:underline">
                 browse
               </button>
             </p>
@@ -329,7 +329,7 @@ export default function MediaPage() {
           {/* Upload button */}
           <button
             onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-md shadow-indigo-500/20 shrink-0"
+            className="flex items-center gap-1.5 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 text-xs font-bold px-4 py-2 rounded-xl transition shadow-md shadow-indigo-500/20 shrink-0"
           >
             <Upload className="w-3.5 h-3.5" />
             Upload
@@ -341,20 +341,20 @@ export default function MediaPage() {
 
       {/* ── Upload progress ── */}
       {uploads.length > 0 && (
-        <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 space-y-2.5">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-2.5">
           <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-3">Uploading</p>
           {uploads.map((t, i) => (
             <div key={i}>
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-700 dark:text-gray-300 font-medium truncate max-w-[260px]">{t.name}</span>
+                <span className="text-gray-700 dark:text-[var(--text-secondary)] font-medium truncate max-w-[260px]">{t.name}</span>
                 {t.error
                   ? <span className="text-red-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{t.error}</span>
                   : <span className="text-gray-400">{t.progress}%</span>
                 }
               </div>
-              <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-300 ${t.error ? 'bg-red-500' : t.progress === 100 ? 'bg-emerald-500' : 'bg-indigo-500'}`}
+                  className={`h-full rounded-full transition-all duration-300 ${t.error ? 'bg-red-500' : t.progress === 100 ? 'bg-emerald-500' : 'bg-gray-1000'}`}
                   style={{ width: `${t.progress}%` }}
                 />
               </div>
@@ -375,20 +375,20 @@ export default function MediaPage() {
       <div className="flex gap-5 items-start">
 
         {/* Folder nav */}
-        <aside className="hidden md:flex flex-col w-44 shrink-0 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-2 sticky top-4">
+        <aside className="hidden md:flex flex-col w-44 shrink-0 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-2 sticky top-4">
           <button
             onClick={() => setActiveFolder('all')}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all mb-1 ${
               activeFolder === 'all'
-                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-700 dark:text-[var(--text-secondary)]'
+                : 'text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]'
             }`}
           >
             <FolderOpen className="w-4 h-4 shrink-0" />
             <span className="flex-1">All Files</span>
             <span className="text-[10px] font-bold text-gray-400">{files.length}</span>
           </button>
-          <div className="h-px bg-gray-100 dark:bg-gray-800 my-1" />
+          <div className="h-px bg-gray-100 dark:bg-[var(--bg-secondary)] my-1" />
           {FOLDERS.map(f => {
             const count = files.filter(file => file.folder === f.id).length;
             const active = activeFolder === f.id;
@@ -398,8 +398,8 @@ export default function MediaPage() {
                 onClick={() => setActiveFolder(f.id)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   active
-                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-700 dark:text-[var(--text-secondary)]'
+                    : 'text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]'
                 }`}
               >
                 <f.icon className="w-4 h-4 shrink-0" />
@@ -415,9 +415,9 @@ export default function MediaPage() {
               <span>Storage</span>
               <span>{formatBytes(totalSize)}</span>
             </div>
-            <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-indigo-500 rounded-full"
+                className="h-full bg-gray-1000 rounded-full"
                 style={{ width: `${Math.min((totalSize / (1024 ** 3)) * 100, 100).toFixed(1)}%` }}
               />
             </div>
@@ -437,10 +437,10 @@ export default function MediaPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search files…"
-                className="w-full pl-9 pr-9 py-2.5 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition"
+                className="w-full pl-9 pr-9 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-400 text-[var(--text-primary)] placeholder-gray-400 transition"
               />
               {search && (
-                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)]">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
@@ -454,8 +454,8 @@ export default function MediaPage() {
                   onClick={() => setActiveFolder(activeFolder === f.id ? 'all' : f.id)}
                   className={`shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
                     activeFolder === f.id
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                      ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                      : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)]'
                   }`}
                 >
                   {f.label}
@@ -463,16 +463,16 @@ export default function MediaPage() {
               ))}
             </div>
 
-            <div className="flex items-center bg-gray-100 dark:bg-gray-900 p-1 rounded-xl shrink-0">
+            <div className="flex items-center bg-gray-100 dark:bg-[var(--bg-secondary)] p-1 rounded-xl shrink-0">
               <button
                 onClick={() => setView('grid')}
-                className={`p-1.5 rounded-lg transition ${view === 'grid' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400'}`}
+                className={`p-1.5 rounded-lg transition ${view === 'grid' ? 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : 'text-gray-400'}`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setView('list')}
-                className={`p-1.5 rounded-lg transition ${view === 'list' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400'}`}
+                className={`p-1.5 rounded-lg transition ${view === 'list' ? 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : 'text-gray-400'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -481,11 +481,11 @@ export default function MediaPage() {
 
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-xs text-gray-400">
-            <span className="font-medium text-gray-500 dark:text-gray-400">Media</span>
+            <span className="font-medium text-[var(--text-secondary)]">Media</span>
             {activeFolder !== 'all' && (
               <>
                 <ChevronRight className="w-3 h-3" />
-                <span className="font-semibold text-gray-700 dark:text-gray-200">
+                <span className="font-semibold text-gray-700 dark:text-[var(--text-primary)]">
                   {FOLDERS.find(f => f.id === activeFolder)?.label}
                 </span>
               </>
@@ -497,7 +497,7 @@ export default function MediaPage() {
           {loading && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="aspect-square bg-gray-100 dark:bg-gray-900 rounded-2xl animate-pulse" />
+                <div key={i} className="aspect-square bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-2xl animate-pulse" />
               ))}
             </div>
           )}
@@ -505,10 +505,10 @@ export default function MediaPage() {
           {/* Empty state */}
           {!loading && filtered.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center mb-4">
                 <FolderOpen className="w-8 h-8 text-gray-300 dark:text-gray-700" />
               </div>
-              <p className="font-bold text-gray-700 dark:text-gray-300 mb-1">
+              <p className="font-bold text-gray-700 dark:text-[var(--text-secondary)] mb-1">
                 {search ? `No files matching "${search}"` : 'No files yet'}
               </p>
               <p className="text-sm text-gray-400">
@@ -523,10 +523,10 @@ export default function MediaPage() {
               {filtered.map(file => (
                 <div
                   key={file.id}
-                  className="group relative bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-lg transition-all"
+                  className="group relative bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-gray-400 dark:hover:border-indigo-600 hover:shadow-lg transition-all"
                 >
                   {/* Preview */}
-                  <div className="relative aspect-square bg-gray-50 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
+                  <div className="relative aspect-square bg-[var(--bg-secondary)] flex items-center justify-center overflow-hidden">
                     {file.kind === 'image' ? (
                       <img src={file.url} alt={file.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
@@ -552,7 +552,7 @@ export default function MediaPage() {
 
                   {/* Info */}
                   <div className="px-3 py-2">
-                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate" title={file.name}>{file.name}</p>
+                    <p className="text-xs font-semibold text-gray-800 dark:text-[var(--text-primary)] truncate" title={file.name}>{file.name}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{formatBytes(file.size)}</p>
                   </div>
                 </div>
@@ -562,29 +562,29 @@ export default function MediaPage() {
 
           {/* List view */}
           {!loading && filtered.length > 0 && view === 'list' && (
-            <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden divide-y divide-[var(--border)]">
               {filtered.map(file => (
                 <div key={file.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition">
-                  <div className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center shrink-0 overflow-hidden border border-gray-100 dark:border-gray-800">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center shrink-0 overflow-hidden border border-[var(--border)]">
                     {file.kind === 'image'
                       ? <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
                       : <KindIcon kind={file.kind} className="w-4.5 h-4.5" />
                     }
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{file.name}</p>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-[var(--text-primary)] truncate">{file.name}</p>
                     <p className="text-xs text-gray-400">
                       {formatBytes(file.size)} · {FOLDERS.find(f => f.id === file.folder)?.label} · {new Date(file.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                    <button onClick={() => setPreviewFile(file)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <button onClick={() => setPreviewFile(file)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button onClick={() => copyUrl(file)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <button onClick={() => copyUrl(file)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                       {copiedId === file.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                     </button>
-                    <a href={file.url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                    <a href={file.url} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                       <Download className="w-4 h-4" />
                     </a>
                     <button onClick={() => setDeleteTarget(file)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
@@ -608,11 +608,11 @@ export default function MediaPage() {
             {previewFile.kind === 'image' ? (
               <img src={previewFile.url} alt={previewFile.name} className="w-full max-h-[80vh] object-contain rounded-2xl" />
             ) : (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl p-12 flex flex-col items-center gap-4">
+              <div className="bg-white dark:bg-[var(--bg-secondary)] rounded-2xl p-12 flex flex-col items-center gap-4">
                 <KindIcon kind={previewFile.kind} className="w-16 h-16" />
-                <p className="font-bold text-gray-900 dark:text-white">{previewFile.name}</p>
+                <p className="font-bold text-[var(--text-primary)]">{previewFile.name}</p>
                 <p className="text-sm text-gray-500">{formatBytes(previewFile.size)}</p>
-                <a href={previewFile.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition">
+                <a href={previewFile.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-5 py-2.5 rounded-xl text-sm font-semibold transition">
                   <Download className="w-4 h-4" /> Download
                 </a>
               </div>
@@ -625,16 +625,16 @@ export default function MediaPage() {
       {/* ── Delete confirm ── */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
               <Trash2 className="w-5 h-5 text-red-500" />
             </div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Delete file?</h3>
+            <h3 className="font-bold text-[var(--text-primary)] mb-1">Delete file?</h3>
             <p className="text-sm text-gray-500 mb-5 break-all">
-              <span className="font-medium text-gray-700 dark:text-gray-300">{deleteTarget.name}</span> will be permanently removed from storage.
+              <span className="font-medium text-gray-700 dark:text-[var(--text-secondary)]">{deleteTarget.name}</span> will be permanently removed from storage.
             </p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm font-semibold text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">
                 Cancel
               </button>
               <button onClick={confirmDelete} disabled={deleting} className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">

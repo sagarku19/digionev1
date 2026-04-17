@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Dedicated creation flow: Product Site (Product Landing)
 // 3-step: Slug → Details (name, product link) → Review & Launch
 
@@ -10,14 +10,14 @@ import {
   Search, Sparkles, CheckCircle2, XCircle, Tag
 } from 'lucide-react';
 
-const INPUT = 'w-full px-5 py-3.5 bg-gray-50/50 dark:bg-zinc-900/50 border-2 border-gray-200 dark:border-zinc-800 rounded-2xl text-base font-medium focus:ring-0 focus:border-purple-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-colors';
+const INPUT = 'w-full px-5 py-3.5 bg-gray-50/50 dark:bg-zinc-900/50 border-2 border-gray-200 dark:border-zinc-800 rounded-2xl text-base font-medium focus:ring-0 focus:border-purple-500 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-colors';
 
 function StepBar({ step, total }: { step: number; total: number }) {
   return (
     <div className="flex flex-col gap-2 mb-8">
       <div className="flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest px-1">
         <span>Step {step} of {total}</span>
-        <span className="text-gray-900 dark:text-white">{Math.round((step / total) * 100)}%</span>
+        <span className="text-[var(--text-primary)]">{Math.round((step / total) * 100)}%</span>
       </div>
       <div className="flex items-center gap-1.5 h-1.5">
         {Array.from({ length: total }, (_, i) => (
@@ -91,14 +91,14 @@ export default function CreateSinglePagePage() {
       {/* Background Ambience tied to the container */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden rounded-[40px]">
         <div className="absolute top-[10%] left-[20%] w-[30%] h-[40%] bg-purple-500/20 dark:bg-purple-500/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute top-[20%] right-[20%] w-[20%] h-[30%] bg-indigo-500/20 dark:bg-indigo-500/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute top-[20%] right-[20%] w-[20%] h-[30%] bg-gray-1000/20 dark:bg-gray-1000/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
       </div>
 
       <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
         {/* Back / Type Header */}
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => step > 1 ? setStep(s => s - 1) : router.push('/dashboard/sites/new')}
-            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm">
+            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-[var(--text-secondary)] hover:text-purple-600 dark:hover:text-purple-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm">
             <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             {step > 1 ? 'Go Back' : 'All Types'}
           </button>
@@ -120,13 +120,13 @@ export default function CreateSinglePagePage() {
                 <div className="w-12 h-12 bg-purple-50 dark:bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-purple-100 dark:border-purple-500/20 shadow-inner">
                   <Globe className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Claim your page URL</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Pick a custom slug for your single product landing page.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Claim your page URL</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">Pick a custom slug for your single product landing page.</p>
               </div>
 
               <div className="space-y-5 bg-gray-50/50 dark:bg-zinc-900/30 p-6 rounded-[24px] border border-gray-100 dark:border-zinc-800/80">
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1">
                     Page Slug <span className="text-red-500">*</span>
                   </label>
                   <div className={`flex items-center border-2 rounded-2xl overflow-hidden transition-colors ${
@@ -143,7 +143,7 @@ export default function CreateSinglePagePage() {
                       value={slug}
                       onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                       placeholder="e.g. design-course-launch"
-                      className="flex-1 px-4 py-3.5 text-base font-bold tracking-wide bg-transparent outline-none text-gray-900 dark:text-white font-mono placeholder:font-sans placeholder:font-medium placeholder:text-sm"
+                      className="flex-1 px-4 py-3.5 text-base font-bold tracking-wide bg-transparent outline-none text-[var(--text-primary)] font-mono placeholder:font-sans placeholder:font-medium placeholder:text-sm"
                       autoFocus
                     />
                     <span className="pr-4 shrink-0 flex items-center justify-center">
@@ -179,13 +179,13 @@ export default function CreateSinglePagePage() {
                 <div className="w-12 h-12 bg-purple-50 dark:bg-purple-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-purple-100 dark:border-purple-500/20 shadow-inner">
                   <Layers className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Create your landing page</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">A high-converting promotional engine for a single product.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Create your landing page</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">A high-converting promotional engine for a single product.</p>
               </div>
 
               <div className="space-y-5 bg-gray-50/50 dark:bg-zinc-900/30 p-6 rounded-[24px] border border-gray-100 dark:border-zinc-800/80">
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1">
                     Page Title <span className="text-red-500">*</span>
                   </label>
                   <input type="text" value={title} onChange={e => setTitle(e.target.value)}
@@ -193,7 +193,7 @@ export default function CreateSinglePagePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1 flex justify-between">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1 flex justify-between">
                     Description <span className="text-gray-400 font-medium">Optional</span>
                   </label>
                   <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)}
@@ -202,7 +202,7 @@ export default function CreateSinglePagePage() {
 
                 {/* Product picker */}
                 <div className="pt-2 border-t border-gray-200 dark:border-zinc-800/50">
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-3 ml-1 flex justify-between items-center">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-3 ml-1 flex justify-between items-center">
                     Link to a Product <span className="text-gray-400 font-medium text-xs bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">Optional</span>
                   </label>
                   <div className="relative mb-3 group">
@@ -220,7 +220,7 @@ export default function CreateSinglePagePage() {
                            {productId === p.id && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className={`text-sm font-bold truncate ${productId === p.id ? 'text-purple-900 dark:text-purple-100' : 'text-gray-900 dark:text-white'}`}>{p.name}</span>
+                          <span className={`text-sm font-bold truncate ${productId === p.id ? 'text-purple-900 dark:text-purple-100' : 'text-[var(--text-primary)]'}`}>{p.name}</span>
                         </div>
                         {p.price > 0 && <span className="ml-auto text-xs font-bold text-gray-500 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">{'\u20B9'}{p.price}</span>}
                       </button>
@@ -239,8 +239,8 @@ export default function CreateSinglePagePage() {
                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/30">
                   <Zap className="w-7 h-7 text-white" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Ready to launch?</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Your single product page structure is confirmed.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Ready to launch?</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">Your single product page structure is confirmed.</p>
               </div>
               <div className="rounded-[24px] border-2 border-purple-100 dark:border-purple-500/20 p-6 bg-purple-50/50 dark:bg-purple-500/5 relative overflow-hidden">
                 <div className="absolute top-[-30%] right-[-5%] w-48 h-48 bg-purple-500/10 blur-3xl rounded-full" />
@@ -250,13 +250,13 @@ export default function CreateSinglePagePage() {
                     <Layers className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div className="pt-1">
-                    <h3 className="text-xl font-extrabold text-gray-900 dark:text-white line-clamp-2">{title}</h3>
+                    <h3 className="text-xl font-extrabold text-[var(--text-primary)] line-clamp-2">{title}</h3>
                     <p className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mt-1">Product Landing Page</p>
                   </div>
                 </div>
 
                 <div className="grid gap-3 relative z-10">
-                  <div className="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-xl px-4 py-3 border border-white/50 dark:border-white/5 shadow-sm w-fit">
+                  <div className="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-xl px-4 py-3 border border-white/50 dark:border-white/5 shadow-sm w-fit">
                     <Globe className="w-4 h-4 text-purple-500 shrink-0" />
                     <span className="font-mono truncate tracking-wide">digione.ai/site/<span className="text-purple-600">{slug}</span></span>
                   </div>
@@ -269,7 +269,7 @@ export default function CreateSinglePagePage() {
                   )}
                 </div>
 
-                {description && <p className="mt-5 text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed border-t border-purple-100 dark:border-zinc-800/80 pt-4 relative z-10">{description}</p>}
+                {description && <p className="mt-5 text-sm font-medium text-gray-600 dark:text-[var(--text-secondary)] leading-relaxed border-t border-purple-100 dark:border-zinc-800/80 pt-4 relative z-10">{description}</p>}
                 
               </div>
             </div>
@@ -291,12 +291,12 @@ export default function CreateSinglePagePage() {
 
             {step < 3 ? (
               <button onClick={() => setStep(s => s + 1)} disabled={step === 1 ? !canNext1 : !canNext2}
-                className="group flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-30 disabled:cursor-not-allowed text-white px-8 py-3.5 rounded-2xl font-bold text-base shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98]">
+                className="group flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed text-white px-8 py-3.5 rounded-2xl font-bold text-base shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98]">
                 Proceed to {step === 1 ? 'Details' : 'Review'} <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
             ) : (
               <button onClick={handleSubmit} disabled={submitting}
-                className="group flex items-center justify-center gap-2 w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-60 text-white px-10 py-3.5 rounded-2xl font-extrabold text-base shadow-xl shadow-purple-500/20 transition-all active:scale-[0.98]">
+                className="group flex items-center justify-center gap-2 w-full sm:w-auto bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-60 text-white px-10 py-3.5 rounded-2xl font-extrabold text-base shadow-xl shadow-purple-500/20 transition-all active:scale-[0.98]">
                 {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Igniting...</> : <><Zap className="w-5 h-5" /> Launch Page</>}
               </button>
             )}

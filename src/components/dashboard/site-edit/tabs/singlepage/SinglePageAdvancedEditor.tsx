@@ -1,21 +1,21 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Code, Mail, Phone, Terminal, MessageCircle, ExternalLink, FileCode } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
+  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
 }
 
 function SectionCard({ icon: Icon, title, desc, color = 'purple', children }: { icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode }) {
   const colors: Record<string, string> = { purple: 'text-purple-500', emerald: 'text-emerald-500', blue: 'text-blue-500', amber: 'text-amber-500' };
   return (
-    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Icon className={`w-4 h-4 ${colors[color] ?? 'text-purple-500'}`} /> {title}
         </h3>
         {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}

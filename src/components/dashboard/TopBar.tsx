@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -39,7 +39,7 @@ export default function TopBar() {
     <header className="h-14 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-gray-200/80 dark:border-zinc-800/80 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 shadow-sm">
       {/* Left: Title */}
       <div className="flex items-center gap-4 pl-[52px] md:pl-0">
-        <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate max-w-[140px] sm:max-w-none">{pageTitle}</h1>
+        <h1 className="text-base sm:text-lg font-bold text-[var(--text-primary)] tracking-tight truncate max-w-[140px] sm:max-w-none">{pageTitle}</h1>
       </div>
 
       {/* Right: Actions */}
@@ -50,7 +50,7 @@ export default function TopBar() {
           <input
             type="text"
             placeholder="Search..."
-            className="w-48 h-9 pl-9 pr-4 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-[13px] font-medium text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400"
+            className="w-48 h-9 pl-9 pr-4 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-[13px] font-medium text-[var(--text-primary)] focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-gray-400"
           />
         </div>
         <button className="md:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 flex items-center justify-center text-gray-500 hover:text-indigo-600 transition-colors">
@@ -120,10 +120,10 @@ export default function TopBar() {
             onClick={() => setShowDropdown(!showDropdown)}
             className="flex items-center gap-2 pr-0 sm:pr-1 py-1 rounded-full transition focus:outline-none group"
           >
-            <span className="text-[13px] font-bold hidden sm:block pl-1 text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 transition-colors">
+            <span className="text-[13px] font-bold hidden sm:block pl-1 text-gray-900 dark:text-gray-100 transition-colors">
               {fullName}
             </span>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold overflow-hidden shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold overflow-hidden shrink-0 shadow-sm group-hover:scale-105 transition-transform" style={{ backgroundColor: '#E83A2E' }}>
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -137,9 +137,18 @@ export default function TopBar() {
               className="absolute right-0 mt-2 w-52 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl shadow-xl py-1 z-50"
               onMouseLeave={() => setShowDropdown(false)}
             >
-              <div className="px-3.5 py-2.5 border-b border-[var(--border)]">
-                <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{fullName}</p>
-                <p className="text-[11px] text-[var(--text-secondary)] truncate mt-0.5">Free Plan</p>
+              <div className="px-3.5 py-3 border-b border-[var(--border)] flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold overflow-hidden shrink-0" style={{ backgroundColor: '#E83A2E' }}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white text-xs">{initial}</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{fullName}</p>
+                  <p className="text-[11px] text-[var(--text-secondary)] truncate mt-0.5">Free Plan</p>
+                </div>
               </div>
 
               <button

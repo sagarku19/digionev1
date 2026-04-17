@@ -26,21 +26,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid coupon" }, { status: 404 });
     }
 
-    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+    if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
       return NextResponse.json({ error: "Coupon expired" }, { status: 400 });
     }
 
-    // Usage check via dynamic cast
-    const usageObj = coupon as any;
-    if (usageObj.max_uses && usageObj.times_used >= usageObj.max_uses) {
+    if (coupon.valid_from && new Date(coupon.valid_from) > new Date()) {
+      return NextResponse.json({ error: "Coupon not yet active" }, { status: 400 });
+    }
+
+    if (coupon.max_uses != null && (coupon.current_uses ?? 0) >= coupon.max_uses) {
       return NextResponse.json({ error: "Coupon usage limit reached" }, { status: 400 });
     }
 
     let discount = 0;
-    if (coupon.discount_percentage) {
-      discount = (cartAmount * coupon.discount_percentage) / 100;
-    } else if (coupon.discount_amount) {
-      discount = Math.min(coupon.discount_amount, cartAmount);
+    if (coupon.discount_type === 'percentage') {
+      discount = (cartAmount * coupon.discount_value) / 100;
+    } else if (coupon.discount_type === 'fixed') {
+      discount = Math.min(coupon.discount_value, cartAmount);
     }
 
     return NextResponse.json({

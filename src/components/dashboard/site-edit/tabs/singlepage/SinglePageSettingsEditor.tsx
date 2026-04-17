@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Timer, Settings2, BarChart2, Lock, Eye, EyeOff } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
 
 export type SinglePageSettingsData = {
   showBuyNow: boolean;
@@ -17,15 +17,15 @@ export type SinglePageSettingsData = {
 };
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
+  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
 }
 
 function SectionCard({ icon: Icon, title, desc, color = 'pink', children }: { icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode }) {
   const colors: Record<string, string> = { pink: 'text-pink-500', amber: 'text-amber-500', blue: 'text-blue-500', red: 'text-red-500' };
   return (
-    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Icon className={`w-4 h-4 ${colors[color] ?? 'text-pink-500'}`} /> {title}
         </h3>
         {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
@@ -37,9 +37,9 @@ function SectionCard({ icon: Icon, title, desc, color = 'pink', children }: { ic
 
 function Toggle({ on, onToggle, label, desc }: { on: boolean; onToggle: () => void; label: string; desc: string }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-gray-50/80 dark:bg-gray-800/30 rounded-[1.25rem] border border-gray-100 dark:border-gray-800">
+    <div className="flex items-center justify-between px-4 py-3 bg-gray-50/80 dark:bg-[var(--bg-secondary)]/30 rounded-[1.25rem] border border-[var(--border)]">
       <div>
-        <p className="text-[13px] font-semibold text-gray-900 dark:text-white">{label}</p>
+        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{label}</p>
         <p className="text-[11px] text-gray-500 mt-0.5">{desc}</p>
       </div>
       <button
@@ -87,7 +87,7 @@ export default function SinglePageSettingsEditor({
         <div className="p-4 bg-red-50/50 dark:bg-red-500/5 rounded-[1.25rem] border border-red-100 dark:border-red-500/20">
           <label className="block text-[13px] font-semibold text-red-900 dark:text-red-400 mb-2">Offer End Date/Time</label>
           <input type="datetime-local" value={data.countdownEnd} onChange={e => onChange({ ...data, countdownEnd: e.target.value })}
-            className="w-full px-4 py-2.5 bg-white dark:bg-[#1A1A2E] border border-red-200 dark:border-red-900 rounded-xl text-[13px] focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300" />
+            className="w-full px-4 py-2.5 bg-[var(--bg-primary)] border border-red-200 dark:border-red-900 rounded-xl text-[13px] focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300" />
           <p className="text-[11px] text-red-500/80 dark:text-red-400/80 mt-2">Leave blank to hide the countdown timer.</p>
         </div>
       </SectionCard>

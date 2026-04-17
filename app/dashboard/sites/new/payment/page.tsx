@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Dedicated creation flow: Payment Link
 // 2-step: Details → Review & Launch
 
@@ -9,14 +9,14 @@ import {
   IndianRupee, XCircle
 } from 'lucide-react';
 
-const INPUT = 'w-full px-5 py-3.5 bg-gray-50/50 dark:bg-zinc-900/50 border-2 border-gray-200 dark:border-zinc-800 rounded-2xl text-base font-medium focus:ring-0 focus:border-emerald-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-colors';
+const INPUT = 'w-full px-5 py-3.5 bg-gray-50/50 dark:bg-zinc-900/50 border-2 border-gray-200 dark:border-zinc-800 rounded-2xl text-base font-medium focus:ring-0 focus:border-emerald-500 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-colors';
 
 function StepBar({ step, total }: { step: number; total: number }) {
   return (
     <div className="flex flex-col gap-2 mb-8">
       <div className="flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest px-1">
         <span>Step {step} of {total}</span>
-        <span className="text-gray-900 dark:text-white">{Math.round((step / total) * 100)}%</span>
+        <span className="text-[var(--text-primary)]">{Math.round((step / total) * 100)}%</span>
       </div>
       <div className="flex items-center gap-1.5 h-1.5">
         {Array.from({ length: total }, (_, i) => (
@@ -74,7 +74,7 @@ export default function CreatePaymentLinkPage() {
         {/* Back / Type Header */}
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => step > 1 ? setStep(s => s - 1) : router.push('/dashboard/sites/new')}
-            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm">
+            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-[var(--text-secondary)] hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm">
             <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> 
             {step > 1 ? 'Go Back' : 'All Types'}
           </button>
@@ -95,8 +95,8 @@ export default function CreatePaymentLinkPage() {
                 <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-100 dark:border-emerald-500/20 shadow-inner">
                   <IndianRupee className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Set up your payment link</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Create a secure checkout URL to accept payments for services, consulting, or custom work.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Set up your payment link</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">Create a secure checkout URL to accept payments for services, consulting, or custom work.</p>
               </div>
 
               <div className="space-y-6 bg-gray-50/50 dark:bg-zinc-900/30 p-6 rounded-[24px] border border-gray-100 dark:border-zinc-800/80">
@@ -113,7 +113,7 @@ export default function CreatePaymentLinkPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1">
                     Service / Offer Name <span className="text-red-500">*</span>
                   </label>
                   <input type="text" autoFocus value={title} onChange={e => setTitle(e.target.value)}
@@ -121,7 +121,7 @@ export default function CreatePaymentLinkPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1 flex justify-between">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1 flex justify-between">
                     Description & Terms <span className="text-gray-400 font-medium">Optional</span>
                   </label>
                   <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)}
@@ -147,8 +147,8 @@ export default function CreatePaymentLinkPage() {
                 <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
                   <Zap className="w-7 h-7 text-white" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Ready to collect payments?</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Your payment link container is initialized.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Ready to collect payments?</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">Your payment link container is initialized.</p>
               </div>
 
               <div className="rounded-[24px] border-2 border-emerald-100 dark:border-emerald-500/20 p-6 bg-emerald-50/50 dark:bg-emerald-500/5 relative overflow-hidden">
@@ -159,12 +159,12 @@ export default function CreatePaymentLinkPage() {
                     <CreditCard className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="pt-1.5">
-                    <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white line-clamp-2">{title}</h3>
+                    <h3 className="text-2xl font-extrabold text-[var(--text-primary)] line-clamp-2">{title}</h3>
                     <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mt-1">Direct Checkout</p>
                   </div>
                 </div>
                 
-                {description && <p className="mt-5 text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed border-t border-emerald-100 dark:border-zinc-800/80 pt-4 relative z-10">{description}</p>}
+                {description && <p className="mt-5 text-sm font-medium text-gray-600 dark:text-[var(--text-secondary)] leading-relaxed border-t border-emerald-100 dark:border-zinc-800/80 pt-4 relative z-10">{description}</p>}
               </div>
             </div>
           )}

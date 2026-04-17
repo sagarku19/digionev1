@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -54,7 +54,7 @@ function DeltaBadge({ current, prev }: { current: number; prev: number }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 animate-pulse">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 animate-pulse">
       <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
       <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
       <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
@@ -64,9 +64,9 @@ function SkeletonCard() {
 
 function SkeletonChart() {
   return (
-    <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 animate-pulse">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse">
       <div className="h-5 w-36 bg-gray-200 dark:bg-gray-700 rounded mb-6" />
-      <div className="h-65 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+      <div className="h-65 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl" />
     </div>
   );
 }
@@ -140,20 +140,20 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white pt-4">Analytics</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] pt-4">Analytics</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5">
             Track revenue, sales volume, and top performing products.
           </p>
         </div>
-        <div className="flex bg-gray-100 dark:bg-[#0D0D1F] rounded-xl p-1 border border-gray-200 dark:border-gray-800">
+        <div className="flex bg-gray-100 bg-[var(--bg-primary)] rounded-xl p-1 border border-[var(--border)]">
           {PERIODS.map(({ label, value }) => (
             <button
               key={value}
               onClick={() => setDaysBack(value)}
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
                 daysBack === value
-                  ? 'bg-white dark:bg-indigo-600 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                  ? 'bg-white dark:bg-indigo-600 text-[var(--text-primary)] shadow-sm'
+                  : 'text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)]'
               }`}
             >
               {label}
@@ -169,14 +169,14 @@ export default function AnalyticsPage() {
         ) : (
           <>
             {/* Revenue */}
-            <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Revenue</span>
-                <span className="p-1.5 bg-indigo-100 dark:bg-indigo-500/20 rounded-lg">
-                  <DollarSign size={14} className="text-indigo-600 dark:text-indigo-400" />
+                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Revenue</span>
+                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-lg">
+                  <DollarSign size={14} className="text-gray-700 dark:text-[var(--text-secondary)]" />
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
                 {formatINR(stats.totalRevenue)}
               </p>
               <div className="flex items-center gap-2">
@@ -186,14 +186,14 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Sales */}
-            <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders</span>
-                <span className="p-1.5 bg-violet-100 dark:bg-violet-500/20 rounded-lg">
-                  <ShoppingCart size={14} className="text-violet-600 dark:text-violet-400" />
+                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Orders</span>
+                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-lg">
+                  <ShoppingCart size={14} className="text-gray-700 dark:text-[var(--text-secondary)]" />
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
                 {stats.totalSales}
               </p>
               <div className="flex items-center gap-2">
@@ -203,14 +203,14 @@ export default function AnalyticsPage() {
             </div>
 
             {/* AOV */}
-            <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg. Order Value</span>
+                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Avg. Order Value</span>
                 <span className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg">
                   <TrendingUp size={14} className="text-emerald-600 dark:text-emerald-400" />
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
                 {formatINR(aov)}
               </p>
               <div className="flex items-center gap-2">
@@ -220,14 +220,14 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Peak Day */}
-            <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Peak Day</span>
+                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Peak Day</span>
                 <span className="p-1.5 bg-amber-100 dark:bg-amber-500/20 rounded-lg">
                   <BarChart2 size={14} className="text-amber-600 dark:text-amber-400" />
                 </span>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
                 {peakDay ? formatINR(peakDay.revenue) : '₹0'}
               </p>
               <p className="text-xs text-gray-400">{peakDay?.name ?? '—'}</p>
@@ -239,17 +239,17 @@ export default function AnalyticsPage() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Revenue Area Chart — 3 cols */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
+        <div className="lg:col-span-3 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
           {isLoading ? (
             <SkeletonChart />
           ) : (
             <>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-base font-semibold text-gray-900 dark:text-white">Revenue Trend</h2>
+                  <h2 className="text-base font-semibold text-[var(--text-primary)]">Revenue Trend</h2>
                   <p className="text-xs text-gray-400 mt-0.5">Daily revenue over the selected period</p>
                 </div>
-                <span className="text-xs font-medium text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-lg">
+                <span className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-2 py-1 rounded-lg">
                   {daysBack}D view
                 </span>
               </div>
@@ -298,13 +298,13 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Sales Volume Bar Chart — 2 cols */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
+        <div className="lg:col-span-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
           {isLoading ? (
             <SkeletonChart />
           ) : (
             <>
               <div className="mb-6">
-                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Sales Volume</h2>
+                <h2 className="text-base font-semibold text-[var(--text-primary)]">Sales Volume</h2>
                 <p className="text-xs text-gray-400 mt-0.5">Orders per day</p>
               </div>
               <div className="h-65">
@@ -343,10 +343,10 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Top Products */}
-      <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Package size={16} className="text-indigo-500" />
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Top Products</h2>
+          <Package size={16} className="text-gray-600 dark:text-[var(--text-secondary)]" />
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">Top Products</h2>
           <span className="ml-auto text-xs text-gray-400">by revenue · {daysBack}D</span>
         </div>
 
@@ -357,7 +357,7 @@ export default function AnalyticsPage() {
                 <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0" />
                 <div className="flex-1 space-y-1.5">
                   <div className="h-3.5 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
-                  <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full" />
+                  <div className="h-2 w-full bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full" />
                 </div>
                 <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded shrink-0" />
               </div>
@@ -386,10 +386,10 @@ export default function AnalyticsPage() {
                   {/* Name + bar */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate pr-2">{p.name}</p>
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate pr-2">{p.name}</p>
                       <span className="text-xs text-gray-400 shrink-0">{p.sales} sale{p.sales !== 1 ? 's' : ''}</span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full bg-linear-to-r from-indigo-500 to-violet-500 transition-all duration-700"
                         style={{ width: `${pct}%` }}
@@ -397,7 +397,7 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
                   {/* Revenue */}
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white shrink-0 min-w-16 text-right">
+                  <p className="text-sm font-semibold text-[var(--text-primary)] shrink-0 min-w-16 text-right">
                     {formatINR(p.revenue)}
                   </p>
                 </div>

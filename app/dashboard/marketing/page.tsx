@@ -116,8 +116,8 @@ export default function MarketingPage() {
   ];
 
   const colorMap: Record<string, { bg: string; text: string; border: string; glow: string; pill: string }> = {
-    indigo: { bg: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-100 dark:border-indigo-500/20', glow: 'group-hover:shadow-indigo-500/10', pill: 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' },
-    violet: { bg: 'bg-violet-50 dark:bg-violet-500/10', text: 'text-violet-600 dark:text-violet-400', border: 'border-violet-100 dark:border-violet-500/20', glow: 'group-hover:shadow-violet-500/10', pill: 'bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-300' },
+    indigo: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-indigo-100 dark:border-gray-900 dark:border-white/20', glow: 'group-hover:shadow-indigo-500/10', pill: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
+    violet: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-violet-100 dark:border-gray-200 dark:border-gray-700', glow: 'group-hover:shadow-violet-500/10', pill: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
     emerald: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-100 dark:border-emerald-500/20', glow: 'group-hover:shadow-emerald-500/10', pill: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' },
     amber: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-100 dark:border-amber-500/20', glow: 'group-hover:shadow-amber-500/10', pill: 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300' },
     blue: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-100 dark:border-blue-500/20', glow: 'group-hover:shadow-blue-500/10', pill: 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300' },
@@ -128,23 +128,23 @@ export default function MarketingPage() {
     <div className="pt-6 pb-16 space-y-8 max-w-[1200px] mx-auto">
 
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0A0A1A] p-6 sm:p-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-primary)] p-6 sm:p-8 shadow-sm">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-500/10 via-violet-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-xs font-bold text-indigo-700 dark:text-indigo-400 mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-indigo-200 dark:border-gray-900 dark:border-white/20 text-xs font-bold text-gray-700 dark:text-gray-300 mb-4">
               <Megaphone className="w-3.5 h-3.5" /> Growth Engine
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">Marketing Tools</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 max-w-md">
+            <h1 className="text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">Marketing Tools</h1>
+            <p className="text-sm text-[var(--text-secondary)] mt-2 max-w-md">
               Grow your audience, launch promotions, and monetize your expertise — all in one place.
             </p>
           </div>
           {/* Live summary pills */}
           <div className="flex flex-wrap gap-2 shrink-0">
             {!loading && [
-              { label: 'Leads', value: stats.leads, color: 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-500/20' },
-              { label: 'Active Coupons', value: stats.activeCoupons, color: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20' },
+              { label: 'Leads', value: stats.leads, color: 'bg-gray-100 dark:bg-gray-800 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-gray-200 dark:border-gray-700' },
+              { label: 'Active Coupons', value: stats.activeCoupons, color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-indigo-200 dark:border-gray-900 dark:border-white/20' },
               { label: 'Affiliates', value: stats.affiliates, color: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' },
             ].map(p => (
               <div key={p.label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${p.color}`}>
@@ -164,7 +164,7 @@ export default function MarketingPage() {
             <Link
               key={tool.href}
               href={tool.href}
-              className={`group relative bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl ${c.glow} transition-all duration-300 flex flex-col overflow-hidden`}
+              className={`group relative bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl ${c.glow} transition-all duration-300 flex flex-col overflow-hidden`}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${c.bg} ${c.border}`}>
@@ -172,8 +172,8 @@ export default function MarketingPage() {
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-gray-300 dark:text-gray-700 group-hover:text-gray-500 dark:group-hover:text-gray-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
               </div>
-              <h2 className="text-base font-bold text-gray-900 dark:text-white mb-1">{tool.label}</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed flex-1">{tool.description}</p>
+              <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">{tool.label}</h2>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed flex-1">{tool.description}</p>
               <div className={`mt-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${c.pill} w-fit`}>
                 <Sparkles className="w-3 h-3" />
                 <span>{tool.stat}</span>

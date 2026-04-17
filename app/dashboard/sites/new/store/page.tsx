@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Dedicated creation flow: Main Store
 // 3-step: Template → Details (name + slug) → Review & Launch
 
@@ -42,21 +42,21 @@ const TEMPLATES = [
   { id: 'blank',   name: 'Blank',     desc: 'Start from scratch',         accent: '#9CA3AF', blocks: ['h-3 w-16', 'h-3 w-20', 'h-3 w-28', 'h-3 w-12'] },
 ];
 
-const INPUT = 'w-full px-5 py-3.5 bg-gray-50/50 dark:bg-zinc-900/50 border-2 border-gray-200 dark:border-zinc-800 rounded-2xl text-base font-medium focus:ring-0 focus:border-indigo-500 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-colors';
+const INPUT = 'w-full px-5 py-3.5 bg-gray-50/50 dark:bg-zinc-900/50 border-2 border-gray-200 dark:border-zinc-800 rounded-2xl text-base font-medium focus:ring-0 focus:border-gray-900 dark:border-white outline-none text-[var(--text-primary)] placeholder-gray-400 transition-colors';
 
 function StepBar({ step, total }: { step: number; total: number }) {
   return (
     <div className="flex flex-col gap-2 mb-8">
       <div className="flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest px-1">
         <span>Step {step} of {total}</span>
-        <span className="text-gray-900 dark:text-white">{Math.round((step / total) * 100)}%</span>
+        <span className="text-[var(--text-primary)]">{Math.round((step / total) * 100)}%</span>
       </div>
       <div className="flex items-center gap-1.5 h-1.5">
         {Array.from({ length: total }, (_, i) => (
           <div
             key={i}
             className={`h-full flex-1 rounded-full transition-all duration-500 ease-out ${
-              i < step ? 'bg-indigo-600 dark:bg-indigo-500 scale-y-100' : 'bg-gray-200 dark:bg-zinc-800 scale-y-75'
+              i < step ? 'bg-indigo-600 dark:bg-gray-1000 scale-y-100' : 'bg-gray-200 dark:bg-zinc-800 scale-y-75'
             }`}
           />
         ))}
@@ -114,7 +114,7 @@ export default function CreateMainStorePage() {
     <div className="relative pt-6 pb-24 w-full animate-in fade-in slide-in-from-bottom-4 duration-500 min-h-[calc(100vh-120px)] flex flex-col justify-center">
       {/* Background Ambience tied to the container */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden rounded-[40px]">
-        <div className="absolute top-[10%] left-[20%] w-[30%] h-[40%] bg-indigo-500/20 dark:bg-indigo-500/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute top-[10%] left-[20%] w-[30%] h-[40%] bg-gray-1000/20 dark:bg-gray-1000/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
         <div className="absolute top-[20%] right-[20%] w-[20%] h-[30%] bg-purple-500/20 dark:bg-purple-500/20 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
       </div>
 
@@ -123,14 +123,14 @@ export default function CreateMainStorePage() {
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => step > 1 ? setStep(s => s - 1) : router.push('/dashboard/sites/new')}
-            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm"
+            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-[var(--text-secondary)] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm"
           >
             <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             {step > 1 ? 'Go Back' : 'All Types'}
           </button>
           
-          <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-xl shadow-sm">
-            <Store className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-[var(--bg-secondary)] border border-indigo-100 dark:border-gray-900 dark:border-white/20 rounded-xl shadow-sm">
+            <Store className="w-4 h-4 text-gray-700 dark:text-[var(--text-secondary)]" />
             <span className="text-sm font-bold text-indigo-900 dark:text-indigo-100 uppercase tracking-widest">Main Store</span>
           </div>
         </div>
@@ -143,11 +143,11 @@ export default function CreateMainStorePage() {
           {step === 1 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center">
-                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100 dark:border-indigo-500/20 shadow-inner">
-                  <LayoutTemplate className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-12 h-12 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100 dark:border-gray-900 dark:border-white/20 shadow-inner">
+                  <LayoutTemplate className="w-6 h-6 text-gray-700 dark:text-[var(--text-secondary)]" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Pick a starting template</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Don't overthink it, you can effortlessly swap themes and customize everything later.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Pick a starting template</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">Don't overthink it, you can effortlessly swap themes and customize everything later.</p>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -159,7 +159,7 @@ export default function CreateMainStorePage() {
                       onClick={() => setTemplate(t.id)}
                       className={`group relative border-2 rounded-[24px] overflow-hidden transition-all duration-300 text-left ${
                         selected
-                          ? 'border-indigo-500 shadow-lg shadow-indigo-500/10 scale-[1.02] bg-white dark:bg-zinc-950'
+                          ? 'border-gray-900 dark:border-white shadow-lg shadow-indigo-500/10 scale-[1.02] bg-white dark:bg-zinc-950'
                           : 'border-gray-200/80 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 bg-white/50 dark:bg-zinc-900/50'
                       }`}
                     >
@@ -179,7 +179,7 @@ export default function CreateMainStorePage() {
                         ))}
                       </div>
                       <div className="p-4 border-t border-black/5 dark:border-white/5">
-                        <p className={`font-extrabold text-sm ${selected ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-white'}`}>{t.name}</p>
+                        <p className={`font-extrabold text-sm ${selected ? 'text-indigo-900 dark:text-indigo-100' : 'text-[var(--text-primary)]'}`}>{t.name}</p>
                         <p className="text-xs font-medium text-gray-500 mt-1">{t.desc}</p>
                       </div>
                     </button>
@@ -193,16 +193,16 @@ export default function CreateMainStorePage() {
           {step === 2 && (
             <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="text-center">
-                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100 dark:border-indigo-500/20 shadow-inner">
-                  <Store className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-12 h-12 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100 dark:border-gray-900 dark:border-white/20 shadow-inner">
+                  <Store className="w-6 h-6 text-gray-700 dark:text-[var(--text-secondary)]" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Name your store</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">This represents your main storefront. You can easily modify these settings later.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Name your store</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">This represents your main storefront. You can easily modify these settings later.</p>
               </div>
 
               <div className="space-y-5 bg-gray-50/50 dark:bg-zinc-900/30 p-6 rounded-[24px] border border-gray-100 dark:border-zinc-800/80">
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1">
                     Store name <span className="text-red-500">*</span>
                   </label>
                   <input type="text" autoFocus value={title} onChange={e => handleTitleChange(e.target.value)}
@@ -210,13 +210,13 @@ export default function CreateMainStorePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1">
                     Your URL <span className="text-red-500">*</span>
                   </label>
                   <div className={`flex items-center border-2 rounded-2xl overflow-hidden transition-colors ${
                       slugStatus === 'available' ? 'border-emerald-500/50 dark:border-emerald-500/50 ring-4 ring-emerald-500/10' :
                       slugStatus === 'taken' || slugStatus === 'invalid' ? 'border-red-500/50 dark:border-red-500/50 ring-4 ring-red-500/10' :
-                      'border-gray-200 dark:border-zinc-800 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10'
+                      'border-gray-200 dark:border-zinc-800 focus-within:border-gray-900 dark:border-white focus-within:ring-4 focus-within:ring-gray-400/20'
                     } bg-white dark:bg-zinc-950`}
                   >
                     <span className="pl-4 pr-3 py-3.5 text-sm font-bold text-gray-400 border-r border-gray-100 dark:border-zinc-800 shrink-0 bg-gray-50 dark:bg-zinc-900 font-mono">
@@ -224,7 +224,7 @@ export default function CreateMainStorePage() {
                     </span>
                     <input type="text" value={slug}
                       onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                      placeholder="your-slug" className="flex-1 px-4 py-3.5 text-base font-bold tracking-wide bg-transparent outline-none text-gray-900 dark:text-white font-mono placeholder:font-sans placeholder:font-medium placeholder:text-sm" />
+                      placeholder="your-slug" className="flex-1 px-4 py-3.5 text-base font-bold tracking-wide bg-transparent outline-none text-[var(--text-primary)] font-mono placeholder:font-sans placeholder:font-medium placeholder:text-sm" />
                     <span className="pr-4 shrink-0 flex items-center justify-center">
                       {slugStatus === 'checking' && <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />}
                       {slugStatus === 'available' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
@@ -240,7 +240,7 @@ export default function CreateMainStorePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 dark:text-white mb-2 ml-1 flex justify-between">
+                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-2 ml-1 flex justify-between">
                     Description <span className="text-gray-400 font-medium">Optional</span>
                   </label>
                   <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)}
@@ -257,39 +257,39 @@ export default function CreateMainStorePage() {
                 <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/30">
                   <Zap className="w-7 h-7 text-white" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">Ready to launch?</h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Confirm your details and hit the button to ignite the engines.</p>
+                <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">Ready to launch?</h2>
+                <p className="text-base text-[var(--text-secondary)] max-w-sm mx-auto">Confirm your details and hit the button to ignite the engines.</p>
               </div>
 
-              <div className="rounded-[24px] border-2 border-indigo-100 dark:border-indigo-500/20 p-6 bg-indigo-50/50 dark:bg-indigo-500/5 relative overflow-hidden">
-                <div className="absolute top-[-30%] right-[-5%] w-48 h-48 bg-indigo-500/10 blur-3xl rounded-full" />
+              <div className="rounded-[24px] border-2 border-indigo-100 dark:border-gray-900 dark:border-white/20 p-6 bg-gray-100/50 dark:bg-gray-1000/5 relative overflow-hidden">
+                <div className="absolute top-[-30%] right-[-5%] w-48 h-48 bg-gray-1000/10 blur-3xl rounded-full" />
                 
                 <div className="flex items-start gap-4 mb-5 relative z-10">
                   <div className="w-12 h-12 rounded-[16px] flex items-center justify-center bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-sm shrink-0">
-                    <Store className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                    <Store className="w-6 h-6 text-gray-700 dark:text-[var(--text-secondary)]" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-extrabold text-gray-900 dark:text-white line-clamp-2">{title}</h3>
-                    <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mt-1">Main Store</p>
+                    <h3 className="text-xl font-extrabold text-[var(--text-primary)] line-clamp-2">{title}</h3>
+                    <p className="text-xs font-bold text-gray-700 dark:text-[var(--text-secondary)] uppercase tracking-widest mt-1">Main Store</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-xl px-4 py-3 border border-white/50 dark:border-white/5 shadow-sm relative z-10 w-fit">
-                  <Globe className="w-4 h-4 text-indigo-500 shrink-0" />
-                  <span className="font-mono truncate tracking-wide">digione.ai/store/<span className="text-indigo-600 dark:text-indigo-400">{slug}</span></span>
+                <div className="flex items-center gap-3 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-xl px-4 py-3 border border-white/50 dark:border-white/5 shadow-sm relative z-10 w-fit">
+                  <Globe className="w-4 h-4 text-gray-600 dark:text-[var(--text-secondary)] shrink-0" />
+                  <span className="font-mono truncate tracking-wide">digione.ai/store/<span className="text-gray-700 dark:text-[var(--text-secondary)]">{slug}</span></span>
                 </div>
                 
-                {description && <p className="mt-4 text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed border-t border-indigo-100 dark:border-zinc-800/80 pt-4 relative z-10">{description}</p>}
+                {description && <p className="mt-4 text-sm font-medium text-gray-600 dark:text-[var(--text-secondary)] leading-relaxed border-t border-indigo-100 dark:border-zinc-800/80 pt-4 relative z-10">{description}</p>}
               </div>
 
               <div className="flex bg-gray-50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden p-6 gap-6">
                 <div className="flex-[0.5] border-r border-gray-200 dark:border-zinc-800">
                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Theme Selection</p>
-                   <p className="text-base font-bold text-gray-900 dark:text-white">{TEMPLATES.find(t => t.id === template)?.name ?? '—'}</p>
+                   <p className="text-base font-bold text-[var(--text-primary)]">{TEMPLATES.find(t => t.id === template)?.name ?? '—'}</p>
                 </div>
                 <div className="flex-1">
                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Category Type</p>
-                   <p className="text-base font-bold text-gray-900 dark:text-white">Full Creator Platform</p>
+                   <p className="text-base font-bold text-[var(--text-primary)]">Full Creator Platform</p>
                 </div>
               </div>
             </div>
@@ -318,7 +318,7 @@ export default function CreateMainStorePage() {
               </button>
             ) : (
               <button onClick={handleSubmit} disabled={submitting}
-                className="group flex items-center justify-center gap-2 w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:opacity-60 text-white px-10 py-3.5 rounded-2xl font-extrabold text-base shadow-xl shadow-indigo-500/20 transition-all active:scale-[0.98]">
+                className="group flex items-center justify-center gap-2 w-full sm:w-auto bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-60 text-white px-10 py-3.5 rounded-2xl font-extrabold text-base shadow-xl shadow-indigo-500/20 transition-all active:scale-[0.98]">
                 {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Igniting Engines...</> : <><Zap className="w-5 h-5" /> Launch Your Store</>}
               </button>
             )}

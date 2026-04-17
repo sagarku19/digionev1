@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // BioAppearanceEditor V2 — full theme control for Link in Bio.
 // New: font family, card style, animation, border radius, spacing.
 // Enhanced: full 5-color palette editor, more gradient presets.
@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 
-const INPUT = 'w-full px-4 py-2 bg-gray-50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
+const INPUT = 'w-full px-4 py-2 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
 
 export type BioAppearanceData = {
   layoutStyle: string;
@@ -27,13 +27,13 @@ export type BioAppearanceData = {
 };
 
 // ─── Selection helpers ───────────────────────────────────
-const CHIP_ON = 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm ring-2 ring-pink-500 scale-100 border-transparent';
-const CHIP_OFF = 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-50 hover:bg-white dark:bg-gray-900/50 dark:hover:bg-gray-800 scale-[0.98] hover:scale-100 border border-gray-200 dark:border-gray-800';
+const CHIP_ON = 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm ring-2 ring-pink-500 scale-100 border-transparent';
+const CHIP_OFF = 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-50 hover:bg-white dark:bg-[var(--bg-secondary)]/50 dark:hover:bg-[var(--bg-secondary)] scale-[0.98] hover:scale-100 border border-[var(--border)]';
 
 function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
   return (
     <label className="flex items-center justify-between cursor-pointer">
-      <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
+      <span className="text-sm text-gray-700 dark:text-[var(--text-secondary)]">{label}</span>
       <button onClick={onToggle}
         className={`relative w-10 h-5 rounded-full transition ${on ? 'bg-pink-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
         <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${on ? 'left-5' : 'left-0.5'}`} />
@@ -46,9 +46,9 @@ function SectionCard({ icon: Icon, title, desc, children }: {
   icon: React.ElementType; title: string; desc?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Icon className="w-4 h-4 text-pink-500" /> {title}
         </h3>
         {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
@@ -149,7 +149,7 @@ export default function BioAppearanceEditor({
             return (
               <button key={f.id} onClick={() => set('fontFamily', f.id)}
                 className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <p className={`text-sm font-semibold ${f.preview} ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-700 dark:text-gray-300'}`}>Aa</p>
+                <p className={`text-sm font-semibold ${f.preview} ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-700 dark:text-[var(--text-secondary)]'}`}>Aa</p>
                 <p className={`text-[10px] mt-0.5 ${sel ? 'text-pink-600 dark:text-pink-400' : 'text-gray-400'}`}>{f.label}</p>
               </button>
             );
@@ -180,7 +180,7 @@ export default function BioAppearanceEditor({
             return (
               <button key={cs.id} onClick={() => set('cardStyle', cs.id)}
                 className={`p-3 rounded-xl border-2 text-left transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{cs.label}</p>
+                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-[var(--text-secondary)]'}`}>{cs.label}</p>
                 <p className="text-[10px] text-gray-400 mt-0.5">{cs.desc}</p>
               </button>
             );
@@ -193,10 +193,10 @@ export default function BioAppearanceEditor({
         <SectionCard icon={Palette} title="Colors" desc="Customize the global theme palette.">
           <div className="grid grid-cols-2 gap-4">
             {PALETTE_COLORS.map(pc => (
-              <div key={pc.key} className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-gray-800/30 rounded-[1.25rem] border border-gray-100 dark:border-gray-800 focus-within:ring-2 focus-within:ring-pink-500/20 transition-all">
+              <div key={pc.key} className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 rounded-[1.25rem] border border-[var(--border)] focus-within:ring-2 focus-within:ring-pink-500/20 transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[12px] font-semibold text-gray-900 dark:text-white">{pc.label}</p>
+                    <p className="text-[12px] font-semibold text-[var(--text-primary)]">{pc.label}</p>
                     <p className="text-[10px] text-gray-400">{pc.desc}</p>
                   </div>
                   <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-inner ring-1 ring-black/5 dark:ring-white/10 shrink-0">
@@ -207,7 +207,7 @@ export default function BioAppearanceEditor({
                 </div>
                 <input type="text" value={palette[pc.key] || ''}
                   onChange={e => onPaletteChange(pc.key, e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[11px] font-mono text-gray-600 dark:text-gray-400 outline-none focus:border-pink-500" />
+                  className="w-full px-3 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-[11px] font-mono text-gray-600 dark:text-[var(--text-secondary)] outline-none focus:border-pink-500" />
               </div>
             ))}
           </div>
@@ -216,20 +216,20 @@ export default function BioAppearanceEditor({
 
       {/* ─── Background ─── */}
       <SectionCard icon={Palette} title="Background">
-        <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-gray-800/50 rounded-[1.25rem]">
+        <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-[1.25rem]">
           {BG_TYPES.map(bt => {
             const sel = data.backgroundType === bt.id;
             return (
               <button key={bt.id} onClick={() => onChange({ ...data, backgroundType: bt.id, backgroundValue: '' })}
-                className={`flex-1 py-2 rounded-xl text-[12px] font-semibold text-center transition-all duration-300 ${sel ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-100'
-                    : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 scale-95 hover:scale-100'
+                className={`flex-1 py-2 rounded-xl text-[12px] font-semibold text-center transition-all duration-300 ${sel ? 'bg-white dark:bg-gray-700 text-[var(--text-primary)] shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-100'
+                    : 'text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] scale-95 hover:scale-100'
                   }`}>{bt.label}</button>
             );
           })}
         </div>
 
         {data.backgroundType === 'solid' && onPaletteChange && palette && (
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/30 rounded-[1.25rem] border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 rounded-[1.25rem] border border-[var(--border)]">
             <div className="relative w-10 h-10 rounded-full overflow-hidden shadow-inner ring-1 ring-black/5 dark:ring-white/10 shrink-0">
               <input type="color" value={palette.background || '#FFFFFF'}
                 onChange={e => onPaletteChange('background', e.target.value)}
@@ -237,7 +237,7 @@ export default function BioAppearanceEditor({
             </div>
             <input type="text" value={palette.background || '#FFFFFF'}
               onChange={e => onPaletteChange('background', e.target.value)}
-              className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-mono text-gray-700 dark:text-gray-300 outline-none focus:ring-2 focus:ring-pink-500" />
+              className="flex-1 px-3 py-2 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs font-mono text-gray-700 dark:text-[var(--text-secondary)] outline-none focus:ring-2 focus:ring-pink-500" />
           </div>
         )}
 
@@ -289,7 +289,7 @@ export default function BioAppearanceEditor({
             return (
               <button key={a.id} onClick={() => set('animation', a.id)}
                 className={`py-2 rounded-lg border-2 text-xs font-semibold text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <span className={sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}>{a.label}</span>
+                <span className={sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-[var(--text-secondary)]'}>{a.label}</span>
               </button>
             );
           })}
@@ -304,7 +304,7 @@ export default function BioAppearanceEditor({
             return (
               <button key={sp.id} onClick={() => set('spacing', sp.id)}
                 className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-gray-400'}`}>{sp.label}</p>
+                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-[var(--text-secondary)]'}`}>{sp.label}</p>
                 <p className="text-[10px] text-gray-400 mt-0.5">{sp.desc}</p>
               </button>
             );

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { Sparkles, Check } from 'lucide-react';
@@ -159,8 +159,8 @@ function TemplateCard({
       onClick={onSelect}
       className={`relative w-full text-left rounded-2xl overflow-hidden border-2 transition-all duration-200 ${
         active
-          ? 'border-indigo-500 shadow-lg shadow-indigo-500/20 scale-[1.01]'
-          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
+          ? 'border-gray-900 dark:border-white shadow-lg shadow-gray-500/20 scale-[1.01]'
+          : 'border-[var(--border)] hover:border-gray-300 dark:hover:border-gray-700'
       }`}
     >
       {/* Mini page mockup */}
@@ -186,15 +186,15 @@ function TemplateCard({
 
         {/* Active check */}
         {active && (
-          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center shadow">
+          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-900 dark:bg-white flex items-center justify-center shadow">
             <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
           </div>
         )}
       </div>
 
       {/* Label */}
-      <div className="px-3 py-2.5 bg-white dark:bg-[#151525]">
-        <p className="text-[13px] font-semibold text-gray-900 dark:text-white">{template.name}</p>
+      <div className="px-3 py-2.5 bg-[var(--bg-primary)]">
+        <p className="text-[13px] font-semibold text-[var(--text-primary)]">{template.name}</p>
         <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">{template.description}</p>
       </div>
     </button>
@@ -227,10 +227,10 @@ export default function SinglePageTemplateEditor({
 
   return (
     <div className="space-y-5">
-      <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+      <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-500" /> Page Templates
+          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-gray-500" /> Page Templates
           </h3>
           <p className="text-[13px] text-gray-500 mt-1">
             Pick a template to instantly apply a curated color palette and style. You can fine-tune everything in Appearance.
@@ -249,13 +249,13 @@ export default function SinglePageTemplateEditor({
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => handleSelect(t)}
-                    className="flex-1 py-1.5 rounded-xl bg-indigo-500 text-white text-[11px] font-bold hover:bg-indigo-600 transition"
+                    className="flex-1 py-1.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[11px] font-bold hover:bg-gray-700 dark:hover:bg-gray-100 transition"
                   >
                     Apply template
                   </button>
                   <button
                     onClick={() => setConfirming(null)}
-                    className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-[11px] text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                    className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[var(--border)] text-[11px] text-gray-500 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition"
                   >
                     Cancel
                   </button>

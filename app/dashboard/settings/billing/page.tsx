@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Billing & KYC — full identity verification + bank + UPI + address.
 // DB tables: creator_kyc (read/write via upsert)
 
@@ -13,7 +13,7 @@ import {
   Smartphone, Wallet, Info
 } from 'lucide-react';
 
-const inputCls = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/60 rounded-xl focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 outline-none text-gray-900 dark:text-white text-sm disabled:opacity-60 disabled:cursor-not-allowed transition placeholder-gray-400 dark:placeholder-gray-600';
+const inputCls = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)]/60 border border-gray-200 dark:border-[var(--border)]/60 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none text-[var(--text-primary)] text-sm disabled:opacity-60 disabled:cursor-not-allowed transition placeholder-gray-400 dark:placeholder-gray-600';
 
 type KycData = {
   status: string;
@@ -58,13 +58,13 @@ function Section({ title, subtitle, icon: Icon, iconBg, iconColor, tag, children
   tag?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+      <div className="px-6 py-4 border-b border-[var(--border)] flex items-center gap-3">
         <div className={`p-2 ${iconBg} rounded-xl`}>
           <Icon size={15} className={iconColor} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">{title}</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)]">{title}</p>
           {subtitle && <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>}
         </div>
         {tag}
@@ -77,7 +77,7 @@ function Section({ title, subtitle, icon: Icon, iconBg, iconColor, tag, children
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">{label}</label>
+      <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">{label}</label>
       {children}
       {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
     </div>
@@ -209,8 +209,8 @@ export default function KYCAndBillingPage() {
     <div className="max-w-3xl mx-auto space-y-6 pb-16 pt-4">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Billing & KYC</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Billing & KYC</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-0.5">
           Verify your identity and bank account to receive payouts from your store.
         </p>
       </div>
@@ -220,7 +220,7 @@ export default function KYCAndBillingPage() {
 
       {/* Progress Steps */}
       {!isLoading && (
-        <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-5">Verification Progress</p>
           <div className="flex items-center">
             {steps.map((step, idx) => (
@@ -228,12 +228,12 @@ export default function KYCAndBillingPage() {
                 <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${
                     step.done ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                    : idx === steps.filter(s => s.done).length ? 'border-indigo-500 text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-400 bg-gray-50 dark:bg-gray-900'
+                    : idx === steps.filter(s => s.done).length ? 'border-gray-900 dark:border-white text-gray-600 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)]'
+                    : 'border-gray-200 dark:border-[var(--border)] text-gray-400 bg-[var(--bg-secondary)]'
                   }`}>
                     {step.done ? <CheckCircle2 size={17} /> : <span className="text-xs font-bold">{idx + 1}</span>}
                   </div>
-                  <span className={`text-xs font-medium text-center leading-tight ${step.done ? 'text-emerald-600 dark:text-emerald-400' : idx === steps.filter(s => s.done).length ? 'text-indigo-500' : 'text-gray-400'}`}>
+                  <span className={`text-xs font-medium text-center leading-tight ${step.done ? 'text-emerald-600 dark:text-emerald-400' : idx === steps.filter(s => s.done).length ? 'text-gray-600 dark:text-[var(--text-secondary)]' : 'text-gray-400'}`}>
                     {step.label}
                   </span>
                 </div>
@@ -249,9 +249,9 @@ export default function KYCAndBillingPage() {
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 animate-pulse space-y-4">
+            <div key={i} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse space-y-4">
               <div className="h-4 w-40 bg-gray-200 dark:bg-gray-700 rounded" />
-              {Array.from({ length: 2 }).map((_, j) => <div key={j} className="h-10 bg-gray-100 dark:bg-gray-800 rounded-xl" />)}
+              {Array.from({ length: 2 }).map((_, j) => <div key={j} className="h-10 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl" />)}
             </div>
           ))}
         </div>
@@ -263,8 +263,8 @@ export default function KYCAndBillingPage() {
             title="Personal Identity (PAN)"
             subtitle="Must exactly match your PAN card"
             icon={User}
-            iconBg="bg-indigo-100 dark:bg-indigo-500/20"
-            iconColor="text-indigo-600 dark:text-indigo-400"
+            iconBg="bg-gray-100 dark:bg-[var(--bg-secondary)]"
+            iconColor="text-gray-700 dark:text-[var(--text-secondary)]"
             tag={kyc?.pan_verified ? <VerifiedTag at={kyc.pan_verified_at} /> : undefined}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -313,8 +313,8 @@ export default function KYCAndBillingPage() {
             title="Address"
             subtitle="Your current residential address"
             icon={MapPin}
-            iconBg="bg-violet-100 dark:bg-violet-500/20"
-            iconColor="text-violet-600 dark:text-violet-400"
+            iconBg="bg-gray-100 dark:bg-[var(--bg-secondary)]"
+            iconColor="text-gray-700 dark:text-[var(--text-secondary)]"
           >
             <Field label="Address Line 1">
               <input type="text" value={form.address_line1 ?? ''} disabled={isLocked}
@@ -403,7 +403,7 @@ export default function KYCAndBillingPage() {
             icon={Wallet}
             iconBg="bg-emerald-100 dark:bg-emerald-500/20"
             iconColor="text-emerald-600 dark:text-emerald-400"
-            tag={kyc?.upi_verified ? <VerifiedTag at={kyc.upi_verified_at} /> : <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">Optional</span>}
+            tag={kyc?.upi_verified ? <VerifiedTag at={kyc.upi_verified_at} /> : <span className="text-xs text-gray-400 bg-gray-100 dark:bg-[var(--bg-secondary)] px-2 py-0.5 rounded-full">Optional</span>}
           >
             <Field label="UPI ID" hint="e.g. name@upi or 9876543210@ybl">
               <div className="relative">
@@ -424,7 +424,7 @@ export default function KYCAndBillingPage() {
           </Section>
 
           {/* Footer */}
-          <div className="bg-white dark:bg-[#0D0D1F] border border-gray-200 dark:border-gray-800 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex-1 space-y-1">
               {errorMsg && <p className="text-sm text-red-500 flex items-center gap-1.5"><AlertCircle size={13} />{errorMsg}</p>}
               {successMsg && <p className="text-sm text-emerald-500 flex items-center gap-1.5"><CheckCircle2 size={13} />{successMsg}</p>}
@@ -437,7 +437,7 @@ export default function KYCAndBillingPage() {
 
             {!isLocked && (
               <button type="submit" disabled={isSubmitting}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold px-6 py-2.5 rounded-xl transition shadow-sm text-sm">
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 font-semibold px-6 py-2.5 rounded-xl transition shadow-sm text-sm">
                 {isSubmitting
                   ? <><RefreshCw size={13} className="animate-spin" />Submitting…</>
                   : <>Submit for Verification <ChevronRight size={13} /></>}

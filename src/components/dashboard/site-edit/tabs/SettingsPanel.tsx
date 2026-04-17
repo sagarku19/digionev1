@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // SettingsPanel — SEO, Domain, Slug, and Danger zone for the visual editor.
 
 import React, { useState } from 'react';
@@ -10,7 +10,7 @@ import {
   Trash2, EyeOff, Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
 
 export type SettingsData = {
   metaTitle: string;
@@ -78,14 +78,14 @@ export default function SettingsPanel({
   return (
     <div className="space-y-6">
       {/* SEO */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">SEO</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">SEO</h3>
           <p className="text-xs text-gray-500 mt-0.5">Control how this site appears in search engines</p>
         </div>
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Meta Title</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)]">Meta Title</label>
             <span className={`text-xs tabular-nums ${data.metaTitle.length > 60 ? 'text-red-500' : 'text-gray-400'}`}>{data.metaTitle.length}/60</span>
           </div>
           <input type="text" value={data.metaTitle} onChange={e => set('metaTitle', e.target.value)}
@@ -93,19 +93,19 @@ export default function SettingsPanel({
         </div>
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Meta Description</label>
+            <label className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)]">Meta Description</label>
             <span className={`text-xs tabular-nums ${data.metaDesc.length > 160 ? 'text-red-500' : 'text-gray-400'}`}>{data.metaDesc.length}/160</span>
           </div>
           <textarea rows={3} value={data.metaDesc} onChange={e => set('metaDesc', e.target.value)}
             className={`${INPUT} resize-none`} placeholder="Brief description for search engines" />
         </div>
         {/* SERP Preview */}
-        <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-[#0D0E1A] space-y-1">
+        <div className="p-4 border border-gray-200 dark:border-[var(--border)] rounded-xl bg-[var(--bg-primary)] space-y-1">
           <p className="text-xs text-gray-400">{site ? getSiteDisplayUrl(site) : '-'}</p>
           <p className="text-base font-medium text-blue-700 dark:text-blue-400 leading-snug">
             {data.metaTitle || displayTitle}
           </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p className="text-xs text-gray-600 dark:text-[var(--text-secondary)] leading-relaxed">
             {data.metaDesc || 'No description set yet.'}
           </p>
         </div>
@@ -113,9 +113,9 @@ export default function SettingsPanel({
 
       {/* Slug (optional) */}
       {showSlug && (
-        <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">URL Slug</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">URL Slug</h3>
             <p className="text-xs text-gray-500 mt-0.5">Customize your public URL</p>
           </div>
           <div>
@@ -142,13 +142,13 @@ export default function SettingsPanel({
       )}
 
       {/* Domain */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Domain</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Domain</h3>
           <p className="text-xs text-gray-500 mt-0.5">Your DigiOne URL and custom domain</p>
         </div>
         {/* Default URL */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] rounded-xl border border-gray-200 dark:border-[var(--border)]">
           <Globe className="w-4 h-4 text-gray-400 shrink-0" />
           <span className="text-sm font-medium text-[var(--text-primary)] flex-1 truncate">
             {site ? getSiteDisplayUrl(site) : '-'}
@@ -167,7 +167,7 @@ export default function SettingsPanel({
         </div>
         {/* Custom domain */}
         <div>
-          <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Custom Domain</label>
+          <label className="block text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] mb-1.5">Custom Domain</label>
           <input type="text" value={data.customDomain} onChange={e => set('customDomain', e.target.value)}
             className={INPUT} placeholder="store.yourdomain.com" />
         </div>
@@ -180,13 +180,13 @@ export default function SettingsPanel({
             <div className="px-4 py-3 bg-white dark:bg-amber-950/10 space-y-3">
               <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-xs">
                 <span className="font-medium text-gray-500">Type</span>
-                <code className="font-mono text-gray-900 dark:text-gray-200">CNAME</code>
+                <code className="font-mono text-gray-900 dark:text-[var(--text-primary)]">CNAME</code>
                 <span className="font-medium text-gray-500">Name</span>
-                <code className="font-mono text-gray-900 dark:text-gray-200 break-all">
+                <code className="font-mono text-gray-900 dark:text-[var(--text-primary)] break-all">
                   {data.customDomain.split('.').slice(0, -2).join('.') || data.customDomain}
                 </code>
                 <span className="font-medium text-gray-500">Value</span>
-                <code className="font-mono text-gray-900 dark:text-gray-200">cname.digione.ai</code>
+                <code className="font-mono text-gray-900 dark:text-[var(--text-primary)]">cname.digione.ai</code>
               </div>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function SettingsPanel({
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
               : site?.ssl_status === 'pending'
               ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400'
-              : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+              : 'bg-gray-100 text-gray-600 dark:bg-[var(--bg-secondary)] dark:text-[var(--text-secondary)]'
           }`}>
             <span className={`w-1.5 h-1.5 rounded-full ${
               site?.ssl_status === 'active' ? 'bg-emerald-500'
@@ -214,9 +214,9 @@ export default function SettingsPanel({
 
       {/* Danger Zone */}
       <div className="space-y-5">
-        <div className="rounded-2xl p-5 bg-white dark:bg-[#0A0A1A] border border-amber-200 dark:border-amber-900/40 space-y-4">
+        <div className="rounded-2xl p-5 bg-[var(--bg-primary)] border border-amber-200 dark:border-amber-900/40 space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Deactivate site</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Deactivate site</h3>
             <p className="text-xs text-gray-500 mt-0.5">Hides your site from public view. Reactivate anytime.</p>
           </div>
           <button
@@ -232,8 +232,8 @@ export default function SettingsPanel({
         <div className="rounded-2xl p-5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Delete site permanently</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              This action <strong className="text-gray-900 dark:text-white">cannot be undone</strong>.
+            <p className="text-sm text-gray-600 dark:text-[var(--text-secondary)]">
+              This action <strong className="text-[var(--text-primary)]">cannot be undone</strong>.
             </p>
           </div>
           <div className="space-y-3">
@@ -245,7 +245,7 @@ export default function SettingsPanel({
             </p>
             <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
               placeholder={`Type "${site?.slug ?? site?.id}"`}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-red-300 dark:border-red-800 rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm" />
+              className="w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-red-300 dark:border-red-800 rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm" />
             <button disabled={deleteConfirm !== (site?.slug ?? site?.id) || deleting} onClick={handleDelete}
               className="flex items-center gap-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg shadow-sm shadow-red-500/20 transition">
               {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}

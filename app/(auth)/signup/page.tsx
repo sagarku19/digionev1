@@ -77,7 +77,27 @@ export default function SignupPage() {
       }
     }
 
-    if (data.session) {
+    if (data.session && data.user) {
+      // Insert welcome notification — look up creator profile id first
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        if (profile?.id) {
+          await supabase.from('notifications').insert({
+            recipient_creator_id: profile.id,
+            title: '👋 Welcome to DigiOne!',
+            message: "You're all set! Start by creating your first product or setting up your storefront.",
+            type: 'welcome',
+            action_url: '/dashboard/products',
+          } as any);
+        }
+      } catch {
+        // Non-critical — don't block redirect if notification insert fails
+      }
       router.push('/dashboard');
     } else {
       setSuccess(true);

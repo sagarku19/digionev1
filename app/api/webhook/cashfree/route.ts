@@ -69,45 +69,57 @@ export async function POST(req: Request) {
       }
 
       // ── Credit creator balance ──
-      if (order.creator_id) {
+      // creator_id is stored in order metadata (orders table has no creator_id column)
+      const creatorProfileId = (order.metadata as any)?.creator_profile_id ?? null;
+      if (creatorProfileId) {
         const platformFee = Number(order.total_amount) * 0.10;
         const creatorProceeds = Number(order.total_amount) - platformFee;
 
-        const { data: balance } = await (supabase as any)
+        const { data: balance } = await supabase
           .from('creator_balances')
           .select('*')
-          .eq('creator_id', order.creator_id)
+          .eq('creator_id', creatorProfileId)
           .single();
 
         if (balance) {
-          await (supabase as any).from('creator_balances').update({
-            available_balance: (balance.available_balance || 0) + creatorProceeds,
-            total_earned: (balance.total_earned || 0) + creatorProceeds,
-          }).eq('creator_id', order.creator_id);
+          await supabase.from('creator_balances').update({
+            total_earnings: (balance.total_earnings ?? 0) + creatorProceeds,
+            total_platform_fees: (balance.total_platform_fees ?? 0) + platformFee,
+          }).eq('creator_id', creatorProfileId);
         } else {
-          await (supabase as any).from('creator_balances').insert({
-            creator_id: order.creator_id,
-            available_balance: creatorProceeds,
-            total_earned: creatorProceeds,
+          await supabase.from('creator_balances').insert({
+            creator_id: creatorProfileId,
+            total_earnings: creatorProceeds,
+            total_platform_fees: platformFee,
+            total_paid_out: 0,
+            pending_payout: 0,
           });
         }
 
         // ── Transaction ledger ──
+        const recordHash = crypto
+          .createHash('sha256')
+          .update(`${order.id}-${Date.now()}`)
+          .digest('hex');
         await (supabase as any).from('transaction_ledger').insert({
-          creator_id: order.creator_id,
+          creator_id: creatorProfileId,
           order_id: order.id,
           amount: order.total_amount,
-          fee_amount: Number(order.total_amount) * 0.10,
-          net_amount: Number(order.total_amount) * 0.90,
-          type: 'sale',
-          status: 'completed',
+          direction: 'credit',
+          tx_type: 'sale',
+          currency: 'INR',
+          record_hash: recordHash,
+          meta: {
+            platform_fee: platformFee,
+            net_amount: creatorProceeds,
+          },
         });
 
         // ── Notify creator ──
         await supabase.from('notifications').insert({
-          user_id: order.creator_id,
+          recipient_creator_id: creatorProfileId,
           title: 'New Sale!',
-          message: `You earned ₹${(Number(order.total_amount) * 0.90).toFixed(0)} from a new order`,
+          message: `You earned ₹${creatorProceeds.toFixed(0)} from a new order`,
           type: 'sale',
         } as any);
       }

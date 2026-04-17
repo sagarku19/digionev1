@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Site creation hub — choose your site type, then route to the dedicated creation page.
 
 import React from 'react';
@@ -29,8 +29,8 @@ const SITE_TYPES: SiteTypeOption[] = [
     best: 'Courses, ebooks, digital assets',
     icon: Store,
     gradient: 'from-indigo-50/50 to-transparent dark:from-indigo-500/5',
-    iconBg: 'bg-indigo-100 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-500/20',
-    iconColor: 'text-indigo-600 dark:text-indigo-400',
+    iconBg: 'bg-indigo-100 dark:bg-gray-1000/10 border-indigo-200 dark:border-gray-900 dark:border-white/20',
+    iconColor: 'text-gray-700 dark:text-[var(--text-secondary)]',
     href: '/dashboard/sites/new/store',
   },
   {
@@ -80,7 +80,7 @@ export default function NewSiteHub() {
     <div className="relative pt-6 pb-16 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Background Ambience tied to the container */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden rounded-[40px]">
-        <div className="absolute top-0 left-[-10%] w-[30%] h-[30%] bg-indigo-500/10 dark:bg-indigo-500/10 blur-[120px] rounded-full" />
+        <div className="absolute top-0 left-[-10%] w-[30%] h-[30%] bg-gray-1000/10 dark:bg-gray-1000/10 blur-[120px] rounded-full" />
         <div className="absolute top-[40%] right-[-10%] w-[30%] h-[30%] bg-purple-500/10 dark:bg-purple-500/10 blur-[120px] rounded-full" />
       </div>
 
@@ -89,7 +89,7 @@ export default function NewSiteHub() {
         <div>
           <button
             onClick={() => router.push('/dashboard/sites')}
-            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm"
+            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-[var(--text-secondary)] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Dashboard
@@ -99,13 +99,13 @@ export default function NewSiteHub() {
         {/* Title Section */}
         <div className="text-center mt-6 mb-12 relative flex flex-col items-center">
           <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full mb-6 shadow-sm">
-            <Target className="w-4 h-4 text-indigo-500" />
+            <Target className="w-4 h-4 text-gray-600 dark:text-[var(--text-secondary)]" />
             <span className="text-xs font-bold uppercase tracking-widest text-gray-700 dark:text-zinc-300">Choose Your Path</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-primary)] mb-4">
             What are you building?
           </h1>
-          <p className="text-base text-gray-500 dark:text-gray-400 max-w-2xl text-center leading-relaxed">
+          <p className="text-base text-[var(--text-secondary)] max-w-2xl text-center leading-relaxed">
             Select the digital foundation that perfectly matches your goal. You can always build multiple sites of any type later to expand your empire.
           </p>
         </div>
@@ -145,10 +145,10 @@ export default function NewSiteHub() {
                   </div>
                   
                   <div className="flex-1">
-                    <h3 className="font-extrabold text-2xl text-gray-900 dark:text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 dark:group-hover:from-white dark:group-hover:to-gray-400 transition-all">
+                    <h3 className="font-extrabold text-2xl text-[var(--text-primary)] mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 dark:group-hover:from-white dark:group-hover:to-gray-400 transition-all">
                       {t.label}
                     </h3>
-                    <p className="text-base font-medium text-gray-500 dark:text-gray-400 leading-relaxed mb-8">
+                    <p className="text-base font-medium text-[var(--text-secondary)] leading-relaxed mb-8">
                       {t.desc}
                     </p>
                   </div>
@@ -156,7 +156,7 @@ export default function NewSiteHub() {
                   <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-100 dark:border-zinc-800/80">
                     <div className="flex items-center gap-2.5">
                       <Sparkles className={`w-4 h-4 ${t.iconColor}`} />
-                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400">Best for: <span className="text-gray-700 dark:text-gray-300">{t.best}</span></p>
+                      <p className="text-xs font-bold text-[var(--text-secondary)]">Best for: <span className="text-gray-700 dark:text-[var(--text-secondary)]">{t.best}</span></p>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-zinc-900 flex items-center justify-center group-hover:bg-gray-100 dark:group-hover:bg-zinc-800 transition-colors shadow-sm">
                       <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />

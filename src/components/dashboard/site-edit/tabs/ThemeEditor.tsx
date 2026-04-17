@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // ThemeEditor — controlled color palette editor.
 // Parent manages state; changes propagate immediately for live preview.
 
@@ -25,15 +25,15 @@ export default function ThemeEditor({
       {THEME_FIELDS.map(f => {
         const val = palette[f.key] ?? f.default;
         return (
-          <div key={f.key} className="flex items-center gap-4 p-4 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl">
+          <div key={f.key} className="flex items-center gap-4 p-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl">
             <input
               type="color"
               value={val}
               onChange={e => onChange({ ...palette, [f.key]: e.target.value })}
-              className="w-12 h-12 rounded-xl cursor-pointer border border-gray-200 dark:border-gray-700 p-0.5 bg-white dark:bg-gray-900 shrink-0"
+              className="w-12 h-12 rounded-xl cursor-pointer border border-gray-200 dark:border-[var(--border)] p-0.5 bg-white dark:bg-[var(--bg-secondary)] shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">{f.label}</p>
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{f.label}</p>
               <input
                 type="text"
                 value={val}
@@ -41,7 +41,7 @@ export default function ThemeEditor({
                 className="text-xs text-gray-400 bg-transparent border-none outline-none w-full mt-0.5 font-mono"
               />
             </div>
-            <div className="w-8 h-8 rounded-lg shrink-0 border border-gray-200 dark:border-gray-700 shadow-inner" style={{ backgroundColor: val }} />
+            <div className="w-8 h-8 rounded-lg shrink-0 border border-gray-200 dark:border-[var(--border)] shadow-inner" style={{ backgroundColor: val }} />
           </div>
         );
       })}

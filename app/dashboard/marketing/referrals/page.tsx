@@ -11,13 +11,13 @@ import {
   Clock, ChevronDown, ChevronUp, BarChart3,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+      className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 hover:underline font-medium">
       {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
       {copied ? 'Copied!' : 'Copy link'}
     </button>
@@ -120,11 +120,11 @@ export default function ReferralsPage() {
       <div className="space-y-5 pt-4 pb-20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Referral Program</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Create codes that buyers share to earn rewards</p>
+            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Referral Program</h1>
+            <p className="text-sm text-[var(--text-secondary)] mt-0.5">Create codes that buyers share to earn rewards</p>
           </div>
           <button onClick={() => { setShowModal(true); setNewCode(genCode()); }}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition shrink-0">
+            className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition shrink-0">
             <Plus className="w-4 h-4" /> New Code
           </button>
         </div>
@@ -133,17 +133,17 @@ export default function ReferralsPage() {
         {!loading && codes.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Active Codes',    value: codes.filter(c => c.is_active).length, icon: Gift,         color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
-              { label: 'Total Referrals', value: referrals.length,                      icon: Users,        color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-500/10' },
+              { label: 'Active Codes',    value: codes.filter(c => c.is_active).length, icon: Gift,         color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-100 dark:bg-gray-800' },
+              { label: 'Total Referrals', value: referrals.length,                      icon: Users,        color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-100 dark:bg-gray-800' },
               { label: 'Paid Out',        value: paidCount,                             icon: Check,        color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
               { label: 'Total Rewarded',  value: `₹${totalRevenue.toFixed(0)}`,         icon: IndianRupee,  color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10' },
             ].map(s => (
-              <div key={s.label} className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-4 flex items-center gap-3">
+              <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 flex items-center gap-3">
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.bg}`}>
                   <s.icon className={`w-4 h-4 ${s.color}`} />
                 </div>
                 <div>
-                  <p className="text-xl font-extrabold text-gray-900 dark:text-white leading-none">{s.value}</p>
+                  <p className="text-xl font-extrabold text-[var(--text-primary)] leading-none">{s.value}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
                 </div>
               </div>
@@ -158,10 +158,10 @@ export default function ReferralsPage() {
             { step: '2', title: 'Buyer shares it', desc: 'Buyers share their unique referral link with friends to earn rewards.' },
             { step: '3', title: 'Sale tracked', desc: 'When someone buys using the code, the referrer earns automatically.' },
           ].map(s => (
-            <div key={s.step} className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-2xl">
-              <div className="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-extrabold flex items-center justify-center shrink-0">{s.step}</div>
+            <div key={s.step} className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)]/50 border border-[var(--border)] rounded-2xl">
+              <div className="w-7 h-7 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-extrabold flex items-center justify-center shrink-0">{s.step}</div>
               <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white mb-0.5">{s.title}</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)] mb-0.5">{s.title}</p>
                 <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
               </div>
             </div>
@@ -171,20 +171,20 @@ export default function ReferralsPage() {
         {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
           </div>
         )}
 
         {/* Empty */}
         {!loading && codes.length === 0 && (
-          <div className="flex flex-col items-center py-24 text-center bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl">
-            <div className="w-14 h-14 bg-gray-50 dark:bg-gray-900 rounded-2xl flex items-center justify-center mb-4 border border-gray-200 dark:border-gray-800">
+          <div className="flex flex-col items-center py-24 text-center bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl">
+            <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mb-4 border border-[var(--border)]">
               <Gift className="w-7 h-7 text-gray-300 dark:text-gray-700" />
             </div>
             <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">No referral codes yet</p>
             <p className="text-sm text-gray-500 max-w-xs mb-5">Create your first code and start a viral loop — buyers share, friends buy, everyone wins.</p>
             <button onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition">
+              className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition">
               <Plus className="w-4 h-4" /> Create First Code
             </button>
           </div>
@@ -192,12 +192,12 @@ export default function ReferralsPage() {
 
         {/* Codes list with expandable per-code analytics */}
         {!loading && codes.length > 0 && (
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-gray-900 dark:text-white">Referral Codes</h2>
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
+              <h2 className="text-sm font-bold text-[var(--text-primary)]">Referral Codes</h2>
               <span className="text-xs text-gray-400">{codes.length} code{codes.length !== 1 ? 's' : ''}</span>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-[var(--border)]">
               {codes.map(code => {
                 const codeRefs  = refsForCode(code.id);
                 const shareUrl  = `${origin}?ref=${code.code}`;
@@ -206,9 +206,9 @@ export default function ReferralsPage() {
 
                 return (
                   <div key={code.id}>
-                    <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-900/40 transition group">
+                    <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]/60 transition group">
                       {/* Code badge */}
-                      <div className="shrink-0 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg font-mono text-sm font-bold text-gray-900 dark:text-white tracking-widest">
+                      <div className="shrink-0 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg font-mono text-sm font-bold text-[var(--text-primary)] tracking-widest">
                         {code.code}
                       </div>
 
@@ -232,13 +232,13 @@ export default function ReferralsPage() {
                       <div className="flex items-center gap-1 shrink-0">
                         {codeRefs.length > 0 && (
                           <button onClick={() => setExpandedCode(isExpanded ? null : code.id)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-1000/10 transition"
                             title="View referrals">
                             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </button>
                         )}
                         <button onClick={() => toggleCode(code)} title={code.is_active ? 'Pause' : 'Activate'}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                           {code.is_active ? <ToggleRight className="w-5 h-5 text-emerald-500" /> : <ToggleLeft className="w-5 h-5" />}
                         </button>
                         <button onClick={() => setDeleteConfirm(code.id)}
@@ -250,13 +250,13 @@ export default function ReferralsPage() {
 
                     {/* Expandable referral activity */}
                     {isExpanded && codeRefs.length > 0 && (
-                      <div className="px-5 pb-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
+                      <div className="px-5 pb-4 bg-[var(--bg-secondary)]/30 border-t border-[var(--border)]">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-3 mb-2">Referral Activity</p>
                         <div className="space-y-2">
                           {codeRefs.map(ref => (
                             <div key={ref.id} className="flex items-center gap-3 text-xs">
-                              <div className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
-                                <TrendingUp className="w-2.5 h-2.5 text-indigo-600 dark:text-indigo-400" />
+                              <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                                <TrendingUp className="w-2.5 h-2.5 text-gray-700 dark:text-gray-300" />
                               </div>
                               <span className="text-gray-600 dark:text-gray-400 flex-1">Order referral</span>
                               {ref.commission_amount && (
@@ -287,19 +287,19 @@ export default function ReferralsPage() {
 
         {/* Recent activity feed */}
         {!loading && referrals.length > 0 && (
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-gray-100 dark:border-gray-800">
-              <h2 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-indigo-500" /> Recent Activity
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-[var(--border)]">
+              <h2 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" /> Recent Activity
               </h2>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-[var(--border)]">
               {referrals.slice(0, 8).map(ref => {
                 const codeName = codes.find(c => c.id === ref.referral_code_id)?.code ?? '—';
                 return (
                   <div key={ref.id} className="flex items-center gap-4 px-5 py-3">
-                    <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                      <Gift className="w-4 h-4 text-indigo-500" />
+                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                      <Gift className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-800 dark:text-gray-200">
@@ -328,16 +328,16 @@ export default function ReferralsPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#0D0D1F] rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <div className="bg-[var(--bg-primary)] rounded-2xl shadow-2xl w-full max-w-md border border-[var(--border)]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center">
-                  <Gift className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                  <Gift className="w-4 h-4 text-gray-700 dark:text-gray-300" />
                 </div>
-                <h2 className="text-base font-bold text-gray-900 dark:text-white">New Referral Code</h2>
+                <h2 className="text-base font-bold text-[var(--text-primary)]">New Referral Code</h2>
               </div>
               <button onClick={() => { setShowModal(false); setFormError(''); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -353,7 +353,7 @@ export default function ReferralsPage() {
                   <input type="text" value={newCode} onChange={e => setNewCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
                     className={`${INPUT} font-mono tracking-widest`} placeholder="FRIEND20" maxLength={20} />
                   <button type="button" onClick={() => setNewCode(genCode())}
-                    className="p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition text-gray-500" title="Generate random">
+                    className="p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition text-gray-500" title="Generate random">
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 </div>
@@ -361,7 +361,7 @@ export default function ReferralsPage() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Referrer Reward</label>
-                  <span className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">{rewardPct}%</span>
+                  <span className="text-base font-extrabold text-gray-700 dark:text-gray-300">{rewardPct}%</span>
                 </div>
                 <input type="range" min={1} max={50} value={rewardPct} onChange={e => setRewardPct(Number(e.target.value))}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer bg-gray-200 dark:bg-gray-800"
@@ -372,7 +372,7 @@ export default function ReferralsPage() {
                 <p className="text-xs text-gray-400 mt-1.5">% of sale amount credited to the referrer when their code is used.</p>
               </div>
               <button type="submit" disabled={saving}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-sm transition">
+                className="w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 py-3 rounded-xl font-bold text-sm shadow-sm transition">
                 {saving ? 'Creating…' : 'Create Code →'}
               </button>
             </form>
@@ -383,14 +383,14 @@ export default function ReferralsPage() {
       {/* Delete Confirm */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0D0E1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
               <Trash2 className="w-5 h-5 text-red-500" />
             </div>
-            <h3 className="font-bold text-gray-900 dark:text-white mb-1">Delete referral code?</h3>
+            <h3 className="font-bold text-[var(--text-primary)] mb-1">Delete referral code?</h3>
             <p className="text-sm text-gray-500 mb-5">All referral history for this code will also be removed.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">Cancel</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
               <button onClick={() => deleteCode(deleteConfirm)}
                 className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete

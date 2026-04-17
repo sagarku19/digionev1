@@ -1,20 +1,20 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Plus, X, GripVertical, Type, Image, Code, Minus, Heading1, Play, MousePointerClick, Space, Quote, ChevronUp, ChevronDown } from 'lucide-react';
 import type { SinglePageContentData, ContentBlock } from './singlepage-types';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-800 rounded-xl text-[13px] focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition-all duration-300';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
+  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
 }
 
 function SectionCard({ icon: Icon, title, desc, children }: { icon: React.ElementType; title: string; desc?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white dark:bg-[#151525] border border-gray-200/60 dark:border-gray-800/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Icon className="w-4 h-4 text-emerald-500" /> {title}
         </h3>
         {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
@@ -103,7 +103,7 @@ export default function SinglePageContentEditor({
               const TypeIcon = typeInfo?.icon || Type;
               const meta = block.metadata || {};
               return (
-                <div key={block.id} className="bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-xl p-4 group relative">
+                <div key={block.id} className="bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl p-4 group relative">
                   <div className="flex items-center gap-2 mb-3">
                     {/* Reorder */}
                     <div className="flex flex-col gap-0.5 shrink-0">
@@ -156,7 +156,7 @@ export default function SinglePageContentEditor({
                             className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold border transition ${
                               (meta.size || 'h2') === hs.id
                                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
-                                : 'border-gray-200 dark:border-gray-700 text-gray-500 hover:border-gray-300'
+                                : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
                             }`}>
                             {hs.label}
                           </button>
@@ -175,7 +175,7 @@ export default function SinglePageContentEditor({
                         onChange={e => updateBlockMeta(block.id, 'alt', e.target.value)}
                         className={INPUT} placeholder="Alt text (for accessibility)" />
                       {block.content && (
-                        <img src={block.content} alt={meta.alt || ''} className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+                        <img src={block.content} alt={meta.alt || ''} className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-[var(--border)]" />
                       )}
                     </div>
                   )}
@@ -188,7 +188,7 @@ export default function SinglePageContentEditor({
                         className={INPUT} placeholder="https://youtube.com/watch?v=... or Vimeo URL" />
                       <p className="text-[10px] text-gray-400">Supports YouTube & Vimeo links. Auto-embeds the player.</p>
                       {block.content && (
-                        <div className="w-full aspect-video bg-black/10 dark:bg-white/5 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                        <div className="w-full aspect-video bg-black/10 dark:bg-white/5 rounded-lg flex items-center justify-center border border-gray-200 dark:border-[var(--border)]">
                           <Play className="w-8 h-8 text-gray-400" />
                         </div>
                       )}
@@ -219,7 +219,7 @@ export default function SinglePageContentEditor({
                               className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold border transition capitalize ${
                                 (meta.style || 'solid') === s
                                   ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                                  : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                                  : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
                               }`}>
                               {s}
                             </button>
@@ -235,7 +235,7 @@ export default function SinglePageContentEditor({
                               className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold border transition uppercase ${
                                 (meta.size || 'md') === s
                                   ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                                  : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                                  : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
                               }`}>
                               {s}
                             </button>
@@ -272,7 +272,7 @@ export default function SinglePageContentEditor({
                   {/* ── Divider ── */}
                   {block.type === 'divider' && (
                     <div className="flex items-center justify-center py-2">
-                      <hr className="w-full border-gray-200 dark:border-gray-700" />
+                      <hr className="w-full border-gray-200 dark:border-[var(--border)]" />
                     </div>
                   )}
 
@@ -285,7 +285,7 @@ export default function SinglePageContentEditor({
                           className={`flex-1 py-2 rounded-lg text-[10px] font-semibold border transition ${
                             (meta.size || 'md') === sp.id
                               ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                              : 'border-gray-200 dark:border-gray-700 text-gray-500'
+                              : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
                           }`}>
                           {sp.label} ({sp.px})
                         </button>
@@ -299,7 +299,7 @@ export default function SinglePageContentEditor({
         )}
 
         {blocks.length === 0 && (
-          <div className="py-8 text-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl">
+          <div className="py-8 text-center border-2 border-dashed border-[var(--border)] rounded-xl">
             <p className="text-sm text-gray-400">No content blocks yet</p>
             <p className="text-xs text-gray-400 mt-1">Add blocks below to build your page content</p>
           </div>
@@ -309,7 +309,7 @@ export default function SinglePageContentEditor({
         <div className="grid grid-cols-5 gap-2 pt-2">
           {BLOCK_TYPES.map(bt => (
             <button key={bt.id} onClick={() => addBlock(bt.id)}
-              className="flex flex-col items-center gap-1.5 py-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-gray-500 hover:text-emerald-500 hover:border-emerald-300 dark:hover:border-emerald-500/30 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5 transition-all">
+              className="flex flex-col items-center gap-1.5 py-3 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-xl text-gray-500 hover:text-emerald-500 hover:border-emerald-300 dark:hover:border-emerald-500/30 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5 transition-all">
               <bt.icon className="w-4 h-4" />
               <span className="text-[10px] font-semibold">{bt.label}</span>
             </button>

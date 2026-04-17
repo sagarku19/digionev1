@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Edit page: Payment Link — visual editor with live preview.
 
 import React, { useState, useEffect } from 'react';
@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import SiteVisualEditor from '@/components/dashboard/site-edit/SiteVisualEditor';
 import { CreditCard, Globe, IndianRupee, ToggleLeft } from 'lucide-react';
 
-const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
 
 export default function EditPaymentPage() {
   const params = useParams();
@@ -55,19 +55,19 @@ export default function EditPaymentPage() {
       {() => (
         <div className="space-y-5">
           {/* Payment Info */}
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Payment Info</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Payment Info</h3>
               <p className="text-xs text-gray-500 mt-0.5">Details shown to buyers on the payment page</p>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Service Name</label>
+              <label className="block text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] mb-1.5">Service Name</label>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                 className={INPUT} placeholder="e.g. 1-on-1 Mentorship Session" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Description</label>
+                <label className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)]">Description</label>
                 <span className={`text-xs tabular-nums ${description.length > 300 ? 'text-red-500' : 'text-gray-400'}`}>{description.length}/300</span>
               </div>
               <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)}
@@ -77,14 +77,14 @@ export default function EditPaymentPage() {
           </div>
 
           {/* Amount */}
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <IndianRupee className="w-4 h-4 text-emerald-500" />
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Pricing</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Pricing</h3>
             </div>
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">Flexible amount</p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">Flexible amount</p>
                 <p className="text-xs text-gray-500">Let buyer choose how much to pay</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
@@ -94,7 +94,7 @@ export default function EditPaymentPage() {
             </div>
             {!isFlexible && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Fixed Amount ({'\u20B9'})</label>
+                <label className="block text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] mb-1.5">Fixed Amount ({'\u20B9'})</label>
                 <input type="number" value={amount} onChange={e => setAmount(e.target.value ? Number(e.target.value) : '')}
                   className={INPUT} placeholder="e.g. 999" min={0} />
               </div>
@@ -102,10 +102,10 @@ export default function EditPaymentPage() {
           </div>
 
           {/* Payment URL */}
-          <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-emerald-500" />
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Payment URL</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Payment URL</h3>
             </div>
             <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200 dark:border-emerald-800/40">
               <Globe className="w-4 h-4 text-emerald-500 shrink-0" />

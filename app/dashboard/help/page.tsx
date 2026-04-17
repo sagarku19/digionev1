@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 // Help & Support hub for creators — covers getting started, products, sites,
 // earnings, marketing, and support contact options.
@@ -28,10 +28,10 @@ type HelpSection = {
 // ─── Help Content ─────────────────────────────────────────────────────────────
 
 const QUICK_LINKS = [
-  { label: 'Learn', description: 'Browse our tutorials and guides to master your store operations.', icon: GraduationCap, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10', href: '#' },
+  { label: 'Learn', description: 'Browse our tutorials and guides to master your store operations.', icon: GraduationCap, color: 'text-gray-700 dark:text-[var(--text-secondary)]', bg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', href: '#' },
   { label: 'Register Complaint', description: 'Facing an issue? Submit a ticket and our team will resolve it.', icon: AlertCircle, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-500/10', href: '#' },
   { label: 'Contact Option', description: 'Reach out to our support team via email or live chat directly.', icon: Headset, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10', href: '#' },
-  { label: 'Docs', description: 'View detailed developer documentation and technical references.', icon: FileText, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-500/10', href: 'https://docs.digione.ai' },
+  { label: 'Docs', description: 'View detailed developer documentation and technical references.', icon: FileText, color: 'text-gray-700 dark:text-[var(--text-secondary)]', bg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', href: 'https://docs.digione.ai' },
   { label: 'Feature Request', description: 'Have an idea? Ask for new features and vote on the roadmap.', icon: Lightbulb, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10', href: '#' },
 ];
 
@@ -98,8 +98,8 @@ const HELP_SECTIONS: HelpSection[] = [
     id: 'sites',
     icon: Store,
     label: 'Sites & Storefronts',
-    color: 'text-violet-600 dark:text-violet-400',
-    bg: 'bg-violet-50 dark:bg-violet-500/10',
+    color: 'text-gray-700 dark:text-[var(--text-secondary)]',
+    bg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',
     faqs: [
       {
         q: 'What types of sites can I create?',
@@ -206,7 +206,7 @@ const HELP_SECTIONS: HelpSection[] = [
     id: 'account',
     icon: Shield,
     label: 'Account & Security',
-    color: 'text-gray-600 dark:text-gray-400',
+    color: 'text-gray-600 dark:text-[var(--text-secondary)]',
     bg: 'bg-gray-100 dark:bg-gray-500/10',
     faqs: [
       {
@@ -256,8 +256,8 @@ const SUPPORT_OPTIONS = [
     description: 'Read detailed guides and API references in our knowledge base.',
     action: 'https://docs.digione.ai',
     actionLabel: 'Open docs',
-    color: 'text-violet-600 dark:text-violet-400',
-    bg: 'bg-violet-50 dark:bg-violet-500/10',
+    color: 'text-gray-700 dark:text-[var(--text-secondary)]',
+    bg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',
   },
 ];
 
@@ -292,7 +292,7 @@ function SectionCard({ section }: { section: HelpSection }) {
   const [expanded, setExpanded] = useState(false);
   const Icon = section.icon;
   return (
-    <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
       <button
         onClick={() => setExpanded(o => !o)}
         className="w-full flex items-center gap-4 p-5 hover:bg-[var(--bg-tertiary)] transition-colors"
@@ -338,7 +338,7 @@ export default function HelpPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 pt-4">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2 pt-4">
           <HelpCircle className="w-6 h-6 text-[var(--text-secondary)]" />
           Help & Support
         </h1>
@@ -379,7 +379,7 @@ export default function HelpPage() {
           placeholder="Search help articles…"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent)] transition"
+          className="w-full pl-10 pr-4 py-3 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent)] transition"
         />
       </div>
 
@@ -416,7 +416,7 @@ export default function HelpPage() {
               href={opt.action}
               target={opt.action.startsWith('http') ? '_blank' : undefined}
               rel="noopener noreferrer"
-              className="group bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-3"
+              className="group bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-3"
             >
               <div className={`w-10 h-10 ${opt.bg} ${opt.color} rounded-xl flex items-center justify-center`}>
                 <opt.icon className="w-5 h-5" />

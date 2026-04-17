@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // Upsell page editor — full-page edit for an upsell checkout page.
 // DB tables: upsell_pages (via useUpsellPages), products (via useProducts)
 
@@ -12,7 +12,7 @@ import {
   Loader2, CheckCircle2, X, ExternalLink, Copy, Eye,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-gray-900 dark:text-white placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
 
 type Tab = 'config' | 'products' | 'contact' | 'theme' | 'seo';
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -63,7 +63,7 @@ export default function UpsellEditPage() {
   if (!page) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Upsell page not found</h2>
+        <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Upsell page not found</h2>
         <button onClick={() => router.push('/dashboard/products')} className="text-[var(--text-secondary)] text-sm hover:underline mt-2">
           Back to products
         </button>
@@ -106,19 +106,19 @@ export default function UpsellEditPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/dashboard/products')}
-            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
+            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{draft.title || page.title}</h1>
+            <h1 className="text-xl font-bold text-[var(--text-primary)]">{draft.title || page.title}</h1>
             <p className="text-xs text-gray-400 mt-0.5">{getUpsellDisplayUrl(draft.slug || page.slug)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyLink}
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2 rounded-lg transition"
+            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2 rounded-lg transition"
           >
             {copiedLink ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
             {copiedLink ? 'Copied!' : 'Copy Link'}
@@ -127,7 +127,7 @@ export default function UpsellEditPage() {
             href={getUpsellPublicPath(draft.slug || page.slug)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2 rounded-lg transition"
+            className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700 px-3 py-2 rounded-lg transition"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             Preview
@@ -136,14 +136,14 @@ export default function UpsellEditPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+      <div className="flex gap-1 mb-8 bg-gray-100 dark:bg-[var(--bg-secondary)] p-1 rounded-xl">
         {TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition ${
               tab === t.id
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                ? 'bg-white dark:bg-gray-700 text-[var(--text-primary)] shadow-sm'
                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
@@ -154,31 +154,31 @@ export default function UpsellEditPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 sm:p-8">
         {/* ── Config Tab ── */}
         {tab === 'config' && (
           <div className="space-y-6 max-w-lg">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Page Title</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Page Title</label>
               <input type="text" value={draft.title ?? ''} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} className={INPUT} placeholder="Checkout" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">URL Slug</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">URL Slug</label>
               <input type="text" value={draft.slug ?? ''} onChange={e => setDraft(d => ({ ...d, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))} className={INPUT} placeholder="my-offer" />
               <p className="text-xs text-gray-400 mt-1">{getUpsellDisplayUrl(draft.slug || 'my-offer')}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Logo URL</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Logo URL</label>
               <input type="url" value={config.logo_url ?? ''} onChange={e => patchConfig('logo_url', e.target.value)} className={INPUT} placeholder="https://..." />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Buy Now Button Label</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Buy Now Button Label</label>
               <input type="text" value={config.buy_now_label ?? 'Buy Now'} onChange={e => patchConfig('buy_now_label', e.target.value)} className={INPUT} placeholder="Buy Now" />
             </div>
-            <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer">
+            <label className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[var(--bg-secondary)] rounded-xl cursor-pointer">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Show guarantee badge</span>
+                <span className="text-sm text-gray-700 dark:text-[var(--text-secondary)]">Show guarantee badge</span>
               </div>
               <input type="checkbox" checked={config.show_guarantee_badge ?? true} onChange={e => patchConfig('show_guarantee_badge', e.target.checked)} className="accent-[var(--accent)] w-4 h-4" />
             </label>
@@ -200,7 +200,7 @@ export default function UpsellEditPage() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{primaryProduct.name}</p>
+                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{primaryProduct.name}</p>
                     <p className="text-xs text-[var(--text-primary)]">{formatINR(primaryProduct.price || 0)}</p>
                   </div>
                 </div>
@@ -213,7 +213,7 @@ export default function UpsellEditPage() {
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Upsell Products (max 2)</p>
               <div className="space-y-2">
                 {upsellProducts.map((p: any) => (
-                  <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[var(--bg-secondary)] rounded-xl">
                     {p.thumbnail_url ? (
                       <img src={p.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
                     ) : (
@@ -222,7 +222,7 @@ export default function UpsellEditPage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.name}</p>
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{p.name}</p>
                       <p className="text-xs text-gray-500">{formatINR(p.price || 0)}</p>
                     </div>
                     <button
@@ -264,8 +264,8 @@ export default function UpsellEditPage() {
               { key: 'show_email', label: 'Email Address' },
               { key: 'show_phone', label: 'Phone Number' },
             ].map(field => (
-              <label key={field.key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer">
-                <span className="text-sm text-gray-700 dark:text-gray-300">{field.label}</span>
+              <label key={field.key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[var(--bg-secondary)] rounded-xl cursor-pointer">
+                <span className="text-sm text-gray-700 dark:text-[var(--text-secondary)]">{field.label}</span>
                 <input
                   type="checkbox"
                   checked={contactFields[field.key] ?? false}
@@ -286,19 +286,19 @@ export default function UpsellEditPage() {
               { key: 'text_color', label: 'Text Color', def: '#0F172A' },
             ].map(c => (
               <div key={c.key}>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{c.label}</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{c.label}</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="color"
                     value={config.theme?.[c.key] || c.def}
                     onChange={e => patchTheme(c.key, e.target.value)}
-                    className="w-12 h-12 rounded-xl border border-gray-200 dark:border-gray-700 cursor-pointer p-0.5"
+                    className="w-12 h-12 rounded-xl border border-gray-200 dark:border-[var(--border)] cursor-pointer p-0.5"
                   />
                   <input
                     type="text"
                     value={config.theme?.[c.key] || c.def}
                     onChange={e => patchTheme(c.key, e.target.value)}
-                    className="flex-1 px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-mono text-gray-700 dark:text-gray-300 outline-none"
+                    className="flex-1 px-3 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm font-mono text-gray-700 dark:text-[var(--text-secondary)] outline-none"
                   />
                 </div>
               </div>
@@ -310,11 +310,11 @@ export default function UpsellEditPage() {
         {tab === 'seo' && (
           <div className="space-y-6 max-w-lg">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Meta Title</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Meta Title</label>
               <input type="text" value={config.meta_title ?? ''} onChange={e => patchConfig('meta_title', e.target.value)} className={INPUT} placeholder="Page title for search engines" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Meta Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Meta Description</label>
               <textarea rows={3} value={config.meta_description ?? ''} onChange={e => patchConfig('meta_description', e.target.value)} className={`${INPUT} resize-none`} placeholder="Brief description for search results (150-160 chars)" />
             </div>
           </div>
@@ -322,7 +322,7 @@ export default function UpsellEditPage() {
       </div>
 
       {/* Sticky Footer */}
-      <div className="sticky bottom-0 bg-white/80 dark:bg-[#0A0A1A]/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800 mt-6 -mx-6 px-6 py-4 flex items-center justify-between rounded-b-2xl">
+      <div className="sticky bottom-0 bg-white/80 bg-[var(--bg-primary)]/80 backdrop-blur-sm border-t border-[var(--border)] mt-6 -mx-6 px-6 py-4 flex items-center justify-between rounded-b-2xl">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox" className="sr-only peer"
@@ -330,7 +330,7 @@ export default function UpsellEditPage() {
             onChange={e => setDraft(d => ({ ...d, is_published: e.target.checked }))}
           />
           <div className="w-10 h-5 bg-gray-300 dark:bg-gray-700 peer-checked:bg-emerald-500 rounded-full transition-colors relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)]">
             {draft.is_published ? 'Published' : 'Draft'}
           </span>
         </label>

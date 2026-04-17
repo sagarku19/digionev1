@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -66,7 +66,7 @@ const NAV: NavGroup[] = [
 ];
 
 const BOTTOM_NAV = [
-  { label: 'Services', href: '/dashboard/services', icon: Server },
+  { label: 'Integrations', href: '/dashboard/integration', icon: Server },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
   { label: 'Help Center', href: '/dashboard/help', icon: HelpCircle },
 ];
@@ -141,7 +141,7 @@ export default function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-2.5 left-3 p-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/80 dark:border-zinc-800/80 rounded-xl text-gray-700 dark:text-gray-300 shadow-sm transition-all active:scale-95"
+        className="md:hidden fixed top-2.5 left-3 p-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/80 dark:border-zinc-800/80 rounded-xl text-gray-700 dark:text-[var(--text-secondary)] shadow-sm transition-all active:scale-95"
         style={{ zIndex: 9999 }}
       >
         <Menu className="w-5 h-5" />
@@ -322,7 +322,7 @@ export default function Sidebar() {
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition"
             >
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ backgroundColor: '#E83A2E' }}>
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (

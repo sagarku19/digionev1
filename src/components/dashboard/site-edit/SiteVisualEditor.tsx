@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // SiteVisualEditor — split-screen layout matching the singlepage/main-store editor pattern.
 // Left panel (w-1/2): owns header + vertical tab sidebar + scrollable editor.
 // Right panel (flex-1): owns preview header + zoom-aware browser-chrome iframe.
@@ -37,11 +37,11 @@ const TABS: {
   id: Tab; label: string; icon: React.ElementType;
   activeBg: string; activeColor: string; activeBorder: string;
 }[] = [
-  { id: 'content',  label: 'Content',  icon: Layers,     activeBg: 'bg-indigo-50 dark:bg-indigo-500/10',  activeColor: 'text-indigo-600 dark:text-indigo-300',  activeBorder: 'border border-indigo-200 dark:border-indigo-500/30' },
+  { id: 'content',  label: 'Content',  icon: Layers,     activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',  activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]',  activeBorder: 'border border-gray-300 dark:border-gray-600' },
   { id: 'header',   label: 'Header',   icon: NavIcon,    activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeColor: 'text-emerald-600 dark:text-emerald-300', activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
   { id: 'footer',   label: 'Footer',   icon: Footprints, activeBg: 'bg-amber-50 dark:bg-amber-500/10',    activeColor: 'text-amber-600 dark:text-amber-300',    activeBorder: 'border border-amber-200 dark:border-amber-500/30' },
   { id: 'theme',    label: 'Theme',    icon: Paintbrush, activeBg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', activeColor: 'text-fuchsia-600 dark:text-fuchsia-300', activeBorder: 'border border-fuchsia-200 dark:border-fuchsia-500/30' },
-  { id: 'settings', label: 'Settings', icon: Settings,   activeBg: 'bg-gray-100 dark:bg-gray-800',         activeColor: 'text-gray-900 dark:text-white',          activeBorder: 'border border-gray-300 dark:border-gray-600' },
+  { id: 'settings', label: 'Settings', icon: Settings,   activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',         activeColor: 'text-[var(--text-primary)]',          activeBorder: 'border border-gray-300 dark:border-gray-600' },
 ];
 
 // ─── Component ────────────────────────────────────────────────
@@ -238,7 +238,7 @@ export default function SiteVisualEditor({
   // ── Loading ──
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 dark:bg-[#060610] gap-3">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-secondary)] gap-3">
         <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
         <span className="text-sm text-gray-500">Loading editor…</span>
       </div>
@@ -247,23 +247,23 @@ export default function SiteVisualEditor({
 
   // ── Render ──
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[#060610] text-gray-900 dark:text-white">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[var(--bg-secondary)] text-[var(--text-primary)]">
       <div className="flex-1 flex min-h-0">
 
         {/* ═══ LEFT PANEL ═══ */}
-        <div className="w-1/2 shrink-0 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-white dark:bg-[#0A0A1A] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
+        <div className="w-1/2 shrink-0 border-r border-[var(--border)] flex flex-col bg-[var(--bg-primary)] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
 
           {/* Left panel header */}
-          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-4 bg-white dark:bg-[#0A0A1A]">
+          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center justify-between px-4 bg-[var(--bg-primary)]">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push('/dashboard/sites')}
-                className="p-2 -ml-2 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                className="p-2 -ml-2 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[200px]">
+                <h1 className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[200px]">
                   {displayTitle}
                 </h1>
                 <p className={`text-[11px] font-medium flex items-center gap-1 ${typeIconColor ?? 'text-gray-400'}`}>
@@ -277,7 +277,7 @@ export default function SiteVisualEditor({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all focus:ring-4 focus:ring-indigo-500/20 active:scale-95 disabled:opacity-50 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all focus:ring-4 focus:ring-gray-400/20 active:scale-95 disabled:opacity-50 ${
                   saved
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
@@ -293,10 +293,10 @@ export default function SiteVisualEditor({
           <div className="flex-1 flex min-h-0 overflow-hidden">
 
             {/* Vertical Tab Sidebar */}
-            <div className={`shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-[#07071A] transition-all duration-200 ${tabSidebarOpen ? 'w-44' : 'w-14'}`}>
+            <div className={`shrink-0 flex flex-col border-r border-[var(--border)] bg-gray-50/80 dark:bg-[var(--bg-secondary)] transition-all duration-200 ${tabSidebarOpen ? 'w-44' : 'w-14'}`}>
               <button
                 onClick={() => setTabSidebarOpen(!tabSidebarOpen)}
-                className="h-10 flex items-center justify-end pr-3 text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors shrink-0"
+                className="h-10 flex items-center justify-end pr-3 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] transition-colors shrink-0"
                 title={tabSidebarOpen ? 'Collapse tabs' : 'Expand tabs'}
               >
                 <ArrowLeft className={`w-3.5 h-3.5 transition-transform duration-200 ${tabSidebarOpen ? '' : 'rotate-180'}`} />
@@ -313,7 +313,7 @@ export default function SiteVisualEditor({
                       className={`flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${
                         active
                           ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm`
-                          : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-gray-800/50'
+                          : 'text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50'
                       } ${tabSidebarOpen ? 'justify-start' : 'justify-center'}`}
                     >
                       <tab.icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.5 : 2} />
@@ -348,12 +348,12 @@ export default function SiteVisualEditor({
         <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
 
           {/* Preview Header */}
-          <div className="shrink-0 h-14 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-3 relative">
+          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-4 gap-3 relative">
             {/* Open in browser */}
             <a
               href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
               target="_blank" rel="noopener noreferrer"
-              className={`flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
+              className={`flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
               title="Open in browser"
             >
               <ExternalLink className="w-3.5 h-3.5" /> Open
@@ -362,7 +362,7 @@ export default function SiteVisualEditor({
             {/* Copy link */}
             <button
               onClick={copyUrl} disabled={!site}
-              className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-indigo-400 dark:hover:border-indigo-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
               title="Copy page link"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -379,7 +379,7 @@ export default function SiteVisualEditor({
             <div className="flex-1" />
 
             {/* Device toggles */}
-            <div className="flex items-center gap-1 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-700 shrink-0">
+            <div className="flex items-center gap-1 bg-white dark:bg-[var(--bg-secondary)] p-1 rounded-lg border border-gray-200 dark:border-[var(--border)] shrink-0">
               {[
                 { id: 'desktop', icon: Monitor,    label: 'Desktop' },
                 { id: 'tablet',  icon: Tablet,     label: 'Tablet'  },
@@ -388,7 +388,7 @@ export default function SiteVisualEditor({
                 <button
                   key={dev.id}
                   onClick={() => setDevice(dev.id)}
-                  className={`p-1.5 rounded-md transition ${device === dev.id ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-md transition ${device === dev.id ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                   title={dev.label}
                 >
                   <dev.icon className="w-4 h-4" />
@@ -407,13 +407,13 @@ export default function SiteVisualEditor({
             const zoom = isDesktop && previewW > 0 ? Math.min(1, (previewW - 48) / DESKTOP_W) : 1;
 
             const BrowserChrome = () => (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-[var(--bg-secondary)] border-b border-gray-200 dark:border-[var(--border)] shrink-0">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400" />
                   <span className="w-3 h-3 rounded-full bg-amber-400" />
                   <span className="w-3 h-3 rounded-full bg-emerald-400" />
                 </div>
-                <div className="flex-1 px-3 py-1 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
+                <div className="flex-1 px-3 py-1 bg-white dark:bg-[var(--bg-secondary)] rounded-md border border-gray-200 dark:border-[var(--border)]">
                   <p className="text-[10px] text-gray-400 font-mono truncate">
                     {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading…'}
                   </p>
@@ -431,7 +431,7 @@ export default function SiteVisualEditor({
                 className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-10' : 'pt-6'}`}
               >
                 <div
-                  className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col"
+                  className="bg-white dark:bg-[var(--bg-secondary)] rounded-xl shadow-2xl border border-gray-200 dark:border-[var(--border)] overflow-hidden flex flex-col"
                   style={{
                     width: devicePx,
                     maxWidth: '100%',
