@@ -18,7 +18,7 @@ const lineTwoFeatures = [
 
 export default function CtaBanner() {
   return (
-    <section className="py-18 sm:py-16 bg-white relative overflow-hidden pb-0">
+    <section className="py-14 sm:py-16 bg-white relative overflow-hidden pb-0">
 
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
 
@@ -101,7 +101,7 @@ export default function CtaBanner() {
               Everything you need
             </div>
 
-            <h2 className="text-[42px] sm:text-[56px] md:text-[68px] font-black text-gray-900 tracking-[-0.04em] leading-[1.05] mb-6 max-w-3xl mx-auto drop-shadow-sm">
+            <h2 className="text-[32px] sm:text-[56px] md:text-[68px] font-black text-gray-900 tracking-[-0.04em] leading-[1.05] mb-6 max-w-3xl mx-auto drop-shadow-sm">
               Start selling
               <br />
               <span
@@ -118,7 +118,7 @@ export default function CtaBanner() {
               </span>
             </h2>
 
-            <p className="text-[17px] sm:text-[19px] text-gray-500 font-medium leading-relaxed mb-10 max-w-md mx-auto">
+            <p className="text-[15px] sm:text-[19px] text-gray-500 font-medium leading-relaxed mb-8 sm:mb-10 max-w-md mx-auto px-2 sm:px-0">
               No credit card. No setup fee. Just your products, your audience, and your income.
             </p>
 

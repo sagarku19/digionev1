@@ -46,7 +46,7 @@ export default function MarketingFooter() {
             <span
               className="text-[14vw] sm:text-[15vw] md:text-[16vw] font-black tracking-[-0.05em]"
               style={{
-                background: 'linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.04) 100%)',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.12) 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -77,7 +77,7 @@ export default function MarketingFooter() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-2 shrink-0">
             <DigiOneLogo width={20} height={20} />
-            <span className="text-[13px] font-bold text-gray-400 tracking-tight">DigiOne AI Pvt. Ltd.</span>
+            <span className="text-[13px] font-bold text-gray-400 tracking-tight">DigiOne AI Tech Pvt. Ltd.</span>
           </div>
 
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2">

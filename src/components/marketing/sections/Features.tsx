@@ -216,7 +216,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="py-28 sm:py-36 bg-[#fafafa] relative overflow-hidden">
+    <section id="features" className="py-16 sm:py-36 bg-[#fafafa] relative overflow-hidden">
 
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
       <div
@@ -244,12 +244,12 @@ export default function Features() {
             <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
               Unfair Advantage
             </p>
-            <h2 className="text-4xl sm:text-5xl md:text-[3.25rem] font-black text-gray-900 mb-5 tracking-[-0.035em] leading-[1.1]">
+            <h2 className="text-[2rem] sm:text-5xl md:text-[3.25rem] font-black text-gray-900 mb-5 tracking-[-0.035em] leading-[1.1]">
               Everything wired together.
               <br />
               <span className="text-gray-400 font-black">Zero duct-tape required.</span>
             </h2>
-            <p className="text-lg sm:text-xl font-medium text-gray-500 max-w-xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-xl font-medium text-gray-500 max-w-xl mx-auto leading-relaxed">
               Landing pages, AI bots, automation logic, and payment rails — one unified stack.
             </p>
           </div>
@@ -260,7 +260,7 @@ export default function Features() {
             const Icon = feat.icon;
             return (
               <InView key={i} style={{ '--delay': `${i * 80}ms` }} className={feat.colSpan}>
-                <div className="iv relative overflow-hidden p-8 sm:p-9 rounded-[28px] bg-white border border-black/[0.055] hover:border-black/[0.10] hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-500 group cursor-default h-full">
+                <div className="iv relative overflow-hidden p-6 sm:p-9 rounded-[24px] sm:rounded-[28px] bg-white border border-black/[0.055] hover:border-black/[0.10] hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-500 group cursor-default h-full">
                   <div className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${feat.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                   <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-50 border border-black/[0.05] text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6">
                     {feat.tag}

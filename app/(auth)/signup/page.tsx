@@ -128,8 +128,8 @@ export default function SignupPage() {
           >
             <Icon className="w-4 h-4 shrink-0" />
             <span className="leading-tight">
-              <span className="block text-[12px] font-bold">{label}</span>
-              <span className="block text-[10.5px] opacity-60">{sub}</span>
+              <span className="block text-[11px] sm:text-[12px] font-bold">{label}</span>
+              <span className="block text-[9px] sm:text-[10.5px] opacity-60">{sub}</span>
             </span>
           </button>
         ))}
@@ -209,15 +209,16 @@ export default function SignupPage() {
         {googleLoading ? 'Redirecting…' : 'Continue with Google'}
       </button>
 
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-[12px] text-gray-500">
+      <div className="mt-4 text-center">
+        <p className="text-[12px] text-gray-500 mb-3">
           Already have an account?{' '}
           <Link href="/login" className="text-[#E83A2E] font-bold hover:underline">Log in →</Link>
         </p>
         <p className="text-[11px] text-gray-400">
-          <Link href="/terms" className="hover:underline">Terms</Link>
-          {' · '}
-          <Link href="/privacy" className="hover:underline">Privacy</Link>
+          By continuing you agree to our{' '}
+          <Link href="/terms" className="hover:underline hover:text-gray-600 transition-colors">Terms of Service</Link>
+          {' & '}
+          <Link href="/privacy" className="hover:underline hover:text-gray-600 transition-colors">Privacy Policy</Link>
         </p>
       </div>
     </>

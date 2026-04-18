@@ -171,15 +171,16 @@ function LoginContent() {
         {googleLoading ? 'Redirecting...' : 'Continue with Google'}
       </button>
 
-      <div className="mt-4 flex items-center justify-between">
-        <p className="text-[12px] text-gray-500">
+      <div className="mt-4 text-center">
+        <p className="text-[12px] text-gray-500 mb-3">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-[#E83A2E] font-bold hover:underline">Sign up free →</Link>
         </p>
         <p className="text-[11px] text-gray-400">
-          <Link href="/terms" className="hover:underline">Terms</Link>
-          {' · '}
-          <Link href="/privacy" className="hover:underline">Privacy</Link>
+          By continuing you agree to our{' '}
+          <Link href="/terms" className="hover:underline hover:text-gray-600 transition-colors">Terms of Service</Link>
+          {' & '}
+          <Link href="/privacy" className="hover:underline hover:text-gray-600 transition-colors">Privacy Policy</Link>
         </p>
       </div>
     </>

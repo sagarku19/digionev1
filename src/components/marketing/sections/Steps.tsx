@@ -27,7 +27,7 @@ const steps = [
 
 export default function Steps() {
   return (
-    <section className="py-28 sm:py-36 bg-[#fafafa] relative overflow-hidden">
+    <section className="py-16 sm:py-36 bg-[#fafafa] relative overflow-hidden">
 
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
 
@@ -48,7 +48,7 @@ export default function Steps() {
             <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
               How it works
             </p>
-            <h2 className="text-4xl sm:text-5xl md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
+            <h2 className="text-[2rem] sm:text-5xl md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
               Up and running
               <br />
               <span className="text-gray-400">in minutes.</span>
@@ -56,8 +56,8 @@ export default function Steps() {
           </div>
         </InView>
 
-        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          <div className="hidden md:block absolute top-10 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px">
+        <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+          <div className="hidden sm:block absolute top-10 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px">
             <div className="w-full h-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#E83A2E]/20 via-violet-300/30 to-emerald-300/20" />
           </div>

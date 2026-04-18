@@ -167,19 +167,19 @@ export default function Hero() {
         </div>
 
         <div
-          className="flex items-center justify-center gap-0 mb-7"
+          className="flex flex-wrap items-center justify-center gap-x-0 gap-y-1 mb-7"
           style={{ animation: 'heroFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.06s both' }}
         >
           {['Digital Product', 'Automation Flow', 'AI Tools', 'No-Code Website'].map((tag, i) => (
             <span key={i} className="flex items-center">
-              {i > 0 && <span className="mx-3 sm:mx-4 text-gray-300 text-[18px] sm:text-[22px] font-light select-none">|</span>}
-              <span className="text-[15px] sm:text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
+              {i > 0 && <span className="mx-2 sm:mx-4 text-gray-300 text-[14px] sm:text-[22px] font-light select-none">|</span>}
+              <span className="text-[12px] sm:text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
             </span>
           ))}
         </div>
 
         <h1
-          className="text-[52px] sm:text-[68px] md:text-[82px] lg:text-[96px] font-black tracking-[-0.04em] leading-[1.05] max-w-4xl"
+          className="text-[42px] sm:text-[68px] md:text-[82px] lg:text-[96px] font-black tracking-[-0.04em] leading-[1.05] max-w-4xl"
           style={{ animation: 'heroFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) 0.12s both' }}
         >
           <span className="text-gray-500">Setup in minutes.</span>
@@ -199,7 +199,7 @@ export default function Hero() {
         </h1>
 
         <p
-          className="mt-7 sm:mt-8 text-[17px] sm:text-[20px] font-medium text-gray-500 max-w-2xl leading-relaxed"
+          className="mt-6 sm:mt-8 text-[15px] sm:text-[20px] font-medium text-gray-500 max-w-2xl leading-relaxed px-2 sm:px-0"
           style={{ animation: 'heroFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.18s both' }}
         >
           The only platform that turns your audience into automated income. No coding, no complicated setups — just results.
@@ -225,7 +225,7 @@ export default function Hero() {
         </div>
 
         <p
-          className="mt-5 text-[12px] font-semibold text-gray-400 tracking-widest uppercase"
+          className="mt-5 text-[10px] sm:text-[12px] font-semibold text-gray-400 tracking-widest uppercase px-4 sm:px-0 text-center"
           style={{ animation: 'heroFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.38s both' }}
         >
           No credit card &nbsp;·&nbsp; Setup in 2 minutes &nbsp;·&nbsp; Free forever plan

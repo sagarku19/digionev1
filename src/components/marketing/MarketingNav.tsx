@@ -239,73 +239,100 @@ export default function MarketingNav() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
-      <div className={`fixed inset-0 z-[100] transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${mobileMenuOpen ? 'visible' : 'invisible'}`}>
-        <div className={`absolute inset-0 bg-white/60 backdrop-blur-md transition-opacity duration-400 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setMobileMenuOpen(false)} />
-        <div className={`absolute right-4 top-4 bottom-4 w-auto min-w-[280px] bg-white border border-black/[0.04] shadow-2xl rounded-3xl transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col ${mobileMenuOpen ? 'translate-y-0 scale-100 opacity-100' : '-translate-y-8 scale-95 opacity-0'}`}>
-          
-          <div className="flex items-center justify-between p-6">
+      {/* Mobile Menu — full-screen overlay */}
+      <div className={`fixed inset-0 z-[100] transition-all duration-300 ${mobileMenuOpen ? 'visible' : 'invisible pointer-events-none'}`}>
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+
+        {/* Sheet — slides up from bottom */}
+        <div className={`absolute inset-x-0 bottom-0 bg-white rounded-t-4xl shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-[92dvh] ${mobileMenuOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+
+          {/* Handle */}
+          <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="w-10 h-1 rounded-full bg-gray-200" />
+          </div>
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 pt-3 pb-4 shrink-0">
             <div className="flex items-center gap-2">
               <DigiOneLogo width={22} height={22} />
-              <span className="text-lg font-bold text-gray-900 tracking-tight">
-                DigiOne<sup className="text-[10px] text-gray-400 font-semibold ml-0.5 -top-2 relative">.ai</sup>
+              <span className="text-[17px] font-bold text-gray-900 tracking-tight">
+                DigiOne<sup className="text-[9px] text-gray-400 font-semibold ml-0.5 -top-2 relative">.ai</sup>
               </span>
             </div>
-            <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-all">
-              <X className="h-4 w-4" />
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+            >
+              <X className="h-4 w-4 text-gray-500" />
             </button>
           </div>
 
-          <div className="flex flex-col flex-1 px-6 pb-6 overflow-y-auto">
+          {/* Scrollable content */}
+          <div className="flex flex-col flex-1 overflow-y-auto px-5 pb-8">
+
+            {/* Logged-in user info */}
             {isLoggedIn && userProfile && (
-              <div className="flex items-center gap-3 pb-8 mb-4 border-b border-gray-100">
-                <div className="w-12 h-12 rounded-full bg-[#E83A2E] flex items-center justify-center text-white font-bold text-lg overflow-hidden shrink-0 shadow-sm">
+              <div className="flex items-center gap-3 p-4 mb-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="w-10 h-10 rounded-full bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0 shadow-sm">
                   {userProfile.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : initials}
                 </div>
-                <div>
-                  <p className="text-[17px] font-bold text-gray-900 truncate uppercase tracking-widest">{userProfile.full_name || 'Creator'}</p>
-                  <p className="text-[14px] text-gray-500 font-medium truncate max-w-[200px]" title={userProfile.email || 'Verified Account'}>
-                    {userProfile.email || 'Verified Account'}
-                  </p>
+                <div className="min-w-0">
+                  <p className="text-[14px] font-bold text-gray-900 truncate">{userProfile.full_name || 'Creator'}</p>
+                  <p className="text-[12px] text-gray-400 truncate">{userProfile.email || 'Verified Account'}</p>
                 </div>
               </div>
             )}
 
-            <div className="space-y-1">
+            {/* Nav links */}
+            <div className="space-y-0.5 mb-4">
               {navLinks.map(({ label, href, icon: Icon }) => (
-                <Link key={label} href={href} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[19px] font-bold text-gray-900 py-3 transition-colors group">
-                  {Icon && <Icon className="w-5 h-5 text-gray-400 group-hover:text-black transition-colors" />}
+                <Link
+                  key={label}
+                  href={href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[16px] font-semibold text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                >
+                  {Icon && <Icon className="w-5 h-5 text-gray-400 shrink-0" />}
                   {label}
                 </Link>
               ))}
             </div>
 
-            <div className="mt-auto pt-8 flex flex-col gap-3">
+            {/* Account links (logged in) */}
+            {isLoggedIn && (
+              <div className="space-y-0.5 mb-4 pt-4 border-t border-gray-100">
+                <p className="px-3 mb-1 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Account</p>
+                <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[15px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                  <User className="w-4 h-4 text-gray-400 shrink-0" /> Profile
+                </Link>
+                <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[15px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                  <BookOpen className="w-4 h-4 text-gray-400 shrink-0" /> Library
+                </Link>
+              </div>
+            )}
+
+            {/* CTA buttons */}
+            <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2.5">
               {isLoggedIn ? (
                 <>
-                  <div className="flex flex-col gap-1 pb-4 mb-2 border-b border-gray-100">
-                    <p className="px-1 text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 shadow-transparent">ACCOUNT</p>
-                    <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[17px] font-bold text-gray-700 hover:text-black py-2.5 transition-colors">
-                      <User className="w-4 h-4 text-gray-400" /> Profile
-                    </Link>
-                    <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[17px] font-bold text-gray-700 hover:text-black py-2.5 transition-colors">
-                      <BookOpen className="w-4 h-4 text-gray-400" /> Library
-                    </Link>
-                  </div>
-                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[16px] font-bold bg-black text-white rounded-2xl py-4 shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:scale-95 transition-all">
-                    Dashboard
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[15px] font-bold bg-black text-white rounded-2xl py-3.5 active:scale-[0.98] transition-all">
+                    <LayoutDashboard className="w-4 h-4" /> Dashboard
                   </Link>
-                  <button onClick={handleSignOut} className="w-full text-center text-[15px] font-bold text-gray-500 py-4 active:scale-95 transition-all">
+                  <button onClick={handleSignOut} className="w-full text-center text-[14px] font-semibold text-gray-400 py-3 active:scale-[0.98] transition-all">
                     Sign out
                   </button>
                 </>
               ) : (
                 <>
-                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[16px] font-bold bg-black text-white rounded-2xl py-4 shadow-[0_8px_16px_rgba(0,0,0,0.1)] active:scale-95 transition-all">
-                    Start for free
+                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[15px] font-bold bg-black text-white rounded-2xl py-3.5 active:scale-[0.98] transition-all">
+                    Start for free <ArrowRight className="w-4 h-4" />
                   </Link>
-                  <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="text-center text-[16px] font-bold text-gray-500 py-4 active:scale-95 transition-all">
-                    Sign in to account
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center text-[14px] font-semibold text-gray-500 bg-gray-100 rounded-2xl py-3.5 active:scale-[0.98] transition-all">
+                    Sign in
                   </Link>
                 </>
               )}

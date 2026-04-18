@@ -29,11 +29,11 @@ export default function Marquee() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="max-w-4xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="rounded-2xl bg-[#f7f7f8] p-8 text-center">
-            <div className="text-3xl font-bold text-[var(--text-primary)] mb-1 font-display">{s.value}</div>
-            <div className="text-sm text-[var(--text-secondary)]">{s.label}</div>
+          <div key={i} className="rounded-xl sm:rounded-2xl bg-[#f7f7f8] p-4 sm:p-8 text-center">
+            <div className="text-lg sm:text-3xl font-bold text-[var(--text-primary)] mb-1">{s.value}</div>
+            <div className="text-[11px] sm:text-sm text-[var(--text-secondary)] leading-tight">{s.label}</div>
           </div>
         ))}
       </div>

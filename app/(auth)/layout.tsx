@@ -178,18 +178,18 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* ══════════════════════════════════════════
           RIGHT FORM PANEL
       ══════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col justify-center items-center min-h-screen bg-[#f5f5f5] px-5 py-4 sm:px-8 overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center items-center min-h-screen bg-[#f5f5f5] px-4 py-6 sm:px-8 overflow-y-auto">
 
         {/* Mobile logo */}
-        <div className="md:hidden mb-6 flex items-center gap-2.5">
-          <DigiOneLogo width={32} height={32} />
-          <span className="text-[18px] font-black tracking-[-0.025em] text-gray-900">
+        <div className="md:hidden mb-5 flex items-center gap-2.5">
+          <DigiOneLogo width={28} height={28} />
+          <span className="text-[17px] font-black tracking-[-0.025em] text-gray-900">
             DigiOne<sup className="text-[8px] text-gray-400 font-bold ml-px relative -top-1.5">.ai</sup>
           </span>
         </div>
 
         {/* Form card */}
-        <div className="w-full max-w-[400px] bg-white rounded-2xl border border-black/[0.06] shadow-[0_4px_30px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)] px-7 py-7">
+        <div className="w-full max-w-[400px] bg-white rounded-2xl border border-black/[0.06] shadow-[0_4px_30px_rgba(0,0,0,0.07),0_1px_3px_rgba(0,0,0,0.04)] px-5 py-6 sm:px-7 sm:py-7">
           {children}
         </div>
       </div>

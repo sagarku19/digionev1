@@ -12,7 +12,7 @@ const types = [
 
 export default function ProductTypes() {
   return (
-    <section className="py-28 sm:py-36 bg-white relative overflow-hidden">
+    <section className="py-16 sm:py-36 bg-white relative overflow-hidden">
 
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
       <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
@@ -31,10 +31,10 @@ export default function ProductTypes() {
             <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
               What you can sell
             </p>
-            <h2 className="text-4xl sm:text-5xl md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
+            <h2 className="text-[2rem] sm:text-5xl md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
               Sell anything digital.
             </h2>
-            <p className="mt-4 text-lg text-gray-500 font-medium max-w-lg mx-auto leading-relaxed">
+            <p className="mt-4 text-base sm:text-lg text-gray-500 font-medium max-w-lg mx-auto leading-relaxed">
               One platform handles every format — from courses to consulting.
             </p>
           </div>
@@ -45,7 +45,7 @@ export default function ProductTypes() {
             const Icon = t.icon;
             return (
               <InView key={i} style={{ '--delay': `${i * 70}ms` }}>
-                <div className="iv relative group p-7 sm:p-8 rounded-[24px] bg-[#fafafa] border border-black/[0.055] hover:bg-white hover:border-black/[0.10] hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 cursor-default overflow-hidden">
+                <div className="iv relative group p-5 sm:p-8 rounded-[20px] sm:rounded-[24px] bg-[#fafafa] border border-black/[0.055] hover:bg-white hover:border-black/[0.10] hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 cursor-default overflow-hidden">
                   <div className={`absolute top-0 inset-x-0 h-[2.5px] bg-gradient-to-r ${t.color} opacity-0 group-hover:opacity-100 transition-opacity duration-400`} />
                   <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${t.color} flex items-center justify-center mb-5 shadow-[0_4px_14px_-4px_rgba(0,0,0,0.2)] group-hover:scale-110 group-hover:-rotate-3 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]`}>
                     <Icon className="w-5 h-5 text-white" />
