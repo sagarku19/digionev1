@@ -3,58 +3,96 @@ import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 
 export default function MarketingFooter() {
   return (
-    <footer className="border-t border-[var(--border)] bg-[var(--bg-secondary)] pt-16 pb-8">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          <div className="col-span-2 md:col-span-1 md:border-r border-[var(--border)] md:pr-4">
-            <div className="flex items-center gap-2 mb-4">
-              <DigiOneLogo width={22} height={22} />
-              <span className="text-base font-bold text-[var(--text-primary)] tracking-tight">DigiOne<sup className="text-[10px] text-[var(--text-secondary)] font-medium ml-0.5 -top-2 relative">.ai</sup></span>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)] mb-6 leading-relaxed">
-              The platform serious Indian creators use to build their business. Built for India, ready for the world.
-            </p>
-          </div>
+    <footer className="bg-white pt-16 pb-10 overflow-hidden relative">
 
-          <div>
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Product</h3>
-            <ul className="space-y-3">
-              <li><Link href="#features" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Features</Link></li>
-              <li><Link href="#pricing" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Pricing</Link></li>
-              <li><Link href="#creators" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Showcase</Link></li>
-              <li><Link href="/integrations" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Integrations</Link></li>
-            </ul>
-          </div>
+      <div
+        className="absolute top-0 inset-x-0 h-24 pointer-events-none z-20"
+        style={{ background: 'linear-gradient(to bottom, #ffffff 0%, transparent 100%)' }}
+      />
 
-          <div>
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Resources</h3>
-            <ul className="space-y-3">
-              <li><Link href="/blog" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Blog</Link></li>
-              <li><Link href="/help" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Help Center</Link></li>
-              <li><Link href="/guides" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Creator Guides</Link></li>
-              <li><Link href="/community" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Community</Link></li>
-            </ul>
-          </div>
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.045) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+          WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
+        }}
+      />
 
-          <div>
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">Legal</h3>
-            <ul className="space-y-3">
-              <li><Link href="/terms" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Terms of Service</Link></li>
-              <li><Link href="/privacy" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/refunds" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Refund Policy</Link></li>
-              <li><Link href="/contact" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Contact Us</Link></li>
-            </ul>
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+          WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 45%, transparent 80%)',
+          maskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 45%, transparent 80%)',
+        }}
+      />
+
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+        style={{
+          width: '700px', height: '280px',
+          background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.06) 0%, transparent 65%)',
+          filter: 'blur(60px)',
+        }}
+      />
+
+      <div className="mx-auto max-w-[1400px] px-5 sm:px-8 flex flex-col relative z-10">
+
+        <div className="w-full flex justify-center mb-10 sm:mb-14 select-none py-4">
+          <div className="flex items-baseline justify-center pointer-events-none leading-none">
+            <span
+              className="text-[14vw] sm:text-[15vw] md:text-[16vw] font-black tracking-[-0.05em]"
+              style={{
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.04) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                lineHeight: 1.05,
+              }}
+            >
+              DigiOne
+            </span>
+            <span
+              className="text-[5vw] sm:text-[6vw] font-black ml-1 self-start mt-[2vw]"
+              style={{
+                background: 'linear-gradient(135deg, #E83A2E 0%, #ff7043 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                lineHeight: 1,
+              }}
+            >
+              .ai
+            </span>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-[var(--border)] flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-[var(--text-secondary)]">
-            &copy; {new Date().getFullYear()} DigiOne Technologies. All rights reserved.
-          </p>
-          <div className="flex gap-4">
-            <a href="#" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm transition-colors">Twitter</a>
-            <a href="#" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm transition-colors">Instagram</a>
-            <a href="#" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm transition-colors">YouTube</a>
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-black/[0.08] to-transparent mb-8" />
+
+        <div className="flex flex-col md:flex-row items-center justify-between gap-5">
+          <div className="flex items-center gap-2 shrink-0">
+            <DigiOneLogo width={20} height={20} />
+            <span className="text-[13px] font-bold text-gray-400 tracking-tight">DigiOne AI Pvt. Ltd.</span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2">
+            {[
+              { href: '/contact', label: 'Contact' },
+              { href: '/refunds', label: 'Refund policy' },
+              { href: '/privacy', label: 'Privacy' },
+              { href: '/terms', label: 'Terms' },
+            ].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-[13px] font-medium text-gray-400 hover:text-gray-800 transition-colors duration-200"
+              >
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
