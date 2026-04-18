@@ -114,13 +114,15 @@ const QUICK_ACTIONS = [
 
 // ─── Page ─────────────────────────────────────────────────────
 export default function DashboardHome() {
-  const end   = new Date();
-  const start = new Date();
-  start.setDate(end.getDate() - 30);
+  // Stable date strings keyed to today's date — same value on every mount within the same day
+  const todayKey = new Date().toISOString().split('T')[0];
+  const thirtyDaysAgoKey = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const startISO = `${thirtyDaysAgoKey}T00:00:00.000Z`;
+  const endISO   = `${todayKey}T23:59:59.999Z`;
 
   const { stats, isLoading: analyticsLoading } = useAnalytics({
-    start: start.toISOString(),
-    end:   end.toISOString(),
+    start: startISO,
+    end:   endISO,
   });
   const { products, isLoading: productsLoading } = useProducts();
   const { orders,   isLoading: ordersLoading   } = useOrders(20);
@@ -137,8 +139,8 @@ export default function DashboardHome() {
       d.setDate(d.getDate() - (29 - i));
       const ds = d.toISOString().split('T')[0];
       const revenue = stats.orders
-        .filter((o: any) => o.created_at?.startsWith(ds))
-        .reduce((acc: number, o: any) => acc + (o.total_amount || 0), 0);
+        .filter((o: any) => o.created_at?.startsWith(ds) && o.status === 'completed')
+        .reduce((acc: number, o: any) => acc + (Number(o.total_amount) || 0), 0);
       return { name: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), revenue };
     });
   }, [stats]);
@@ -212,20 +214,32 @@ export default function DashboardHome() {
               <div className="flex items-start justify-between mb-8">
                 <div>
                   <h2 className="text-lg font-extrabold text-[var(--text-primary)]">Revenue</h2>
-                  <p className="text-sm font-medium text-gray-500 mt-0.5">Last 30 days performance</p>
+                  <p className="text-sm font-medium text-gray-500 mt-0.5">Last 30 days · completed orders</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-                    {analyticsLoading ? '—' : formatINR(stats.totalRevenue)}
-                  </p>
-                  <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1 mt-1">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    {stats.totalSales} total sales
-                  </p>
+                  {analyticsLoading ? (
+                    <div className="space-y-2 animate-pulse">
+                      <div className="h-7 w-28 bg-gray-200 dark:bg-zinc-800 rounded-lg ml-auto" />
+                      <div className="h-3.5 w-20 bg-gray-100 dark:bg-zinc-800/60 rounded ml-auto" />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+                        {formatINR(stats.totalRevenue)}
+                      </p>
+                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-end gap-1 mt-1">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        {stats.totalSales} completed sale{stats.totalSales !== 1 ? 's' : ''}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="h-[260px] min-w-0 w-full">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                {analyticsLoading ? (
+                  <div className="h-full w-full rounded-2xl bg-gray-100 dark:bg-zinc-900/60 animate-pulse" />
+                ) : null}
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} style={analyticsLoading ? { display: 'none' } : {}}>
                   <AreaChart data={chartData} margin={{ top: 2, right: 4, bottom: 0, left: 0 }}>
                     <defs>
                       <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">

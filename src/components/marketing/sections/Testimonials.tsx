@@ -14,7 +14,7 @@ const testimonials = [
   },
   {
     quote: "I moved from Gumroad. Saving 5% on every transaction matters when your volume grows. The checkout conversion is genuinely 2x better.",
-    name: "Priya Mehta",
+    name: "Riya Mehta",
     title: "Design Systems Architect",
     meta: "8K+ customers",
     stat: "2×",

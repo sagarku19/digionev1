@@ -170,7 +170,7 @@ export default function Hero() {
           className="flex items-center justify-center gap-0 mb-7"
           style={{ animation: 'heroFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.06s both' }}
         >
-          {['Digital Product', 'Automation Tools', 'AI','No-Code Website'].map((tag, i) => (
+          {['Digital Product', 'Automation Flow', 'AI Tools', 'No-Code Website'].map((tag, i) => (
             <span key={i} className="flex items-center">
               {i > 0 && <span className="mx-3 sm:mx-4 text-gray-300 text-[18px] sm:text-[22px] font-light select-none">|</span>}
               <span className="text-[15px] sm:text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>

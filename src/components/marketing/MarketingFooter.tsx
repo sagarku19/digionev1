@@ -3,7 +3,7 @@ import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 
 export default function MarketingFooter() {
   return (
-    <footer className="bg-white pt-10 pb-8 overflow-hidden relative">
+    <footer className="bg-white pt-2 pb-8 overflow-hidden relative">
 
       <div
         className="absolute top-0 inset-x-0 h-24 pointer-events-none z-20"

@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 
 const creators = [
   { name: "Arjun Sharma", niche: "Figma Courses", link: "digione.ai/arjun", revenue: "₹1.2L / mo", color: "from-[#E83A2E] to-orange-500" },
-  { name: "Priya Mehta", niche: "Design Assets", link: "digione.ai/priya", revenue: "₹84K / mo", color: "from-violet-500 to-purple-600" },
+  { name: "Riya Mehta", niche: "Design Assets", link: "digione.ai/riya", revenue: "₹84K / mo", color: "from-violet-500 to-purple-600" },
   { name: "Rahul Verma", niche: "Photography", link: "digione.ai/rahul", revenue: "₹60K / mo", color: "from-orange-400 to-amber-500" },
   { name: "Neha Kapoor", niche: "Podcast Creator", link: "digione.ai/neha", revenue: "₹45K / mo", color: "from-rose-500 to-pink-500" },
   { name: "Vikram Joshi", niche: "Notion Templates", link: "digione.ai/vikram", revenue: "₹38K / mo", color: "from-blue-500 to-cyan-500" },
@@ -43,7 +43,7 @@ export default function Showcase() {
               key={i}
               className="min-w-[260px] sm:min-w-[300px] rounded-[24px] bg-[#fafafa] border border-black/[0.055] overflow-hidden shrink-0 snap-center hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 group cursor-default"
             >
-              <div className={`h-36 bg-gradient-to-br ${c.color} relative overflow-hidden`}>
+              <div className={`h-36 bg-gradient-to-br ${c.color} relative`}>
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:22px_22px]" />
                 <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-2.5 py-1 text-[10px] font-black text-white">
                   {c.revenue}
@@ -68,3 +68,5 @@ export default function Showcase() {
     </section>
   );
 }
+
+
