@@ -54,16 +54,16 @@
   --warning: #d97706;
   --danger:  #dc2626;
 
-  /* Brand indigo — logo / avatar gradient only */
-  --brand:       #6366F1;
-  --brand-hover: #4F46E5;
+  /* Brand red — primary CTA / accent */
+  --brand:       #E83A2E;
+  --brand-hover: #cc2e23;
 
   /* Auth page variables */
-  --auth-bg:        #f4f4f5;
+  --auth-bg:        #fafafa;
   --auth-text:      #0a0a0a;
   --auth-text-2:    #737373;
   --auth-surface:   #ffffff;
-  --brand-gradient: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  --brand-gradient: linear-gradient(135deg, #E83A2E 0%, #ff7043 55%, #E83A2E 100%);
 
   /* Legacy aliases — kept for backward compat */
   --color-bg:     var(--bg-primary);

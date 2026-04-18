@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
-import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen } from 'lucide-react';
+import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface UserProfile {
@@ -15,8 +15,9 @@ interface UserProfile {
 const navLinks = [
   { label: 'Discover', href: '/discover', icon: Compass },
   { label: 'Community', href: '/community', icon: Users },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'Blog', href: '/blog' },
+  { label: 'Features', href: '/features', icon: Sparkles },
+  { label: 'Pricing', href: '/pricing', icon: Receipt },
+  { label: 'Blog', href: '/blog', icon: PenLine },
 ];
 
 export default function MarketingNav() {
@@ -272,7 +273,8 @@ export default function MarketingNav() {
 
             <div className="space-y-1">
               {navLinks.map(({ label, href, icon: Icon }) => (
-                <Link key={label} href={href} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[19px] font-bold text-gray-900 py-3 transition-colors">
+                <Link key={label} href={href} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[19px] font-bold text-gray-900 py-3 transition-colors group">
+                  {Icon && <Icon className="w-5 h-5 text-gray-400 group-hover:text-black transition-colors" />}
                   {label}
                 </Link>
               ))}

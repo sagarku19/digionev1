@@ -94,17 +94,18 @@ export default function Hero() {
         className="hidden xl:block absolute top-[26%] left-6 z-20"
         style={{ animation: 'floatCard1 7s ease-in-out infinite' }}
       >
-        <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-3.5 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14)] flex items-center gap-3 w-[210px]">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-sm shrink-0">
-            <IndianRupee className="w-4 h-4 text-white" />
+        <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-3.5 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14)] w-[220px]">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#E83A2E] to-orange-400 flex items-center justify-center shrink-0 text-lg leading-none">🧑</div>
+            <div>
+              <p className="text-[10px] font-black text-gray-900 leading-none">Arjun Sharma</p>
+              <p className="text-[9px] text-gray-400 leading-none mt-0.5">just purchased</p>
+            </div>
+            <span className="ml-auto text-[9px] font-bold text-gray-400">2s ago</span>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold text-gray-400 leading-none mb-1">Revenue today</p>
-            <p className="text-[16px] font-black text-gray-900 leading-none">₹24,850</p>
-          </div>
-          <div className="flex items-center gap-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-full px-2 py-0.5 shrink-0">
-            <TrendingUp className="w-3 h-3" />
-            <span className="text-[9px] font-black">+18%</span>
+          <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
+            <span className="text-[11px] font-bold text-gray-700">Masterclass Course</span>
+            <span className="text-[11px] font-black text-emerald-600">₹999</span>
           </div>
         </div>
       </div>
@@ -113,19 +114,23 @@ export default function Hero() {
         className="hidden xl:block absolute top-[18%] right-6 z-20"
         style={{ animation: 'floatCard2 9s ease-in-out infinite' }}
       >
-        <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-3.5 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14)] flex items-center gap-3 w-[200px]">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center shadow-sm shrink-0">
-            <Users className="w-4 h-4 text-white" />
+        <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-4 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.16)] w-52.5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-9 h-9 rounded-xl bg-linear-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm shrink-0">
+              <TrendingUp className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">+24% today</span>
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-gray-400 leading-none mb-1">New buyers</p>
-            <p className="text-[16px] font-black text-gray-900 leading-none">142 today</p>
+          <p className="text-[10px] font-semibold text-gray-400 leading-none mb-1">Revenue today</p>
+          <p className="text-[22px] font-black text-gray-900 leading-none tracking-tight">₹38,240</p>
+          <div className="mt-2.5 h-1 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full w-[72%] rounded-full bg-linear-to-r from-violet-400 to-indigo-500" />
           </div>
         </div>
       </div>
 
       <div
-        className="hidden xl:block absolute top-[40%] right-4 z-20"
+        className="hidden xl:block absolute top-[40%] right-10 z-20"
         style={{ animation: 'floatCard3 11s ease-in-out infinite' }}
       >
         <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-3.5 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14)] flex items-center gap-3 w-[210px]">
@@ -143,25 +148,6 @@ export default function Hero() {
         </div>
       </div>
 
-      <div
-        className="hidden xl:block absolute top-[44%] left-4 z-20"
-        style={{ animation: 'floatCard4 8s ease-in-out infinite' }}
-      >
-        <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-3.5 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14)] w-[220px]">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#E83A2E] to-orange-400 flex items-center justify-center text-white text-[10px] font-black shrink-0">A</div>
-            <div>
-              <p className="text-[10px] font-black text-gray-900 leading-none">Arjun Sharma</p>
-              <p className="text-[9px] text-gray-400 leading-none mt-0.5">just purchased</p>
-            </div>
-            <span className="ml-auto text-[9px] font-bold text-gray-400">2s ago</span>
-          </div>
-          <div className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
-            <span className="text-[11px] font-bold text-gray-700">Figma Masterclass</span>
-            <span className="text-[11px] font-black text-emerald-600">₹999</span>
-          </div>
-        </div>
-      </div>
 
       {/* Content */}
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8 flex flex-col items-center text-center z-10">
@@ -184,7 +170,7 @@ export default function Hero() {
           className="flex items-center justify-center gap-0 mb-7"
           style={{ animation: 'heroFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.06s both' }}
         >
-          {['Digital Product', 'Automation', 'No-Code Site'].map((tag, i) => (
+          {['Digital Product', 'Automation Tools', 'AI','No-Code Website'].map((tag, i) => (
             <span key={i} className="flex items-center">
               {i > 0 && <span className="mx-3 sm:mx-4 text-gray-300 text-[18px] sm:text-[22px] font-light select-none">|</span>}
               <span className="text-[15px] sm:text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>

@@ -3,7 +3,7 @@ import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 
 export default function MarketingFooter() {
   return (
-    <footer className="bg-white pt-16 pb-10 overflow-hidden relative">
+    <footer className="bg-white pt-10 pb-8 overflow-hidden relative">
 
       <div
         className="absolute top-0 inset-x-0 h-24 pointer-events-none z-20"
@@ -41,7 +41,7 @@ export default function MarketingFooter() {
 
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8 flex flex-col relative z-10">
 
-        <div className="w-full flex justify-center mb-10 sm:mb-14 select-none py-4">
+        <div className="w-full flex justify-center mb-6 sm:mb-8 select-none">
           <div className="flex items-baseline justify-center pointer-events-none leading-none">
             <span
               className="text-[14vw] sm:text-[15vw] md:text-[16vw] font-black tracking-[-0.05em]"
@@ -50,7 +50,9 @@ export default function MarketingFooter() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                lineHeight: 1.05,
+                lineHeight: 1.15,
+                paddingBottom: '0.08em',
+                display: 'inline-block',
               }}
             >
               DigiOne
