@@ -45,6 +45,12 @@ function LoginContent() {
     }
 
     if (data.user) {
+      const returnUrl = searchParams.get('returnUrl');
+      if (returnUrl) {
+        router.push(returnUrl);
+        return;
+      }
+
       const { data: userData } = await supabase
         .from('users')
         .select('role')
@@ -52,10 +58,7 @@ function LoginContent() {
         .single();
 
       const role = userData?.role || 'user';
-      const returnUrl = searchParams.get('returnUrl');
-      if (returnUrl) {
-        router.push(returnUrl);
-      } else if (role === 'creator' || role === 'super_admin') {
+      if (role === 'creator' || role === 'super_admin') {
         router.push('/dashboard');
       } else {
         router.push('/account/library');

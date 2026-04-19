@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine } from 'lucide-react';
@@ -26,10 +26,12 @@ export default function MarketingNav() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const supabaseRef = useRef(createClient());
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setIsScrolled(window.scrollY > 20);
     const onScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -102,17 +104,18 @@ export default function MarketingNav() {
     setUserProfile(null);
     setProfileDropdownOpen(false);
     setMobileMenuOpen(false);
+    setShowSignOutConfirm(false);
   };
 
   const initials = userProfile?.full_name ? userProfile.full_name.charAt(0).toUpperCase() : 'C';
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'pt-2 sm:pt-4 px-2 sm:px-4' : 'pt-4 sm:pt-6 px-4'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'pt-1 sm:pt-4 px-3 sm:px-4' : 'pt-2 sm:pt-6 px-3 sm:px-4'}`}>
         <div className={`mx-auto max-w-7xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isScrolled 
             ? 'bg-white/80 backdrop-blur-xl border border-black/[0.04] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl md:rounded-full py-1.5 px-3 md:px-5' 
-            : 'bg-transparent border-transparent py-2'
+            : 'bg-transparent border-transparent py-2 px-2 sm:px-0'
         }`}>
           <div className="flex h-12 md:h-14 items-center justify-between">
             
@@ -203,10 +206,10 @@ export default function MarketingNav() {
                       </div>
                       <div className="p-2 border-t border-gray-100">
                         <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors rounded-xl"
+                          onClick={() => { setProfileDropdownOpen(false); setShowSignOutConfirm(true); }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-[14px] font-semibold text-red-500 hover:bg-red-50 transition-colors rounded-xl"
                         >
-                          <LogOut className="w-4 h-4 text-red-400" />
+                          <LogOut className="w-4 h-4 text-red-500" />
                           Sign out
                         </button>
                       </div>
@@ -248,7 +251,7 @@ export default function MarketingNav() {
         />
 
         {/* Sheet — slides up from bottom */}
-        <div className={`absolute inset-x-0 bottom-0 bg-white rounded-t-4xl shadow-2xl flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-[92dvh] ${mobileMenuOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className={`absolute inset-x-0 bottom-0 bg-white rounded-t-4xl shadow-2xl flex flex-col transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-[92dvh] ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
 
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
@@ -289,12 +292,17 @@ export default function MarketingNav() {
 
             {/* Nav links */}
             <div className="space-y-0.5 mb-4">
-              {navLinks.map(({ label, href, icon: Icon }) => (
+              {navLinks.map(({ label, href, icon: Icon }, i) => (
                 <Link
                   key={label}
                   href={href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[16px] font-semibold text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[16px] font-semibold text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-all duration-300"
+                  style={{
+                    opacity: mobileMenuOpen ? 1 : 0,
+                    transform: mobileMenuOpen ? 'translateY(0)' : 'translateY(12px)',
+                    transition: `opacity 0.35s ease ${120 + i * 55}ms, transform 0.35s cubic-bezier(0.16,1,0.3,1) ${120 + i * 55}ms`,
+                  }}
                 >
                   {Icon && <Icon className="w-5 h-5 text-gray-400 shrink-0" />}
                   {label}
@@ -316,14 +324,21 @@ export default function MarketingNav() {
             )}
 
             {/* CTA buttons */}
-            <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2.5">
+            <div
+              className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2.5"
+              style={{
+                opacity: mobileMenuOpen ? 1 : 0,
+                transform: mobileMenuOpen ? 'translateY(0)' : 'translateY(12px)',
+                transition: `opacity 0.35s ease 400ms, transform 0.35s cubic-bezier(0.16,1,0.3,1) 400ms`,
+              }}
+            >
               {isLoggedIn ? (
                 <>
                   <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[15px] font-bold bg-black text-white rounded-2xl py-3.5 active:scale-[0.98] transition-all">
                     <LayoutDashboard className="w-4 h-4" /> Dashboard
                   </Link>
-                  <button onClick={handleSignOut} className="w-full text-center text-[14px] font-semibold text-gray-400 py-3 active:scale-[0.98] transition-all">
-                    Sign out
+                  <button onClick={() => setShowSignOutConfirm(true)} className="w-full flex items-center justify-center gap-2 text-[14px] font-semibold text-red-500 py-3 active:scale-[0.98] transition-all">
+                    <LogOut className="w-4 h-4" /> Sign out
                   </button>
                 </>
               ) : (
@@ -340,6 +355,44 @@ export default function MarketingNav() {
           </div>
         </div>
       </div>
+
+      {/* Sign-out confirm dialog */}
+      {showSignOutConfirm && (
+        <div className="fixed inset-0 z-200 flex items-center justify-center px-5">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowSignOutConfirm(false)}
+          />
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 flex flex-col items-center text-center animate-[fadeScaleIn_0.2s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <LogOut className="w-6 h-6 text-red-500" />
+            </div>
+            <h3 className="text-[18px] font-black text-gray-900 mb-1.5">Sign out?</h3>
+            <p className="text-[14px] text-gray-500 font-medium mb-7">You'll need to sign in again to access your account.</p>
+            <div className="flex flex-col gap-2.5 w-full">
+              <button
+                onClick={handleSignOut}
+                className="w-full py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-[15px] font-bold transition-colors"
+              >
+                Yes, sign out
+              </button>
+              <button
+                onClick={() => setShowSignOutConfirm(false)}
+                className="w-full py-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[15px] font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeScaleIn {
+          from { opacity: 0; transform: scale(0.94); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </>
   );
 }

@@ -6,7 +6,7 @@ import { ArrowRight, Star, Zap, TrendingUp, IndianRupee, Users } from 'lucide-re
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen pt-28 sm:pt-36 pb-0 overflow-hidden bg-white selection:bg-[#E83A2E]/20">
+    <section className="relative min-h-screen pt-20 sm:pt-36 pb-0 overflow-hidden bg-white selection:bg-[#E83A2E]/20">
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
@@ -153,33 +153,49 @@ export default function Hero() {
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8 flex flex-col items-center text-center z-10">
 
         <div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-black/8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.10)] text-[13px] font-semibold text-gray-600 mb-8"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white border border-black/8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.10)] text-[11px] sm:text-[13px] font-semibold text-gray-600 mb-7 sm:mb-12"
           style={{ animation: 'heroFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both' }}
         >
-          <span className="flex items-center gap-0.5 text-amber-400">
-            {[...Array(3)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
-          </span>
+          {/* <span className="flex items-center gap-0.5 text-amber-400">
+            {[...Array(3)].map((_, i) => <Star key={i} className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" />)}
+          </span> */}
           <span>Trusted by <strong className="text-gray-900">10,000+</strong> Indian creators</span>
-          <span className="w-px h-3.5 bg-black/10" />
+          <span className="w-px h-3 sm:h-3.5 bg-black/10" />
           <span className="flex items-center gap-1 text-[#E83A2E] font-bold">
-            <Zap className="w-3 h-3 fill-current" /> Live
+            <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current" /> Live
           </span>
         </div>
 
         <div
-          className="flex flex-wrap items-center justify-center gap-x-0 gap-y-1 mb-7"
+          className="mb-7 sm:mb-10"
           style={{ animation: 'heroFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.06s both' }}
         >
-          {['Digital Product', 'Automation Flow', 'AI Tools', 'No-Code Website'].map((tag, i) => (
-            <span key={i} className="flex items-center">
-              {i > 0 && <span className="mx-2 sm:mx-4 text-gray-300 text-[14px] sm:text-[22px] font-light select-none">|</span>}
-              <span className="text-[12px] sm:text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
-            </span>
-          ))}
+          {/* Mobile: 2x2 grid */}
+          <div className="flex flex-col items-center gap-1.5 sm:hidden">
+            {[['Digital Product', 'Automation Flow'], ['AI Tools', 'No-Code Website']].map((row, ri) => (
+              <div key={ri} className="flex items-center gap-2">
+                {row.map((tag, i) => (
+                  <span key={i} className="flex items-center gap-2">
+                    {i > 0 && <span className="text-gray-300 text-[11px] font-light select-none">|</span>}
+                    <span className="text-[10px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+          {/* Desktop: single row with separators */}
+          <div className="hidden sm:flex items-center justify-center gap-x-0">
+            {['Digital Product', 'Automation Flow', 'AI Tools', 'No-Code Website'].map((tag, i) => (
+              <span key={i} className="flex items-center">
+                {i > 0 && <span className="mx-4 text-gray-300 text-[22px] font-light select-none">|</span>}
+                <span className="text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
+              </span>
+            ))}
+          </div>
         </div>
 
         <h1
-          className="text-[42px] sm:text-[68px] md:text-[82px] lg:text-[96px] font-black tracking-[-0.04em] leading-[1.05] max-w-4xl"
+          className="text-[36px] sm:text-[68px] md:text-[82px] lg:text-[96px] font-black tracking-[-0.04em] leading-[1.05] max-w-4xl"
           style={{ animation: 'heroFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) 0.12s both' }}
         >
           <span className="text-gray-500">Setup in minutes.</span>
@@ -199,14 +215,14 @@ export default function Hero() {
         </h1>
 
         <p
-          className="mt-6 sm:mt-8 text-[15px] sm:text-[20px] font-medium text-gray-500 max-w-2xl leading-relaxed px-2 sm:px-0"
+          className="mt-6 sm:mt-10 text-[14px] sm:text-[20px] font-medium text-gray-500 max-w-2xl leading-relaxed px-4 sm:px-0"
           style={{ animation: 'heroFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.18s both' }}
         >
           The only platform that turns your audience into automated income. No coding, no complicated setups — just results.
         </p>
 
         <div
-          className="mt-10 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto"
+          className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto px-4 sm:px-0"
           style={{ animation: 'heroFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.26s both' }}
         >
           <Link
@@ -225,38 +241,31 @@ export default function Hero() {
         </div>
 
         <p
-          className="mt-5 text-[10px] sm:text-[12px] font-semibold text-gray-400 tracking-widest uppercase px-4 sm:px-0 text-center"
+          className="mt-7 sm:mt-8 text-[10px] sm:text-[12px] font-semibold text-gray-400 tracking-widest uppercase px-4 sm:px-0 text-center"
           style={{ animation: 'heroFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.38s both' }}
         >
-          No credit card &nbsp;·&nbsp; Setup in 2 minutes &nbsp;·&nbsp; Free forever plan
+          No credit card &nbsp;·&nbsp; Setup in 2 minutes
         </p>
 
         {/* Dashboard image */}
         <div
-          className="mt-16 sm:mt-20 relative w-full max-w-[1100px]"
+          className="mt-10 sm:mt-20 relative w-full max-w-[1100px]"
           style={{ animation: 'heroFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.38s both' }}
         >
           <div
-            className="absolute -inset-x-12 bottom-0 h-40 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, white 20%, transparent 100%)', zIndex: 10 }}
-          />
-          <div
-            className="absolute inset-x-0 -bottom-8 mx-auto h-28 w-2/3 rounded-full pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.15) 0%, transparent 70%)',
-              filter: 'blur(40px)',
-            }}
+            className="absolute -inset-x-12 bottom-0 h-20 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, white 10%, transparent 100%)', zIndex: 10 }}
           />
           <div className="relative rounded-t-[20px] overflow-hidden shadow-[0_30px_100px_-20px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.06)]">
             <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#E83A2E]/50 to-transparent z-20" />
-            <div className="bg-[#f5f5f5] border-b border-black/[0.06] px-4 py-3 flex items-center gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-                <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-                <div className="w-3 h-3 rounded-full bg-[#28C840]" />
+            <div className="bg-[#f5f5f5] border-b border-black/[0.06] px-3 py-1.5 sm:py-2 flex items-center gap-2">
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#FF5F57]" />
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#FEBC2E]" />
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#28C840]" />
               </div>
-              <div className="flex-1 mx-4">
-                <div className="bg-white border border-black/8 rounded-md px-3 py-1.5 text-[11px] text-gray-400 font-medium w-full max-w-xs mx-auto text-center">
+              <div className="flex-1 mx-2">
+                <div className="bg-white border border-black/8 rounded px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] text-gray-400 font-medium w-full max-w-45 mx-auto text-center">
                   digione.ai/dashboard
                 </div>
               </div>

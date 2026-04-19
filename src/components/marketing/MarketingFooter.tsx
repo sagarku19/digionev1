@@ -41,7 +41,7 @@ export default function MarketingFooter() {
 
       <div className="mx-auto max-w-[1400px] px-5 sm:px-8 flex flex-col relative z-10">
 
-        <div className="w-full flex justify-center mb-6 sm:mb-8 select-none">
+        <div className="w-full flex justify-center mt-6 sm:mt-0 mb-6 sm:mb-8 select-none">
           <div className="flex items-baseline justify-center pointer-events-none leading-none">
             <span
               className="text-[14vw] sm:text-[15vw] md:text-[16vw] font-black tracking-[-0.05em]"
@@ -74,13 +74,13 @@ export default function MarketingFooter() {
 
         <div className="w-full h-px bg-gradient-to-r from-transparent via-black/[0.08] to-transparent mb-8" />
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-5">
+        <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
           <div className="flex items-center gap-2 shrink-0">
-            <DigiOneLogo width={20} height={20} />
-            <span className="text-[13px] font-bold text-gray-400 tracking-tight">DigiOne AI Tech Pvt. Ltd.</span>
+            <DigiOneLogo width={18} height={18} />
+            <span className="text-[12px] sm:text-[13px] font-bold text-gray-400 tracking-tight">DigiOne AI Tech Pvt. Ltd.</span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {[
               { href: '/contact', label: 'Contact' },
               { href: '/refunds', label: 'Refund policy' },
@@ -90,7 +90,7 @@ export default function MarketingFooter() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-[13px] font-medium text-gray-400 hover:text-gray-800 transition-colors duration-200"
+                className="text-[12px] sm:text-[13px] font-medium text-gray-400 hover:text-gray-800 transition-colors duration-200"
               >
                 {link.label}
               </Link>

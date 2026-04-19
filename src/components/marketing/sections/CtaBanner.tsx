@@ -18,7 +18,7 @@ const lineTwoFeatures = [
 
 export default function CtaBanner() {
   return (
-    <section className="py-14 sm:py-16 bg-white relative overflow-hidden pb-0">
+    <section className="py-10 sm:py-16 bg-white relative overflow-hidden pb-0">
 
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
 
@@ -95,13 +95,13 @@ export default function CtaBanner() {
 
       <div className="relative w-full px-5 sm:px-8 text-center z-10 flex flex-col h-full">
         <InView>
-          <div className="iv max-w-4xl mx-auto flex flex-col items-center mb-24">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-6 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" />
+          <div className="iv max-w-4xl mx-auto flex flex-col items-center mb-10 sm:mb-24 px-2 sm:px-0">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-4 sm:mb-6 shadow-sm">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               Everything you need
             </div>
 
-            <h2 className="text-[32px] sm:text-[56px] md:text-[68px] font-black text-gray-900 tracking-[-0.04em] leading-[1.05] mb-6 max-w-3xl mx-auto drop-shadow-sm">
+            <h2 className="text-[28px] sm:text-[56px] md:text-[68px] font-black text-gray-900 tracking-[-0.04em] leading-[1.05] mb-4 sm:mb-6 max-w-3xl mx-auto drop-shadow-sm">
               Start selling
               <br />
               <span
@@ -118,27 +118,27 @@ export default function CtaBanner() {
               </span>
             </h2>
 
-            <p className="text-[15px] sm:text-[19px] text-gray-500 font-medium leading-relaxed mb-8 sm:mb-10 max-w-md mx-auto px-2 sm:px-0">
+            <p className="text-[14px] sm:text-[19px] text-gray-500 font-medium leading-relaxed mb-6 sm:mb-10 max-w-md mx-auto px-4 sm:px-0">
               No credit card. No setup fee. Just your products, your audience, and your income.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto px-4 sm:px-0">
               <Link
                 href="/signup"
-                className="group w-full sm:w-auto px-9 py-4 rounded-full bg-[#E83A2E] text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_28px_-4px_rgba(232,58,46,0.38)] hover:shadow-[0_14px_36px_-4px_rgba(232,58,46,0.48)] hover:-translate-y-0.5 transition-all duration-300 ring-1 ring-white/10"
+                className="group w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl sm:rounded-full bg-[#E83A2E] text-white font-black text-[14px] sm:text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_28px_-4px_rgba(232,58,46,0.38)] hover:shadow-[0_14px_36px_-4px_rgba(232,58,46,0.48)] hover:-translate-y-0.5 transition-all duration-300 ring-1 ring-white/10"
               >
                 Create your free store
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
               </Link>
               <Link
                 href="/login"
-                className="w-full sm:w-auto px-9 py-4 rounded-full border border-black/10 bg-white/70 backdrop-blur-md text-gray-700 font-bold text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-white transition-all duration-300 shadow-sm"
+                className="w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl sm:rounded-full border border-black/10 bg-white/70 backdrop-blur-md text-gray-700 font-bold text-[14px] sm:text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-white transition-all duration-300 shadow-sm"
               >
                 Sign in
               </Link>
             </div>
 
-            <p className="mt-7 text-[12px] font-semibold text-gray-400 tracking-widest uppercase">
+            <p className="mt-5 sm:mt-7 text-[10px] sm:text-[12px] font-semibold text-gray-400 tracking-widest uppercase text-center">
               Free forever plan &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Setup in 2 minutes
             </p>
           </div>
@@ -154,9 +154,9 @@ export default function CtaBanner() {
               {lineOneFeatures.map((feature, i) => (
                 <div
                   key={`l1-${i}`}
-                  className="px-5 py-2.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-xl text-[14px] font-bold text-gray-700 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:bg-white/80 hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)] ring-1 ring-inset ring-white/30"
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-xl text-[12px] sm:text-[14px] font-bold text-gray-700 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:bg-white/80 hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)] ring-1 ring-inset ring-white/30"
                 >
-                  <Sparkles className="w-3.5 h-3.5 mr-2 opacity-40" />
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 opacity-40" />
                   {feature}
                 </div>
               ))}
@@ -169,9 +169,9 @@ export default function CtaBanner() {
               {lineTwoFeatures.map((feature, i) => (
                 <div
                   key={`l2-${i}`}
-                  className="px-5 py-2.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-xl text-[14px] font-bold text-gray-700 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:bg-white/80 hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)] ring-1 ring-inset ring-white/30"
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-xl text-[12px] sm:text-[14px] font-bold text-gray-700 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:bg-white/80 hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)] ring-1 ring-inset ring-white/30"
                 >
-                  <Sparkles className="w-3.5 h-3.5 mr-2 opacity-40" />
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 opacity-40" />
                   {feature}
                 </div>
               ))}
