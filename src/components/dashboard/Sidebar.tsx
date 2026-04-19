@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { DigiOneLogo, DigiOneLogoDark } from '@/src/components/assets/DigiOneLogo';
@@ -8,8 +8,8 @@ import {
   LayoutDashboard, Package, Store, BarChart2, DollarSign,
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
-  Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, LogOut, MessageCircle, HelpCircle,
-  Instagram, Zap, Server, Calendar, ShoppingBag,
+  Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, MessageCircle, HelpCircle,
+  Instagram, Zap, Server, Calendar, ShoppingBag, Sparkles,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -76,8 +76,19 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setVisible(true);
+    }
+  }, [isOpen]);
+
+  const handleTransitionEnd = () => {
+    if (!isOpen) setVisible(false);
+  };
 
   const { profile } = useCreator();
   const { unreadCount } = useNotifications();
@@ -103,11 +114,6 @@ export default function Sidebar() {
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
   const avatarUrl = (profile as any)?.avatar_url;
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/');
-  };
 
   // ── Leaf link ─────────────────────────────────────────────
   const NavLink = ({
@@ -141,19 +147,24 @@ export default function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-2.5 left-3 p-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-gray-200/80 dark:border-zinc-800/80 rounded-xl text-gray-700 dark:text-[var(--text-secondary)] shadow-sm transition-all active:scale-95"
+        className="md:hidden fixed top-2.5 left-3 p-1.5 text-gray-700 dark:text-[var(--text-secondary)] transition-all active:scale-95"
         style={{ zIndex: 9999 }}
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="w-6 h-6" />
       </button>
 
       {/* Mobile backdrop */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md md:hidden transition-opacity duration-300" style={{ zIndex: 99998 }} onClick={close} />
+      {visible && (
+        <div
+          className={`fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+          style={{ zIndex: 99998 }}
+          onClick={close}
+        />
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
+        onTransitionEnd={handleTransitionEnd}
         className={`
           fixed top-0 left-0 h-full bg-[var(--bg-primary)]
           border-r border-[var(--border)]
@@ -165,7 +176,7 @@ export default function Sidebar() {
       >
 
         {/* ── Logo ── */}
-        <div className="h-14 flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1 bg-[var(--bg-primary)]/50">
+        <div className="h-[52px] flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1 bg-[var(--bg-primary)]/50">
           <Link href="/dashboard" onClick={close} className="flex items-center gap-2 shrink-0 group">
             {/* Light mode logo */}
             <DigiOneLogo width={26} height={26} className="block dark:hidden group-hover:scale-105 transition-transform" />
@@ -343,30 +354,40 @@ export default function Sidebar() {
                 className="absolute bottom-full left-3 right-3 mb-1 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl shadow-xl py-1 z-50"
                 onMouseLeave={() => setProfileMenuOpen(false)}
               >
+                {/* Plan suggestion */}
+                <div className="px-2 pt-2 pb-1">
+                  <div className="rounded-lg bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-400/20 px-3 py-2.5">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Sparkles className="w-3 h-3 text-amber-500" />
+                      <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">Free Plan</span>
+                    </div>
+                    <p className="text-[10.5px] text-[var(--text-secondary)] leading-relaxed mb-2">Unlock lower fees, priority support and more.</p>
+                    <Link
+                      href="/dashboard/settings/subscription"
+                      onClick={() => { close(); setProfileMenuOpen(false); }}
+                      className="block w-full text-center py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-[11px] font-semibold transition"
+                    >
+                      Upgrade to Pro
+                    </Link>
+                  </div>
+                </div>
+                <hr className="my-1 border-[var(--border)]" />
                 <Link
-                  href="/dashboard/settings"
+                  href="/dashboard/settings/profile"
                   onClick={() => { close(); setProfileMenuOpen(false); }}
                   className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition"
                 >
                   <Settings className="w-4 h-4 text-[var(--text-secondary)]" />
-                  Settings
+                  Profile
                 </Link>
-                <Link
-                  href="/dashboard/settings/billing"
+                {/* <Link
+                  href="/dashboard/settings/library"
                   onClick={() => { close(); setProfileMenuOpen(false); }}
                   className="flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition"
                 >
                   <DollarSign className="w-4 h-4 text-[var(--text-secondary)]" />
-                  Billing & Plan
-                </Link>
-                <hr className="my-1 border-[var(--border)]" />
-                <button
-                  onClick={() => { handleLogout(); setProfileMenuOpen(false); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-[var(--danger)] hover:bg-[var(--bg-tertiary)] transition"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Log out
-                </button>
+                  My Library
+                </Link> */}
               </div>
             )}
           </div>

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut, User, Bell, Search, Sun, Moon, Settings, ChevronRight, Sparkles } from 'lucide-react';
+import { LogOut, User, Bell, Search, Sun, Moon, Settings, Sparkles } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
 import { createClient } from '@/lib/supabase/client';
@@ -23,33 +23,15 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, onClose: () =
 function PageBreadcrumb({ pathname }: { pathname: string | null }) {
   const raw = pathname?.split('/dashboard')[1] || '';
   const segments = raw.split('/').filter(Boolean);
-
-  if (segments.length === 0) {
-    return <span className="text-[15px] font-semibold text-gray-900 dark:text-white tracking-tight">Overview</span>;
-  }
+  const lastSeg = segments[segments.length - 1];
+  const label = lastSeg
+    ? lastSeg.charAt(0).toUpperCase() + lastSeg.slice(1).replace(/-/g, ' ')
+    : 'Overview';
 
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-[13px] text-gray-400 dark:text-zinc-500 font-medium">Dashboard</span>
-      {segments.map((seg, i) => {
-        const label = seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
-        const isLast = i === segments.length - 1;
-        return (
-          <React.Fragment key={seg}>
-            <ChevronRight className="w-3 h-3 text-gray-300 dark:text-zinc-700" />
-            <span
-              className={`text-[13px] font-medium ${
-                isLast
-                  ? 'text-gray-900 dark:text-white font-semibold'
-                  : 'text-gray-400 dark:text-zinc-500'
-              }`}
-            >
-              {label}
-            </span>
-          </React.Fragment>
-        );
-      })}
-    </div>
+    <span className="text-[15px] md:text-[20px] font-semibold text-gray-900 dark:text-white tracking-tight md:pl-6">
+      {label}
+    </span>
   );
 }
 
@@ -58,6 +40,7 @@ export default function TopBar() {
   const router = useRouter();
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const { profile } = useCreator();
   const { unreadCount } = useNotifications();
@@ -72,12 +55,18 @@ export default function TopBar() {
     router.push('/login');
   };
 
+  const confirmSignOut = () => {
+    setShowDropdown(false);
+    setShowSignOutConfirm(true);
+  };
+
   const fullName = profile?.full_name || 'Creator';
   const avatarUrl = (profile as any)?.avatar_url;
   const initial = fullName.charAt(0).toUpperCase();
 
   return (
-    <header className="h-[52px] w-full flex items-center justify-between px-4 sm:px-5 sticky top-0 z-30 bg-white/75 dark:bg-[#0a0a0b]/80 backdrop-blur-xl border-b border-gray-100 dark:border-white/[0.06]">
+    <>
+    <header className="h-[52px] w-full flex items-center justify-between px-4 sm:px-5 sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border)]">
 
       {/* ── Left: Breadcrumb ── */}
       <div className="flex items-center gap-3 pl-[52px] md:pl-0">
@@ -87,7 +76,7 @@ export default function TopBar() {
       {/* ── Right: Actions ── */}
       <div className="flex items-center gap-1">
 
-        {/* Search — desktop */}
+        {/* Search — desktop only */}
         <div className={`relative hidden lg:flex items-center mr-1 transition-all duration-200 ${searchFocused ? 'w-52' : 'w-40'}`}>
           <Search className="absolute left-2.5 w-3.5 h-3.5 text-gray-400 dark:text-zinc-500 pointer-events-none" />
           <input
@@ -102,13 +91,8 @@ export default function TopBar() {
           </kbd>
         </div>
 
-        {/* Search icon — mobile */}
-        <IconButton className="lg:hidden">
-          <Search className="w-[15px] h-[15px]" />
-        </IconButton>
-
-        {/* Theme toggle */}
-        <div className="flex items-center h-8 bg-gray-100 dark:bg-zinc-800 rounded-md border border-gray-200 dark:border-zinc-700 p-0.75 gap-0.75">
+        {/* Theme toggle — desktop only */}
+        <div className="hidden lg:flex items-center h-8 bg-gray-100 dark:bg-zinc-800 rounded-md border border-gray-200 dark:border-zinc-700 p-0.75 gap-0.75">
           <ThemeBtn active={theme === 'light'} onClick={() => setTheme('light')} title="Light">
             <Sun className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium">Light</span>
@@ -119,13 +103,13 @@ export default function TopBar() {
           </ThemeBtn>
         </div>
 
-        {/* Notifications */}
+        {/* Notifications — desktop only */}
         <Link
           href="/dashboard/notifications"
-          className="relative h-8 px-3 rounded-md flex items-center gap-2 text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-100 bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 transition-colors"
+          className="relative h-8 px-3 rounded-md hidden lg:flex items-center gap-2 text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-100 bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 transition-colors"
         >
           <Bell className="w-[15px] h-[15px] shrink-0" />
-          <span className="hidden sm:block text-[12px] font-medium">Notifications</span>
+          <span className="text-[12px] font-medium">Notifications</span>
           {unreadCount > 0 && (
             <span className="min-w-4.5 h-4.5 bg-[#E83A2E] text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none px-1">
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -133,8 +117,8 @@ export default function TopBar() {
           )}
         </Link>
 
-        {/* Divider */}
-        <div className="w-px h-4 bg-gray-200 dark:bg-white/[0.07] mx-1" />
+        {/* Divider — desktop only */}
+        <div className="hidden lg:block w-px h-4 bg-gray-200 dark:bg-white/[0.07] mx-1" />
 
         {/* Profile dropdown */}
         <div className="relative" ref={profileRef}>
@@ -218,11 +202,43 @@ export default function TopBar() {
                 />
               </div>
 
+              {/* Theme toggle — mobile only */}
+              <div className="lg:hidden px-1.5 mt-0.5">
+                <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl">
+                  <span className="text-gray-400 dark:text-zinc-500">
+                    {theme === 'light' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                  </span>
+                  <span className="flex-1 text-left text-[12.5px] font-medium text-gray-700 dark:text-zinc-300">Theme</span>
+                  <div className="flex items-center h-7 bg-gray-100 dark:bg-zinc-700 rounded-md border border-gray-200 dark:border-zinc-600 p-0.5 gap-0.5">
+                    <button
+                      onClick={() => setTheme('light')}
+                      className={`h-6 px-2 gap-1 rounded flex items-center justify-center text-[11px] font-medium transition-all duration-150 ${
+                        theme === 'light'
+                          ? 'bg-white dark:bg-zinc-600 text-gray-800 dark:text-zinc-100 shadow-sm border border-gray-200 dark:border-zinc-500'
+                          : 'text-gray-400 dark:text-zinc-500'
+                      }`}
+                    >
+                      <Sun className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={`h-6 px-2 gap-1 rounded flex items-center justify-center text-[11px] font-medium transition-all duration-150 ${
+                        theme === 'dark'
+                          ? 'bg-white dark:bg-zinc-600 text-gray-800 dark:text-zinc-100 shadow-sm border border-gray-200 dark:border-zinc-500'
+                          : 'text-gray-400 dark:text-zinc-500'
+                      }`}
+                    >
+                      <Moon className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div className="h-px bg-gray-100 dark:bg-white/[0.06] mx-2 my-1" />
 
               <div className="px-1.5">
                 <button
-                  onClick={handleSignOut}
+                  onClick={confirmSignOut}
                   className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[12.5px] font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/[0.08] transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
@@ -234,18 +250,39 @@ export default function TopBar() {
         </div>
       </div>
     </header>
+
+    {/* ── Sign-out confirm modal ── */}
+    {showSignOutConfirm && (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSignOutConfirm(false)} />
+        <div className="relative w-full max-w-sm bg-white dark:bg-[#141415] rounded-2xl shadow-2xl border border-gray-100 dark:border-white/[0.08] p-6">
+          <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
+            <LogOut className="w-5 h-5 text-red-500" />
+          </div>
+          <h3 className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">Sign out?</h3>
+          <p className="text-[13px] text-gray-500 dark:text-zinc-400 mb-5">You will be redirected to the login page.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowSignOutConfirm(false)}
+              className="flex-1 h-9 rounded-xl border border-gray-200 dark:border-white/[0.08] text-[13px] font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/[0.05] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="flex-1 h-9 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[13px] font-semibold transition-colors"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
 /* ── Sub-components ── */
-
-function IconButton({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return (
-    <button className={`w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-100 hover:bg-gray-100/80 dark:hover:bg-white/[0.07] transition-colors ${className}`}>
-      {children}
-    </button>
-  );
-}
 
 function ThemeBtn({
   active, onClick, title, children,

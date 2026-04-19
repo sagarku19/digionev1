@@ -34,6 +34,8 @@ export function useUpsellPages() {
   const { data: upsellPages = [], isLoading, error } = useQuery({
     queryKey: ['upsell-pages'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [] as UpsellPageRow[];
       try {
         const profileId = await getCreatorProfileId(supabase);
         const { data, error } = await (supabase.from('upsell_pages' as any) as any)
