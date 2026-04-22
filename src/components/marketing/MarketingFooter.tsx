@@ -52,6 +52,7 @@ export default function MarketingFooter() {
                 backgroundClip: 'text',
                 lineHeight: 1.15,
                 paddingBottom: '0.08em',
+                paddingRight: '0.05em',
                 display: 'inline-block',
               }}
             >

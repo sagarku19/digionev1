@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -30,6 +30,7 @@ import {
   Image, FileText, Share2, ShoppingCart, Terminal
 } from 'lucide-react';
 import { useTheme } from '@/contexts/DashboardThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Tab = 'logo' | 'product' | 'content' | 'template' | 'appearance' | 'social' | 'checkout' | 'settings' | 'advanced';
 
@@ -69,7 +70,6 @@ export default function EditSinglePagePage() {
 
   // ── UI state ──
   const [activeTab, setActiveTab] = useState<Tab>('logo');
-  const [tabSidebarOpen, setTabSidebarOpen] = useState(true);
   const [device, setDevice] = useState<string>('mobile');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -528,7 +528,7 @@ export default function EditSinglePagePage() {
 
 
         {/* ═══ LEFT PANEL ═══ */}
-        <div className="w-1/2 shrink-0 border-r border-[var(--border)] flex flex-col bg-[var(--bg-primary)] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
+        <div className="w-full md:w-[calc(50%+5.5rem)] shrink-0 border-r border-[var(--border)] flex flex-col bg-[var(--bg-primary)] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
           {/* Header */}
           <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center justify-between px-4 bg-[var(--bg-primary)]">
             <div className="flex items-center gap-3">
@@ -587,22 +587,14 @@ export default function EditSinglePagePage() {
             </div>
           </div>
 
-          {/* ── Body: vertical tab sidebar + scrollable editor ── */}
-          <div className="flex-1 flex min-h-0 overflow-hidden">
+          {/* ── Body: tab sidebar + scrollable editor ── */}
+          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
 
-            {/* Vertical Tab Sidebar */}
-            <div className={`shrink-0 flex flex-col border-r border-[var(--border)] bg-gray-50/80 dark:bg-[var(--bg-secondary)] transition-all duration-200 ${tabSidebarOpen ? 'w-44' : 'w-14'}`}>
-              {/* Collapse toggle */}
-              <button
-                onClick={() => setTabSidebarOpen(!tabSidebarOpen)}
-                className="h-10 flex items-center justify-end pr-3 text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] transition-colors shrink-0"
-                title={tabSidebarOpen ? 'Collapse tabs' : 'Expand tabs'}
-              >
-                <ArrowLeft className={`w-3.5 h-3.5 transition-transform duration-200 ${tabSidebarOpen ? '' : 'rotate-180'}`} />
-              </button>
-
+            {/* Tab Sidebar */}
+            <div className="shrink-0 flex flex-row md:flex-col overflow-x-auto md:overflow-visible border-b md:border-b-0 md:border-r border-[var(--border)] bg-gray-50/80 dark:bg-[var(--bg-secondary)] w-full md:w-44 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              
               {/* Tab buttons */}
-              <div className="flex flex-col gap-1 px-2 pb-4">
+              <div className="flex flex-row md:flex-col gap-1.5 md:gap-1 px-2 py-2 md:py-4 min-w-max md:min-w-0">
                 {TABS.map(tab => {
                   const active = activeTab === tab.id;
                   return (
@@ -610,13 +602,13 @@ export default function EditSinglePagePage() {
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       title={tab.label}
-                      className={`flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${active
+                      className={`flex items-center gap-2 md:gap-3 px-3 md:px-2.5 py-2 md:py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 shrink-0 ${active
                         ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm`
                         : 'text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50'
-                        } ${tabSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                        } justify-center md:justify-start`}
                     >
                       <tab.icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.5 : 2} />
-                      {tabSidebarOpen && <span className="truncate">{tab.label}</span>}
+                      <span className="truncate">{tab.label}</span>
                     </button>
                   );
                 })}
@@ -624,7 +616,7 @@ export default function EditSinglePagePage() {
             </div>
 
             {/* Scrollable editor content */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+            <div className="flex-1 overflow-x-hidden overflow-y-auto p-5">
               {loading ? (
                 <div className="w-full space-y-8 opacity-70">
                   <div className="space-y-3">
@@ -644,9 +636,14 @@ export default function EditSinglePagePage() {
                   </div>
                 </div>
               ) : (
-                <>
-
-                  {/* ── Logo Tab ── */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                  >                  {/* ── Logo Tab ── */}
                   {activeTab === 'logo' && (
                     <SinglePageLogoEditor data={content} onChange={setContent} />
                   )}
@@ -823,7 +820,8 @@ export default function EditSinglePagePage() {
                   {activeTab === 'advanced' && (
                     <SinglePageAdvancedEditor data={content} onChange={setContent} />
                   )}
-                </>
+                  </motion.div>
+                </AnimatePresence>
               )}
             </div>{/* end scrollable editor */}
           </div>{/* end body flex (tab sidebar + editor) */}

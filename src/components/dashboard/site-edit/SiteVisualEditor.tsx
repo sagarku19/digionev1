@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // SiteVisualEditor — split-screen layout matching the singlepage/main-store editor pattern.
 // Left panel (w-1/2): owns header + vertical tab sidebar + scrollable editor.
 // Right panel (flex-1): owns preview header + zoom-aware browser-chrome iframe.
@@ -37,12 +37,12 @@ const TABS: {
   id: Tab; label: string; icon: React.ElementType;
   activeBg: string; activeColor: string; activeBorder: string;
 }[] = [
-  { id: 'content',  label: 'Content',  icon: Layers,     activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',  activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]',  activeBorder: 'border border-gray-300 dark:border-gray-600' },
-  { id: 'header',   label: 'Header',   icon: NavIcon,    activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeColor: 'text-emerald-600 dark:text-emerald-300', activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
-  { id: 'footer',   label: 'Footer',   icon: Footprints, activeBg: 'bg-amber-50 dark:bg-amber-500/10',    activeColor: 'text-amber-600 dark:text-amber-300',    activeBorder: 'border border-amber-200 dark:border-amber-500/30' },
-  { id: 'theme',    label: 'Theme',    icon: Paintbrush, activeBg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', activeColor: 'text-fuchsia-600 dark:text-fuchsia-300', activeBorder: 'border border-fuchsia-200 dark:border-fuchsia-500/30' },
-  { id: 'settings', label: 'Settings', icon: Settings,   activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',         activeColor: 'text-[var(--text-primary)]',          activeBorder: 'border border-gray-300 dark:border-gray-600' },
-];
+    { id: 'content', label: 'Content', icon: Layers, activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]', activeBorder: 'border border-gray-300 dark:border-gray-600' },
+    { id: 'header', label: 'Header', icon: NavIcon, activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeColor: 'text-emerald-600 dark:text-emerald-300', activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
+    { id: 'footer', label: 'Footer', icon: Footprints, activeBg: 'bg-amber-50 dark:bg-amber-500/10', activeColor: 'text-amber-600 dark:text-amber-300', activeBorder: 'border border-amber-200 dark:border-amber-500/30' },
+    { id: 'theme', label: 'Theme', icon: Paintbrush, activeBg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', activeColor: 'text-fuchsia-600 dark:text-fuchsia-300', activeBorder: 'border border-fuchsia-200 dark:border-fuchsia-500/30' },
+    { id: 'settings', label: 'Settings', icon: Settings, activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]', activeColor: 'text-[var(--text-primary)]', activeBorder: 'border border-gray-300 dark:border-gray-600' },
+  ];
 
 // ─── Component ────────────────────────────────────────────────
 
@@ -55,24 +55,24 @@ export default function SiteVisualEditor({
   onTypeSave,
   showSlug = true,
 }: SiteVisualEditorProps) {
-  const router    = useRouter();
-  const supabase  = createClient();
-  const iframeRef         = useRef<HTMLIFrameElement>(null);
+  const router = useRouter();
+  const supabase = createClient();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewWrapperRef = useRef<HTMLDivElement>(null);
 
   // ── UI state ──
-  const [activeTab, setActiveTab]   = useState<Tab>('content');
+  const [activeTab, setActiveTab] = useState<Tab>('content');
   const [tabSidebarOpen, setTabSidebarOpen] = useState(true);
-  const [device, setDevice]         = useState<string>('desktop');
-  const [saving, setSaving]         = useState(false);
-  const [saved, setSaved]           = useState(false);
-  const [loading, setLoading]       = useState(true);
+  const [device, setDevice] = useState<string>('desktop');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
-  const [copied, setCopied]         = useState(false);
-  const [previewW, setPreviewW]     = useState(0);
+  const [copied, setCopied] = useState(false);
+  const [previewW, setPreviewW] = useState(0);
 
   // ── Data state ──
-  const [site, setSite]         = useState<any>(null);
+  const [site, setSite] = useState<any>(null);
   const [siteMain, setSiteMain] = useState<any>(null);
 
   const [headerData, setHeaderData] = useState<HeaderData>({
@@ -226,7 +226,7 @@ export default function SiteVisualEditor({
 
   // ── Helpers ──
   const displayTitle = siteMain?.title ?? site?.slug ?? 'Untitled';
-  const previewUrl   = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
+  const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
 
   const copyUrl = () => {
     if (!site) return;
@@ -277,11 +277,10 @@ export default function SiteVisualEditor({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all focus:ring-4 focus:ring-gray-400/20 active:scale-95 disabled:opacity-50 ${
-                  saved
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all focus:ring-4 focus:ring-gray-400/20 active:scale-95 disabled:opacity-50 ${saved
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
-                }`}
+                  }`}
               >
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
                 {saved ? 'Saved!' : 'Save'}
@@ -310,11 +309,10 @@ export default function SiteVisualEditor({
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       title={tab.label}
-                      className={`flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${
-                        active
+                      className={`flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 ${active
                           ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm`
                           : 'text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50'
-                      } ${tabSidebarOpen ? 'justify-start' : 'justify-center'}`}
+                        } ${tabSidebarOpen ? 'justify-start' : 'justify-center'}`}
                     >
                       <tab.icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.5 : 2} />
                       {tabSidebarOpen && <span className="truncate">{tab.label}</span>}
@@ -326,10 +324,10 @@ export default function SiteVisualEditor({
 
             {/* Scrollable editor content */}
             <div className="flex-1 overflow-y-auto p-5 space-y-5">
-              {activeTab === 'content'  && children({ siteId, site, siteMain })}
-              {activeTab === 'header'   && <HeaderEditor data={headerData} onChange={setHeaderData} />}
-              {activeTab === 'footer'   && <FooterEditor data={footerData} onChange={setFooterData} />}
-              {activeTab === 'theme'    && <ThemeEditor palette={palette} onChange={handlePaletteChange} />}
+              {activeTab === 'content' && children({ siteId, site, siteMain })}
+              {activeTab === 'header' && <HeaderEditor data={headerData} onChange={setHeaderData} />}
+              {activeTab === 'footer' && <FooterEditor data={footerData} onChange={setFooterData} />}
+              {activeTab === 'theme' && <ThemeEditor palette={palette} onChange={handlePaletteChange} />}
               {activeTab === 'settings' && (
                 <SettingsPanel
                   siteId={siteId}
@@ -381,9 +379,9 @@ export default function SiteVisualEditor({
             {/* Device toggles */}
             <div className="flex items-center gap-1 bg-white dark:bg-[var(--bg-secondary)] p-1 rounded-lg border border-gray-200 dark:border-[var(--border)] shrink-0">
               {[
-                { id: 'desktop', icon: Monitor,    label: 'Desktop' },
-                { id: 'tablet',  icon: Tablet,     label: 'Tablet'  },
-                { id: 'mobile',  icon: Smartphone, label: 'Mobile'  },
+                { id: 'desktop', icon: Monitor, label: 'Desktop' },
+                { id: 'tablet', icon: Tablet, label: 'Tablet' },
+                { id: 'mobile', icon: Smartphone, label: 'Mobile' },
               ].map(dev => (
                 <button
                   key={dev.id}
@@ -402,8 +400,8 @@ export default function SiteVisualEditor({
             const DESKTOP_W = 1280;
             const DESKTOP_H = Math.round(DESKTOP_W * 10 / 16); // ≈800px
             const isDesktop = device === 'desktop';
-            const isMobile  = device === 'mobile';
-            const devicePx  = isDesktop ? DESKTOP_W : isMobile ? 375 : 768;
+            const isMobile = device === 'mobile';
+            const devicePx = isDesktop ? DESKTOP_W : isMobile ? 375 : 768;
             const zoom = isDesktop && previewW > 0 ? Math.min(1, (previewW - 48) / DESKTOP_W) : 1;
 
             const BrowserChrome = () => (
