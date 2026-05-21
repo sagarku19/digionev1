@@ -1,0 +1,2188 @@
+<!-- Do Not Implament I make This Only For my Refreance -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DigiOne — Platform Architecture & Scaling Plan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #090c12;
+            --surface: #0e1420;
+            --surface2: #141b29;
+            --border: rgba(99, 130, 255, .13);
+            --border2: rgba(99, 130, 255, .25);
+            --accent: #4f8fff;
+            --accent2: #7b5fff;
+            --green: #2fe4a0;
+            --orange: #ff8c42;
+            --red: #ff4f6a;
+            --yellow: #f5c842;
+            --text: #d8e0f0;
+            --text-muted: #7a8aaa;
+            --text-dim: #4a5570;
+            --mono: 'DM Mono', monospace;
+            --display: 'Syne', sans-serif;
+            --body: 'Instrument Sans', sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            font-size: 15px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ─── NOISE OVERLAY ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: .5;
+        }
+
+        /* ─── HERO BACKGROUND GLOW ─── */
+        .hero-glow {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 600px;
+            background: radial-gradient(ellipse at center, rgba(79, 143, 255, .12) 0%, rgba(123, 95, 255, .06) 40%, transparent 70%);
+            pointer-events: none;
+            filter: blur(40px);
+        }
+
+        /* ─── NAV ─── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(9, 12, 18, .85);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            height: 56px;
+        }
+
+        .nav-brand {
+            font-family: var(--display);
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -.3px;
+            margin-right: 40px;
+            flex-shrink: 0;
+        }
+
+        .nav-brand span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2px;
+            overflow-x: auto;
+            flex: 1;
+        }
+
+        .nav-links a {
+            font-family: var(--mono);
+            font-size: 11.5px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all .2s;
+            white-space: nowrap;
+            letter-spacing: .3px;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+            background: var(--surface2);
+        }
+
+        .nav-badge {
+            font-family: var(--mono);
+            font-size: 10px;
+            background: rgba(79, 143, 255, .15);
+            color: var(--accent);
+            border: 1px solid rgba(79, 143, 255, .3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-left: auto;
+            flex-shrink: 0;
+            letter-spacing: .5px;
+        }
+
+        /* ─── WRAPPER ─── */
+        .wrapper {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 80px 0 60px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero-eyebrow {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-eyebrow::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        .hero h1 {
+            font-family: var(--display);
+            font-size: clamp(36px, 5.5vw, 62px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            color: #fff;
+            margin-bottom: 22px;
+        }
+
+        .hero h1 .line2 {
+            color: var(--accent);
+        }
+
+        .hero-desc {
+            max-width: 600px;
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.75;
+            margin-bottom: 36px;
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .meta-pill {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-family: var(--mono);
+            font-size: 11.5px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            padding: 6px 14px;
+            border-radius: 8px;
+            color: var(--text-muted);
+        }
+
+        .meta-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .4
+            }
+        }
+
+        /* ─── PHASE BANNER ─── */
+        .phase-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            margin: 48px 0;
+        }
+
+        .phase-cell {
+            background: var(--surface);
+            padding: 22px 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phase-cell::before {
+            content: attr(data-num);
+            position: absolute;
+            right: 16px;
+            bottom: -4px;
+            font-family: var(--display);
+            font-size: 72px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, .04);
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .phase-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .phase-title {
+            font-family: var(--display);
+            font-weight: 700;
+            font-size: 15px;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .phase-cap {
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .phase-cap strong {
+            color: var(--green);
+        }
+
+        /* ─── SECTION HEADERS ─── */
+        .section {
+            padding: 56px 0 20px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            border: 1px solid var(--border2);
+        }
+
+        .section-meta {
+            flex: 1;
+        }
+
+        .section-tag {
+            font-family: var(--mono);
+            font-size: 10.5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+
+        .section-meta h2 {
+            font-family: var(--display);
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -.5px;
+            line-height: 1.2;
+        }
+
+        .section-meta p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* ─── TECH STACK GRID ─── */
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 14px;
+        }
+
+        .stack-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: border-color .25s, transform .2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stack-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-2px);
+        }
+
+        .stack-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .stack-card:hover::after {
+            opacity: 1;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .card-emoji {
+            font-size: 22px;
+        }
+
+        .card-name {
+            font-family: var(--display);
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .card-status {
+            margin-left: auto;
+            font-family: var(--mono);
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            letter-spacing: .5px;
+        }
+
+        .status-current {
+            background: rgba(47, 228, 160, .12);
+            color: var(--green);
+            border: 1px solid rgba(47, 228, 160, .25);
+        }
+
+        .status-later {
+            background: rgba(79, 143, 255, .12);
+            color: var(--accent);
+            border: 1px solid rgba(79, 143, 255, .25);
+        }
+
+        .status-planned {
+            background: rgba(245, 200, 66, .10);
+            color: var(--yellow);
+            border: 1px solid rgba(245, 200, 66, .25);
+        }
+
+        .card-body {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.65;
+        }
+
+        .card-options {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .opt-tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 2px 9px;
+            border-radius: 6px;
+            color: var(--text-dim);
+        }
+
+        .opt-tag.primary {
+            border-color: rgba(79, 143, 255, .3);
+            color: var(--accent);
+            background: rgba(79, 143, 255, .08);
+        }
+
+        /* ─── PERFORMANCE CARDS (wider) ─── */
+        .perf-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .perf-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: border-color .25s;
+        }
+
+        .perf-card:hover {
+            border-color: var(--border2);
+        }
+
+        .perf-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .perf-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .perf-info {
+            flex: 1;
+        }
+
+        .perf-name {
+            font-family: var(--display);
+            font-weight: 700;
+            font-size: 17px;
+            color: #fff;
+        }
+
+        .perf-sub {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            font-family: var(--mono);
+            margin-top: 1px;
+        }
+
+        .perf-badge {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(47, 228, 160, .1);
+            color: var(--green);
+            border: 1px solid rgba(47, 228, 160, .2);
+        }
+
+        .perf-body {
+            padding: 20px 24px;
+        }
+
+        .perf-body p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 14px;
+            line-height: 1.7;
+        }
+
+        .why-box {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
+
+        .why-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .why-box p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .impl-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .impl-tag {
+            font-family: var(--mono);
+            font-size: 11px;
+            padding: 4px 11px;
+            border-radius: 7px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .impl-tag.rec {
+            background: rgba(123, 95, 255, .1);
+            border-color: rgba(123, 95, 255, .3);
+            color: var(--accent2);
+        }
+
+        .perf-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-top: 1px solid var(--border);
+        }
+
+        .stat-cell {
+            background: var(--surface);
+            padding: 14px 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--display);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 3px;
+            letter-spacing: .5px;
+        }
+
+        /* ─── SECURITY CARDS ─── */
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 14px;
+        }
+
+        .sec-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color .25s, transform .2s;
+        }
+
+        .sec-card:hover {
+            border-color: rgba(255, 79, 106, .3);
+            transform: translateY(-2px);
+        }
+
+        .sec-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .threat-level {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .5px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+
+        .threat-critical {
+            background: rgba(255, 79, 106, .12);
+            color: var(--red);
+            border: 1px solid rgba(255, 79, 106, .25);
+        }
+
+        .threat-high {
+            background: rgba(255, 140, 66, .12);
+            color: var(--orange);
+            border: 1px solid rgba(255, 140, 66, .25);
+        }
+
+        .threat-medium {
+            background: rgba(245, 200, 66, .10);
+            color: var(--yellow);
+            border: 1px solid rgba(245, 200, 66, .25);
+        }
+
+        .sec-body {
+            padding: 16px 18px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.65;
+        }
+
+        .sec-body strong {
+            color: var(--text);
+        }
+
+        /* ─── SCALING PHASES ─── */
+        .scaling-timeline {
+            position: relative;
+        }
+
+        .scaling-timeline::before {
+            content: '';
+            position: absolute;
+            left: 27px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 36px;
+            position: relative;
+        }
+
+        .tl-dot {
+            width: 56px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tl-circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--accent);
+            font-weight: 500;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tl-card {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            padding: 24px;
+        }
+
+        .tl-phase {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+
+        .tl-title {
+            font-family: var(--display);
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .tl-body {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .tl-body p {
+            margin-bottom: 10px;
+        }
+
+        .chokepoints {
+            background: rgba(255, 79, 106, .06);
+            border: 1px solid rgba(255, 79, 106, .2);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 14px;
+        }
+
+        .chokepoints-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--red);
+            margin-bottom: 8px;
+        }
+
+        .chokepoint-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .chokepoint-item::before {
+            content: '⚠';
+            font-size: 11px;
+            color: var(--red);
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+
+        .solutions {
+            background: rgba(47, 228, 160, .05);
+            border: 1px solid rgba(47, 228, 160, .2);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 14px;
+        }
+
+        .solutions-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--green);
+            margin-bottom: 8px;
+        }
+
+        .solution-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .solution-item::before {
+            content: '→';
+            font-size: 11px;
+            color: var(--green);
+            flex-shrink: 0;
+            padding-top: 1px;
+        }
+
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+
+        .cost-table th {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cost-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(99, 130, 255, .06);
+            color: var(--text-muted);
+            vertical-align: top;
+        }
+
+        .cost-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .cost-before {
+            color: var(--red);
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        .cost-after {
+            color: var(--green);
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        .cost-name {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .cost-saving {
+            color: var(--yellow);
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* ─── CALLOUT ─── */
+        .callout {
+            background: linear-gradient(135deg, rgba(79, 143, 255, .08), rgba(123, 95, 255, .06));
+            border: 1px solid rgba(123, 95, 255, .25);
+            border-radius: 14px;
+            padding: 28px 32px;
+            margin: 40px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .callout::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(79, 143, 255, .1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .callout-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .callout h3 {
+            font-family: var(--display);
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .callout p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.75;
+        }
+
+        .callout code {
+            font-family: var(--mono);
+            font-size: 12px;
+            background: rgba(79, 143, 255, .15);
+            color: var(--accent);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        /* ─── INDIAN MARKET SECTION ─── */
+        .india-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+
+        .india-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .india-card::before {
+            content: attr(data-flag);
+            position: absolute;
+            right: 14px;
+            top: 10px;
+            font-size: 38px;
+            opacity: .12;
+        }
+
+        .india-card h4 {
+            font-family: var(--display);
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .india-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.65;
+        }
+
+        .india-stat {
+            font-family: var(--mono);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* ─── CODE BLOCK ─── */
+        pre {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 20px;
+            font-family: var(--mono);
+            font-size: 12.5px;
+            color: var(--text-muted);
+            overflow-x: auto;
+            line-height: 1.6;
+            margin: 14px 0;
+        }
+
+        pre .c {
+            color: var(--text-dim);
+        }
+
+        pre .k {
+            color: var(--accent2);
+        }
+
+        pre .s {
+            color: var(--green);
+        }
+
+        pre .n {
+            color: var(--accent);
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0 60px;
+            margin-top: 80px;
+            text-align: center;
+        }
+
+        footer .footer-brand {
+            font-family: var(--display);
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        footer .footer-brand span {
+            color: var(--accent);
+        }
+
+        footer p {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        footer .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
+        footer .footer-links a {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        footer .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        /* ─── DIVIDER ─── */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 32px 0;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 640px) {
+            .phase-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .perf-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .scaling-timeline::before {
+                left: 11px;
+            }
+
+            .tl-dot {
+                width: 26px;
+            }
+
+            .tl-circle {
+                width: 22px;
+                height: 22px;
+                font-size: 9px;
+            }
+
+            .cost-table {
+                font-size: 12px;
+            }
+
+            .cost-table th,
+            .cost-table td {
+                padding: 7px 8px;
+            }
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            animation: fadeUp .7s ease both;
+        }
+
+        .hero-desc {
+            animation: fadeUp .7s .15s ease both;
+        }
+
+        .hero-meta {
+            animation: fadeUp .7s .25s ease both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══ NAV ═══ -->
+    <nav>
+        <div class="nav-brand">Digi<span>One</span></div>
+        <div class="nav-links">
+            <a href="#stack">Tech Stack</a>
+            <a href="#performance">Performance</a>
+            <a href="#security">Security</a>
+            <a href="#scaling">Scaling</a>
+            <a href="#costs">Cost Plan</a>
+            <a href="#india">India Market</a>
+        </div>
+        <div class="nav-badge">v1.0 · Internal Doc</div>
+    </nav>
+
+    <div class="wrapper">
+
+        <!-- ═══ HERO ═══ -->
+        <section class="hero">
+            <div class="hero-glow"></div>
+            <div class="hero-eyebrow">Platform Architecture</div>
+            <h1>DigiOne<br /><span class="line2">Scaling Plan</span></h1>
+            <p class="hero-desc">
+                A complete infrastructure blueprint for DigiOne — the SaaS platform built for Indian creators,
+                educators, and digital entrepreneurs. Covers current stack, planned upgrades, performance layers,
+                security hardening, and a phased scaling roadmap from MVP to millions of buyers.
+            </p>
+            <div class="hero-meta">
+                <div class="meta-pill"><span class="dot"></span> Active Development</div>
+                <div class="meta-pill">🇮🇳 Indian Market Focus</div>
+                <div class="meta-pill">⚡ Next.js 15 · Supabase · Cashfree</div>
+                <div class="meta-pill">🎯 Target: 10K+ Creators</div>
+            </div>
+        </section>
+
+        <!-- ═══ PHASE OVERVIEW ═══ -->
+        <div class="phase-strip">
+            <div class="phase-cell" data-num="1">
+                <div class="phase-label">Phase 1 · Now</div>
+                <div class="phase-title">Vercel + Supabase Free</div>
+                <div class="phase-cap">Handles <strong>~1K creators</strong> &amp; 50K monthly visitors. Get to first
+                    $1K revenue.</div>
+            </div>
+            <div class="phase-cell" data-num="2">
+                <div class="phase-label">Phase 2 · Growth</div>
+                <div class="phase-title">Add Redis · ISR · Monitoring</div>
+                <div class="phase-cap">Scales to <strong>10K+ creators</strong> &amp; millions of buyers with zero
+                    downtime.</div>
+            </div>
+            <div class="phase-cell" data-num="3">
+                <div class="phase-label">Phase 3 · Scale</div>
+                <div class="phase-title">DO + Coolify + Cloudflare</div>
+                <div class="phase-cap">Cut infrastructure costs by <strong>~80%</strong> while handling viral traffic
+                    spikes.</div>
+            </div>
+        </div>
+
+        <!-- ═══ TECH STACK ═══ -->
+        <section class="section" id="stack">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(79,143,255,.1)">🏗️</div>
+                <div class="section-meta">
+                    <div class="section-tag">Infrastructure · 01</div>
+                    <h2>Tech Stack</h2>
+                    <p>Current services, planned migrations, and add-later integrations.</p>
+                </div>
+            </div>
+
+            <div class="stack-grid">
+
+                <!-- Hosting -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">🚀</div>
+                        <div class="card-name">Hosting</div>
+                        <div class="card-status status-current">Current</div>
+                    </div>
+                    <div class="card-body">
+                        Vercel is the fastest way to deploy a Next.js 15 app — zero-config builds, automatic preview
+                        deployments on every PR, and Edge Functions that run in 40+ regions globally. The free tier
+                        covers the MVP stage comfortably.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Vercel (now)</span>
+                            <span class="opt-tag">DigitalOcean + Coolify</span>
+                            <span class="opt-tag">Hetzner VPS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storage -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">📦</div>
+                        <div class="card-name">File Storage</div>
+                        <div class="card-status status-current">Current</div>
+                    </div>
+                    <div class="card-body">
+                        Supabase Storage (backed by S3-compatible object storage) handles creator uploads out of the
+                        box. As you scale, DigitalOcean Spaces ($5/month for 250GB) or AWS S3 offer better pricing with
+                        Cloudflare R2 being the cheapest at zero egress fees.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Supabase Storage (now)</span>
+                            <span class="opt-tag">Cloudflare R2</span>
+                            <span class="opt-tag">DO Spaces</span>
+                            <span class="opt-tag">AWS S3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">🗄️</div>
+                        <div class="card-name">Database</div>
+                        <div class="card-status status-current">Current</div>
+                    </div>
+                    <div class="card-body">
+                        Supabase provides Postgres with a Realtime layer, Row Level Security, and auto-generated APIs —
+                        perfect for speed of development. On the Pro plan ($25/month) you get 8GB storage and PITR.
+                        Self-hosting Supabase on a DO droplet unlocks unlimited storage at lower cost.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Supabase Postgres (now)</span>
+                            <span class="opt-tag">Self-hosted Supabase on DO</span>
+                            <span class="opt-tag">Neon (serverless Postgres)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auth -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">🔐</div>
+                        <div class="card-name">Authentication</div>
+                        <div class="card-status status-current">Current</div>
+                    </div>
+                    <div class="card-body">
+                        Supabase Auth handles JWT issuance, refresh tokens, email/password, Google OAuth, and magic
+                        links. When migrating off managed Supabase, you can self-host Supabase Auth (GoTrue) alongside
+                        your Postgres or switch to a lightweight custom JWT system.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Supabase Auth (now)</span>
+                            <span class="opt-tag">Self-hosted GoTrue</span>
+                            <span class="opt-tag">Better Auth (open-source)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">💳</div>
+                        <div class="card-name">Payment Gateway</div>
+                        <div class="card-status status-current">Current</div>
+                    </div>
+                    <div class="card-body">
+                        Cashfree is the ideal choice for the Indian market — supports UPI, NetBanking, Wallets, Cards,
+                        and EMI. It also handles creator payouts (Cashfree Payouts), making split payments simple. TDR
+                        is typically 1.75–2% with no setup fees for startups. Always verify Cashfree webhooks using
+                        their signature header to prevent payment fraud.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Cashfree (Pay + Payouts)</span>
+                            <span class="opt-tag">Razorpay (alternative)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CDN -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">🌐</div>
+                        <div class="card-name">CDN</div>
+                        <div class="card-status status-planned">Add Later</div>
+                    </div>
+                    <div class="card-body">
+                        Cloudflare's free plan provides global edge caching, DDoS mitigation (up to 5Tbps), and zero
+                        egress bandwidth fees. Proxy your domain through Cloudflare and enable "Cache Everything" for
+                        static storefronts. Cloudflare Workers can also run lightweight business logic at the edge.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Cloudflare Free (recommended)</span>
+                            <span class="opt-tag">Cloudflare Workers</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">📧</div>
+                        <div class="card-name">Transactional Email</div>
+                        <div class="card-status status-planned">Add Later</div>
+                    </div>
+                    <div class="card-body">
+                        Resend is the top choice for Next.js apps — it uses React Email templates (code your emails in
+                        JSX), has a generous free tier of 3,000 emails/month, and excellent deliverability via dedicated
+                        IPs. AWS SES is cheapest at scale ($0.10 per 1,000 emails) but requires more manual setup.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Resend (recommended for Next.js)</span>
+                            <span class="opt-tag">AWS SES ($0.10/1K)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTP / Phone -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">📱</div>
+                        <div class="card-name">Phone / OTP Verification</div>
+                        <div class="card-status status-planned">Add Later</div>
+                    </div>
+                    <div class="card-body">
+                        MSG91 is the gold standard for OTP delivery in India — 99.9% uptime SLA, ~₹0.20 per OTP, and
+                        DLT-registered sender IDs. Fast2SMS is a cost-effective alternative at ~₹0.12 per SMS. Both
+                        support TRANSACTIONAL and PROMOTIONAL SMS routes with TRAI compliance.
+                        <div class="card-options">
+                            <span class="opt-tag primary">MSG91 (premium, DLT compliant)</span>
+                            <span class="opt-tag">Fast2SMS (budget)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WhatsApp -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">💬</div>
+                        <div class="card-name">WhatsApp Notifications</div>
+                        <div class="card-status status-planned">Add Later</div>
+                    </div>
+                    <div class="card-body">
+                        WhatsApp Business API is critical in India — open rates exceed 95% vs ~20% for email. Interakt
+                        and Wati both provide a managed WhatsApp Business API layer with campaign broadcasts,
+                        auto-replies, and webhook integration. Use it to send order confirmations and digital product
+                        download links automatically.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Interakt (creator-focused)</span>
+                            <span class="opt-tag">Wati (automation-heavy)</span>
+                            <span class="opt-tag">360dialog (cheapest API)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">📊</div>
+                        <div class="card-name">Analytics</div>
+                        <div class="card-status status-planned">Add Later</div>
+                    </div>
+                    <div class="card-body">
+                        A layered analytics approach: Google Analytics 4 for SEO insights, PostHog for product analytics
+                        and session recordings (self-hostable, open-source), and Meta Pixel for retargeting creator
+                        audiences on Instagram/Facebook — which are the dominant creator acquisition channels in India.
+                        <div class="card-options">
+                            <span class="opt-tag primary">PostHog (self-hosted)</span>
+                            <span class="opt-tag">GA4</span>
+                            <span class="opt-tag">Meta Pixel</span>
+                            <span class="opt-tag">Umami (lightweight)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI -->
+                <div class="stack-card">
+                    <div class="card-top">
+                        <div class="card-emoji">🤖</div>
+                        <div class="card-name">AI Integration</div>
+                        <div class="card-status status-planned">Add Later</div>
+                    </div>
+                    <div class="card-body">
+                        Use the Vercel AI SDK to stream AI responses in Next.js with ease. Gemini 1.5 Flash is the most
+                        cost-effective for high-volume tasks like product description generation (≈ $0.075 per 1M
+                        tokens). GPT-4o is more capable for nuanced copy. Route between models based on task complexity
+                        to minimize cost.
+                        <div class="card-options">
+                            <span class="opt-tag primary">Gemini 1.5 Flash (cost-effective)</span>
+                            <span class="opt-tag">GPT-4o Mini</span>
+                            <span class="opt-tag">Vercel AI SDK</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /stack-grid -->
+        </section>
+
+        <!-- ═══ PERFORMANCE ═══ -->
+        <section class="section" id="performance">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(47,228,160,.08)">⚡</div>
+                <div class="section-meta">
+                    <div class="section-tag">Infrastructure · 02</div>
+                    <h2>Performance & Scaling Layer</h2>
+                    <p>Critical services to implement before scaling beyond 1,000 creators. Every tool below has a
+                        specific, quantifiable reason.</p>
+                </div>
+            </div>
+
+            <div class="perf-grid">
+
+                <!-- Redis -->
+                <div class="perf-card">
+                    <div class="perf-head">
+                        <div class="perf-icon" style="background:rgba(255,79,106,.1)">⚡</div>
+                        <div class="perf-info">
+                            <div class="perf-name">Redis — Caching & Rate Limiting</div>
+                            <div class="perf-sub">Upstash (serverless) · or Self-hosted on DO</div>
+                        </div>
+                        <div class="perf-badge">PRIORITY #1</div>
+                    </div>
+                    <div class="perf-body">
+                        <p>Without caching, every visitor to a creator's storefront triggers a fresh Supabase query. At
+                            10,000 concurrent visitors hitting multiple stores, your Supabase connection pool (limited
+                            to 60 concurrent connections on the free tier, 200 on Pro) will be exhausted within seconds,
+                            throwing <code>500</code> errors to buyers.</p>
+                        <div class="why-box">
+                            <div class="why-label">The Math</div>
+                            <p>A typical store metadata query takes ~120ms from Supabase (India region). A Redis
+                                in-memory read takes ~1ms. That's a 120× speed improvement per request, and zero
+                                Postgres connection used.</p>
+                        </div>
+                        <p><strong>Implementation strategy:</strong> Cache store metadata (title, colors, logo, product
+                            list) with a 60-second TTL. On store update, bust the specific cache key. Use Upstash
+                            (pay-per-request, no cold-starts) until you hit $20/month, then self-host Redis on a $6 DO
+                            droplet.</p>
+                        <p><strong>Rate limiting:</strong> Use Redis sliding-window counters to block IPs making more
+                            than 100 requests in 60 seconds. This blocks card-testing bots before they hit Cashfree's
+                            API.</p>
+                        <div class="impl-row">
+                            <span class="impl-tag rec">Upstash (serverless, recommended)</span>
+                            <span class="impl-tag">ioredis</span>
+                            <span class="impl-tag">@upstash/ratelimit</span>
+                            <span class="impl-tag">Redis 7.x self-hosted</span>
+                        </div>
+                    </div>
+                    <div class="perf-stats">
+                        <div class="stat-cell">
+                            <div class="stat-value">1ms</div>
+                            <div class="stat-label">Redis Read Latency</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">120ms</div>
+                            <div class="stat-label">DB Query Saved</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">DB Connections Used</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Optimization -->
+                <div class="perf-card">
+                    <div class="perf-head">
+                        <div class="perf-icon" style="background:rgba(79,143,255,.1)">🖼️</div>
+                        <div class="perf-info">
+                            <div class="perf-name">Image Optimization & Delivery</div>
+                            <div class="perf-sub">ImageKit.io · Cloudflare Images · Cloudflare R2</div>
+                        </div>
+                        <div class="perf-badge">PRIORITY #2</div>
+                    </div>
+                    <div class="perf-body">
+                        <p>A creator uploads a 10MB raw photo from their iPhone as a store banner. Without optimization,
+                            every buyer downloads 10MB of pixels — on a 4G connection in Tier-2 India (average speed
+                            ~15Mbps), that's a 5+ second load just for the hero image. Google's Core Web Vitals will
+                            penalize this store in search rankings.</p>
+                        <div class="why-box">
+                            <div class="why-label">The Impact</div>
+                            <p>Google research shows a 1-second delay in mobile load time reduces conversions by 20%. On
+                                Indian mobile networks, unoptimized images are the single largest bottleneck. ImageKit
+                                converts to WebP automatically, reducing file size by 60–80%.</p>
+                        </div>
+                        <p><strong>ImageKit setup:</strong> Use ImageKit as your origin storage URL transformer. Point
+                            it at your Supabase Storage bucket. All image URLs become
+                            <code>ik.imagekit.io/digione/[path]?tr=w-800,f-webp</code> — dynamically resized and
+                            compressed at the CDN edge.
+                        </p>
+                        <p><strong>Cloudflare Images</strong> ($5/month for 100K images) is a simpler alternative that
+                            integrates directly with Cloudflare's network if you're already using them for DNS.</p>
+                        <div class="impl-row">
+                            <span class="impl-tag rec">ImageKit.io (free 20GB/month)</span>
+                            <span class="impl-tag">Cloudflare Images</span>
+                            <span class="impl-tag">next/image (built-in)</span>
+                            <span class="impl-tag">Sharp (self-hosted)</span>
+                        </div>
+                    </div>
+                    <div class="perf-stats">
+                        <div class="stat-cell">
+                            <div class="stat-value">80%</div>
+                            <div class="stat-label">File Size Reduction</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">WebP</div>
+                            <div class="stat-label">Output Format</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">+20%</div>
+                            <div class="stat-label">Conversion Lift</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ISR / Next.js -->
+                <div class="perf-card">
+                    <div class="perf-head">
+                        <div class="perf-icon" style="background:rgba(123,95,255,.1)">🔄</div>
+                        <div class="perf-info">
+                            <div class="perf-name">Next.js ISR — Incremental Static Regeneration</div>
+                            <div class="perf-sub">Built into Next.js 15 · Zero additional cost</div>
+                        </div>
+                        <div class="perf-badge">HIGH IMPACT</div>
+                    </div>
+                    <div class="perf-body">
+                        <p>Creator storefronts don't change every second — yet if you use Server-Side Rendering (SSR),
+                            Next.js calls your database on <em>every single page load</em>. With ISR, Next.js generates
+                            the storefront HTML once, caches it at Cloudflare's edge, and only regenerates it when a
+                            creator updates their store.</p>
+                        <div class="why-box">
+                            <div class="why-label">Static HTML vs Dynamic SSR</div>
+                            <p>A static HTML page served from Cloudflare's CDN can handle millions of concurrent
+                                requests for free. A dynamic SSR route uses a Vercel Serverless Function invocation
+                                (which costs money and has concurrency limits) every single time.</p>
+                        </div>
+                        <p><strong>Implementation:</strong> Use <code>export const revalidate = 60</code> in your
+                            storefront <code>page.tsx</code>. This tells Next.js to serve the cached HTML for 60
+                            seconds, then regenerate it in the background. Use
+                            <code>revalidatePath('/store/[slug]')</code> in your store-update API route for instant
+                            cache busting on publish.
+                        </p>
+                        <p><strong>On-Demand ISR</strong> (Next.js 13+): When a creator hits "Publish" in their
+                            dashboard, call the revalidation webhook immediately — no waiting for the 60-second window.
+                            Buyers see changes instantly, database load stays near zero.</p>
+                        <div class="impl-row">
+                            <span class="impl-tag rec">ISR with on-demand revalidation</span>
+                            <span class="impl-tag">revalidatePath()</span>
+                            <span class="impl-tag">generateStaticParams()</span>
+                        </div>
+                    </div>
+                    <div class="perf-stats">
+                        <div class="stat-cell">
+                            <div class="stat-value">∞</div>
+                            <div class="stat-label">Concurrent Users (CDN)</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">DB Hits per Cached Page</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">&lt;50ms</div>
+                            <div class="stat-label">TTFB from Cloudflare Edge</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sentry -->
+                <div class="perf-card">
+                    <div class="perf-head">
+                        <div class="perf-icon" style="background:rgba(245,200,66,.08)">🔍</div>
+                        <div class="perf-info">
+                            <div class="perf-name">Application Monitoring</div>
+                            <div class="perf-sub">Sentry · OpenTelemetry · Betterstack</div>
+                        </div>
+                        <div class="perf-badge">RELIABILITY</div>
+                    </div>
+                    <div class="perf-body">
+                        <p>In production, you're flying blind without monitoring. A Cashfree payment webhook may start
+                            failing silently at 2 AM — you'll only discover it when creators complain that buyers paid
+                            but didn't receive their products. Sentry catches this in real-time and pages you before a
+                            single creator notices.</p>
+                        <div class="why-box">
+                            <div class="why-label">What to Monitor for DigiOne</div>
+                            <p>Payment webhook success rate, storefront page load TTFB, file download generation time,
+                                API route P95 latency, and Supabase connection pool usage. Set Slack alerts when any
+                                metric breaches thresholds.</p>
+                        </div>
+                        <p><strong>Sentry for Next.js</strong> auto-instruments all API routes with error tracking and
+                            performance tracing. The free tier includes 5,000 errors/month — more than enough for
+                            early-stage. Configure <code>tracesSampleRate: 0.1</code> to sample 10% of transactions
+                            (reduces noise and volume).</p>
+                        <p><strong>Betterstack Uptime</strong> (free tier) pings your storefront URLs every 30 seconds
+                            from Mumbai and alerts you if load time exceeds 3s or the site goes down — critical because
+                            Cashfree and Indian buyers have low tolerance for downtime.</p>
+                        <div class="impl-row">
+                            <span class="impl-tag rec">Sentry (errors + performance)</span>
+                            <span class="impl-tag">Betterstack (uptime)</span>
+                            <span class="impl-tag">Axiom (logs)</span>
+                            <span class="impl-tag">OpenTelemetry</span>
+                        </div>
+                    </div>
+                    <div class="perf-stats">
+                        <div class="stat-cell">
+                            <div class="stat-value">&lt;1min</div>
+                            <div class="stat-label">Error Detection Time</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">30s</div>
+                            <div class="stat-label">Uptime Check Interval</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">LCP</div>
+                            <div class="stat-label">Web Vitals Tracked</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Background Jobs -->
+                <div class="perf-card">
+                    <div class="perf-head">
+                        <div class="perf-icon" style="background:rgba(47,228,160,.08)">⚙️</div>
+                        <div class="perf-info">
+                            <div class="perf-name">Background Jobs & Webhook Processing</div>
+                            <div class="perf-sub">Inngest · Trigger.dev · QStash (Upstash)</div>
+                        </div>
+                        <div class="perf-badge">STABILITY</div>
+                    </div>
+                    <div class="perf-body">
+                        <p>Vercel Serverless Functions have a strict 10-second timeout on the free tier (60 seconds on
+                            Pro). If a buyer purchases a product and you try to: verify the Cashfree webhook → write to
+                            Supabase → generate a PDF → send an email → post a WhatsApp message — all inside one API
+                            route, it will timeout and the buyer gets a broken experience.</p>
+                        <div class="why-box">
+                            <div class="why-label">The Cashfree Webhook Problem</div>
+                            <p>Cashfree expects your webhook endpoint to respond with a 200 status within 5 seconds. If
+                                you do too much processing inside the webhook handler, it'll timeout, Cashfree will mark
+                                it failed and retry, causing duplicate deliveries. Use a job queue to immediately
+                                acknowledge the webhook and process async.</p>
+                        </div>
+                        <p><strong>Inngest pattern for DigiOne:</strong> Your Cashfree webhook handler does ONE thing —
+                            writes the raw event to Inngest's queue and responds 200 immediately. Inngest then fans out
+                            to child jobs: <code>send-confirmation-email</code>, <code>generate-download-link</code>,
+                            <code>notify-creator</code>, <code>update-analytics</code>. Each runs independently with
+                            automatic retries.
+                        </p>
+                        <p><strong>QStash by Upstash</strong> is a simpler alternative — an HTTP-based message queue.
+                            Publish a message to a URL, and Upstash delivers it with retries and delays. Perfect if you
+                            don't need complex orchestration.</p>
+                        <div class="impl-row">
+                            <span class="impl-tag rec">Inngest (orchestration + retry)</span>
+                            <span class="impl-tag">Trigger.dev (open-source)</span>
+                            <span class="impl-tag">QStash (simple HTTP queue)</span>
+                            <span class="impl-tag">BullMQ (self-hosted)</span>
+                        </div>
+                    </div>
+                    <div class="perf-stats">
+                        <div class="stat-cell">
+                            <div class="stat-value">∞</div>
+                            <div class="stat-label">Job Duration Limit</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">Auto</div>
+                            <div class="stat-label">Retry on Failure</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">&lt;200ms</div>
+                            <div class="stat-label">Webhook Ack Time</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="perf-card">
+                    <div class="perf-head">
+                        <div class="perf-icon" style="background:rgba(255,140,66,.1)">🔎</div>
+                        <div class="perf-info">
+                            <div class="perf-name">Dedicated Search Engine</div>
+                            <div class="perf-sub">Typesense (self-hosted) · Algolia · Meilisearch</div>
+                        </div>
+                        <div class="perf-badge">CONVERSION</div>
+                    </div>
+                    <div class="perf-body">
+                        <p>PostgreSQL's full-text search with <code>pg_trgm</code> is serviceable for small catalogs,
+                            but as creators list 50–200 products, <code>ILIKE '%query%'</code> queries become full table
+                            scans. They're also unforgiving — a typo like "Excell template" returns zero results instead
+                            of matching "Excel template."</p>
+                        <div class="why-box">
+                            <div class="why-label">Impact on Revenue</div>
+                            <p>If a buyer searches and finds nothing due to a typo or slow results, they leave. A
+                                dedicated search engine with typo tolerance and sub-50ms results directly translates to
+                                higher conversion rates on creator stores.</p>
+                        </div>
+                        <p><strong>Typesense</strong> is the recommended choice — it's open-source, can be self-hosted
+                            on a $6 DO droplet, and delivers sub-20ms typo-tolerant search. Its Node.js client
+                            integrates easily with Next.js API routes. Mirror your Supabase products table to Typesense
+                            using a Supabase webhook trigger on INSERT/UPDATE.</p>
+                        <p><strong>Meilisearch</strong> is another strong open-source option with a beautiful
+                            search-as-you-type API. Algolia is the most powerful but expensive ($1/1000 search requests
+                            beyond the free tier).</p>
+                        <div class="impl-row">
+                            <span class="impl-tag rec">Typesense (self-hosted, free)</span>
+                            <span class="impl-tag">Meilisearch</span>
+                            <span class="impl-tag">Algolia (managed)</span>
+                            <span class="impl-tag">pg_trgm (starter only)</span>
+                        </div>
+                    </div>
+                    <div class="perf-stats">
+                        <div class="stat-cell">
+                            <div class="stat-value">&lt;20ms</div>
+                            <div class="stat-label">Search Latency</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">✓</div>
+                            <div class="stat-label">Typo Tolerance</div>
+                        </div>
+                        <div class="stat-cell">
+                            <div class="stat-value">$6/mo</div>
+                            <div class="stat-label">Self-hosted Cost</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /perf-grid -->
+        </section>
+
+        <!-- ═══ SECURITY ═══ -->
+        <section class="section" id="security">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(255,79,106,.08)">🛡️</div>
+                <div class="section-meta">
+                    <div class="section-tag">Infrastructure · 03</div>
+                    <h2>Security Hardening</h2>
+                    <p>Non-negotiable before accepting real payments. These protect your creators, their buyers, and
+                        your platform's reputation.</p>
+                </div>
+            </div>
+
+            <div class="security-grid">
+
+                <div class="sec-card">
+                    <div class="sec-head">
+                        <div class="card-emoji">🤖</div>
+                        <div class="card-name"
+                            style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff;margin-left:8px;">
+                            Bot Protection</div>
+                        <div class="threat-level threat-critical">CRITICAL</div>
+                    </div>
+                    <div class="sec-body">
+                        <strong>Cloudflare Turnstile</strong> (free, unlimited) should be placed on your Login, Signup,
+                        Checkout, and Contact pages. Unlike hCaptcha or reCAPTCHA, Turnstile runs silently in the
+                        background — buyers see no challenge puzzle, just a smooth experience.<br /><br />
+                        <strong>Carding attacks</strong> are the #1 threat to Indian e-commerce platforms. Bots test
+                        thousands of stolen cards in rapid succession to find valid ones. Turnstile blocks this entirely
+                        before a single request reaches Cashfree. Cashfree may also suspend your merchant account if
+                        they detect carding activity — protect yourself.
+                    </div>
+                </div>
+
+                <div class="sec-card">
+                    <div class="sec-head">
+                        <div class="card-emoji">🖼️</div>
+                        <div class="card-name"
+                            style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff;margin-left:8px;">
+                            Content Moderation</div>
+                        <div class="threat-level threat-high">HIGH</div>
+                    </div>
+                    <div class="sec-body">
+                        <strong>Sightengine</strong> or <strong>AWS Rekognition</strong> should scan every image upload
+                        before it's saved to Supabase Storage. A bad actor uploading NSFW or illegal content to a
+                        DigiOne store could get your entire <code>digione.ai</code> domain blacklisted by Cloudflare,
+                        Cashfree, or Google Safe Browsing — catastrophic for all creators on the platform.<br /><br />
+                        Sightengine's free tier covers 2,000 checks/month. Call it synchronously on upload and reject
+                        with a clear error message. Log rejected uploads for manual review.
+                    </div>
+                </div>
+
+                <div class="sec-card">
+                    <div class="sec-head">
+                        <div class="card-emoji">💾</div>
+                        <div class="card-name"
+                            style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff;margin-left:8px;">
+                            Database Backups (PITR)</div>
+                        <div class="threat-level threat-critical">CRITICAL</div>
+                    </div>
+                    <div class="sec-body">
+                        <strong>Point-in-Time Recovery</strong> is your last line of defence against catastrophic data
+                        loss. A bug, a SQL migration gone wrong, or an accidental <code>DELETE FROM users</code> without
+                        a WHERE clause could wipe your entire business in seconds.<br /><br />
+                        <strong>On Supabase Pro ($25/mo):</strong> Enable PITR in the dashboard — you can rewind to any
+                        second in the last 7 days. <strong>On self-hosted:</strong> Run <code>pg_dump</code> every 6
+                        hours via a cron job, upload to a private Cloudflare R2 bucket, and test restoration monthly.
+                        Store at least 30 days of backups.
+                    </div>
+                </div>
+
+                <div class="sec-card">
+                    <div class="sec-head">
+                        <div class="card-emoji">🔑</div>
+                        <div class="card-name"
+                            style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff;margin-left:8px;">
+                            API Rate Limiting</div>
+                        <div class="threat-level threat-high">HIGH</div>
+                    </div>
+                    <div class="sec-body">
+                        Use <strong>@upstash/ratelimit</strong> with Redis to implement sliding-window rate limits on
+                        every public API route. A scraper hitting your products API at 100 req/sec would dump your
+                        entire creator catalog within minutes — competitive intelligence theft and server load
+                        combined.<br /><br />
+                        Recommended limits: 20 req/min for unauthenticated routes, 100 req/min for authenticated
+                        creators, 5 req/min for checkout endpoints. Return <code>429 Too Many Requests</code> with a
+                        <code>Retry-After</code> header for legitimate clients.
+                    </div>
+                </div>
+
+                <div class="sec-card">
+                    <div class="sec-head">
+                        <div class="card-emoji">🔒</div>
+                        <div class="card-name"
+                            style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff;margin-left:8px;">
+                            Webhook Signature Verification</div>
+                        <div class="threat-level threat-high">HIGH</div>
+                    </div>
+                    <div class="sec-body">
+                        <strong>Every Cashfree webhook must be verified</strong> using the HMAC-SHA256 signature they
+                        send in the <code>x-webhook-signature</code> header. A fraudster can POST a fake "payment
+                        successful" event to your webhook endpoint and receive a digital product without
+                        paying.<br /><br />
+                        Verify the signature on every single webhook call before trusting the payload. This is a 5-line
+                        implementation that prevents complete revenue fraud. Never skip this step.
+                    </div>
+                </div>
+
+                <div class="sec-card">
+                    <div class="sec-head">
+                        <div class="card-emoji">🌐</div>
+                        <div class="card-name"
+                            style="font-family:var(--display);font-size:14px;font-weight:700;color:#fff;margin-left:8px;">
+                            Security Headers & CSP</div>
+                        <div class="threat-level threat-medium">MEDIUM</div>
+                    </div>
+                    <div class="sec-body">
+                        Configure HTTP security headers in your <code>next.config.ts</code>:
+                        <strong>Content-Security-Policy</strong> (blocks XSS attacks), <strong>X-Frame-Options:
+                            DENY</strong> (prevents clickjacking), <strong>Strict-Transport-Security</strong> (forces
+                        HTTPS), and <strong>Permissions-Policy</strong> (restricts camera/mic access).<br /><br />
+                        Use <strong>next-safe</strong> or <strong>@next/headers</strong> to generate your CSP. Also
+                        enable Supabase Row Level Security (RLS) policies on every table so creators can only access
+                        their own data — even if an API route has a bug, the database enforces access control.
+                    </div>
+                </div>
+
+            </div><!-- /security-grid -->
+        </section>
+
+        <!-- ═══ SCALING ═══ -->
+        <section class="section" id="scaling">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(123,95,255,.1)">📈</div>
+                <div class="section-meta">
+                    <div class="section-tag">Roadmap · 04</div>
+                    <h2>Scaling Roadmap</h2>
+                    <p>A phased approach to growing from MVP to millions of buyers — without rewriting everything.</p>
+                </div>
+            </div>
+
+            <div class="scaling-timeline">
+
+                <div class="timeline-item">
+                    <div class="tl-dot">
+                        <div class="tl-circle">1</div>
+                    </div>
+                    <div class="tl-card">
+                        <div class="tl-phase">Phase 1 · Current State</div>
+                        <div class="tl-title">Vercel Free + Supabase Free — The MVP Stage</div>
+                        <div class="tl-body">
+                            <p>This is your current setup and it's appropriate for the MVP. Vercel's free tier gives you
+                                100GB bandwidth/month, and Supabase's free tier gives you a 500MB Postgres database with
+                                2GB file storage. This is sufficient for launching, onboarding your first creators, and
+                                validating the business model.</p>
+                            <p><strong>What you can realistically handle:</strong> ~1,000 active creators, 50,000
+                                monthly storefront visitors across all stores, 500MB of creator-uploaded assets, and up
+                                to 50 concurrent database connections.</p>
+                            <div class="chokepoints">
+                                <div class="chokepoints-title">⚠ Chokepoints — Why It Will Fail</div>
+                                <div class="chokepoint-item">Vercel will throttle or lock your account the moment you
+                                    exceed 100GB bandwidth in a month — a single viral creator could trigger this.</div>
+                                <div class="chokepoint-item">Supabase free tier limits database connections to ~20
+                                    simultaneous. A traffic spike from multiple stores will cause timeout cascades.
+                                </div>
+                                <div class="chokepoint-item">Supabase pauses your database after 7 days of inactivity
+                                    (free tier) — unacceptable for a live product.</div>
+                                <div class="chokepoint-item">No background job processing means Cashfree webhooks run
+                                    inside the API route — any slowness causes missed deliveries.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="tl-dot">
+                        <div class="tl-circle">2</div>
+                    </div>
+                    <div class="tl-card">
+                        <div class="tl-phase">Phase 2 · Growth Stage (~$500–$2K MRR)</div>
+                        <div class="tl-title">Upgrade the Foundations — Redis, ISR, Monitoring, Jobs</div>
+                        <div class="tl-body">
+                            <p>At this stage, you're processing real creator payments. The engineering priority shifts
+                                from "ship features fast" to "nothing breaks at 2 AM." Upgrade Supabase to Pro
+                                ($25/month) for PITR, connection pooling via PgBouncer, and no pausing. Add Vercel Pro
+                                ($20/month) for 1TB bandwidth and 60-second function timeouts.</p>
+                            <div class="solutions">
+                                <div class="solutions-title">→ Implement These in Order</div>
+                                <div class="solution-item">Add Upstash Redis for store metadata caching and API rate
+                                    limiting — immediate impact on database load and bot protection.</div>
+                                <div class="solution-item">Migrate storefront routes to ISR with on-demand revalidation.
+                                    Static pages served from Cloudflare CDN handle unlimited traffic for free.</div>
+                                <div class="solution-item">Set up Inngest for Cashfree webhook processing, email
+                                    delivery, and download link generation. Eliminates timeout failures.</div>
+                                <div class="solution-item">Deploy Sentry with Slack alerting for API route errors and
+                                    payment webhook failures. Know about issues before creators do.</div>
+                                <div class="solution-item">Add Cloudflare Turnstile to Login, Signup, and Checkout pages
+                                    to block carding bots.</div>
+                            </div>
+                            <p style="margin-top:14px;"><strong>Monthly infrastructure cost at this stage:</strong>
+                                Supabase Pro $25 + Vercel Pro $20 + Upstash ~$5 + Sentry Free + Inngest Free tier =
+                                <strong>~$50/month.</strong> A creator platform making $500 MRR can easily cover this.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="tl-dot">
+                        <div class="tl-circle">3</div>
+                    </div>
+                    <div class="tl-card">
+                        <div class="tl-phase">Phase 3 · Scale Stage ($2K+ MRR)</div>
+                        <div class="tl-title">Migrate to DigitalOcean + Coolify + Cloudflare CDN</div>
+                        <div class="tl-body">
+                            <p>Vercel's Pro plan charges $0.40 per GB beyond 1TB of bandwidth, and managed Supabase
+                                limits you to 8GB database storage on Pro. When you have 10,000+ creators uploading
+                                gigabytes of content, these costs compound fast. The migration to a self-hosted setup is
+                                a one-time investment that cuts your infrastructure bill by 80%.</p>
+                            <div class="solutions">
+                                <div class="solutions-title">→ Migration Playbook</div>
+                                <div class="solution-item"><strong>Spin up a DO Droplet ($48/month — 4 vCPU, 8GB
+                                        RAM):</strong> This single server handles what Vercel charges $200+/month for.
+                                    Install Coolify (a self-hosted PaaS, similar to Vercel UI) to manage deployments via
+                                    Git push.</div>
+                                <div class="solution-item"><strong>Self-host Supabase on the same droplet</strong> (or a
+                                    separate $24/month droplet for DB isolation): You get unlimited storage and the full
+                                    Supabase stack (Auth, Storage, Realtime, Edge Functions) for free.</div>
+                                <div class="solution-item"><strong>Point Cloudflare CDN in front of your
+                                        droplet:</strong> Cloudflare caches static assets and CDN pages. Your
+                                    DigitalOcean server only processes cache misses. Bandwidth costs drop to near zero.
+                                </div>
+                                <div class="solution-item"><strong>Use Cloudflare R2</strong> for file storage (zero
+                                    egress fees) instead of Supabase Storage or AWS S3. At scale, this alone saves
+                                    hundreds of dollars monthly.</div>
+                                <div class="solution-item"><strong>Run automated pg_dump backups to R2</strong> every 6
+                                    hours using a cron job on the server. Retain 30 days of backups for disaster
+                                    recovery.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /scaling-timeline -->
+        </section>
+
+        <!-- ═══ COST TABLE ═══ -->
+        <section class="section" id="costs">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(47,228,160,.08)">💰</div>
+                <div class="section-meta">
+                    <div class="section-tag">Finance · 05</div>
+                    <h2>Cost Optimisation</h2>
+                    <p>Side-by-side comparison of managed costs vs self-hosted at scale.</p>
+                </div>
+            </div>
+
+            <div class="tl-card" style="border-radius:14px;">
+                <table class="cost-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Managed (Before)</th>
+                            <th>Self-Hosted (After)</th>
+                            <th>Monthly Savings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="cost-name">Hosting & Compute</td>
+                            <td class="cost-before">Vercel Pro: $20–$200+</td>
+                            <td class="cost-after">DO Droplet + Coolify: $48</td>
+                            <td class="cost-saving">Up to $150+/mo</td>
+                        </tr>
+                        <tr>
+                            <td class="cost-name">Database</td>
+                            <td class="cost-before">Supabase Pro: $25 (8GB limit)</td>
+                            <td class="cost-after">Self-hosted Supabase/DO Postgres: $0–$15</td>
+                            <td class="cost-saving">~$10–$25/mo</td>
+                        </tr>
+                        <tr>
+                            <td class="cost-name">File Storage</td>
+                            <td class="cost-before">Supabase / AWS S3: egress fees</td>
+                            <td class="cost-after">Cloudflare R2: $0 egress</td>
+                            <td class="cost-saving">Up to $50+/mo</td>
+                        </tr>
+                        <tr>
+                            <td class="cost-name">CDN Bandwidth</td>
+                            <td class="cost-before">Vercel: $0.40/GB overage</td>
+                            <td class="cost-after">Cloudflare: Free (unlimited)</td>
+                            <td class="cost-saving">Up to $200+/mo</td>
+                        </tr>
+                        <tr>
+                            <td class="cost-name">Email (Transactional)</td>
+                            <td class="cost-before">Resend: $20/mo (50K emails)</td>
+                            <td class="cost-after">AWS SES: $1/mo (10K emails)</td>
+                            <td class="cost-saving">~$19/mo at scale</td>
+                        </tr>
+                        <tr>
+                            <td class="cost-name">Search</td>
+                            <td class="cost-before">Algolia: $50+/mo</td>
+                            <td class="cost-after">Typesense self-hosted: $6/mo</td>
+                            <td class="cost-saving">~$44/mo</td>
+                        </tr>
+                        <tr>
+                            <td class="cost-name">Analytics (Product)</td>
+                            <td class="cost-before">PostHog Cloud: $20–$450/mo</td>
+                            <td class="cost-after">PostHog self-hosted: $0</td>
+                            <td class="cost-saving">Up to $450/mo</td>
+                        </tr>
+                        <tr>
+                            <td class="cost-name"><strong>Total Estimate</strong></td>
+                            <td class="cost-before"><strong>$300–$800+/mo</strong></td>
+                            <td class="cost-after"><strong>$60–$100/mo</strong></td>
+                            <td class="cost-saving">~80% reduction</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout" style="margin-top:24px;">
+                <div class="callout-icon">💡</div>
+                <h3>The Recommended Strategy</h3>
+                <p>Build the MVP on <code>Vercel Free + Supabase Free</code> to move fast. The moment you hit your first
+                    <strong>₹1 lakh (~$1,200) in creator revenue</strong>, migrate hosting to a
+                    <code>DigitalOcean droplet with Coolify</code> and put <code>Cloudflare</code> in front of
+                    everything. This single infrastructure shift will sustain viral traffic spikes for under
+                    <strong>$60/month</strong> indefinitely — and the savings will fund your next feature sprint.
+                </p>
+            </div>
+        </section>
+
+        <!-- ═══ INDIA MARKET ═══ -->
+        <section class="section" id="india">
+            <div class="section-header">
+                <div class="section-icon" style="background:rgba(245,200,66,.08)">🇮🇳</div>
+                <div class="section-meta">
+                    <div class="section-tag">Market Context · 06</div>
+                    <h2>India-Specific Considerations</h2>
+                    <p>Unique technical and product decisions driven by the Indian creator economy.</p>
+                </div>
+            </div>
+
+            <div class="india-grid">
+
+                <div class="india-card" data-flag="📡">
+                    <span class="india-stat">4G/5G</span>
+                    <h4>Mobile-First Performance</h4>
+                    <p>Over 96% of Indian internet users access the web via mobile. Average 4G speeds in Tier-2/3 cities
+                        hover around 10–20 Mbps. Every storefront must score 90+ on Google Lighthouse Mobile. Use ISR +
+                        CDN to ensure sub-1s load times even on mid-range Android devices.</p>
+                </div>
+
+                <div class="india-card" data-flag="💸">
+                    <span class="india-stat">UPI</span>
+                    <h4>UPI & Payment Diversity</h4>
+                    <p>UPI accounts for 80%+ of digital payments in India. Your Cashfree integration must prominently
+                        feature PhonePe, Google Pay, and Paytm UPI flows at checkout — not just cards. Also support Net
+                        Banking and Wallets for older demographics who don't trust UPI for large amounts.</p>
+                </div>
+
+                <div class="india-card" data-flag="💬">
+                    <span class="india-stat">95%</span>
+                    <h4>WhatsApp Open Rate</h4>
+                    <p>Indian buyers respond to WhatsApp more than email. Sending a digital product download link via
+                        WhatsApp within 30 seconds of purchase (via Interakt or Wati) dramatically reduces "I didn't
+                        receive my product" support tickets — the #1 complaint in Indian digital commerce.</p>
+                </div>
+
+                <div class="india-card" data-flag="⚖️">
+                    <span class="india-stat">GST</span>
+                    <h4>GST & Compliance (TDS)</h4>
+                    <p>Creators earning above ₹2.5L/year must file GST on digital products. When DigiOne handles creator
+                        payouts, you'll need to deduct TDS (Tax Deducted at Source) at 1% for creators with PAN and 5%
+                        without. Build this into your payout logic from Day 1 or face compliance issues.</p>
+                </div>
+
+                <div class="india-card" data-flag="🗣️">
+                    <span class="india-stat">20+</span>
+                    <h4>Multi-Language Support</h4>
+                    <p>India has 20+ official languages. Top creator categories — finance, fitness, cooking, education —
+                        have massive audiences in Hindi, Tamil, Telugu, and Bengali. Offering creators the ability to
+                        set their storefront language (with right-to-left support for Urdu) unlocks Tier-2/3 city
+                        markets.</p>
+                </div>
+
+                <div class="india-card" data-flag="📦">
+                    <span class="india-stat">INR</span>
+                    <h4>Pricing & Purchasing Power</h4>
+                    <p>Indian buyers are highly price-sensitive. A digital course priced at $97 (₹8,100) that converts
+                        well in the US might not convert in India. Support INR pricing, let creators offer EMI options
+                        (Cashfree supports this via credit card EMIs), and build a "Pay What You Want" feature for
+                        freemium products.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ═══ ARCHITECTURE SUMMARY ═══ -->
+        <div class="callout" style="margin-top: 48px;">
+            <div class="callout-icon">🗺️</div>
+            <h3>Architecture at a Glance — Request Flow</h3>
+            <p>
+                A buyer visits a creator's DigiOne store →
+                <code>Cloudflare CDN</code> serves the cached static HTML (0 DB queries) →
+                if cache miss, <code>Next.js ISR</code> on Vercel/DO regenerates from <code>Redis</code> →
+                Redis miss hits <code>Supabase Postgres</code> (pooled via PgBouncer) →
+                buyer checks out via <code>Cashfree</code> →
+                Cashfree fires webhook to <code>/api/cashfree/webhook</code> →
+                route verifies HMAC signature, enqueues job in <code>Inngest</code>, returns <code>200</code> in
+                &lt;100ms →
+                Inngest fans out: sends confirmation via <code>Resend</code>, fires WhatsApp via <code>Interakt</code>,
+                logs to <code>Supabase</code>, updates <code>Redis</code> cache →
+                <code>Sentry</code> monitors every step, alerts Slack on failure.
+            </p>
+        </div>
+
+    </div><!-- /wrapper -->
+
+    <footer>
+        <div class="wrapper">
+            <div class="footer-brand">Digi<span>One</span></div>
+            <p>Platform Architecture & Scaling Plan · Internal Engineering Document</p>
+            <p style="margin-top:6px;font-size:12px;color:var(--text-dim);">Built for the Indian Creator Economy ·
+                Next.js 15 · Supabase · Cashfree</p>
+            <div class="footer-links">
+                <a href="#stack">Tech Stack</a>
+                <a href="#performance">Performance</a>
+                <a href="#security">Security</a>
+                <a href="#scaling">Scaling</a>
+                <a href="#costs">Cost Plan</a>
+                <a href="#india">India Market</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
