@@ -122,13 +122,16 @@ export default function Sidebar() {
     <Link
       href={href}
       onClick={close}
-      className={`group flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${active
-        ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+      className={`group relative flex items-center gap-3 pl-3 pr-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${active
+        ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+        : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
         }`}
     >
+      {active && (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[#E83A2E]" />
+      )}
       <Icon className={`w-[18px] h-[18px] shrink-0 transition-colors ${active
-        ? 'text-[var(--text-primary)]'
+        ? 'text-[#E83A2E]'
         : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
         }`} />
       <span className="flex-1 truncate">{label}</span>
@@ -136,8 +139,6 @@ export default function Sidebar() {
         <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--danger)] text-white text-[10px] font-bold leading-none">
           {badge > 9 ? '9+' : badge}
         </span>
-      ) : active ? (
-        <ChevronRight className="w-3 h-3 text-[var(--text-secondary)] shrink-0" />
       ) : null}
     </Link>
   );
@@ -219,7 +220,7 @@ export default function Sidebar() {
 
           {NAV.map(({ id, group, items }) => (
             <div key={id}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-secondary)] px-3 mb-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-60 px-3 mb-1.5">
                 {group}
               </p>
               <div className="flex flex-col gap-px">
@@ -234,12 +235,15 @@ export default function Sidebar() {
                       <div key={item.href}>
                         <button
                           onClick={() => toggleAccordion(item.href)}
-                          className={`w-full flex items-center gap-3 px-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${childActive
-                            ? 'text-[var(--text-primary)] bg-[var(--bg-tertiary)]'
-                            : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                          className={`relative w-full flex items-center gap-3 pl-3 pr-3 py-[7px] rounded-lg text-[13px] font-medium transition-all ${childActive
+                            ? 'text-[var(--text-primary)] bg-[var(--bg-secondary)]'
+                            : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
                             }`}
                         >
-                          <item.icon className={`w-[18px] h-[18px] shrink-0 ${childActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`} />
+                          {childActive && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[#E83A2E]" />
+                          )}
+                          <item.icon className={`w-[18px] h-[18px] shrink-0 ${childActive ? 'text-[#E83A2E]' : 'text-[var(--text-secondary)]'}`} />
                           <span className="flex-1 text-left">{item.label}</span>
                           <ChevronDown className={`w-3.5 h-3.5 text-[var(--text-secondary)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
                         </button>
@@ -285,7 +289,7 @@ export default function Sidebar() {
 
           {/* Account links */}
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-secondary)] px-3 mb-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-60 px-3 mb-1.5">
               Account
             </p>
             <div className="flex flex-col gap-px">

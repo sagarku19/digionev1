@@ -1,21 +1,27 @@
 # App Directory (`/app`)
 
-This directory contains the entire Next.js 15 App Router routing structure for **DigiOne**. It separates the application into server components, client components (where required for interactivity), and backend API route handlers.
+This directory contains the entire Next.js 16 App Router routing structure for **DigiOne**. It separates the application into server components, client components (where required for interactivity), and backend API route handlers.
 
 ## Architecture & Layout
 
 The app is functionally segmented horizontally by purpose:
 
 ### Route Groups
-- **`/(auth)`**: Contains the Supabase Authentication UI flows. Everything needed for a creator to login, signup, or manage their session.
-- **`/(marketing)`**: The public-facing splash/landing pages of DigiOne designed to convert incoming creators to signups.
-- **`/(storefront)`**: The dynamic public rendering engine for creators' customized pages. 
-    - E.g. `/link/[username]` represents a Link-In-Bio page. Waitlists (`/w`), products (`/p`), upsells (`/s`), and blogs (`/blog`) are constructed here relying heavily on `generateStaticParams` or Server-Side Rendering (SSR).
-- **`/(buyer)`**: The isolated checkout and post-purchase (success) experiences for end-users interacting with creator stores.
+- **`/(auth)`**: Supabase Authentication UI flows — login, signup, and password reset.
+- **`/(marketing)`**: Public-facing landing pages of DigiOne designed to convert visitors to creator signups.
+- **`/(storefront)`**: Dynamic public rendering engine for creators' customized pages.
+    - `/link/[username]` — Link-in-Bio page
+    - `/site/[slug]` — Single-page sales site
+    - `/store/[slug]` — Product grid store
+- **`/(buyer)`**: Isolated checkout and post-purchase (success) experiences for buyers interacting with creator stores.
 
 ### Private Dashboards
-- **`/dashboard`**: The secure CRM space. All subdirectories (`/analytics`, `/products`, `/autodm`, `/earnings`, etc.) are heavily gated by middleware.
-    - **`/sites`**: Houses the visual builder environment, including `/sites/new` and `/sites/edit`, which control the Link-in-Bio and Storefront generation.
+- **`/dashboard`**: The secure CRM space. All subdirectories are gated by middleware.
+    - `/analytics`, `/products`, `/earnings`, `/customers`, `/orders` — core creator management
+    - `/marketing` — coupons, affiliates, leads, and referrals
+    - `/automation` — email, WhatsApp, Telegram, and Google Sheets integrations
+    - `/sites` — visual storefront builder (Link-in-Bio, Single Page, Store)
+    - `/settings` — profile, billing, and subscription
 
 ### Route Handlers (APIs)
 - **`/api`**: Secure Server-Side logical handlers that interact directly with the database or external SDKs.

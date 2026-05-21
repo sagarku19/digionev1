@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { LogOut, User, Bell, Search, Sun, Moon, Settings, Sparkles } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useProducts } from '@/hooks/useProducts';
 import { createClient } from '@/lib/supabase/client';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 
@@ -21,15 +22,32 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, onClose: () =
 
 /* ── Breadcrumb helper ── */
 function PageBreadcrumb({ pathname }: { pathname: string | null }) {
+  const { products } = useProducts();
   const raw = pathname?.split('/dashboard')[1] || '';
   const segments = raw.split('/').filter(Boolean);
   const lastSeg = segments[segments.length - 1];
-  const label = lastSeg
-    ? lastSeg.charAt(0).toUpperCase() + lastSeg.slice(1).replace(/-/g, ' ')
-    : 'Overview';
+  
+  let label = 'Overview';
+  if (lastSeg) {
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(lastSeg);
+    const prevSeg = segments.length > 1 ? segments[segments.length - 2] : '';
+    
+    if (isUUID) {
+      if (prevSeg === 'products') {
+        const product = products?.find((p: any) => p.id === lastSeg);
+        label = product?.name || 'Edit Product';
+      } else {
+        label = 'Details';
+      }
+    } else if (lastSeg === 'new' && prevSeg === 'products') {
+      label = 'New Product';
+    } else {
+      label = lastSeg.charAt(0).toUpperCase() + lastSeg.slice(1).replace(/-/g, ' ');
+    }
+  }
 
   return (
-    <span className="text-[15px] md:text-[20px] font-semibold text-gray-900 dark:text-white tracking-tight md:pl-6">
+    <span className="text-[15px] md:text-[20px] font-semibold text-gray-900 dark:text-white tracking-tight md:pl-6 truncate max-w-[200px] sm:max-w-xs md:max-w-md">
       {label}
     </span>
   );

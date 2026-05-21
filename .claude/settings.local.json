@@ -35,7 +35,18 @@
       "Bash(find \"C:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/\\(marketing\\)\" -name \"*.tsx\")",
       "Bash(find /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/src -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.jsx -o -name *.js \\\\\\))",
       "Bash(find c:/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1 -type f -name *linkinbio* -o -name *link-in-bio*)",
-      "Bash(grep -r \"from ''@/lib/supabase/server''\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/api --include=\"*.ts\" --include=\"*.tsx\")"
+      "Bash(grep -r \"from ''@/lib/supabase/server''\" /c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/app/api --include=\"*.ts\" --include=\"*.tsx\")",
+      "Read(//mnt/c/Users/sagar/OneDrive/Desktop/Websites/Digitalshop/digionev1/**)",
+      "Bash(npm list *)",
+      "Bash(npm search *)",
+      "Bash(npm info *)",
+      "Bash(dir C:\\\\Users\\\\sagar\\\\OneDrive\\\\Desktop\\\\Websites\\\\Digitalshop\\\\digionev1 *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\sagar\\\\OneDrive\\\\Desktop\\\\Websites\\\\Digitalshop\\\\digionev1\" -Filter \"README.md\" -Recurse -Exclude \"node_modules\")",
+      "Bash(Select-Object FullName)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "code-review-graph"
+  ]
 }

@@ -1,23 +1,33 @@
 ---
 name: Explore Codebase
-description: Navigate and understand codebase structure using the knowledge graph
+description: Navigate DigiOne's Next.js App Router + Supabase structure using the knowledge graph
 ---
 
 ## Explore Codebase
 
-Use the code-review-graph MCP tools to explore and understand the codebase.
+Start with the graph, fall back to Glob/Grep only if the graph doesn't cover the area.
 
 ### Steps
 
-1. Run `list_graph_stats` to see overall codebase metrics.
-2. Run `get_architecture_overview` for high-level community structure.
-3. Use `list_communities` to find major modules, then `get_community` for details.
-4. Use `semantic_search_nodes` to find specific functions or classes.
-5. Use `query_graph` with patterns like `callers_of`, `callees_of`, `imports_of` to trace relationships.
-6. Use `list_flows` and `get_flow` to understand execution paths.
+1. `get_architecture_overview` — understand the top-level community split (storefront vs dashboard vs API vs lib).
+2. `list_communities` — identify which community owns the area you're investigating.
+3. `semantic_search_nodes <keyword>` — find a specific component, hook, or server action by name.
+4. `query_graph imports_of <file>` — see what a file depends on.
+5. `query_graph children_of <file>` — list all exports (functions, components, types) in a file.
+
+### Project layout cheat-sheet
+
+| Path | What lives here |
+|------|----------------|
+| `app/(dashboard)/` | Authenticated seller dashboard pages |
+| `app/(storefront)/` | Public-facing storefront pages (dynamic `[siteId]`, `[slug]`) |
+| `app/(marketing)/` | Landing / marketing pages |
+| `app/api/` | Next.js Route Handlers (REST-style backend) |
+| `src/components/dashboard/` | Dashboard UI components (TopBar, Sidebar, etc.) |
+| `lib/supabase/` | Supabase client factories (server vs browser) |
+| `lib/` | Shared utilities, types, helpers |
 
 ### Tips
 
-- Start broad (stats, architecture) then narrow down to specific areas.
-- Use `children_of` on a file to see all its functions and classes.
-- Use `find_large_functions` to identify complex code.
+- `app/(storefront)/[slug]/[childslug]/[postSlug]/` is the deepest dynamic route — trace params carefully.
+- Dashboard components use a brand/theme token system — see `globals.css` or `tailwind.config` for CSS vars.
