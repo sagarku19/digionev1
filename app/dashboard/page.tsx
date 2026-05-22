@@ -317,7 +317,7 @@ export default function DashboardHome() {
                   <p className="text-sm font-bold text-gray-500">No products yet</p>
                   <Link
                     href="/dashboard/products/new"
-                    className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-4 py-2 rounded-[var(--radius-sm)] border border-indigo-100 dark:border-gray-900 dark:border-white/20 hover:bg-indigo-100 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-4 py-2 rounded-[var(--radius-sm)] border border-indigo-100 dark:border-white/20 hover:bg-indigo-100 transition-colors"
                   >
                     <Plus className="w-4 h-4" /> Add Product
                   </Link>
@@ -414,7 +414,7 @@ export default function DashboardHome() {
                   <Link
                     key={a.href}
                     href={a.href}
-                    className="flex flex-col items-center gap-2.5 py-4 px-2 rounded-[var(--radius-lg)] border-2 border-gray-100 dark:border-zinc-800/80 hover:border-indigo-200 dark:hover:border-gray-900 dark:border-white/30 bg-white/50 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition-all group"
+                    className="flex flex-col items-center gap-2.5 py-4 px-2 rounded-[var(--radius-lg)] border-2 border-gray-100 dark:border-white/30 hover:border-indigo-200 dark:hover:border-gray-900 bg-white/50 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition-all group"
                   >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm ${a.bg} border-black/5 dark:border-white/5 group-hover:scale-110 transition-transform duration-300`}>
                       <a.icon className={`w-5 h-5 ${a.fg}`} />
