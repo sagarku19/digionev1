@@ -10,10 +10,14 @@ import { getUpsellPublicPath, getUpsellDisplayUrl } from '@/lib/site-urls';
 import {
   Plus, X, Package, FileText, Tag, BookOpen, Search, Edit3, Eye,
   Link2, Copy, Trash2, ExternalLink, TrendingUp, CheckCircle2,
-  ImageIcon, Sparkles, ArrowRight
+  ImageIcon, Sparkles, ArrowRight, Filter, Archive, CheckSquare,
+  Square,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-3 bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm focus:ring-2 focus:ring-[var(--brand)]/40 focus:border-[var(--brand)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all';
+type StatusTab = 'all' | 'published' | 'draft';
+type CategoryFilter = 'all' | 'digital' | 'course' | 'template' | 'other';
+
+const INPUT = 'w-full px-4 py-3 bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-[var(--brand)]/40 focus:border-[var(--brand)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all';
 
 const CATEGORIES = [
   { value: 'digital', label: 'Digital File', icon: FileText, desc: 'PDF, ZIP, video, audio' },
@@ -48,6 +52,10 @@ function ProductsPageInner() {
   // Product create modal
   const [modal, setModal] = useState(false);
   const [search, setSearch] = useState('');
+  const [statusTab, setStatusTab] = useState<StatusTab>('all');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<'archive' | 'delete' | null>(null);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('digital');
   const [price, setPrice] = useState('');
@@ -66,9 +74,26 @@ function ProductsPageInner() {
   // Copied link feedback
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const filtered = products.filter((p: any) =>
-    p.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const publishedCount = products.filter((p: any) => p.is_published).length;
+  const draftCount = products.filter((p: any) => !p.is_published).length;
+
+  const filtered = products.filter((p: any) => {
+    const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusTab === 'all' ? true : statusTab === 'published' ? p.is_published : !p.is_published;
+    const matchCategory = categoryFilter === 'all' ? true : p.category === categoryFilter;
+    return matchSearch && matchStatus && matchCategory;
+  });
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => setSelectedIds(new Set(filtered.map((p: any) => p.id)));
+  const clearSelection = () => setSelectedIds(new Set());
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +172,7 @@ function ProductsPageInner() {
         </div>
         <button
           onClick={openModal}
-          className="inline-flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-5 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] shrink-0"
+          className="inline-flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-5 py-2.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98] shrink-0"
         >
           <Plus className="w-4 h-4" />
           Add Product
@@ -157,27 +182,115 @@ function ProductsPageInner() {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* ═══ LEFT: Product Grid ═══ */}
         <div className="flex-1 min-w-0 space-y-6">
-          {/* Action Bar */}
+          {/* Status Tabs with count badges */}
           {products.length > 0 && (
-            <div className="flex items-center justify-between gap-4">
-              <div className="relative w-full max-w-md group">
+            <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] w-fit">
+              {([
+                { key: 'all',       label: 'All',       count: products.length },
+                { key: 'published', label: 'Published', count: publishedCount },
+                { key: 'draft',     label: 'Drafts',    count: draftCount },
+              ] as { key: StatusTab; label: string; count: number }[]).map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => { setStatusTab(tab.key); clearSelection(); }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-semibold transition-all ${
+                    statusTab === tab.key
+                      ? 'bg-white dark:bg-zinc-900 text-[var(--text-primary)] shadow-sm'
+                      : 'text-gray-500 hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  {tab.label}
+                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                    statusTab === tab.key
+                      ? 'bg-gray-100 dark:bg-zinc-800 text-[var(--text-primary)]'
+                      : 'bg-gray-200/70 dark:bg-zinc-800/50 text-gray-500'
+                  }`}>{tab.count}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Search + Category Filter Bar */}
+          {products.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative flex-1 max-w-md group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[var(--brand)] transition-colors" />
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search products by name..."
-                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-900/60 border border-gray-200 dark:border-zinc-800 rounded-2xl text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/30 focus:border-[var(--brand)] shadow-sm transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-900/60 border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-lg)] text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/30 focus:border-[var(--brand)] shadow-sm transition-all"
                 />
+              </div>
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
+                <div className="flex gap-1.5 flex-wrap">
+                  {([
+                    { key: 'all',      label: 'All Types' },
+                    { key: 'digital',  label: 'Digital' },
+                    { key: 'course',   label: 'Course' },
+                    { key: 'template', label: 'Template' },
+                    { key: 'other',    label: 'Other' },
+                  ] as { key: CategoryFilter; label: string }[]).map(f => (
+                    <button
+                      key={f.key}
+                      onClick={() => setCategoryFilter(f.key)}
+                      className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold transition-all ${
+                        categoryFilter === f.key
+                          ? 'bg-[var(--text-primary)] text-[var(--bg-primary)]'
+                          : 'bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-[var(--text-secondary)] hover:border-gray-400'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
+
+          {/* Bulk Select Bar */}
+          {filtered.length > 0 && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={selectedIds.size === filtered.length ? clearSelection : selectAll}
+                className="flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+              >
+                {selectedIds.size === filtered.length && filtered.length > 0
+                  ? <CheckSquare className="w-4 h-4 text-indigo-500" />
+                  : <Square className="w-4 h-4" />
+                }
+                {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
+              </button>
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200">
+                  <button
+                    onClick={() => setBulkAction('archive')}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors"
+                  >
+                    <Archive className="w-3.5 h-3.5" /> Archive
+                  </button>
+                  <button
+                    onClick={() => setBulkAction('delete')}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                  </button>
+                  <button onClick={clearSelection} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
 
           {/* Loading */}
           {isLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-3xl p-4 animate-pulse shadow-sm">
-                  <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-zinc-900 rounded-2xl mb-5" />
+                <div key={i} className="bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-[var(--radius-lg)] p-4 animate-pulse shadow-sm">
+                  <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-lg)] mb-5" />
                   <div className="h-4 bg-gray-100 dark:bg-zinc-900 rounded-md w-3/4 mb-3" />
                   <div className="h-3 bg-gray-100 dark:bg-zinc-900 rounded-md w-1/2" />
                 </div>
@@ -187,13 +300,13 @@ function ProductsPageInner() {
 
           {/* Empty state */}
           {!isLoading && products.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-32 text-center bg-white/50 dark:bg-zinc-950/50 border border-dashed border-gray-300 dark:border-zinc-800 rounded-3xl">
+            <div className="flex flex-col items-center justify-center py-32 text-center bg-white/50 dark:bg-zinc-950/50 border border-dashed border-gray-300 dark:border-zinc-800 rounded-[var(--radius-lg)]">
               <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-full flex items-center justify-center mb-6 shadow-inner">
                 <Package className="w-10 h-10 text-indigo-500 dark:text-indigo-400" />
               </div>
               <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">No products yet</h2>
               <p className="text-gray-500 text-base max-w-sm mb-8">Your digital shelf is empty. Create your first product and start earning in minutes.</p>
-              <button onClick={openModal} className="flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-6 py-3.5 rounded-2xl font-bold text-sm shadow opacity-90 hover:opacity-100 transition-all">
+              <button onClick={openModal} className="flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-6 py-3.5 rounded-[var(--radius-lg)] font-bold text-sm shadow opacity-90 hover:opacity-100 transition-all">
                 <Plus className="w-5 h-5" />
                 Create First Product
               </button>
@@ -203,8 +316,17 @@ function ProductsPageInner() {
           {/* Product card grid */}
           {!isLoading && filtered.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filtered.map((product: any) => (
-                <div key={product.id} className="group flex flex-col bg-white dark:bg-zinc-950 border border-gray-200/80 dark:border-zinc-800 rounded-[24px] overflow-hidden hover:border-indigo-500/50 dark:hover:border-indigo-400/50 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300">
+              {filtered.map((product: any) => {
+                const isSelected = selectedIds.has(product.id);
+                return (
+                <div
+                  key={product.id}
+                  className={`group flex flex-col bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] overflow-hidden hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 border-2 ${
+                    isSelected
+                      ? 'border-indigo-500 dark:border-indigo-400'
+                      : 'border-gray-200/80 dark:border-zinc-800 hover:border-indigo-500/50 dark:hover:border-indigo-400/50'
+                  }`}
+                >
                   <div className="relative w-[calc(100%-1rem)] aspect-[4/3] bg-gray-50 dark:bg-zinc-900 overflow-hidden mx-2 mt-2 rounded-[16px]">
                     {product.thumbnail_url ? (
                       <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" />
@@ -214,6 +336,17 @@ function ProductsPageInner() {
                         <span className="text-xs font-medium uppercase tracking-widest opacity-50">No Cover</span>
                       </div>
                     )}
+                    {/* Selection checkbox */}
+                    <button
+                      onClick={e => { e.stopPropagation(); toggleSelect(product.id); }}
+                      className={`absolute top-3 left-3 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'bg-indigo-500 border-indigo-500 opacity-100'
+                          : 'bg-white/80 dark:bg-zinc-900/80 border-gray-300 dark:border-zinc-600 opacity-0 group-hover:opacity-100'
+                      }`}
+                    >
+                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                    </button>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     
                     <div className="absolute top-3 right-3">
@@ -250,14 +383,14 @@ function ProductsPageInner() {
                     <div className="grid grid-cols-2 gap-2 mt-auto">
                       <button
                         onClick={() => router.push(`/dashboard/products/${product.id}`)}
-                        className="flex items-center justify-center gap-2 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-zinc-950 hover:bg-gray-800 dark:hover:bg-gray-100 py-2.5 rounded-xl transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-zinc-950 hover:bg-gray-800 dark:hover:bg-gray-100 py-2.5 rounded-[var(--radius-sm)] transition-all shadow-sm"
                       >
                         <Edit3 className="w-4 h-4" />
                         Edit
                       </button>
                       <button
                         onClick={() => window.open(`/store/product/${product.id}`, '_blank')}
-                        className="flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 py-2.5 rounded-xl transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 py-2.5 rounded-[var(--radius-sm)] transition-all shadow-sm"
                         title="Preview Product"
                       >
                         <Eye className="w-4 h-4" />
@@ -266,12 +399,12 @@ function ProductsPageInner() {
                     </div>
                   </div>
                 </div>
-              ))}
+              );})}
 
               {/* Add new product skeleton card */}
               <button
                 onClick={openModal}
-                className="group flex flex-col bg-white dark:bg-zinc-950 border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-gray-400 dark:hover:border-zinc-600 rounded-[24px] overflow-hidden transition-all duration-200 min-h-[320px]"
+                className="group flex flex-col bg-white dark:bg-zinc-950 border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-gray-400 dark:hover:border-zinc-600 rounded-[var(--radius-lg)] overflow-hidden transition-all duration-200 min-h-[320px]"
               >
                 <div className="w-[calc(100%-1rem)] aspect-[4/3] mx-2 mt-2 rounded-[16px] bg-gray-50 dark:bg-zinc-900 flex flex-col items-center justify-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-zinc-800 group-hover:bg-gray-200 dark:group-hover:bg-zinc-700 flex items-center justify-center transition-colors">
@@ -286,8 +419,8 @@ function ProductsPageInner() {
                     <div className="h-3 bg-gray-100 dark:bg-zinc-900 rounded-md w-2/3" />
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-5">
-                    <div className="h-9 bg-gray-100 dark:bg-zinc-900 rounded-xl" />
-                    <div className="h-9 bg-gray-100 dark:bg-zinc-900 rounded-xl" />
+                    <div className="h-9 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-sm)]" />
+                    <div className="h-9 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-sm)]" />
                   </div>
                 </div>
               </button>
@@ -295,10 +428,15 @@ function ProductsPageInner() {
           )}
 
           {!isLoading && products.length > 0 && filtered.length === 0 && (
-            <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-3xl">
+            <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-lg)]">
               <Search className="w-10 h-10 text-gray-300 dark:text-zinc-700 mx-auto mb-4" />
-              <p className="text-gray-500 font-medium">No products match &ldquo;{search}&rdquo;</p>
-              <button onClick={() => setSearch('')} className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm mt-3 hover:underline">Clear search filters</button>
+              <p className="text-gray-500 font-medium">No products match your filters</p>
+              <button
+                onClick={() => { setSearch(''); setStatusTab('all'); setCategoryFilter('all'); }}
+                className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm mt-3 hover:underline"
+              >
+                Clear all filters
+              </button>
             </div>
           )}
         </div>
@@ -306,13 +444,13 @@ function ProductsPageInner() {
         {/* ═══ RIGHT: Upsell Panel ═══ */}
         <aside className="lg:w-[400px] xl:w-[440px] shrink-0">
           <div className="sticky top-6 space-y-6">
-            <div className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50/50 dark:from-zinc-950 dark:to-zinc-950/80 border border-gray-200/80 dark:border-zinc-800 rounded-[28px] p-1 shadow-sm">
+            <div className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50/50 dark:from-zinc-950 dark:to-zinc-950/80 border border-gray-200/80 dark:border-zinc-800 rounded-[var(--radius-lg)] p-1 shadow-sm">
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 dark:bg-indigo-500/20 blur-3xl rounded-full pointer-events-none" />
               
-              <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl rounded-[24px] p-6 lg:p-7 h-full relative z-10 border border-white/20 dark:border-white/5">
+              <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl rounded-[var(--radius-lg)] p-6 lg:p-7 h-full relative z-10 border border-white/20 dark:border-white/5">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center shadow-inner">
+                    <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-[var(--radius-lg)] flex items-center justify-center shadow-inner">
                       <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
@@ -332,13 +470,13 @@ function ProductsPageInner() {
                 {upsellLoading && (
                   <div className="space-y-4">
                     {[1, 2, 3].map(i => (
-                      <div key={i} className="animate-pulse h-24 bg-gray-100 dark:bg-zinc-900 rounded-2xl" />
+                      <div key={i} className="animate-pulse h-24 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-lg)]" />
                     ))}
                   </div>
                 )}
 
                 {!upsellLoading && upsellPages.length === 0 && (
-                  <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/20">
+                  <div className="text-center py-12 px-4 rounded-[var(--radius-lg)] border border-dashed border-gray-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/20">
                     <div className="w-16 h-16 bg-gradient-to-tr from-gray-100 to-white dark:from-zinc-800 dark:to-zinc-900 rounded-[20px] flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-200/50 dark:border-zinc-700/50">
                       <Link2 className="w-7 h-7 text-gray-400 dark:text-gray-500" />
                     </div>
@@ -346,7 +484,7 @@ function ProductsPageInner() {
                     <p className="text-sm text-gray-500 mb-6 leading-relaxed">Combine products into a single shareable checkout page to increase sales.</p>
                     <button
                       onClick={openUpsellModal}
-                      className="inline-flex items-center justify-center gap-2 w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-zinc-950 py-2.5 rounded-xl font-bold text-sm transition-colors"
+                      className="inline-flex items-center justify-center gap-2 w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-zinc-950 py-2.5 rounded-[var(--radius-sm)] font-bold text-sm transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                       Create Upsell
@@ -359,7 +497,7 @@ function ProductsPageInner() {
                     {upsellPages.map(up => (
                       <div
                         key={up.id}
-                        className="group relative isolate p-5 bg-white dark:bg-zinc-900/50 border border-gray-200/80 dark:border-zinc-800 rounded-2xl hover:border-indigo-500/30 dark:hover:border-indigo-400/30 transition-all cursor-pointer overflow-hidden shadow-sm hover:shadow-md"
+                        className="group relative isolate p-5 bg-white dark:bg-zinc-900/50 border border-gray-200/80 dark:border-zinc-800 rounded-[var(--radius-lg)] hover:border-indigo-500/30 dark:hover:border-indigo-400/30 transition-all cursor-pointer overflow-hidden shadow-sm hover:shadow-md"
                         onClick={() => router.push(`/dashboard/products/upsells/${up.id}`)}
                       >
                         {/* Hover Gradient Background */}
@@ -382,7 +520,7 @@ function ProductsPageInner() {
                           </span>
                         </div>
                         
-                        <div className="flex items-center gap-1.5 p-2 bg-gray-50 dark:bg-zinc-950 rounded-xl border border-gray-100 dark:border-zinc-800 mb-4 overflow-hidden">
+                        <div className="flex items-center gap-1.5 p-2 bg-gray-50 dark:bg-zinc-950 rounded-[var(--radius-sm)] border border-gray-100 dark:border-zinc-800 mb-4 overflow-hidden">
                           <Link2 className="w-3.5 h-3.5 text-gray-400 shrink-0 ml-1" />
                           <span className="text-xs text-gray-500 font-medium truncate flex-1">{getUpsellDisplayUrl(up.slug)}</span>
                         </div>
@@ -428,7 +566,7 @@ function ProductsPageInner() {
                     {/* Add upsell skeleton card */}
                     <button
                       onClick={openUpsellModal}
-                      className="group w-full border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-gray-400 dark:hover:border-zinc-600 rounded-2xl p-4 transition-all duration-200"
+                      className="group w-full border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-gray-400 dark:hover:border-zinc-600 rounded-[var(--radius-lg)] p-4 transition-all duration-200"
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 group-hover:bg-gray-200 dark:group-hover:bg-zinc-700 flex items-center justify-center transition-colors shrink-0">
@@ -439,7 +577,7 @@ function ProductsPageInner() {
                           <div className="h-2.5 bg-gray-100 dark:bg-zinc-900 rounded w-1/2" />
                         </div>
                       </div>
-                      <div className="h-7 bg-gray-100 dark:bg-zinc-900 rounded-xl mb-3" />
+                      <div className="h-7 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-sm)] mb-3" />
                       <div className="flex gap-2">
                         <div className="w-8 h-8 bg-gray-100 dark:bg-zinc-900 rounded-lg" />
                         <div className="w-8 h-8 bg-gray-100 dark:bg-zinc-900 rounded-lg" />
@@ -457,7 +595,7 @@ function ProductsPageInner() {
       {/* ═══ Create Product Modal ═══ */}
       {modal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/40 dark:bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 rounded-[32px] shadow-2xl w-full max-w-[480px] border border-gray-200/50 dark:border-zinc-800/80 overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
+          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-[480px] border border-gray-200/50 dark:border-zinc-800/80 overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
             <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-gray-100 dark:border-zinc-800/50 shrink-0">
               <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
                 <div className="w-32 h-32 bg-[var(--brand)] rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen" />
@@ -480,7 +618,7 @@ function ProductsPageInner() {
                 <div className="grid grid-cols-2 gap-3">
                   {CATEGORIES.map(c => (
                     <button key={c.value} type="button" onClick={() => setCategory(c.value)}
-                      className={`relative flex flex-col items-start p-4 rounded-2xl text-left transition-all duration-200 border-2 overflow-hidden group ${category === c.value ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950'}`}>
+                      className={`relative flex flex-col items-start p-4 rounded-[var(--radius-lg)] text-left transition-all duration-200 border-2 overflow-hidden group ${category === c.value ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950'}`}>
                       <c.icon className={`w-6 h-6 mb-3 ${category === c.value ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
                       <div className={`text-sm font-bold mb-0.5 ${category === c.value ? 'text-indigo-900 dark:text-indigo-100' : 'text-[var(--text-primary)]'}`}>{c.label}</div>
                       <div className="text-xs text-gray-500 leading-tight">{c.desc}</div>
@@ -499,7 +637,7 @@ function ProductsPageInner() {
               </div>
               
               <div className="pt-2">
-                <button type="submit" disabled={isCreating || !name.trim()} className="w-full flex items-center justify-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 disabled:opacity-50 text-[var(--bg-primary)] py-4 rounded-xl font-bold text-base shadow-lg transition-all active:scale-[0.98]">
+                <button type="submit" disabled={isCreating || !name.trim()} className="w-full flex items-center justify-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 disabled:opacity-50 text-[var(--bg-primary)] py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-lg transition-all active:scale-[0.98]">
                   {isCreating ? 'Creating Product...' : 'Create & Continue'}
                   {!isCreating && <ArrowRight className="w-4 h-4 ml-1" />}
                 </button>
@@ -512,7 +650,7 @@ function ProductsPageInner() {
       {/* ═══ Create Upsell Modal ═══ */}
       {upsellModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/40 dark:bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 rounded-[32px] shadow-2xl w-full max-w-[540px] border border-gray-200/50 dark:border-zinc-800/80 overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
+          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-[540px] border border-gray-200/50 dark:border-zinc-800/80 overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
             <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-gray-100 dark:border-zinc-800/50 shrink-0">
               <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
                 <div className="w-32 h-32 bg-indigo-500 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen" />
@@ -532,8 +670,8 @@ function ProductsPageInner() {
               {upsellStep === 'info' ? (
                 <div className="space-y-5">
                   {/* Hero */}
-                  <div className="bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl p-5 text-white">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                  <div className="bg-gradient-to-br from-violet-500 to-indigo-600 rounded-[var(--radius-lg)] p-5 text-white">
+                    <div className="w-10 h-10 bg-white/20 rounded-[var(--radius-sm)] flex items-center justify-center mb-4">
                       <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <h3 className="text-base font-extrabold mb-1">One link. Multiple products.</h3>
@@ -549,7 +687,7 @@ function ProductsPageInner() {
                       { n: '2', label: 'Add up to 2 optional add-ons' },
                       { n: '3', label: 'Share the link and watch revenue grow' },
                     ].map(step => (
-                      <div key={step.n} className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-xl">
+                      <div key={step.n} className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-[var(--radius-sm)]">
                         <span className="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 text-xs font-extrabold flex items-center justify-center shrink-0">{step.n}</span>
                         <span className="text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)]">{step.label}</span>
                       </div>
@@ -559,7 +697,7 @@ function ProductsPageInner() {
                   <button
                     onClick={() => setUpsellStep('select')}
                     disabled={products.length === 0}
-                    className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-zinc-950 py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98]"
+                    className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-zinc-950 py-3.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98]"
                   >
                     {products.length === 0 ? 'Create a product first' : 'Start Building →'}
                   </button>
@@ -588,7 +726,7 @@ function ProductsPageInner() {
                         className={`${INPUT} pl-11 py-2.5 rounded-lg border-gray-300 dark:border-zinc-700`}
                       />
                     </div>
-                    <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-zinc-800 rounded-xl divide-y divide-gray-100 dark:divide-zinc-800/50 bg-white dark:bg-zinc-950 shadow-inner custom-scrollbar">
+                    <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-sm)] divide-y divide-gray-100 dark:divide-zinc-800/50 bg-white dark:bg-zinc-950 shadow-inner custom-scrollbar">
                       {filteredProducts.map((p: any) => (
                         <button
                           key={p.id} type="button"
@@ -633,7 +771,7 @@ function ProductsPageInner() {
                             <button
                               key={p.id} type="button" disabled={disabled}
                               onClick={() => setSecondaryIds(ids => selected ? ids.filter(id => id !== p.id) : [...ids, p.id])}
-                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--radius-sm)] text-left transition-all ${
                                 selected 
                                   ? 'bg-white dark:bg-zinc-950 border-2 border-indigo-500 shadow-sm'
                                   : disabled 
@@ -659,7 +797,7 @@ function ProductsPageInner() {
                     <button
                       onClick={handleCreateUpsell}
                       disabled={!primaryId || upsellCreating}
-                      className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-4 rounded-xl font-bold text-base shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98]"
+                      className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98]"
                     >
                       {upsellCreating ? 'Building Funnel...' : 'Publish Funnel Page'}
                       {!upsellCreating && <ArrowRight className="w-4 h-4 ml-1" />}
@@ -675,18 +813,61 @@ function ProductsPageInner() {
       {/* ═══ Delete Confirm ═══ */}
       {deleteId && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 rounded-[32px] shadow-2xl w-full max-w-sm border border-gray-200/50 dark:border-zinc-800/80 p-8 text-center transform transition-all scale-in-95">
+          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-sm border border-gray-200/50 dark:border-zinc-800/80 p-8 text-center transform transition-all scale-in-95">
             <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-inner border border-red-100 dark:border-red-500/20">
               <Trash2 className="w-8 h-8 text-red-500 dark:text-red-400" />
             </div>
             <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">Delete Funnel?</h3>
             <p className="text-sm text-gray-500 mb-8 leading-relaxed">This will permanently remove the upsell page. Your base products will not be affected.</p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-3.5 rounded-xl border-2 border-gray-200 dark:border-zinc-800 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors">
+              <button onClick={() => setDeleteId(null)} className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-gray-200 dark:border-zinc-800 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors">
                 Cancel
               </button>
-              <button onClick={handleDeleteUpsell} className="flex-1 py-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">
+              <button onClick={handleDeleteUpsell} className="flex-1 py-3.5 rounded-[var(--radius-sm)] bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">
                 Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ═══ Bulk Action Confirm ═══ */}
+      {bulkAction && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-sm border border-gray-200/50 dark:border-zinc-800/80 p-8 text-center">
+            <div className={`w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-inner border ${
+              bulkAction === 'delete'
+                ? 'bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/20'
+                : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20'
+            }`}>
+              {bulkAction === 'delete'
+                ? <Trash2 className="w-8 h-8 text-red-500 dark:text-red-400" />
+                : <Archive className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+              }
+            </div>
+            <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">
+              {bulkAction === 'delete' ? `Delete ${selectedIds.size} product${selectedIds.size !== 1 ? 's' : ''}?` : `Archive ${selectedIds.size} product${selectedIds.size !== 1 ? 's' : ''}?`}
+            </h3>
+            <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+              {bulkAction === 'delete'
+                ? 'This action cannot be undone. Products will be permanently removed.'
+                : 'Archived products will be unpublished and hidden from your store.'}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setBulkAction(null)}
+                className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-gray-200 dark:border-zinc-800 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { clearSelection(); setBulkAction(null); }}
+                className={`flex-1 py-3.5 rounded-[var(--radius-sm)] text-white text-sm font-bold shadow-lg transition-all active:scale-[0.98] ${
+                  bulkAction === 'delete'
+                    ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20'
+                    : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'
+                }`}
+              >
+                {bulkAction === 'delete' ? 'Delete All' : 'Archive All'}
               </button>
             </div>
           </div>

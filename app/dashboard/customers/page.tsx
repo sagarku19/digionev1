@@ -3,11 +3,12 @@
 // DB tables: orders (read via useCustomers), sites (read)
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useCustomers, Customer } from '@/hooks/useCustomers';
 import { DataTable, ColumnDef } from '@/components/ui/DataTable';
 import {
   Users, Mail, Phone, TrendingUp, ShoppingBag,
-  Download, Search, UserCircle2
+  Download, Search, UserCircle2, Package, Store, ArrowRight,
 } from 'lucide-react';
 
 function formatINR(n: number) {
@@ -89,11 +90,14 @@ export default function CustomersPage() {
       )
     },
     {
-      header: 'Total Spent',
+      header: 'Lifetime Value',
       accessorKey: 'total_spent',
       sortable: true,
       cell: (row) => (
-        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatINR(row.total_spent)}</span>
+        <div className="flex flex-col">
+          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatINR(row.total_spent)}</span>
+          <span className="text-xs text-gray-400 mt-0.5">{row.total_orders} order{row.total_orders !== 1 ? 's' : ''}</span>
+        </div>
       )
     },
     {
@@ -122,7 +126,7 @@ export default function CustomersPage() {
         {customers.length > 0 && (
           <button
             onClick={() => exportCSV(customers)}
-            className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border)] hover:border-[var(--accent)] dark:hover:border-[var(--accent)] text-gray-700 dark:text-[var(--text-secondary)] px-4 py-2.5 rounded-xl text-sm font-semibold transition"
+            className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border)] hover:border-[var(--accent)] dark:hover:border-[var(--accent)] text-gray-700 dark:text-[var(--text-secondary)] px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold transition"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -139,7 +143,7 @@ export default function CustomersPage() {
             { label: 'Revenue from Buyers', value: formatINR(totalRevenue), icon: TrendingUp, color: 'emerald' },
             { label: 'Avg. Order Value', value: formatINR(avgOrderValue), icon: TrendingUp, color: 'amber' },
           ].map(stat => (
-            <div key={stat.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4">
+            <div key={stat.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
               <p className="text-xs font-medium text-gray-500 mb-1">{stat.label}</p>
               <p className="text-xl font-bold text-[var(--text-primary)]">{stat.value}</p>
             </div>
@@ -155,7 +159,7 @@ export default function CustomersPage() {
             <input
               value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, email, or phone…"
-              className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
+              className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
             />
           </div>
           <div className="flex gap-2">
@@ -163,7 +167,7 @@ export default function CustomersPage() {
               <button
                 key={s}
                 onClick={() => setSortBy(s)}
-                className={`px-3 py-2 rounded-xl text-sm font-medium transition capitalize ${
+                className={`px-3 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition capitalize ${
                   sortBy === s
                     ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
                     : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-[var(--accent)]'
@@ -180,25 +184,55 @@ export default function CustomersPage() {
       {isLoading && (
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-16 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl animate-pulse" />
+            <div key={i} className="h-16 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] animate-pulse" />
           ))}
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && customers.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-[var(--bg-tertiary)] rounded-2xl flex items-center justify-center mb-5">
-            <UserCircle2 className="w-10 h-10 text-[var(--text-secondary)]" />
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-[var(--bg-primary)] border border-dashed border-[var(--border)] rounded-[var(--radius-lg)] px-8">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-500/10 dark:to-violet-500/10 rounded-full flex items-center justify-center mb-5 shadow-inner">
+            <UserCircle2 className="w-10 h-10 text-indigo-400 dark:text-indigo-300" />
           </div>
           <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">No customers yet</h2>
-          <p className="text-gray-500 text-sm max-w-xs">Once buyers complete purchases, they'll appear here with their full order history.</p>
+          <p className="text-gray-500 text-sm max-w-xs mb-8">
+            Once buyers complete purchases, they'll appear here with their full lifetime value and order history.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-sm">
+            <Link
+              href="/dashboard/products/new"
+              className="flex items-center gap-3 px-4 py-3.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all group"
+            >
+              <div className="w-9 h-9 bg-indigo-50 dark:bg-indigo-500/10 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0">
+                <Package className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Add a product</p>
+                <p className="text-xs text-gray-500">Start selling</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 ml-auto shrink-0 transition-colors" />
+            </Link>
+            <Link
+              href="/dashboard/sites"
+              className="flex items-center gap-3 px-4 py-3.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] hover:border-violet-400 dark:hover:border-violet-500 hover:shadow-md transition-all group"
+            >
+              <div className="w-9 h-9 bg-violet-50 dark:bg-violet-500/10 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0">
+                <Store className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Create a store</p>
+                <p className="text-xs text-gray-500">Get discoverable</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-violet-500 ml-auto shrink-0 transition-colors" />
+            </Link>
+          </div>
         </div>
       )}
 
       {/* Table */}
       {!isLoading && filtered.length > 0 && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
           <DataTable
             data={filtered}
             columns={columns}

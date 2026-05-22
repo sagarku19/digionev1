@@ -210,7 +210,7 @@ export default function DashboardHome() {
           <div className="xl:col-span-2 space-y-6 md:space-y-8">
 
             {/* Revenue chart */}
-            <div className="group bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[32px] p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all duration-300">
+            <div className="group bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[var(--radius-lg)] p-5 shadow-sm hover:shadow-xl transition-all duration-300">
               <div className="flex items-start justify-between mb-8">
                 <div>
                   <h2 className="text-lg font-extrabold text-[var(--text-primary)]">Revenue</h2>
@@ -237,7 +237,7 @@ export default function DashboardHome() {
               </div>
               <div className="h-[260px] min-w-0 w-full">
                 {analyticsLoading ? (
-                  <div className="h-full w-full rounded-2xl bg-gray-100 dark:bg-zinc-900/60 animate-pulse" />
+                  <div className="h-full w-full rounded-[var(--radius-lg)] bg-gray-100 dark:bg-zinc-900/60 animate-pulse" />
                 ) : null}
                 <ResponsiveContainer width="100%" height="100%" minWidth={0} style={analyticsLoading ? { display: 'none' } : {}}>
                   <AreaChart data={chartData} margin={{ top: 2, right: 4, bottom: 0, left: 0 }}>
@@ -289,12 +289,12 @@ export default function DashboardHome() {
             </div>
 
             {/* Top Products */}
-            <div className="bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[32px] overflow-hidden shadow-sm">
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/30">
+            <div className="bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[var(--radius-lg)] overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/30">
                 <h2 className="text-base font-extrabold text-[var(--text-primary)] flex items-center gap-2">
                   <Package className="w-5 h-5 text-gray-600 dark:text-[var(--text-secondary)]" /> Top Performaing Products
                 </h2>
-                <Link href="/dashboard/products" className="group flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-indigo-600 transition-colors bg-white dark:bg-zinc-900 py-1.5 px-3 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+                <Link href="/dashboard/products" className="group flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-indigo-600 transition-colors bg-white dark:bg-zinc-900 py-1.5 px-3 rounded-[var(--radius-sm)] border border-gray-200 dark:border-zinc-800 shadow-sm">
                   View all <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
@@ -303,7 +303,7 @@ export default function DashboardHome() {
                 <div className="divide-y divide-gray-100 dark:divide-zinc-800/50">
                   {[1, 2, 3].map(i => (
                     <div key={i} className="flex items-center gap-4 px-6 py-4 animate-pulse">
-                      <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-zinc-800 shrink-0" />
+                      <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-gray-100 dark:bg-zinc-800 shrink-0" />
                       <div className="flex-1 space-y-2">
                         <div className="h-3.5 bg-gray-100 dark:bg-zinc-800 rounded w-1/3" />
                         <div className="h-2.5 bg-gray-100 dark:bg-zinc-800 rounded w-1/5" />
@@ -317,7 +317,7 @@ export default function DashboardHome() {
                   <p className="text-sm font-bold text-gray-500">No products yet</p>
                   <Link
                     href="/dashboard/products/new"
-                    className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-4 py-2 rounded-xl border border-indigo-100 dark:border-gray-900 dark:border-white/20 hover:bg-indigo-100 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-bold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-4 py-2 rounded-[var(--radius-sm)] border border-indigo-100 dark:border-gray-900 dark:border-white/20 hover:bg-indigo-100 transition-colors"
                   >
                     <Plus className="w-4 h-4" /> Add Product
                   </Link>
@@ -361,7 +361,7 @@ export default function DashboardHome() {
 
             {/* Setup to-do */}
             {todos.length > 0 && (
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/5 border-2 border-amber-200/50 dark:border-amber-500/20 rounded-[24px] p-6 shadow-sm relative overflow-hidden">
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/5 border-2 border-amber-200/50 dark:border-amber-500/20 rounded-[var(--radius-lg)] p-5 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-2xl rounded-full -mr-10 -mt-10" />
                 <div className="flex items-center gap-2 mb-4 relative z-10">
                   <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
@@ -374,7 +374,7 @@ export default function DashboardHome() {
                     <Link
                       key={t.href}
                       href={t.href}
-                      className="group flex items-center gap-3 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm px-4 py-3 rounded-xl border border-amber-100 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-500/50 hover:bg-white dark:hover:bg-zinc-900/80 transition-all text-sm font-bold text-amber-800 dark:text-amber-200"
+                      className="group flex items-center gap-3 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm px-4 py-3 rounded-[var(--radius-sm)] border border-amber-100 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-500/50 hover:bg-white dark:hover:bg-zinc-900/80 transition-all text-sm font-bold text-amber-800 dark:text-amber-200"
                     >
                       <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0 group-hover:scale-125 transition-transform" />
                       {t.label}
@@ -386,8 +386,8 @@ export default function DashboardHome() {
             )}
 
             {/* Live activity feed */}
-            <div className="bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[32px] overflow-hidden shadow-sm">
-              <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/30">
+            <div className="bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[var(--radius-lg)] overflow-hidden shadow-sm">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/30">
                 <div className="flex items-center gap-3">
                   <h2 className="text-base font-extrabold text-[var(--text-primary)] inline-flex items-center gap-2">
                     <ShoppingCart className="w-4 h-4 text-gray-400" /> Recent Sales
@@ -397,7 +397,7 @@ export default function DashboardHome() {
                     Live
                   </span>
                 </div>
-                <Link href="/dashboard/earnings" className="text-xs font-bold text-gray-400 hover:text-gray-900 dark:hover:text-[var(--text-primary)] transition bg-gray-50 dark:bg-zinc-900 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-800">
+                <Link href="/dashboard/earnings" className="text-xs font-bold text-gray-400 hover:text-gray-900 dark:hover:text-[var(--text-primary)] transition bg-gray-50 dark:bg-zinc-900 px-3 py-1.5 rounded-[var(--radius-sm)] border border-gray-200 dark:border-zinc-800">
                   View All
                 </Link>
               </div>
@@ -405,7 +405,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Quick actions */}
-            <div className="bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[32px] p-6 shadow-sm">
+            <div className="bg-white/70 dark:bg-zinc-950/70 backdrop-blur-3xl border border-gray-200/80 dark:border-zinc-800/80 rounded-[var(--radius-lg)] p-5 shadow-sm">
               <h2 className="text-base font-extrabold text-[var(--text-primary)] mb-5 flex items-center gap-2">
                  <Zap className="w-4 h-4 text-gray-600 dark:text-[var(--text-secondary)]" /> Quick Actions
               </h2>
@@ -414,7 +414,7 @@ export default function DashboardHome() {
                   <Link
                     key={a.href}
                     href={a.href}
-                    className="flex flex-col items-center gap-2.5 py-4 px-2 rounded-2xl border-2 border-gray-100 dark:border-zinc-800/80 hover:border-indigo-200 dark:hover:border-gray-900 dark:border-white/30 bg-white/50 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition-all group"
+                    className="flex flex-col items-center gap-2.5 py-4 px-2 rounded-[var(--radius-lg)] border-2 border-gray-100 dark:border-zinc-800/80 hover:border-indigo-200 dark:hover:border-gray-900 dark:border-white/30 bg-white/50 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-0.5 transition-all group"
                   >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm ${a.bg} border-black/5 dark:border-white/5 group-hover:scale-110 transition-transform duration-300`}>
                       <a.icon className={`w-5 h-5 ${a.fg}`} />

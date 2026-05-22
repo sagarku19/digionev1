@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
 
 function CopyCode({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
@@ -158,7 +158,7 @@ export default function CouponsPage() {
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Create and manage discount codes for your products</p>
           </div>
           <button onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition shrink-0">
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-sm transition shrink-0">
             <Plus className="w-4 h-4" /> New Coupon
           </button>
         </div>
@@ -171,8 +171,8 @@ export default function CouponsPage() {
             { label: 'Redeemed', value: totalUses, icon: Check, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
             { label: 'Expired', value: expiredCount, icon: Calendar, color: 'text-red-500 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10' },
           ].map(s => (
-            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.bg}`}>
+            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
               <div>
@@ -188,12 +188,12 @@ export default function CouponsPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by code…"
-              className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 text-[var(--text-primary)] placeholder-gray-400" />
+              className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 text-[var(--text-primary)] placeholder-gray-400" />
           </div>
           <div className="flex gap-1.5">
             {(['all', 'active', 'inactive', 'expired'] as const).map(f => (
               <button key={f} onClick={() => setFilterStatus(f)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize transition ${
+                className={`px-3 py-2 rounded-[var(--radius-sm)] text-xs font-semibold capitalize transition ${
                   filterStatus === f ? 'bg-indigo-600 text-white' : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-indigo-400'
                 }`}>{f}</button>
             ))}
@@ -201,7 +201,7 @@ export default function CouponsPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
           <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
             <h2 className="text-sm font-bold text-[var(--text-primary)]">All Coupons</h2>
             <span className="text-xs text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
@@ -214,13 +214,13 @@ export default function CouponsPage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center">
-              <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mb-4 border border-[var(--border)]">
+              <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4 border border-[var(--border)]">
                 <Ticket className="w-7 h-7 text-gray-300 dark:text-gray-700" />
               </div>
               <p className="font-semibold text-gray-800 dark:text-[var(--text-primary)] mb-1">{search ? `No coupons matching "${search}"` : 'No coupons yet'}</p>
               <p className="text-sm text-gray-500 mb-5 max-w-xs">Create discount codes to boost conversions and reward your audience.</p>
               <button onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition">
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold shadow-sm transition">
                 <Plus className="w-4 h-4" /> Create First Coupon
               </button>
             </div>
@@ -232,7 +232,7 @@ export default function CouponsPage() {
                   <div key={coupon.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]/60 transition group">
                     {/* Code */}
                     <div className="flex items-center gap-2 min-w-[140px]">
-                      <span className="font-mono font-bold text-sm text-[var(--text-primary)] tracking-widest bg-gray-100 dark:bg-[var(--bg-secondary)] px-2.5 py-1 rounded-lg">
+                      <span className="font-mono font-bold text-sm text-[var(--text-primary)] tracking-widest bg-gray-100 dark:bg-[var(--bg-secondary)] px-2.5 py-1 rounded-[var(--radius-sm)]">
                         {coupon.code}
                       </span>
                       <CopyCode code={coupon.code} />
@@ -281,12 +281,12 @@ export default function CouponsPage() {
                     {/* Actions */}
                     <div className="flex items-center gap-1 ml-auto opacity-60 group-hover:opacity-100 transition">
                       <button onClick={() => handleToggle(coupon)} disabled={toggling === coupon.id}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition"
+                        className="p-1.5 rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition"
                         title={coupon.is_active ? 'Pause' : 'Activate'}>
                         {coupon.is_active ? <ToggleRight className="w-5 h-5 text-emerald-500" /> : <ToggleLeft className="w-5 h-5" />}
                       </button>
                       <button onClick={() => setDeleteConfirm(coupon.id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
+                        className="p-1.5 rounded-[var(--radius-sm)] text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -301,32 +301,32 @@ export default function CouponsPage() {
       {/* Create Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[var(--bg-primary)] rounded-2xl shadow-2xl w-full max-w-md border border-[var(--border)] max-h-[90vh] overflow-y-auto">
+          <div className="bg-[var(--bg-primary)] rounded-[var(--radius-lg)] shadow-2xl w-full max-w-md border border-[var(--border)] max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] sticky top-0 bg-[var(--bg-primary)] z-10">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-500/10 rounded-[var(--radius-sm)] flex items-center justify-center">
                   <Ticket className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <h2 className="text-base font-bold text-[var(--text-primary)]">New Coupon</h2>
               </div>
               <button onClick={() => { setIsModalOpen(false); setErrorMsg(''); setBulkMode(false); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+                className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               {errorMsg && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-400">
+                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-[var(--radius-sm)] text-sm text-red-700 dark:text-red-400">
                   <AlertCircle className="w-4 h-4 shrink-0" /> {errorMsg}
                 </div>
               )}
 
               {/* Single vs Bulk toggle */}
-              <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl w-fit">
+              <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)] w-fit">
                 {([['Single', false], ['Bulk Generate', true]] as [string, boolean][]).map(([label, val]) => (
                   <button key={label} type="button" onClick={() => setBulkMode(val)}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${
+                    className={`px-4 py-1.5 rounded-[var(--radius-sm)] text-xs font-bold transition ${
                       bulkMode === val ? 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
                     }`}>{label}</button>
                 ))}
@@ -341,7 +341,7 @@ export default function CouponsPage() {
                       onChange={e => setFormData(p => ({ ...p, code: e.target.value.toUpperCase().replace(/\s/g, '') }))}
                       className={`${INPUT} font-mono tracking-widest`} placeholder="SAVE20" maxLength={20} />
                     <button type="button" onClick={() => setFormData(p => ({ ...p, code: genCode() }))}
-                      className="p-2.5 border border-gray-200 dark:border-[var(--border)] rounded-xl hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition text-gray-500" title="Random">
+                      className="p-2.5 border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition text-gray-500" title="Random">
                       <RefreshCw className="w-4 h-4" />
                     </button>
                   </div>
@@ -368,7 +368,7 @@ export default function CouponsPage() {
                   <div className="flex gap-2">
                     {(['percentage', 'fixed'] as const).map(t => (
                       <button key={t} type="button" onClick={() => setFormData(p => ({ ...p, discount_type: t }))}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border-2 transition ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-sm)] text-xs font-semibold border-2 transition ${
                           formData.discount_type === t ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
                                                        : 'border-gray-200 dark:border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)]'
                         }`}>
@@ -411,7 +411,7 @@ export default function CouponsPage() {
               </div>
 
               <button type="submit" disabled={isCreating}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-sm transition-all">
+                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-[var(--radius-sm)] font-bold text-sm shadow-sm transition-all">
                 {isCreating ? 'Creating…' : bulkMode ? `Generate ${bulkCount} Coupons →` : 'Create Coupon →'}
               </button>
             </form>
@@ -422,16 +422,16 @@ export default function CouponsPage() {
       {/* Delete Confirm Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 max-w-sm w-full shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
               <Trash2 className="w-5 h-5 text-red-500" />
             </div>
             <h3 className="font-bold text-[var(--text-primary)] mb-1">Delete coupon?</h3>
             <p className="text-sm text-gray-500 mb-5">This coupon will be permanently removed.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm font-semibold text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm font-semibold text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
               <button onClick={() => handleDelete(deleteConfirm)} disabled={deleting === deleteConfirm}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white rounded-[var(--radius-sm)] text-sm font-semibold transition flex items-center justify-center gap-2">
                 {deleting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 Delete
               </button>

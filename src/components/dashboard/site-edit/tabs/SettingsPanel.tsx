@@ -10,7 +10,7 @@ import {
   Trash2, EyeOff, Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
+const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
 
 export type SettingsData = {
   metaTitle: string;
@@ -78,7 +78,7 @@ export default function SettingsPanel({
   return (
     <div className="space-y-6">
       {/* SEO */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-[var(--text-primary)]">SEO</h3>
           <p className="text-xs text-gray-500 mt-0.5">Control how this site appears in search engines</p>
@@ -100,7 +100,7 @@ export default function SettingsPanel({
             className={`${INPUT} resize-none`} placeholder="Brief description for search engines" />
         </div>
         {/* SERP Preview */}
-        <div className="p-4 border border-gray-200 dark:border-[var(--border)] rounded-xl bg-[var(--bg-primary)] space-y-1">
+        <div className="p-4 border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] bg-[var(--bg-primary)] space-y-1">
           <p className="text-xs text-gray-400">{site ? getSiteDisplayUrl(site) : '-'}</p>
           <p className="text-base font-medium text-blue-700 dark:text-blue-400 leading-snug">
             {data.metaTitle || displayTitle}
@@ -113,7 +113,7 @@ export default function SettingsPanel({
 
       {/* Slug (optional) */}
       {showSlug && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">URL Slug</h3>
             <p className="text-xs text-gray-500 mt-0.5">Customize your public URL</p>
@@ -142,13 +142,13 @@ export default function SettingsPanel({
       )}
 
       {/* Domain */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 space-y-4">
         <div>
           <h3 className="text-sm font-semibold text-[var(--text-primary)]">Domain</h3>
           <p className="text-xs text-gray-500 mt-0.5">Your DigiOne URL and custom domain</p>
         </div>
         {/* Default URL */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] rounded-xl border border-gray-200 dark:border-[var(--border)]">
+        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] rounded-[var(--radius-sm)] border border-gray-200 dark:border-[var(--border)]">
           <Globe className="w-4 h-4 text-gray-400 shrink-0" />
           <span className="text-sm font-medium text-[var(--text-primary)] flex-1 truncate">
             {site ? getSiteDisplayUrl(site) : '-'}
@@ -172,7 +172,7 @@ export default function SettingsPanel({
             className={INPUT} placeholder="store.yourdomain.com" />
         </div>
         {data.customDomain && (
-          <div className="rounded-xl border border-amber-200 dark:border-amber-800 overflow-hidden">
+          <div className="rounded-[var(--radius-sm)] border border-amber-200 dark:border-amber-800 overflow-hidden">
             <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
               <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">DNS Required</p>
@@ -214,7 +214,7 @@ export default function SettingsPanel({
 
       {/* Danger Zone */}
       <div className="space-y-5">
-        <div className="rounded-2xl p-5 bg-[var(--bg-primary)] border border-amber-200 dark:border-amber-900/40 space-y-4">
+        <div className="rounded-[var(--radius-lg)] p-5 bg-[var(--bg-primary)] border border-amber-200 dark:border-amber-900/40 space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-[var(--text-primary)]">Deactivate site</h3>
             <p className="text-xs text-gray-500 mt-0.5">Hides your site from public view. Reactivate anytime.</p>
@@ -224,12 +224,12 @@ export default function SettingsPanel({
               supabase.from('sites').update({ is_active: false }).eq('id', siteId)
                 .then(() => router.push('/dashboard/sites'))
             }
-            className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 px-4 py-2 rounded-lg transition">
+            className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 px-4 py-2 rounded-[var(--radius-sm)] transition">
             <EyeOff className="w-4 h-4" /> Deactivate
           </button>
         </div>
 
-        <div className="rounded-2xl p-5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 space-y-4">
+        <div className="rounded-[var(--radius-lg)] p-5 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 space-y-4">
           <div>
             <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">Delete site permanently</h3>
             <p className="text-sm text-gray-600 dark:text-[var(--text-secondary)]">
@@ -245,9 +245,9 @@ export default function SettingsPanel({
             </p>
             <input type="text" value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
               placeholder={`Type "${site?.slug ?? site?.id}"`}
-              className="w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-red-300 dark:border-red-800 rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm" />
+              className="w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-red-300 dark:border-red-800 rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-red-400 outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm" />
             <button disabled={deleteConfirm !== (site?.slug ?? site?.id) || deleting} onClick={handleDelete}
-              className="flex items-center gap-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg shadow-sm shadow-red-500/20 transition">
+              className="flex items-center gap-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-[var(--radius-sm)] shadow-sm shadow-red-500/20 transition">
               {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               Delete permanently
             </button>

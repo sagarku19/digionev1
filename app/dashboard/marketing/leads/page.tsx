@@ -102,11 +102,11 @@ export default function LeadsPage() {
             {leads.length > 0 && (
               <>
                 <button onClick={() => exportCSV(filtered)}
-                  className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border)] hover:border-gray-400 text-gray-700 dark:text-[var(--text-secondary)] px-3 py-2.5 rounded-xl text-sm font-semibold transition">
+                  className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border)] hover:border-gray-400 text-gray-700 dark:text-[var(--text-secondary)] px-3 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold transition">
                   <ArrowDownToLine className="w-4 h-4" /> Export CSV
                 </button>
                 <button onClick={() => setShowBroadcast(true)}
-                  className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition">
+                  className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-sm transition">
                   <Send className="w-4 h-4" /> Broadcast
                 </button>
               </>
@@ -122,8 +122,8 @@ export default function LeadsPage() {
             { label: 'With Mobile',  value: withMobile,   icon: Phone,     color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
             { label: 'This Month',   value: thisMonth,    icon: TrendingUp,color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10' },
           ].map(s => (
-            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.bg}`}>
+            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
               <div>
@@ -139,7 +139,7 @@ export default function LeadsPage() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, mobile…"
-              className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-gray-400 text-[var(--text-primary)] placeholder-gray-400" />
+              className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm outline-none focus:ring-2 focus:ring-gray-400 text-[var(--text-primary)] placeholder-gray-400" />
           </div>
 
           {sites.length > 2 && (
@@ -147,17 +147,17 @@ export default function LeadsPage() {
               <Filter className="w-4 h-4 text-gray-400 shrink-0" />
               {sites.map(s => (
                 <button key={s.id} onClick={() => setFilterSite(s.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                  className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold transition ${
                     filterSite === s.id ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-gray-400'
                   }`}>{s.slug}</button>
               ))}
             </div>
           )}
 
-          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl ml-auto shrink-0">
+          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)] ml-auto shrink-0">
             {(['table', 'timeline'] as const).map(v => (
               <button key={v} onClick={() => setView(v)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
+                className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold capitalize transition ${
                   view === v ? 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
                 }`}>{v}</button>
             ))}
@@ -173,8 +173,8 @@ export default function LeadsPage() {
 
         {/* Empty */}
         {!isLoading && filtered.length === 0 && (
-          <div className="flex flex-col items-center py-24 text-center bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl">
-            <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mb-4 border border-[var(--border)]">
+          <div className="flex flex-col items-center py-24 text-center bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)]">
+            <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4 border border-[var(--border)]">
               <UserCheck className="w-7 h-7 text-gray-300 dark:text-gray-700" />
             </div>
             <p className="font-semibold text-gray-800 dark:text-[var(--text-primary)] mb-1">{search ? `No leads matching "${search}"` : 'No leads yet'}</p>
@@ -184,7 +184,7 @@ export default function LeadsPage() {
 
         {/* Table view */}
         {!isLoading && filtered.length > 0 && view === 'table' && (
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
               <h2 className="text-sm font-bold text-[var(--text-primary)]">All Leads</h2>
               <span className="text-xs text-gray-400">{filtered.length} leads</span>
@@ -239,7 +239,7 @@ export default function LeadsPage() {
                 </div>
                 <div className="space-y-2">
                   {items.map((lead: any) => (
-                    <div key={lead.id} className="flex items-center gap-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl px-5 py-3.5 hover:border-gray-300 dark:hover:border-gray-700 transition">
+                    <div key={lead.id} className="flex items-center gap-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] px-5 py-3.5 hover:border-gray-300 dark:hover:border-gray-700 transition">
                       <div className="relative">
                         <Avatar name={lead.full_name} email={lead.email} />
                       </div>
@@ -273,29 +273,29 @@ export default function LeadsPage() {
       {/* Broadcast Modal */}
       {showBroadcast && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[var(--bg-primary)] rounded-2xl shadow-2xl w-full max-w-lg border border-[var(--border)]">
+          <div className="bg-[var(--bg-primary)] rounded-[var(--radius-lg)] shadow-2xl w-full max-w-lg border border-[var(--border)]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
               <h2 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
                 <MailOpen className="w-5 h-5 text-gray-600 dark:text-[var(--text-secondary)]" /> Broadcast Email
               </h2>
-              <button onClick={() => setShowBroadcast(false)} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+              <button onClick={() => setShowBroadcast(false)} className="p-1 rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleBroadcast} className="p-6 space-y-4">
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-[var(--bg-secondary)] border border-indigo-200 dark:border-gray-900 dark:border-white/20 rounded-xl text-sm text-gray-700 dark:text-[var(--text-secondary)]">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-[var(--bg-secondary)] border border-indigo-200 dark:border-gray-900 dark:border-white/20 rounded-[var(--radius-sm)] text-sm text-gray-700 dark:text-[var(--text-secondary)]">
                 <Mail className="w-4 h-4 shrink-0" />
                 Sending to <strong className="ml-1">{filtered.filter((l: any) => l.email).length} leads</strong>
                 {filterSite !== 'all' && <span className="ml-1 opacity-70">(filtered)</span>}
               </div>
 
               {broadcastError && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-400">
+                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-[var(--radius-sm)] text-sm text-red-700 dark:text-red-400">
                   <AlertCircle className="w-4 h-4 shrink-0" /> {broadcastError}
                 </div>
               )}
               {sent && (
-                <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800/40 rounded-xl text-sm text-emerald-700 dark:text-emerald-400">
+                <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800/40 rounded-[var(--radius-sm)] text-sm text-emerald-700 dark:text-emerald-400">
                   <CheckCircle2 className="w-4 h-4 shrink-0" /> Broadcast queued successfully!
                 </div>
               )}
@@ -304,21 +304,21 @@ export default function LeadsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Subject Line</label>
                 <input type="text" required value={subject} onChange={e => setSubject(e.target.value)}
                   placeholder="Special offer just for you!"
-                  className="w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400" />
+                  className="w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Message</label>
                 <textarea required rows={6} value={body} onChange={e => setBody(e.target.value)}
                   placeholder={"Hi {{name}},\n\nI wanted to share something special with you...\n\nUse code SPECIAL20 for 20% off.\n\n— Your Name"}
-                  className="w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400 resize-none" />
+                  className="w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400 resize-none" />
                 <p className="text-xs text-gray-400 mt-1">Use {'{{name}}'} to personalize.</p>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-800/40 rounded-xl text-xs text-amber-700 dark:text-amber-400">
+              <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-800/40 rounded-[var(--radius-sm)] text-xs text-amber-700 dark:text-amber-400">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 Email delivery requires Resend/SendGrid configured in your backend.
               </div>
               <button type="submit" disabled={sending || sent}
-                className="w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 py-3 rounded-xl font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                className="w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 py-3 rounded-[var(--radius-sm)] font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
                 <Send className="w-4 h-4" />
                 {sending ? 'Sending…' : sent ? 'Sent!' : `Send to ${filtered.filter((l: any) => l.email).length} leads`}
               </button>

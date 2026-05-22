@@ -102,7 +102,7 @@ export default function TopBar() {
             placeholder="Search…"
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            className="w-full h-8 pl-8 pr-3 rounded-lg bg-gray-100/80 dark:bg-white/[0.05] border border-transparent focus:border-gray-200 dark:focus:border-white/10 text-[12.5px] text-gray-800 dark:text-zinc-200 focus:outline-none focus:bg-white dark:focus:bg-white/[0.08] transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600"
+            className="w-full h-8 pl-8 pr-3 rounded-[var(--radius-sm)] bg-gray-100/80 dark:bg-white/[0.05] border border-transparent focus:border-gray-200 dark:focus:border-white/10 text-[12.5px] text-gray-800 dark:text-zinc-200 focus:outline-none focus:bg-white dark:focus:bg-white/[0.08] transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600"
           />
           <kbd className={`absolute right-2.5 text-[10px] text-gray-300 dark:text-zinc-600 font-mono transition-opacity ${searchFocused ? 'opacity-0' : 'opacity-100'}`}>
             ⌘K
@@ -110,7 +110,7 @@ export default function TopBar() {
         </div>
 
         {/* Theme toggle — desktop only */}
-        <div className="hidden lg:flex items-center h-8 bg-gray-100 dark:bg-zinc-800 rounded-md border border-gray-200 dark:border-zinc-700 p-0.75 gap-0.75">
+        <div className="hidden lg:flex items-center h-8 bg-gray-100 dark:bg-zinc-800 rounded-[var(--radius-sm)] border border-gray-200 dark:border-zinc-700 p-0.75 gap-0.75">
           <ThemeBtn active={theme === 'light'} onClick={() => setTheme('light')} title="Light">
             <Sun className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium">Light</span>
@@ -124,7 +124,7 @@ export default function TopBar() {
         {/* Notifications — desktop only */}
         <Link
           href="/dashboard/notifications"
-          className="relative h-8 px-3 rounded-md hidden lg:flex items-center gap-2 text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-100 bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 transition-colors"
+          className="relative h-8 px-3 rounded-[var(--radius-sm)] hidden lg:flex items-center gap-2 text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-100 bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 transition-colors"
         >
           <Bell className="w-[15px] h-[15px] shrink-0" />
           <span className="text-[12px] font-medium">Notifications</span>
@@ -142,7 +142,7 @@ export default function TopBar() {
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className={`flex items-center gap-2 h-8 pl-1 pr-2.5 rounded-lg transition-colors ${
+            className={`flex items-center gap-2 h-8 pl-1 pr-2.5 rounded-[var(--radius-sm)] transition-colors ${
               showDropdown
                 ? 'bg-gray-100 dark:bg-white/[0.08]'
                 : 'hover:bg-gray-100/80 dark:hover:bg-white/[0.06]'
@@ -172,7 +172,7 @@ export default function TopBar() {
 
           {/* Dropdown */}
           {showDropdown && (
-            <div className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-[#141415] border border-gray-100 dark:border-white/[0.07] rounded-2xl shadow-xl shadow-black/[0.08] dark:shadow-black/40 py-1.5 z-50">
+            <div className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-[#141415] border border-gray-100 dark:border-white/[0.07] rounded-[var(--radius-lg)] shadow-xl shadow-black/[0.08] dark:shadow-black/40 py-1.5 z-50">
 
               {/* User header */}
               <div className="px-3 py-3 mb-1">
@@ -222,12 +222,12 @@ export default function TopBar() {
 
               {/* Theme toggle — mobile only */}
               <div className="lg:hidden px-1.5 mt-0.5">
-                <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl">
+                <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)]">
                   <span className="text-gray-400 dark:text-zinc-500">
                     {theme === 'light' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
                   </span>
                   <span className="flex-1 text-left text-[12.5px] font-medium text-gray-700 dark:text-zinc-300">Theme</span>
-                  <div className="flex items-center h-7 bg-gray-100 dark:bg-zinc-700 rounded-md border border-gray-200 dark:border-zinc-600 p-0.5 gap-0.5">
+                  <div className="flex items-center h-7 bg-gray-100 dark:bg-zinc-700 rounded-[var(--radius-sm)] border border-gray-200 dark:border-zinc-600 p-0.5 gap-0.5">
                     <button
                       onClick={() => setTheme('light')}
                       className={`h-6 px-2 gap-1 rounded flex items-center justify-center text-[11px] font-medium transition-all duration-150 ${
@@ -257,7 +257,7 @@ export default function TopBar() {
               <div className="px-1.5">
                 <button
                   onClick={confirmSignOut}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[12.5px] font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/[0.08] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/[0.08] transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   Sign out
@@ -273,7 +273,7 @@ export default function TopBar() {
     {showSignOutConfirm && (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSignOutConfirm(false)} />
-        <div className="relative w-full max-w-sm bg-white dark:bg-[#141415] rounded-2xl shadow-2xl border border-gray-100 dark:border-white/[0.08] p-6">
+        <div className="relative w-full max-w-sm bg-white dark:bg-[#141415] rounded-[var(--radius-lg)] shadow-2xl border border-gray-100 dark:border-white/[0.08] p-6">
           <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
             <LogOut className="w-5 h-5 text-red-500" />
           </div>
@@ -282,13 +282,13 @@ export default function TopBar() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowSignOutConfirm(false)}
-              className="flex-1 h-9 rounded-xl border border-gray-200 dark:border-white/[0.08] text-[13px] font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/[0.05] transition-colors"
+              className="flex-1 h-9 rounded-[var(--radius-sm)] border border-gray-200 dark:border-white/[0.08] text-[13px] font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/[0.05] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSignOut}
-              className="flex-1 h-9 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[13px] font-semibold transition-colors"
+              className="flex-1 h-9 rounded-[var(--radius-sm)] bg-red-500 hover:bg-red-600 text-white text-[13px] font-semibold transition-colors"
             >
               Sign out
             </button>
@@ -311,7 +311,7 @@ function ThemeBtn({
     <button
       onClick={onClick}
       title={title}
-      className={`h-6.5 px-3 gap-1.5 rounded-md flex items-center justify-center transition-all duration-150 ${
+      className={`h-6.5 px-3 gap-1.5 rounded-[var(--radius-sm)] flex items-center justify-center transition-all duration-150 ${
         active
           ? 'bg-white dark:bg-zinc-700 text-gray-800 dark:text-zinc-100 shadow-sm border border-gray-200 dark:border-zinc-600'
           : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300'
@@ -330,7 +330,7 @@ function DropdownItem({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[12.5px] font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100/80 dark:hover:bg-white/[0.06] transition-colors"
+      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100/80 dark:hover:bg-white/[0.06] transition-colors"
     >
       <span className="text-gray-400 dark:text-zinc-500">{icon}</span>
       <span className="flex-1 text-left">{label}</span>

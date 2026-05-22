@@ -10,7 +10,7 @@ import {
   Percent, AlertCircle, UserCheck, Info, Search, RefreshCw,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-gray-700 rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
 
 function CopyButton({ text, label = 'Copy link' }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
@@ -101,7 +101,7 @@ export default function AffiliatesPage() {
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Invite partners to promote your products on commission</p>
           </div>
           <button onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition shrink-0">
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-sm transition shrink-0">
             <Plus className="w-4 h-4" /> Add Affiliate
           </button>
         </div>
@@ -113,8 +113,8 @@ export default function AffiliatesPage() {
             { label: 'Active',           value: activeCount,       icon: UserCheck,  color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
             { label: 'Avg. Commission',  value: `${avgCommission}%`, icon: Percent,  color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10' },
           ].map(s => (
-            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.bg}`}>
+            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
               <div>
@@ -126,7 +126,7 @@ export default function AffiliatesPage() {
         </div>
 
         {/* How it works banner */}
-        <div className="flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-500/5 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl">
+        <div className="flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-500/5 border border-indigo-200 dark:border-indigo-500/20 rounded-[var(--radius-lg)]">
           <Info className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
           <div className="text-sm text-indigo-700 dark:text-indigo-400 space-y-1">
             <p className="font-bold">How affiliates work</p>
@@ -139,12 +139,12 @@ export default function AffiliatesPage() {
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by user ID…"
-              className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 text-[var(--text-primary)] placeholder-gray-400" />
+              className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 text-[var(--text-primary)] placeholder-gray-400" />
           </div>
         )}
 
         {/* Table */}
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
           <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
             <h2 className="text-sm font-bold text-[var(--text-primary)]">All Affiliates</h2>
             <span className="text-xs text-gray-400">{filtered.length} partner{filtered.length !== 1 ? 's' : ''}</span>
@@ -157,13 +157,13 @@ export default function AffiliatesPage() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center">
-              <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mb-4 border border-[var(--border)]">
+              <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4 border border-[var(--border)]">
                 <Network className="w-7 h-7 text-gray-300 dark:text-gray-700" />
               </div>
               <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">No affiliates yet</p>
               <p className="text-sm text-gray-500 mb-5 max-w-xs">Add your first partner to start growing your reach through commission-based promotion.</p>
               <button onClick={() => setShowModal(true)}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition">
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold shadow-sm transition">
                 <Plus className="w-4 h-4" /> Add First Affiliate
               </button>
             </div>
@@ -193,10 +193,10 @@ export default function AffiliatesPage() {
                         <div className="flex items-center gap-2">
                           <input type="number" min={1} max={80} value={editCommission!.value}
                             onChange={e => setEditCommission({ id: aff.id, value: Number(e.target.value) })}
-                            className="w-16 px-2 py-1 bg-[var(--bg-secondary)] border border-indigo-400 rounded-lg text-sm font-bold text-center outline-none" />
+                            className="w-16 px-2 py-1 bg-[var(--bg-secondary)] border border-indigo-400 rounded-[var(--radius-sm)] text-sm font-bold text-center outline-none" />
                           <span className="text-gray-500 text-sm">%</span>
                           <button onClick={handleSaveCommission} disabled={savingCommission}
-                            className="px-2 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">
+                            className="px-2 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[var(--radius-sm)] text-xs font-bold transition">
                             {savingCommission ? '…' : 'Save'}
                           </button>
                           <button onClick={() => setEditCommission(null)} className="p-1 text-gray-400 hover:text-gray-600">
@@ -224,11 +224,11 @@ export default function AffiliatesPage() {
                     {/* Actions */}
                     <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition">
                       <button onClick={() => toggleActive(aff)} title={aff.is_active ? 'Pause' : 'Activate'}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+                        className="p-1.5 rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                         {aff.is_active ? <ToggleRight className="w-5 h-5 text-emerald-500" /> : <ToggleLeft className="w-5 h-5" />}
                       </button>
                       <button onClick={() => setDeleteConfirm(aff.id)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
+                        className="p-1.5 rounded-[var(--radius-sm)] text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -243,22 +243,22 @@ export default function AffiliatesPage() {
       {/* Invite Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[var(--bg-primary)] rounded-2xl shadow-2xl w-full max-w-md border border-[var(--border)]">
+          <div className="bg-[var(--bg-primary)] rounded-[var(--radius-lg)] shadow-2xl w-full max-w-md border border-[var(--border)]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-500/10 rounded-[var(--radius-sm)] flex items-center justify-center">
                   <Network className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <h2 className="text-base font-bold text-[var(--text-primary)]">Add Affiliate</h2>
               </div>
               <button onClick={() => { setShowModal(false); setFormError(''); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+                className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleInvite} className="p-6 space-y-5">
               {formError && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-400">
+                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-[var(--radius-sm)] text-sm text-red-700 dark:text-red-400">
                   <AlertCircle className="w-4 h-4 shrink-0" /> {formError}
                 </div>
               )}
@@ -271,14 +271,14 @@ export default function AffiliatesPage() {
 
               <CommissionSlider value={commission} onChange={setCommission} />
 
-              <div className="p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
+              <div className="p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)]">
                 <p className="text-xs text-gray-500 leading-relaxed">
                   Their unique referral link will be: <span className="font-mono text-indigo-600 dark:text-indigo-400 break-all">{origin}/ref/[their-user-id]</span>
                 </p>
               </div>
 
               <button type="submit" disabled={isInviting}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm shadow-sm transition">
+                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-[var(--radius-sm)] font-bold text-sm shadow-sm transition">
                 {isInviting ? 'Adding…' : 'Add Affiliate →'}
               </button>
             </form>
@@ -289,16 +289,16 @@ export default function AffiliatesPage() {
       {/* Delete Confirm */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 max-w-sm w-full shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
               <Trash2 className="w-5 h-5 text-red-500" />
             </div>
             <h3 className="font-bold text-[var(--text-primary)] mb-1">Remove affiliate?</h3>
             <p className="text-sm text-gray-500 mb-5">This partner will be permanently removed from your affiliate program.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-[var(--radius-sm)] text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
               <button onClick={async () => { await removeAffiliate(deleteConfirm); setDeleteConfirm(null); }}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-[var(--radius-sm)] text-sm font-semibold transition flex items-center justify-center gap-2">
                 <Trash2 className="w-4 h-4" /> Remove
               </button>
             </div>

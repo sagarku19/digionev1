@@ -26,7 +26,7 @@ function formatINRCompact(amount: number) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 animate-pulse">
       <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
       <div className="h-9 w-36 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
       <div className="h-2 w-20 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded" />
@@ -112,18 +112,62 @@ export default function EarningsPage() {
           <button
             onClick={() => setIsModalOpen(true)}
             disabled={available <= 0 || isLoading}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm transition-all"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-[var(--radius-sm)] font-semibold shadow-sm transition-all"
           >
             <ArrowUpRight size={16} />
             Request Payout
           </button>
         </div>
 
+        {/* Payout Eligibility Banner */}
+        {!isLoading && isKycVerified && available > 0 && available < 100 && (
+          <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 rounded-[var(--radius-lg)] p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-orange-100 dark:bg-orange-500/20 rounded-[var(--radius-sm)] shrink-0">
+                <AlertCircle size={18} className="text-orange-600 dark:text-orange-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-orange-800 dark:text-orange-300">Below minimum payout threshold</p>
+                <p className="text-xs text-orange-600/80 dark:text-orange-400/80 mt-0.5">
+                  Your available balance is {formatINR(available)}. A minimum of ₹100 is required to request a payout.
+                  You need {formatINR(100 - available)} more.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 px-4 py-1.5 bg-orange-100 dark:bg-orange-500/20 rounded-[var(--radius-sm)] text-xs font-bold text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-500/20">
+              {formatINR(available)} / ₹100 min
+            </div>
+          </div>
+        )}
+
+        {/* Payout Ready Banner */}
+        {!isLoading && isKycVerified && available >= 100 && (
+          <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-[var(--radius-lg)] p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-[var(--radius-sm)] shrink-0">
+                <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Payout available</p>
+                <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-0.5">
+                  {formatINR(available)} is ready to withdraw. Minimum threshold of ₹100 met.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap bg-white dark:bg-emerald-500/20 hover:bg-emerald-50 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-sm font-semibold px-4 py-2 border border-emerald-200 dark:border-emerald-500/30 rounded-[var(--radius-sm)] transition"
+            >
+              Withdraw Now <ArrowUpRight size={14} />
+            </button>
+          </div>
+        )}
+
         {/* KYC Banner */}
         {!isLoading && !isKycVerified && (
-          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-[var(--radius-lg)] p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-xl">
+              <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-[var(--radius-sm)]">
                 <ShieldAlert size={18} className="text-amber-600 dark:text-amber-400" />
               </div>
               <div>
@@ -133,7 +177,7 @@ export default function EarningsPage() {
             </div>
             <Link
               href="/dashboard/settings/billing"
-              className="inline-flex items-center gap-1.5 whitespace-nowrap bg-white dark:bg-amber-500/20 hover:bg-amber-50 dark:hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 text-sm font-semibold px-4 py-2 border border-amber-200 dark:border-amber-500/30 rounded-xl transition"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap bg-white dark:bg-amber-500/20 hover:bg-amber-50 dark:hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 text-sm font-semibold px-4 py-2 border border-amber-200 dark:border-amber-500/30 rounded-[var(--radius-sm)] transition"
             >
               Complete KYC <ChevronRight size={14} />
             </Link>
@@ -147,7 +191,7 @@ export default function EarningsPage() {
           ) : (
             <>
               {/* Available */}
-              <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-6 text-white relative overflow-hidden">
+              <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-[var(--radius-lg)] p-5 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
@@ -160,10 +204,10 @@ export default function EarningsPage() {
               </div>
 
               {/* Pending */}
-              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Pending</span>
-                  <span className="p-1.5 bg-amber-100 dark:bg-amber-500/20 rounded-lg">
+                  <span className="p-1.5 bg-amber-100 dark:bg-amber-500/20 rounded-[var(--radius-sm)]">
                     <Clock size={14} className="text-amber-600 dark:text-amber-400" />
                   </span>
                 </div>
@@ -172,10 +216,10 @@ export default function EarningsPage() {
               </div>
 
               {/* Total Earnings */}
-              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Total Earned</span>
-                  <span className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg">
+                  <span className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-[var(--radius-sm)]">
                     <TrendingUp size={14} className="text-emerald-600 dark:text-emerald-400" />
                   </span>
                 </div>
@@ -184,10 +228,10 @@ export default function EarningsPage() {
               </div>
 
               {/* Total Paid Out */}
-              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+              <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Withdrawn</span>
-                  <span className="p-1.5 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                  <span className="p-1.5 bg-blue-100 dark:bg-blue-500/20 rounded-[var(--radius-sm)]">
                     <ArrowDownLeft size={14} className="text-blue-600 dark:text-blue-400" />
                   </span>
                 </div>
@@ -200,7 +244,7 @@ export default function EarningsPage() {
 
         {/* Ledger Breakdown */}
         {!isLoading && totalEarnings > 0 && (
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)] mb-4">Balance Breakdown</h3>
             <div className="space-y-3">
               {[
@@ -230,14 +274,14 @@ export default function EarningsPage() {
 
         {/* KYC Status Card */}
         {!isLoading && (
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 flex items-center justify-between gap-4">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               {isKycVerified ? (
-                <div className="p-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-xl">
+                <div className="p-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-[var(--radius-sm)]">
                   <ShieldCheck size={18} className="text-emerald-600 dark:text-emerald-400" />
                 </div>
               ) : (
-                <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-xl">
+                <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-[var(--radius-sm)]">
                   <ShieldAlert size={18} className="text-amber-600 dark:text-amber-400" />
                 </div>
               )}
@@ -265,7 +309,7 @@ export default function EarningsPage() {
         )}
 
         {/* Payout History */}
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
           <div className="px-6 py-5 border-b border-[var(--border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <History size={16} className="text-gray-600 dark:text-[var(--text-secondary)]" />
@@ -284,7 +328,7 @@ export default function EarningsPage() {
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
-                      className={`px-3 py-1 text-xs font-medium rounded-lg capitalize transition-all ${
+                      className={`px-3 py-1 text-xs font-medium rounded-[var(--radius-sm)] capitalize transition-all ${
                         statusFilter === s
                           ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
                           : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -302,7 +346,7 @@ export default function EarningsPage() {
             <div className="divide-y divide-[var(--border)]">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="px-6 py-4 flex items-center gap-4 animate-pulse">
-                  <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0" />
+                  <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-[var(--radius-sm)] shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3.5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
                     <div className="h-2.5 w-24 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded" />
@@ -314,7 +358,7 @@ export default function EarningsPage() {
             </div>
           ) : filteredPayouts.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-14 h-14 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <div className="w-14 h-14 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] flex items-center justify-center mx-auto mb-3">
                 <Banknote size={24} className="text-gray-400" />
               </div>
               <p className="text-sm font-medium text-[var(--text-secondary)]">
@@ -334,7 +378,7 @@ export default function EarningsPage() {
               {(filteredPayouts as any[]).map((payout) => (
                 <div key={payout.id} className="px-6 py-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
                   {/* Icon */}
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                  <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 ${
                     payout.status === 'completed' || payout.status === 'paid'
                       ? 'bg-emerald-100 dark:bg-emerald-500/20'
                       : payout.status === 'pending'
@@ -396,18 +440,18 @@ export default function EarningsPage() {
       {/* Payout Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-2xl w-full max-w-md overflow-hidden">
             {/* Modal Header */}
             <div className="flex justify-between items-center px-6 py-5 border-b border-[var(--border)]">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl">
+                <div className="p-2 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)]">
                   <Wallet size={16} className="text-gray-700 dark:text-[var(--text-secondary)]" />
                 </div>
                 <h2 className="text-base font-bold text-[var(--text-primary)]">Withdraw Funds</h2>
               </div>
               <button
                 onClick={() => { setIsModalOpen(false); setPayoutAmount(''); setErrorMsg(''); }}
-                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition"
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)] transition"
               >
                 <X size={16} />
               </button>
@@ -416,7 +460,7 @@ export default function EarningsPage() {
             <form onSubmit={handleRequestPayout} className="p-6">
               {!isKycVerified ? (
                 <div className="text-center py-4">
-                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 rounded-[var(--radius-lg)] flex items-center justify-center mx-auto mb-4">
                     <Building2 size={28} className="text-amber-500" />
                   </div>
                   <h3 className="text-base font-bold text-[var(--text-primary)] mb-2">KYC Required</h3>
@@ -425,7 +469,7 @@ export default function EarningsPage() {
                   </p>
                   <Link
                     href="/dashboard/settings/billing"
-                    className="block w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 font-semibold py-3 rounded-xl transition text-center"
+                    className="block w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 font-semibold py-3 rounded-[var(--radius-sm)] transition text-center"
                   >
                     Complete KYC
                   </Link>
@@ -433,13 +477,13 @@ export default function EarningsPage() {
               ) : (
                 <div className="space-y-5">
                   {/* Available Balance pill */}
-                  <div className="flex items-center justify-between bg-gray-100 dark:bg-[var(--bg-secondary)] border border-indigo-100 dark:border-gray-900 dark:border-white/20 rounded-xl px-4 py-3">
+                  <div className="flex items-center justify-between bg-gray-100 dark:bg-[var(--bg-secondary)] border border-indigo-100 dark:border-gray-900 dark:border-white/20 rounded-[var(--radius-sm)] px-4 py-3">
                     <span className="text-sm text-gray-700 dark:text-[var(--text-secondary)] font-medium">Available Balance</span>
                     <span className="text-base font-bold text-gray-700 dark:text-[var(--text-secondary)]">{formatINR(available)}</span>
                   </div>
 
                   {errorMsg && (
-                    <div className="p-3 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-500/20 rounded-xl">
+                    <div className="p-3 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-500/20 rounded-[var(--radius-sm)]">
                       {errorMsg}
                     </div>
                   )}
@@ -465,7 +509,7 @@ export default function EarningsPage() {
                         max={available}
                         value={payoutAmount}
                         onChange={(e) => setPayoutAmount(e.target.value)}
-                        className="w-full pl-8 pr-4 py-3 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] font-mono text-lg"
+                        className="w-full pl-8 pr-4 py-3 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] font-mono text-lg"
                         placeholder="0"
                         autoFocus
                       />
@@ -478,7 +522,7 @@ export default function EarningsPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting || !payoutAmount || Number(payoutAmount) <= 0}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition shadow-sm"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-[var(--radius-sm)] transition shadow-sm"
                   >
                     {isSubmitting ? (
                       <span className="flex items-center justify-center gap-2">

@@ -128,7 +128,7 @@ export default function MarketingPage() {
     <div className="pt-6 pb-16 space-y-8 max-w-[1200px] mx-auto">
 
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--bg-primary)] p-6 sm:p-8 shadow-sm">
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-primary)] p-5 shadow-sm">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-500/10 via-violet-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
@@ -164,17 +164,17 @@ export default function MarketingPage() {
             <Link
               key={tool.href}
               href={tool.href}
-              className={`group relative bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl ${c.glow} transition-all duration-300 flex flex-col overflow-hidden`}
+              className={`group relative bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl ${c.glow} transition-all duration-300 flex flex-col overflow-hidden`}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${c.bg} ${c.border}`}>
+                <div className={`w-11 h-11 rounded-[var(--radius-sm)] flex items-center justify-center border ${c.bg} ${c.border}`}>
                   <tool.icon className={`w-5 h-5 ${c.text}`} />
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-gray-300 dark:text-gray-700 group-hover:text-gray-500 dark:group-hover:text-gray-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
               </div>
               <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">{tool.label}</h2>
               <p className="text-xs text-[var(--text-secondary)] leading-relaxed flex-1">{tool.description}</p>
-              <div className={`mt-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold ${c.pill} w-fit`}>
+              <div className={`mt-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-sm)] text-xs font-bold ${c.pill} w-fit`}>
                 <Sparkles className="w-3 h-3" />
                 <span>{tool.stat}</span>
                 {tool.statTotal && <span className="opacity-60 font-medium">{tool.statTotal}</span>}
@@ -185,7 +185,7 @@ export default function MarketingPage() {
       </div>
 
       {/* Quick tip */}
-      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-2xl">
+      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-[var(--radius-lg)]">
         <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
         <p className="text-sm text-amber-700 dark:text-amber-400">
           <strong>Pro tip:</strong> Combine Coupons + Referrals for a viral growth loop — buyers save money AND earn rewards for bringing new customers.

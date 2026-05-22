@@ -3,10 +3,25 @@
 import React from 'react';
 import {
   Mail, ArrowRight, Table2, PhoneForwarded, Send, Zap,
+  CheckCircle2, Link2,
 } from 'lucide-react';
 import Link from 'next/link';
 
-const TOOLS = [
+type ConnectionStatus = 'connected' | 'not_connected' | 'soon';
+
+const TOOLS: {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  color: string;
+  bg: string;
+  badge?: string;
+  badgeColor?: string;
+  actionStatus: 'active' | 'connect' | 'soon';
+  connectionStatus: ConnectionStatus;
+  href: string;
+}[] = [
   {
     id: 'email',
     title: 'Email Sequences',
@@ -16,7 +31,8 @@ const TOOLS = [
     bg: 'bg-blue-50 dark:bg-blue-500/10',
     badge: 'Popular',
     badgeColor: 'bg-orange-500/10 text-orange-500',
-    status: 'active',
+    actionStatus: 'active',
+    connectionStatus: 'connected',
     href: '/dashboard/automation/email',
   },
   {
@@ -28,7 +44,8 @@ const TOOLS = [
     bg: 'bg-emerald-50 dark:bg-emerald-500/10',
     badge: 'New',
     badgeColor: 'bg-emerald-500/10 text-emerald-500',
-    status: 'connect',
+    actionStatus: 'connect',
+    connectionStatus: 'not_connected',
     href: '/dashboard/automation/whatsapp',
   },
   {
@@ -38,7 +55,8 @@ const TOOLS = [
     icon: Table2,
     color: 'text-green-600 dark:text-green-400',
     bg: 'bg-green-50 dark:bg-green-500/10',
-    status: 'connect',
+    actionStatus: 'connect',
+    connectionStatus: 'not_connected',
     href: '/dashboard/automation/google-sheets',
   },
   {
@@ -48,7 +66,8 @@ const TOOLS = [
     icon: Send,
     color: 'text-sky-600 dark:text-sky-400',
     bg: 'bg-sky-50 dark:bg-sky-500/10',
-    status: 'connect',
+    actionStatus: 'connect',
+    connectionStatus: 'not_connected',
     href: '/dashboard/automation/telegram',
   },
 ];
@@ -58,6 +77,26 @@ const ACTION_LABEL: Record<string, string> = {
   connect: 'Connect',
   soon: 'Coming Soon',
 };
+
+function ConnectionBadge({ status }: { status: ConnectionStatus }) {
+  if (status === 'connected') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+        <CheckCircle2 className="w-3 h-3" />
+        Connected
+      </span>
+    );
+  }
+  if (status === 'not_connected') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-500 dark:text-[var(--text-secondary)] border border-gray-200 dark:border-[var(--border)]">
+        <Link2 className="w-3 h-3" />
+        Not connected
+      </span>
+    );
+  }
+  return null;
+}
 
 export default function AutomationHubPage() {
   return (
@@ -75,25 +114,28 @@ export default function AutomationHubPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {TOOLS.map((tool) => {
           const Icon = tool.icon;
-          const isSoon = tool.status === 'soon';
-          const isActive = tool.status === 'active';
+          const isSoon = tool.actionStatus === 'soon';
+          const isActive = tool.actionStatus === 'active';
 
           const card = (
             <div
-              className={`group bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-4 relative ${
+              className={`group bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-4 relative ${
                 isSoon ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
               }`}
             >
-              {/* Badge */}
-              {tool.badge && (
-                <span className={`absolute top-4 right-4 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide ${tool.badgeColor}`}>
-                  {tool.badge}
-                </span>
-              )}
-
-              {/* Icon */}
-              <div className={`w-12 h-12 ${tool.bg} ${tool.color} rounded-xl flex items-center justify-center`}>
-                <Icon className="w-6 h-6" />
+              {/* Top row: icon + connection badge */}
+              <div className="flex items-start justify-between">
+                <div className={`w-12 h-12 ${tool.bg} ${tool.color} rounded-[var(--radius-sm)] flex items-center justify-center`}>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <div className="flex flex-col items-end gap-1.5">
+                  <ConnectionBadge status={tool.connectionStatus} />
+                  {tool.badge && (
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide ${tool.badgeColor}`}>
+                      {tool.badge}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Text */}
@@ -105,7 +147,7 @@ export default function AutomationHubPage() {
               {/* Footer action */}
               <div className={`flex items-center gap-1 text-sm font-semibold ${tool.color} group-hover:gap-2 transition-all`}>
                 {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />}
-                {ACTION_LABEL[tool.status]} <ArrowRight className="w-4 h-4" />
+                {ACTION_LABEL[tool.actionStatus]} <ArrowRight className="w-4 h-4" />
               </div>
             </div>
           );

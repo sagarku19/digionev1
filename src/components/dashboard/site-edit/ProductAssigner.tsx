@@ -52,7 +52,7 @@ export default function ProductAssigner({
 
   return (
     <div className="space-y-4">
-      <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl flex items-start gap-3">
+      <div className="p-3.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-[var(--radius-sm)] flex items-start gap-3">
         <Package className="w-4 h-4 text-[var(--text-primary)] mt-0.5 shrink-0" />
         <p className="text-xs text-[var(--text-primary)]">
           Select products for this storefront. Click <strong>Save</strong> to persist.
@@ -60,7 +60,7 @@ export default function ProductAssigner({
       </div>
 
       {products.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-[var(--border)] rounded-2xl text-center">
+        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-[var(--border)] rounded-[var(--radius-lg)] text-center">
           <Package className="w-10 h-10 text-gray-300 dark:text-gray-700 mb-3" />
           <p className="text-sm font-medium text-gray-500">No products yet</p>
           <p className="text-xs text-gray-400 mt-1">Create products in the Products section first.</p>
@@ -74,16 +74,16 @@ export default function ProductAssigner({
             <div
               key={product.id}
               onClick={() => toggle(product.id)}
-              className={`flex items-center gap-4 p-4 bg-[var(--bg-primary)] border rounded-xl cursor-pointer transition-all ${
+              className={`flex items-center gap-4 p-4 bg-[var(--bg-primary)] border rounded-[var(--radius-sm)] cursor-pointer transition-all ${
                 isSelected
                   ? 'border-[var(--accent)] bg-[var(--bg-tertiary)]/30 dark:bg-[var(--bg-tertiary)]'
                   : 'border-[var(--border)] hover:border-gray-300 dark:hover:border-gray-700'
               }`}
             >
               {product.thumbnail_url ? (
-                <img src={product.thumbnail_url} alt={product.name} className="w-12 h-12 rounded-xl object-cover shrink-0" />
+                <img src={product.thumbnail_url} alt={product.name} className="w-12 h-12 rounded-[var(--radius-sm)] object-cover shrink-0" />
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-[var(--radius-sm)] bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
                   <Package className="w-5 h-5 text-gray-400" />
                 </div>
               )}

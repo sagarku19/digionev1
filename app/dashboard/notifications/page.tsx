@@ -70,7 +70,7 @@ export default function NotificationsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center">
               <Bell className="w-5 h-5 text-[var(--text-secondary)]" />
             </div>
             Notifications
@@ -86,7 +86,7 @@ export default function NotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={() => markAllRead()}
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-[var(--text-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-4 py-2 rounded-xl transition"
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-[var(--text-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-4 py-2 rounded-[var(--radius-sm)] transition"
           >
             <CheckCheck className="w-4 h-4" />
             Mark all read
@@ -96,10 +96,10 @@ export default function NotificationsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
-        <div className="flex gap-1 bg-gray-100 dark:bg-[var(--bg-secondary)] p-1 rounded-xl">
+        <div className="flex gap-1 bg-gray-100 dark:bg-[var(--bg-secondary)] p-1 rounded-[var(--radius-sm)]">
           {(['all', 'unread'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition capitalize ${
+              className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-sm font-medium transition capitalize ${
                 filter === f
                   ? 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
                   : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -114,7 +114,7 @@ export default function NotificationsPage() {
           <div className="flex gap-1.5 flex-wrap">
             {types.map(t => (
               <button key={t} onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition capitalize ${
+                className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold transition capitalize ${
                   typeFilter === t
                     ? 'bg-[#E83A2E] text-white'
                     : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-gray-400 dark:hover:border-gray-600'
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
       {isLoading && (
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-[76px] bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl animate-pulse" />
+            <div key={i} className="h-[76px] bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] animate-pulse" />
           ))}
         </div>
       )}
@@ -139,7 +139,7 @@ export default function NotificationsPage() {
       {/* Empty state */}
       {!isLoading && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 bg-gray-50 dark:bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mb-4">
+          <div className="w-16 h-16 bg-gray-50 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4">
             <BellOff className="w-8 h-8 text-gray-300 dark:text-gray-600" />
           </div>
           <h2 className="text-lg font-bold text-[var(--text-primary)] mb-1">
@@ -160,7 +160,7 @@ export default function NotificationsPage() {
 
       {/* Notifications list */}
       {!isLoading && filtered.length > 0 && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden divide-y divide-[var(--border)]/60">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden divide-y divide-[var(--border)]/60">
           {filtered.map((notif: any) => {
             const meta = getTypeMeta(notif.type);
             const Icon = meta.icon;
@@ -173,7 +173,7 @@ export default function NotificationsPage() {
                 }`}
               >
                 {/* Icon */}
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${meta.bg}`}>
+                <div className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 mt-0.5 ${meta.bg}`}>
                   <Icon className={`w-5 h-5 ${meta.color}`} />
                 </div>
 

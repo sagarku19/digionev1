@@ -54,7 +54,7 @@ function DeltaBadge({ current, prev }: { current: number; prev: number }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5 animate-pulse">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 animate-pulse">
       <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
       <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
       <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
@@ -64,9 +64,9 @@ function SkeletonCard() {
 
 function SkeletonChart() {
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse">
+    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 animate-pulse">
       <div className="h-5 w-36 bg-gray-200 dark:bg-gray-700 rounded mb-6" />
-      <div className="h-65 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl" />
+      <div className="h-65 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)]" />
     </div>
   );
 }
@@ -74,7 +74,7 @@ function SkeletonChart() {
 const CustomTooltip = ({ active, payload, label, formatter }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 shadow-xl text-sm">
+    <div className="bg-gray-900 border border-gray-700 rounded-[var(--radius-sm)] px-3 py-2 shadow-xl text-sm">
       <p className="text-gray-400 mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="font-semibold" style={{ color: p.color }}>
@@ -145,12 +145,12 @@ export default function AnalyticsPage() {
             Track revenue, sales volume, and top performing products.
           </p>
         </div>
-        <div className="flex bg-gray-100 bg-[var(--bg-primary)] rounded-xl p-1 border border-[var(--border)]">
+        <div className="flex bg-[var(--bg-primary)] rounded-[var(--radius-sm)] p-1 border border-[var(--border)]">
           {PERIODS.map(({ label, value }) => (
             <button
               key={value}
               onClick={() => setDaysBack(value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
+              className={`px-4 py-1.5 text-sm font-medium rounded-[var(--radius-sm)] transition-all ${
                 daysBack === value
                   ? 'bg-white dark:bg-indigo-600 text-[var(--text-primary)] shadow-sm'
                   : 'text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)]'
@@ -169,10 +169,10 @@ export default function AnalyticsPage() {
         ) : (
           <>
             {/* Revenue */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Revenue</span>
-                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-lg">
+                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)]">
                   <DollarSign size={14} className="text-gray-700 dark:text-[var(--text-secondary)]" />
                 </span>
               </div>
@@ -186,10 +186,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Sales */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Orders</span>
-                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-lg">
+                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)]">
                   <ShoppingCart size={14} className="text-gray-700 dark:text-[var(--text-secondary)]" />
                 </span>
               </div>
@@ -203,10 +203,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* AOV */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Avg. Order Value</span>
-                <span className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg">
+                <span className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-[var(--radius-sm)]">
                   <TrendingUp size={14} className="text-emerald-600 dark:text-emerald-400" />
                 </span>
               </div>
@@ -220,10 +220,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Peak Day */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-5">
+            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Peak Day</span>
-                <span className="p-1.5 bg-amber-100 dark:bg-amber-500/20 rounded-lg">
+                <span className="p-1.5 bg-amber-100 dark:bg-amber-500/20 rounded-[var(--radius-sm)]">
                   <BarChart2 size={14} className="text-amber-600 dark:text-amber-400" />
                 </span>
               </div>
@@ -239,7 +239,7 @@ export default function AnalyticsPage() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Revenue Area Chart — 3 cols */}
-        <div className="lg:col-span-3 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+        <div className="lg:col-span-3 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
           {isLoading ? (
             <SkeletonChart />
           ) : (
@@ -249,7 +249,7 @@ export default function AnalyticsPage() {
                   <h2 className="text-base font-semibold text-[var(--text-primary)]">Revenue Trend</h2>
                   <p className="text-xs text-gray-400 mt-0.5">Daily revenue over the selected period</p>
                 </div>
-                <span className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-2 py-1 rounded-lg">
+                <span className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-2 py-1 rounded-[var(--radius-sm)]">
                   {daysBack}D view
                 </span>
               </div>
@@ -298,7 +298,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Sales Volume Bar Chart — 2 cols */}
-        <div className="lg:col-span-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+        <div className="lg:col-span-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
           {isLoading ? (
             <SkeletonChart />
           ) : (
@@ -343,7 +343,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Top Products */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
         <div className="flex items-center gap-2 mb-5">
           <Package size={16} className="text-gray-600 dark:text-[var(--text-secondary)]" />
           <h2 className="text-base font-semibold text-[var(--text-primary)]">Top Products</h2>

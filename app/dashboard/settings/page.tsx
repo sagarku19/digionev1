@@ -92,7 +92,7 @@ export default function SettingsPage() {
           <h2 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-1">
             {group.title}
           </h2>
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden divide-y divide-[var(--border)]">
+          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden divide-y divide-[var(--border)]">
             {group.sections.map((section) => {
               const isSoon = section.badge === 'Soon';
               const Wrapper = isSoon ? 'div' : Link;
@@ -107,7 +107,7 @@ export default function SettingsPage() {
               return (
                 <Wrapper key={section.label} {...(wrapperProps as any)}>
                   {/* Icon */}
-                  <div className={`w-10 h-10 ${section.iconBg} ${section.iconColor} rounded-xl flex items-center justify-center shrink-0`}>
+                  <div className={`w-10 h-10 ${section.iconBg} ${section.iconColor} rounded-[var(--radius-sm)] flex items-center justify-center shrink-0`}>
                     <section.icon size={18} />
                   </div>
 

@@ -1,13 +1,35 @@
 ﻿'use client';
 // Orders dashboard — all orders for this creator with detail drawer.
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useOrders } from '@/hooks/useOrders';
 import {
   ShoppingBag, CheckCircle2, XCircle, Clock, Search,
   ChevronRight, X, Package, Mail, Phone, Calendar,
-  Download, TrendingUp, RotateCcw,
+  Download, TrendingUp, RotateCcw, FileDown,
 } from 'lucide-react';
+
+function exportOrdersCSV(orders: ReturnType<typeof useOrders>['orders']) {
+  const header = ['Order ID', 'Customer Name', 'Customer Email', 'Customer Phone', 'Amount', 'Status', 'Products', 'Date'];
+  const rows = orders.map(o => [
+    o.id,
+    o.customer_name ?? '',
+    o.customer_email ?? '',
+    o.customer_phone ?? '',
+    o.total_amount,
+    o.status,
+    (o.order_items ?? []).map((i: any) => i.products?.name ?? '').filter(Boolean).join('; '),
+    new Date(o.created_at).toLocaleDateString('en-IN'),
+  ]);
+  const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function formatINR(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -55,7 +77,7 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Order</p>
             <p className="font-mono text-sm text-[var(--text-primary)] font-semibold">{order.id.slice(0, 8)}…</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+          <button onClick={onClose} className="p-2 rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -68,7 +90,7 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
           </div>
 
           {/* Customer */}
-          <div className="bg-[var(--bg-secondary)]/50 rounded-2xl p-4 space-y-3">
+          <div className="bg-[var(--bg-secondary)]/50 rounded-[var(--radius-lg)] p-4 space-y-3">
             <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Customer</p>
             <div className="space-y-2">
               {order.customer_name && (
@@ -99,7 +121,7 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
             <div className="space-y-2">
               <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Products</p>
               {products.map((item: any, i: number) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)]/50 rounded-xl">
+                <div key={i} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)]/50 rounded-[var(--radius-sm)]">
                   <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
                     {item.products?.thumbnail_url ? (
                       <img src={item.products.thumbnail_url} alt="" className="w-full h-full object-cover rounded-lg" />
@@ -143,7 +165,7 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
               href={receiptUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] font-semibold rounded-xl transition text-sm"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] font-semibold rounded-[var(--radius-sm)] transition text-sm"
             >
               <Download className="w-4 h-4" />
               Download Receipt
@@ -159,21 +181,36 @@ export default function OrdersPage() {
   const { orders, isLoading } = useOrders();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [selected, setSelected] = useState<any>(null);
 
-  const filtered = orders.filter(o => {
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  const filtered = useMemo(() => orders.filter(o => {
     const matchStatus = statusFilter === 'all' || o.status === statusFilter;
     const q = search.toLowerCase();
     const matchSearch = !q
       || o.customer_email?.toLowerCase().includes(q)
       || o.customer_name?.toLowerCase().includes(q)
       || o.id.includes(q);
-    return matchStatus && matchSearch;
-  });
+    const orderDate = o.created_at.split('T')[0];
+    const matchFrom = !dateFrom || orderDate >= dateFrom;
+    const matchTo = !dateTo || orderDate <= dateTo;
+    return matchStatus && matchSearch && matchFrom && matchTo;
+  }), [orders, statusFilter, search, dateFrom, dateTo]);
 
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((s, o) => s + Number(o.total_amount), 0);
   const completedCount = orders.filter(o => o.status === 'completed').length;
   const pendingCount = orders.filter(o => o.status === 'pending').length;
+
+  const todayRevenue = useMemo(() => orders
+    .filter(o => o.status === 'completed' && o.created_at.startsWith(todayStr))
+    .reduce((s, o) => s + Number(o.total_amount), 0), [orders, todayStr]);
+
+  const todayCount = useMemo(() => orders.filter(o => o.created_at.startsWith(todayStr)).length, [orders, todayStr]);
+
+  const hasDateFilter = dateFrom || dateTo;
 
   return (
     <div className="space-y-6 pt-6">
@@ -183,7 +220,45 @@ export default function OrdersPage() {
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Orders</h1>
           <p className="text-sm text-gray-500 mt-1">{orders.length} total orders across all your sites</p>
         </div>
+        {orders.length > 0 && (
+          <button
+            onClick={() => exportOrdersCSV(filtered)}
+            className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-[var(--text-secondary)] px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold transition shrink-0"
+          >
+            <FileDown className="w-4 h-4" />
+            Export CSV
+          </button>
+        )}
       </div>
+
+      {/* Today's summary card */}
+      {!isLoading && orders.length > 0 && (
+        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-500/10 dark:to-violet-500/5 border border-indigo-200/60 dark:border-indigo-500/20 rounded-[var(--radius-lg)] p-5 flex flex-wrap gap-6 items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/20 rounded-[var(--radius-sm)] flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">Today</p>
+              <p className="text-sm font-bold text-[var(--text-primary)]">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</p>
+            </div>
+          </div>
+          <div className="flex gap-6 flex-wrap">
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Revenue today</p>
+              <p className="text-lg font-extrabold text-indigo-700 dark:text-indigo-300">{formatINR(todayRevenue)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Orders today</p>
+              <p className="text-lg font-extrabold text-[var(--text-primary)]">{todayCount}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Pending</p>
+              <p className="text-lg font-extrabold text-amber-600 dark:text-amber-400">{pendingCount}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       {!isLoading && orders.length > 0 && (
@@ -193,7 +268,7 @@ export default function OrdersPage() {
             { label: 'Completed', value: completedCount, icon: CheckCircle2, cls: 'text-emerald-600 dark:text-emerald-400' },
             { label: 'Pending', value: pendingCount, icon: Clock, cls: 'text-amber-600 dark:text-amber-400' },
           ].map(s => (
-            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4">
+            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
               <div className="flex items-center gap-2 mb-1">
                 <s.icon className={`w-4 h-4 ${s.cls}`} />
                 <p className="text-xs font-medium text-gray-500">{s.label}</p>
@@ -205,22 +280,51 @@ export default function OrdersPage() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by name, email, or order ID…"
-            className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
+            className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
           />
+        </div>
+        {/* Date range */}
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={e => setDateFrom(e.target.value)}
+            max={dateTo || todayStr}
+            className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 cursor-pointer"
+          />
+          <span className="text-gray-400 text-xs">to</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={e => setDateTo(e.target.value)}
+            min={dateFrom}
+            max={todayStr}
+            className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 cursor-pointer"
+          />
+          {hasDateFilter && (
+            <button
+              onClick={() => { setDateFrom(''); setDateTo(''); }}
+              className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition"
+              title="Clear date filter"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
         <div className="flex gap-2">
           {['all', 'completed', 'pending', 'failed'].map(s => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-2 rounded-xl text-sm font-medium transition capitalize ${
+              className={`px-3 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition capitalize ${
                 statusFilter === s
                   ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
                   : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-[var(--accent)]'
@@ -236,7 +340,7 @@ export default function OrdersPage() {
       {isLoading && (
         <div className="space-y-2">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-16 bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl animate-pulse" />
+            <div key={i} className="h-16 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] animate-pulse" />
           ))}
         </div>
       )}
@@ -244,7 +348,7 @@ export default function OrdersPage() {
       {/* Empty state */}
       {!isLoading && orders.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-[var(--bg-tertiary)] rounded-2xl flex items-center justify-center mb-5">
+          <div className="w-20 h-20 bg-[var(--bg-tertiary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-5">
             <ShoppingBag className="w-10 h-10 text-[var(--text-secondary)]" />
           </div>
           <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">No orders yet</h2>
@@ -254,7 +358,7 @@ export default function OrdersPage() {
 
       {/* Orders list */}
       {!isLoading && filtered.length > 0 && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
           {/* Table header */}
           <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] text-xs font-semibold uppercase tracking-wide text-gray-400">
             <span>Customer</span>
