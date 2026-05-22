@@ -14,17 +14,17 @@ const creators = [
 
 export default function Showcase() {
   return (
-    <section id="creators" className="py-28 sm:py-36 bg-white overflow-hidden relative">
+    <section id="creators" className="py-16 sm:py-36 bg-white overflow-hidden relative">
 
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 mb-14 text-center relative z-10">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 mb-8 sm:mb-14 text-center relative z-10">
         <InView>
           <div className="iv">
             <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
               Creator stores
             </p>
-            <h2 className="text-4xl sm:text-5xl md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
+            <h2 className="text-[2rem] sm:text-[2.75rem] md:text-[3.5rem] lg:text-[4rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
               See what creators
               <br />
               <span className="text-gray-400">are building.</span>
@@ -41,9 +41,9 @@ export default function Showcase() {
           {creators.map((c, i) => (
             <div
               key={i}
-              className="min-w-[260px] sm:min-w-[300px] rounded-[24px] bg-[#fafafa] border border-black/[0.055] overflow-hidden shrink-0 snap-center hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 group cursor-default"
+              className="min-w-[260px] sm:min-w-[290px] lg:min-w-[320px] rounded-[24px] bg-[#fafafa] border border-black/[0.055] overflow-hidden shrink-0 snap-center hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 group cursor-default"
             >
-              <div className={`h-36 bg-gradient-to-br ${c.color} relative`}>
+              <div className={`h-36 sm:h-40 bg-gradient-to-br ${c.color} relative`}>
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:22px_22px]" />
                 <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-2.5 py-1 text-[10px] font-black text-white">
                   {c.revenue}

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Star, CheckCircle2 } from 'lucide-react';
+import { Star, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 
 const FEATURES = [
@@ -178,7 +178,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       {/* ══════════════════════════════════════════
           RIGHT FORM PANEL
       ══════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col justify-center items-center min-h-screen bg-[#f5f5f5] px-4 py-6 sm:px-8 overflow-y-auto">
+      <div className="relative flex-1 flex flex-col justify-center items-center min-h-screen bg-[#f5f5f5] px-4 py-6 sm:px-8 overflow-y-auto">
+
+        <Link
+          href="/"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 inline-flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-xl bg-white border border-black/[0.08] shadow-sm text-gray-500 hover:text-gray-800 hover:border-black/[0.15] hover:shadow-md transition-all duration-200 z-10"
+        >
+          <ArrowLeft className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline text-[13px] font-semibold">Back to home</span>
+        </Link>
 
         {/* Mobile logo */}
         <div className="md:hidden mb-5 flex items-center gap-2.5">

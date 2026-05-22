@@ -9,6 +9,12 @@ import {
   Fingerprint,
   CheckCircle2,
   Plus,
+  GripVertical,
+  Eye,
+  Monitor,
+  Smartphone,
+  RotateCcw,
+  RotateCw,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -33,57 +39,132 @@ const graphicCard =
 
 const BuilderGraphic = () => (
   <div className={graphicCard}>
-    <div className="flex items-center gap-2 px-3.5 py-2.5 bg-gray-50/80 border-b border-black/[0.05]">
-      <div className="flex gap-1.5">
+    {/* Browser chrome */}
+    <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-50/90 border-b border-black/[0.05]">
+      <div className="flex gap-1.5 shrink-0">
         <div className="w-2 h-2 rounded-full bg-[#FF5F57]" />
         <div className="w-2 h-2 rounded-full bg-[#FEBC2E]" />
         <div className="w-2 h-2 rounded-full bg-[#28C840]" />
       </div>
-      <div className="flex-1 flex justify-center">
-        <span className="inline-flex items-center gap-1.5 text-[9px] text-gray-500 font-medium bg-white border border-black/[0.06] px-2.5 py-0.5 rounded-md">
-          <span className="w-1 h-1 rounded-full bg-green-500" />
-          digione.ai/arjun
+      <div className="flex items-center gap-0.5 shrink-0 ml-1">
+        <RotateCcw className="w-2.5 h-2.5 text-gray-300" />
+        <RotateCw className="w-2.5 h-2.5 text-gray-300" />
+      </div>
+      <div className="flex items-center bg-white border border-black/[0.08] rounded overflow-hidden shrink-0">
+        <div className="px-1.5 py-0.5 bg-gray-100/80">
+          <Monitor className="w-2.5 h-2.5 text-gray-600" />
+        </div>
+        <div className="px-1.5 py-0.5">
+          <Smartphone className="w-2.5 h-2.5 text-gray-300" />
+        </div>
+      </div>
+      <div className="flex-1 flex justify-center min-w-0">
+        <span className="inline-flex items-center gap-1 text-[8px] text-gray-500 font-medium bg-white border border-black/[0.06] px-2 py-0.5 rounded-md max-w-full">
+          <span className="w-1 h-1 rounded-full bg-green-500 shrink-0" />
+          <span className="truncate">digione.ai/arjun</span>
         </span>
       </div>
-      <span className="text-[8px] font-black text-[#E83A2E] bg-[#E83A2E]/10 px-1.5 py-0.5 rounded">LIVE</span>
+      <button className="shrink-0 bg-[#E83A2E] text-white text-[8px] font-black px-2 py-0.5 rounded-full leading-none">
+        Publish
+      </button>
     </div>
-    <div className="grid grid-cols-5 divide-x divide-black/[0.05]" style={{ minHeight: 168 }}>
-      <div className="col-span-2 p-3 bg-gray-50/50 space-y-1.5">
-        <div className="flex items-center justify-between mb-1.5">
+
+    {/* Main editor */}
+    <div className="grid grid-cols-5 divide-x divide-black/[0.05]" style={{ minHeight: 220 }}>
+
+      {/* Layers panel */}
+      <div className="col-span-2 bg-gray-50/60 flex flex-col">
+        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-black/[0.05]">
           <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.15em]">Layers</span>
           <Plus className="w-2.5 h-2.5 text-gray-300" />
         </div>
-        <div className="bg-white border border-[#E83A2E]/25 rounded-lg px-2 py-1.5 ring-2 ring-[#E83A2E]/8 shadow-sm">
-          <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#E83A2E]" />
-            <span className="text-[9px] font-bold text-gray-900">Hero</span>
+        <div className="flex-1 p-1.5 space-y-0.5">
+          {/* Active layer — Hero */}
+          <div className="relative flex items-center gap-1.5 bg-white border border-[#E83A2E]/20 rounded-lg pl-2.5 pr-1.5 py-1.5 ring-2 ring-[#E83A2E]/[0.10] shadow-sm overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E83A2E] rounded-l-lg" />
+            <GripVertical className="w-2.5 h-2.5 text-gray-200 shrink-0" />
+            <div className="w-2 h-2 rounded-sm bg-gradient-to-br from-[#E83A2E] to-orange-400 shrink-0" />
+            <span className="text-[9px] font-bold text-gray-900 flex-1 truncate">Hero</span>
+            <Eye className="w-2.5 h-2.5 text-gray-400 shrink-0" />
           </div>
-          <p className="text-[8px] text-gray-400 mt-0.5">Figma Masterclass</p>
+          {/* Inactive layers */}
+          {[
+            { swatch: 'bg-violet-400', label: 'Products' },
+            { swatch: 'bg-blue-400', label: 'Testimonials' },
+            { swatch: 'bg-emerald-400', label: 'CTA' },
+          ].map((l) => (
+            <div key={l.label} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/60 transition-colors">
+              <GripVertical className="w-2.5 h-2.5 text-gray-200 shrink-0" />
+              <div className={`w-2 h-2 rounded-sm ${l.swatch} shrink-0 opacity-70`} />
+              <span className="text-[9px] text-gray-500 font-medium flex-1 truncate">{l.label}</span>
+              <Eye className="w-2.5 h-2.5 text-gray-200 shrink-0" />
+            </div>
+          ))}
         </div>
-        {[
-          { color: 'bg-[#E83A2E]/15', label: 'CTA Button' },
-          { color: 'bg-gray-200/70', label: 'Image' },
-          { color: 'bg-gray-200/70', label: 'Reviews' },
-        ].map((l) => (
-          <div key={l.label} className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-white/60 transition-colors">
-            <div className={`w-3 h-3 rounded ${l.color}`} />
-            <span className="text-[9px] text-gray-500 font-medium">{l.label}</span>
-          </div>
-        ))}
       </div>
-      <div className="col-span-3 p-3 bg-white flex flex-col items-center justify-center gap-2">
-        <div className="w-full bg-gradient-to-b from-[#fff5f4] to-white border border-black/[0.05] rounded-xl p-3 text-center shadow-sm">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E83A2E] to-orange-400 mx-auto mb-1.5 shadow-sm" />
-          <p className="text-[11px] font-black text-gray-900 leading-tight">Figma Masterclass</p>
-          <p className="text-[8px] text-gray-400 mt-0.5 font-medium">by Arjun Sharma</p>
-          <div className="mt-2.5 bg-[#E83A2E] text-white text-[9px] font-black rounded-full px-3 py-1.5 inline-block shadow-[0_2px_8px_-2px_rgba(232,58,46,0.4)]">
-            Buy Now — ₹999
+
+      {/* Canvas */}
+      <div className="col-span-3 relative bg-[#f0f0f0] flex flex-col overflow-hidden">
+        {/* dot grid overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px)',
+            backgroundSize: '10px 10px',
+          }}
+        />
+        {/* Mini page frame */}
+        <div className="relative flex-1 p-2 flex flex-col justify-start overflow-hidden">
+          <div className="w-full rounded-lg overflow-hidden border border-black/[0.08] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.10)] bg-white flex flex-col">
+            {/* Hero strip */}
+            <div className="bg-gradient-to-br from-[#E83A2E]/[0.10] to-orange-50 px-2.5 py-2.5 border-b border-black/[0.05] flex flex-col gap-1.5">
+              <div className="flex gap-1.5 items-center">
+                <div className="h-1.5 w-14 rounded-full bg-gray-700/20" />
+                <div className="h-1.5 w-8 rounded-full bg-gray-400/20" />
+              </div>
+              <div className="h-1 w-10 rounded-full bg-gray-400/15" />
+              <div className="self-start bg-[#E83A2E] rounded-full px-2 py-0.5">
+                <div className="h-1 w-7 rounded-full bg-white/60" />
+              </div>
+            </div>
+            {/* Products strip */}
+            <div className="px-2.5 py-2 border-b border-black/[0.05] flex gap-1.5">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="flex-1 rounded-md bg-gray-50 border border-black/[0.05] p-1.5 flex flex-col gap-1">
+                  <div className="w-full h-3 rounded bg-gray-200/80" />
+                  <div className="w-3/4 h-1 rounded-full bg-gray-200/60" />
+                  <div className="w-1/2 h-1 rounded-full bg-gray-200/50" />
+                </div>
+              ))}
+            </div>
+            {/* Testimonials strip */}
+            <div className="px-2.5 py-2 flex gap-2.5">
+              {[
+                'from-violet-300 to-indigo-400',
+                'from-rose-300 to-pink-400',
+              ].map((grad, n) => (
+                <div key={n} className="flex items-start gap-1 flex-1 min-w-0">
+                  <div className={`w-4 h-4 rounded-full bg-gradient-to-br ${grad} shrink-0`} />
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0 pt-0.5">
+                    <div className="h-1 w-full rounded-full bg-gray-200/70" />
+                    <div className="h-1 w-3/4 rounded-full bg-gray-200/50" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <span className="text-[8px] text-green-600 font-bold flex items-center gap-1">
-          <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Auto-saved
-        </span>
+
+        {/* Status bar */}
+        <div className="relative flex items-center justify-between px-2.5 py-1.5 border-t border-black/[0.06] bg-white/80">
+          <span className="text-[7px] text-gray-400 font-medium truncate">Auto-saved · 2s ago</span>
+          <span className="flex items-center gap-1 text-[7px] font-black text-green-600 shrink-0 ml-1">
+            <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+            LIVE
+          </span>
+        </div>
       </div>
+
     </div>
   </div>
 );
@@ -458,15 +539,14 @@ export default function Features() {
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8">
 
         {/* ============ HEADER ============ */}
-        <InView className="text-center mb-14 sm:mb-20">
+        <InView className="text-center mb-10 sm:mb-20">
           <div className="iv">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 text-[11px] font-black uppercase tracking-[0.2em] text-[#E83A2E] mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E] animate-pulse" />
               Unfair Advantage
             </div>
-            <h2 className="text-[2rem] sm:text-[3rem] md:text-[3.6rem] font-black text-gray-900 mb-5 tracking-[-0.035em] leading-[1.05]">
-              Everything wired together.{' '}
-              <span className="text-gray-300">Zero duct-tape.</span>
+            <h2 className="text-[2rem] sm:text-[3.25rem] md:text-[4rem] font-black text-gray-900 mb-5 tracking-[-0.035em] leading-[1.05]">
+              Everything wired together.
             </h2>
             <p className="text-[15px] sm:text-[17px] font-medium text-gray-500 max-w-lg mx-auto leading-relaxed">
               Landing pages, AI bots, automation logic, and payment rails — one unified stack.
@@ -475,7 +555,7 @@ export default function Features() {
         </InView>
 
         {/* ============ BENTO GRID ============ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
           {features.map((feat, i) => {
             const isWide = feat.layout === 'wide';
             return (
@@ -498,7 +578,7 @@ export default function Features() {
                     {isWide ? (
                       /* WIDE — horizontal on md+, vertical stack on mobile */
                       <div className="flex flex-col md:flex-row h-full">
-                        <div className="flex-none md:w-[42%] p-6 sm:p-8 flex flex-col justify-center">
+                        <div className="flex-none md:w-[42%] p-7 sm:p-10 flex flex-col justify-center">
                           <CardHeader feat={feat} />
                         </div>
                         <div className="flex-1 p-4 sm:p-5 md:pl-0 flex items-center">
@@ -508,7 +588,7 @@ export default function Features() {
                     ) : (
                       /* NARROW — vertical stack */
                       <div className="flex flex-col h-full">
-                        <div className="p-6 sm:p-7">
+                        <div className="p-6 sm:p-8 lg:p-9">
                           <CardHeader feat={feat} />
                         </div>
                         <div className="mt-auto p-4 sm:p-5 pt-0">

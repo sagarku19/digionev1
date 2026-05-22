@@ -36,7 +36,7 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section className="py-16 sm:py-36 bg-[#fafafa] relative overflow-hidden">
+    <section className="py-16 sm:py-24 lg:py-32 bg-[#fafafa] relative overflow-hidden">
 
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
 
@@ -52,12 +52,12 @@ export default function Testimonials() {
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8 relative z-10">
 
-        <InView className="text-center mb-16">
+        <InView className="text-center mb-10 sm:mb-16">
           <div className="iv">
             <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
               Testimonials
             </p>
-            <h2 className="text-[2rem] sm:text-5xl md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
+            <h2 className="text-[2rem] sm:text-[2.75rem] md:text-[3.5rem] lg:text-[4rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
               Creators earning
               <br />
               <span className="text-gray-400">with DigiOne.</span>
@@ -65,10 +65,10 @@ export default function Testimonials() {
           </div>
         </InView>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
           {testimonials.map((t, i) => (
             <InView key={i} style={{ '--delay': `${i * 100}ms` }}>
-              <div className="iv relative overflow-hidden p-6 sm:p-8 rounded-[24px] sm:rounded-[28px] bg-white border border-black/[0.055] hover:border-black/[0.10] hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 group flex flex-col">
+              <div className="iv relative overflow-hidden p-5 sm:p-8 rounded-[24px] sm:rounded-[28px] bg-white border border-black/[0.055] hover:border-black/[0.10] hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 group flex flex-col">
                 <div className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${t.color} opacity-0 group-hover:opacity-100 transition-opacity duration-400`} />
 
                 <div className="flex gap-1 text-amber-400 mb-5">
@@ -80,12 +80,12 @@ export default function Testimonials() {
                 <div className="flex items-center gap-2 mb-5">
                   <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-br ${t.color} shadow-sm`}>
                     <TrendingUp className="w-3.5 h-3.5 text-white" />
-                    <span className="text-white font-black text-[15px]">{t.stat}</span>
+                    <span className="text-white font-black text-[15px] sm:text-[17px]">{t.stat}</span>
                   </div>
                   <span className="text-[12px] font-semibold text-gray-400">{t.statLabel}</span>
                 </div>
 
-                <p className="text-gray-700 font-medium leading-relaxed text-[15px] flex-1 mb-7">
+                <p className="text-gray-700 font-medium leading-relaxed text-[15px] sm:text-[16px] flex-1 mb-7">
                   &ldquo;{t.quote}&rdquo;
                 </p>
 

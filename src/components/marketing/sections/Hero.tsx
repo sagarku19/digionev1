@@ -5,18 +5,19 @@ import { ArrowRight, Zap, TrendingUp } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative pt-20 sm:pt-36 pb-16 sm:pb-24 overflow-hidden bg-white selection:bg-[#E83A2E]/20">
+    <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-24 overflow-hidden bg-white selection:bg-[#E83A2E]/20">
 
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-60 sm:opacity-100">
         {/* Blob 1 — red, top-center */}
         <div
           className="absolute rounded-full"
           style={{
             top: '-10%', left: '50%', transform: 'translateX(-50%)',
             width: '900px', height: '600px',
-            background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.35) 0%, rgba(255,120,80,0.15) 50%, transparent 70%)',
+            background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.48) 0%, rgba(255,120,80,0.22) 50%, transparent 70%)',
             filter: 'blur(40px)',
             animation: 'blobA 12s ease-in-out infinite',
+            willChange: 'transform',
           }}
         />
         {/* Blob 2 — orange, top-right */}
@@ -25,9 +26,10 @@ export default function Hero() {
           style={{
             top: '-5%', right: '-5%',
             width: '600px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(251,146,60,0.30) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse at center, rgba(251,146,60,0.40) 0%, transparent 65%)',
             filter: 'blur(40px)',
             animation: 'blobB 17s ease-in-out infinite',
+            willChange: 'transform',
           }}
         />
         {/* Blob 3 — violet, top-left */}
@@ -36,43 +38,58 @@ export default function Hero() {
           style={{
             top: '0%', left: '-5%',
             width: '550px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.25) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.34) 0%, transparent 65%)',
             filter: 'blur(45px)',
             animation: 'blobC 20s ease-in-out infinite',
+            willChange: 'transform',
           }}
         />
         {/* Blob 4 — indigo, bottom-right */}
-        <div
-          className="absolute rounded-full"
-          style={{
-            bottom: '0%', right: '10%',
-            width: '500px', height: '400px',
-            background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.22) 0%, transparent 65%)',
-            filter: 'blur(50px)',
-            animation: 'blobD 14s ease-in-out infinite',
-          }}
-        />
+        <div className="hidden sm:block">
+          <div
+            className="absolute rounded-full"
+            style={{
+              bottom: '0%', right: '10%',
+              width: '500px', height: '400px',
+              background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.30) 0%, transparent 65%)',
+              filter: 'blur(50px)',
+              animation: 'blobD 14s ease-in-out infinite',
+              willChange: 'transform',
+            }}
+          />
+        </div>
         {/* Blob 5 — amber, bottom-left */}
-        <div
-          className="absolute rounded-full"
-          style={{
-            bottom: '0%', left: '10%',
-            width: '480px', height: '380px',
-            background: 'radial-gradient(ellipse at center, rgba(251,191,36,0.22) 0%, transparent 65%)',
-            filter: 'blur(45px)',
-            animation: 'blobE 22s ease-in-out infinite',
-          }}
-        />
-        {/* Dot grid */}
+        <div className="hidden sm:block">
+          <div
+            className="absolute rounded-full"
+            style={{
+              bottom: '0%', left: '10%',
+              width: '480px', height: '380px',
+              background: 'radial-gradient(ellipse at center, rgba(251,191,36,0.30) 0%, transparent 65%)',
+              filter: 'blur(45px)',
+              animation: 'blobE 22s ease-in-out infinite',
+              willChange: 'transform',
+            }}
+          />
+        </div>
+        {/* Dot grid — fades in from top, holds through center, fades to bottom */}
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)`,
             backgroundSize: '30px 30px',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 65%)',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 65%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 12%, rgba(0,0,0,0.5) 75%, transparent 100%)',
+            maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 12%, rgba(0,0,0,0.5) 75%, transparent 100%)',
           }}
         />
+        {/* Grain texture — adds tactile depth over the blob mesh */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.025] sm:opacity-[0.045]" xmlns="http://www.w3.org/2000/svg">
+          <filter id="hero-grain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.70" numOctaves="4" stitchTiles="stitch" />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#hero-grain)" />
+        </svg>
       </div>
 
       <style>{`
@@ -190,7 +207,7 @@ export default function Hero() {
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8 flex flex-col items-center text-center z-10">
 
         <div
-          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white border border-black/8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.10)] text-[11px] sm:text-[13px] font-semibold text-gray-600 mb-7 sm:mb-12"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white border border-black/8 shadow-[0_2px_16px_-4px_rgba(0,0,0,0.10)] text-[11px] sm:text-[13px] font-semibold text-gray-600 mb-5 sm:mb-12"
           style={{ animation: 'heroFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both' }}
         >
           {/* <span className="flex items-center gap-0.5 text-amber-400">
@@ -204,35 +221,21 @@ export default function Hero() {
         </div>
 
         <div
-          className="mb-7 sm:mb-10"
+          className="mb-5 sm:mb-10"
           style={{ animation: 'heroFadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.06s both' }}
         >
-          {/* Mobile: 2x2 grid */}
-          <div className="flex flex-col items-center gap-1.5 sm:hidden">
-            {[['Digital Product', 'Automation Flow'], ['AI Tools', 'No-Code Website']].map((row, ri) => (
-              <div key={ri} className="flex items-center gap-2">
-                {row.map((tag, i) => (
-                  <span key={i} className="flex items-center gap-2">
-                    {i > 0 && <span className="text-gray-300 text-[11px] font-light select-none">|</span>}
-                    <span className="text-[10px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-          {/* Desktop: single row with separators */}
-          <div className="hidden sm:flex items-center justify-center gap-x-0">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 sm:gap-x-0">
             {['Digital Product', 'Automation Flow', 'AI Tools', 'No-Code Website'].map((tag, i) => (
               <span key={i} className="flex items-center">
-                {i > 0 && <span className="mx-4 text-gray-300 text-[22px] font-light select-none">|</span>}
-                <span className="text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
+                {i > 0 && <span className="hidden sm:inline mx-4 text-gray-300 text-[22px] font-light select-none">|</span>}
+                <span className="text-[11px] sm:text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
               </span>
             ))}
           </div>
         </div>
 
         <h1
-          className="text-[36px] sm:text-[68px] md:text-[82px] lg:text-[96px] font-black tracking-[-0.04em] leading-[1.05] max-w-4xl"
+          className="text-[32px] min-[480px]:text-[42px] sm:text-[68px] md:text-[82px] lg:text-[96px] font-black tracking-[-0.04em] leading-[1.05] max-w-4xl"
           style={{ animation: 'heroFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) 0.12s both' }}
         >
           <span className="text-gray-500">Setup in minutes.</span>
@@ -276,6 +279,17 @@ export default function Hero() {
             Request an invite
             <ArrowRight className="w-4 h-4" />
           </Link>
+        </div>
+
+        <div className="mt-8 sm:hidden flex items-center gap-3 justify-center">
+          <div className="flex -space-x-2">
+            {['#E83A2E', '#8b5cf6', '#10b981', '#f59e0b'].map((c, i) => (
+              <div key={i} className="w-7 h-7 rounded-full border-2 border-white shadow-sm" style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }} />
+            ))}
+          </div>
+          <p className="text-[12px] text-gray-500 font-medium">
+            <strong className="text-gray-900">1,200+</strong> creators joined this week
+          </p>
         </div>
 
       </div>

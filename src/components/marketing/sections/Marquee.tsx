@@ -8,8 +8,8 @@ const stats = [
 
 export default function Marquee() {
   return (
-    <section className="bg-white overflow-hidden pt-4 pb-20">
-      <div className="max-w-7xl mx-auto px-4 text-center mb-16">
+    <section className="bg-white overflow-hidden pt-4 pb-10 sm:pb-20">
+      <div className="max-w-7xl mx-auto px-4 text-center mb-8 sm:mb-16">
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)] mb-10">
           Creators from these platforms use DigiOne
         </p>
@@ -31,9 +31,9 @@ export default function Marquee() {
 
       <div className="max-w-4xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="rounded-xl sm:rounded-2xl bg-[#f7f7f8] p-4 sm:p-8 text-center">
-            <div className="text-lg sm:text-3xl font-bold text-[var(--text-primary)] mb-1">{s.value}</div>
-            <div className="text-[11px] sm:text-sm text-[var(--text-secondary)] leading-tight">{s.label}</div>
+          <div key={i} className={`rounded-xl sm:rounded-2xl bg-[#f7f7f8] p-4 sm:p-8 text-center border-t-2 ${i === 0 ? 'border-[#E83A2E]/20' : i === 1 ? 'border-violet-200/40' : 'border-emerald-200/40'}`}>
+            <div className="text-2xl sm:text-4xl font-black text-[var(--text-primary)] mb-1">{s.value}</div>
+            <div className="text-[12px] sm:text-sm text-[var(--text-secondary)] leading-tight sm:mt-2">{s.label}</div>
           </div>
         ))}
       </div>

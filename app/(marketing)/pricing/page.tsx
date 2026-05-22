@@ -69,17 +69,39 @@ export default function PricingPage() {
     <main className="bg-white min-h-screen">
 
       {/* Hero */}
-      <section className="pt-32 pb-16 px-4 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] border border-black/[0.06] text-[12px] font-semibold text-gray-500 mb-6">
-          <Zap className="w-3.5 h-3.5" />
-          Pricing
+      <section className="pt-28 sm:pt-36 pb-20 sm:pb-28 px-5 text-center relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            style={{
+              position: 'absolute', top: '-15%', left: '50%', transform: 'translateX(-50%)',
+              width: '800px', height: '500px',
+              background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.07) 0%, rgba(255,120,60,0.04) 45%, transparent 70%)',
+              filter: 'blur(60px)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 65%)',
+              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 65%)',
+            }}
+          />
         </div>
-        <h1 className="text-[36px] sm:text-[52px] font-black tracking-[-0.03em] text-gray-900 leading-[1.1] mb-4 max-w-2xl mx-auto">
-          Simple pricing, serious results
-        </h1>
-        <p className="text-[16px] sm:text-[18px] text-gray-500 font-medium max-w-xl mx-auto leading-relaxed">
-          Start free. Upgrade when you're ready. No surprise fees.
-        </p>
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-6">
+            <Zap className="w-3 h-3" />
+            Pricing
+          </div>
+          <h1 className="text-[32px] sm:text-[48px] lg:text-[60px] font-black tracking-[-0.035em] text-gray-900 leading-[1.05] mb-5 max-w-2xl mx-auto">
+            Simple pricing,{' '}
+            <span className="text-gray-400">serious results.</span>
+          </h1>
+          <p className="text-[15px] sm:text-[18px] text-gray-500 font-medium max-w-lg mx-auto leading-relaxed">
+            Start free. Upgrade when you&apos;re ready. No surprise fees.
+          </p>
+        </div>
       </section>
 
       <style>{`
@@ -90,13 +112,10 @@ export default function PricingPage() {
       `}</style>
 
       {/* Plans */}
-      <section className="pb-24 px-5 sm:px-8 relative z-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
+      <section className="pb-16 sm:pb-24 px-5 sm:px-8 relative z-20">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-5 lg:gap-7 items-stretch">
           {plans.map((plan, i) => (
-            <div
-              key={i}
-              className={`group relative rounded-[32px] bg-white border ${plan.border} ${plan.hoverBorder} transition-all duration-500 hover:-translate-y-2 p-8 sm:p-10 flex flex-col ${plan.popular ? 'shadow-[0_24px_64px_-16px_rgba(232,58,46,0.18)] md:-mt-6 ring-1 ring-inset ring-[#E83A2E]/10 z-10' : 'shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] mt-0'}`}
-            >
+            <div key={i} className={`relative ${plan.popular ? 'mt-4 md:mt-0 md:-mt-6' : ''}`}>
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20" style={{ animation: 'planFloat 4s ease-in-out infinite' }}>
                   <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#E83A2E] to-orange-500 text-white text-[11px] font-black uppercase tracking-widest shadow-[0_8px_16px_-4px_rgba(232,58,46,0.4)] border border-white/20">
@@ -104,67 +123,87 @@ export default function PricingPage() {
                   </span>
                 </div>
               )}
+              <div
+                className={`group relative overflow-hidden rounded-[20px] sm:rounded-[28px] bg-white border ${plan.border} ${plan.hoverBorder} transition-all duration-500 hover:-translate-y-1.5 p-6 sm:p-8 flex flex-col ${plan.popular ? 'shadow-[0_24px_64px_-16px_rgba(232,58,46,0.18)] ring-1 ring-inset ring-[#E83A2E]/10 z-10' : 'shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)]'}`}
+              >
 
-              <div className={`absolute top-0 inset-x-0 h-[3px] rounded-t-[32px] bg-gradient-to-r ${plan.accent} opacity-80 group-hover:opacity-100 transition-opacity duration-300`} />
+              <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${plan.accent} opacity-80 group-hover:opacity-100 transition-opacity duration-300`} />
 
-              <div className="mb-8 relative">
-                <div className="flex justify-between items-center mb-4">
-                  <p className="text-[13px] font-black uppercase tracking-[0.15em] text-gray-900">{plan.name}</p>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${plan.iconBg} ${plan.iconColor}`}>
-                    <Check className="w-4 h-4 stroke-[3]" />
+              <div className="mb-6 relative">
+                <div className="flex justify-between items-center mb-5">
+                  <p className="text-[12px] font-black uppercase tracking-[0.18em] text-gray-500">{plan.name}</p>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${plan.iconBg} ${plan.iconColor}`}>
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
                 </div>
-                <div className="flex items-end gap-1.5 mb-3">
-                  <span className="text-[44px] font-black text-gray-900 leading-[0.9] tracking-tight">{plan.price}</span>
-                  <span className="text-[14px] font-bold text-gray-400 mb-1">{plan.period}</span>
+                <div className="flex items-end gap-2 mb-2">
+                  <span className="text-[40px] sm:text-[46px] font-black text-gray-900 leading-[0.9] tracking-tight">{plan.price}</span>
+                  <span className="text-[13px] font-semibold text-gray-400 mb-1.5 leading-snug">{plan.period}</span>
                 </div>
-                <p className="text-[15px] text-gray-500 font-medium leading-relaxed">{plan.desc}</p>
+                <p className="text-[14px] text-gray-500 font-medium leading-relaxed mt-3">{plan.desc}</p>
               </div>
 
               <Link
                 href="/signup"
-                className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-black text-[15px] transition-all duration-300 hover:-translate-y-0.5 mb-8 ${plan.ctaStyle}`}
+                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-[14px] font-black text-[14px] transition-all duration-300 hover:-translate-y-0.5 mb-6 ${plan.ctaStyle}`}
               >
-                {plan.cta} <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                {plan.cta} <ArrowRight className="w-4 h-4" />
               </Link>
 
-              <div className="space-y-4 flex-1">
-                <p className="text-[12px] font-bold text-gray-900 uppercase tracking-wider mb-2">What&apos;s included</p>
-                <ul className="space-y-3.5">
+              <div className="h-px bg-black/[0.05] mb-6" />
+
+              <div className="flex-1">
+                <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.18em] mb-4">What&apos;s included</p>
+                <ul className="space-y-3">
                   {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-3">
-                      <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${plan.iconBg}`}>
-                        <Check className={`w-3 h-3 ${plan.iconColor} stroke-[3]`} />
+                    <li key={j} className="flex items-start gap-2.5">
+                      <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${plan.iconBg}`}>
+                        <Check className={`w-2.5 h-2.5 ${plan.iconColor} stroke-[3.5]`} />
                       </div>
-                      <span className="text-[14.5px] font-medium text-gray-600 leading-snug">{f}</span>
+                      <span className="text-[13.5px] font-medium text-gray-600 leading-snug">{f}</span>
                     </li>
                   ))}
                 </ul>
               </div>
+            </div>
             </div>
           ))}
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="py-24 relative overflow-hidden bg-white border-t border-black/[0.04]">
-        <div className="absolute inset-0 bg-[#fafafa]/50" />
+      <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden bg-[#fafafa] border-t border-black/[0.04]">
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)',
+            backgroundSize: '30px 30px',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, #000 20%, transparent 100%)',
+            maskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, #000 20%, transparent 100%)',
+          }}
+        />
         <div className="max-w-4xl mx-auto px-5 relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-[44px] font-black text-gray-900 tracking-[-0.03em] mb-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
+              <Sparkles className="w-3 h-3" />
+              FAQ
+            </p>
+            <h2 className="text-[2rem] sm:text-[2.75rem] md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.05] mb-4">
               Frequently asked questions
             </h2>
-            <p className="text-gray-500 font-medium text-[17px]">Everything you need to know about the product and billing.</p>
+            <p className="text-gray-500 font-medium text-[15px] sm:text-[17px] max-w-md mx-auto leading-relaxed">
+              Everything you need to know about the product and billing.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             {faqs.map((faq, i) => (
               <div
                 key={i}
-                className="bg-white border border-gray-200/80 rounded-2xl p-7 hover:border-gray-300/80 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.06)] transition-all duration-300 group"
+                className="bg-white border border-black/[0.06] rounded-[18px] p-6 sm:p-7 hover:border-black/[0.12] hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] transition-all duration-300 group"
               >
-                <p className="text-[16px] font-bold text-gray-900 mb-3 leading-snug group-hover:text-[#E83A2E] transition-colors">{faq.q}</p>
-                <p className="text-[14.5px] text-gray-500 font-medium leading-relaxed">{faq.a}</p>
+                <p className="text-[15px] font-bold text-gray-900 mb-2.5 leading-snug group-hover:text-[#E83A2E] transition-colors duration-200">{faq.q}</p>
+                <p className="text-[13.5px] text-gray-500 font-medium leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
