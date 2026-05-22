@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
-import { createClient } from '@/lib/supabase/client';
 
 // ─── Types ───────────────────────────────────────────────────
 type NavChild = { label: string; href: string; icon: React.ElementType };

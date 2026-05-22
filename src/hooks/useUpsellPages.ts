@@ -3,7 +3,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export type UpsellPageRow = {
@@ -28,16 +28,15 @@ function generateSlug(title: string): string {
 }
 
 export function useUpsellPages() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: upsellPages = [], isLoading, error } = useQuery({
     queryKey: ['upsell-pages'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [] as UpsellPageRow[];
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return [] as UpsellPageRow[];
       try {
-        const profileId = await getCreatorProfileId(supabase);
+        const profileId = await getCreatorProfileId();
         const { data, error } = await (supabase.from('upsell_pages' as any) as any)
           .select('*, primary_product:products!primary_product_id(id, name, price, thumbnail_url)')
           .eq('creator_id', profileId)
@@ -63,7 +62,7 @@ export function useUpsellPages() {
       upsell_product_ids?: string[];
     }) => {
       try {
-        const profileId = await getCreatorProfileId(supabase);
+        const profileId = await getCreatorProfileId();
         const slug = generateSlug(input.title);
         const { data, error } = await (supabase.from('upsell_pages' as any) as any)
           .insert({
@@ -139,8 +138,6 @@ export function useUpsellPages() {
 }
 
 export function useUpsellPage(id: string | null) {
-  const supabase = createClient();
-
   return useQuery({
     queryKey: ['upsell-page', id],
     enabled: !!id,

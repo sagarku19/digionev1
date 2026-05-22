@@ -3,17 +3,15 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export function useEarnings() {
-  const supabase = createClient();
-
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['creator-earnings'],
     queryFn: async () => {
       try {
-        const profileId = await getCreatorProfileId(supabase);
+        const profileId = await getCreatorProfileId();
 
         const [balanceRes, payoutsRes, kycRes] = await Promise.all([
           supabase.from('creator_balances').select('*').eq('creator_id', profileId).maybeSingle(),

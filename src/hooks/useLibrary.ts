@@ -1,16 +1,15 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export function useLibrary() {
-  const supabase = createClient();
-
   return useQuery({
     queryKey: ['library'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
 
       // A buyer's library is essentially their successful orders containing products
       const { data: orders, error } = await supabase

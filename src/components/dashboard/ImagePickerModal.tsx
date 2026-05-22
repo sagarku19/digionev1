@@ -11,7 +11,7 @@ import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
 import { getCroppedImg } from '@/lib/crop-image';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import {
   X, Search, Upload, ImageIcon, Loader2, ZoomIn, ZoomOut,
   RotateCcw, Check, Crop, FolderOpen,
@@ -111,8 +111,7 @@ export default function ImagePickerModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
 
-  // Stable supabase ref — created once
-  const supabaseRef = useRef(createClient());
+  const supabaseRef = useRef(supabase);
 
   // ── Debounce search (300ms) ──
   useEffect(() => {

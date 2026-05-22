@@ -3,7 +3,7 @@
 // Queries orders directly by creator_id — no longer needs origin_site_id.
 
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export type Customer = {
@@ -17,12 +17,10 @@ export type Customer = {
 };
 
 export function useCustomers() {
-  const supabase = createClient();
-
   return useQuery({
     queryKey: ['customers'],
     queryFn: async (): Promise<Customer[]> => {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
 
       // Primary: query by creator_id (fast path for new orders)
       let { data: orders, error } = await supabase

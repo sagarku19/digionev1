@@ -1,44 +1,69 @@
 "use client";
 
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowRight, Star, Zap, TrendingUp, IndianRupee, Users } from 'lucide-react';
+import { ArrowRight, Zap, TrendingUp } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen pt-20 sm:pt-36 pb-0 overflow-hidden bg-white selection:bg-[#E83A2E]/20">
+    <section className="relative pt-20 sm:pt-36 pb-16 sm:pb-24 overflow-hidden bg-white selection:bg-[#E83A2E]/20">
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Blob 1 — red, top-center */}
         <div
           className="absolute rounded-full"
           style={{
-            top: '-20%', left: '50%', transform: 'translateX(-50%)',
-            width: '1000px', height: '700px',
-            background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.10) 0%, rgba(255,120,80,0.05) 45%, transparent 70%)',
-            filter: 'blur(60px)',
-            animation: 'bloomA 12s ease-in-out infinite',
+            top: '-10%', left: '50%', transform: 'translateX(-50%)',
+            width: '900px', height: '600px',
+            background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.35) 0%, rgba(255,120,80,0.15) 50%, transparent 70%)',
+            filter: 'blur(40px)',
+            animation: 'blobA 12s ease-in-out infinite',
           }}
         />
+        {/* Blob 2 — orange, top-right */}
         <div
           className="absolute rounded-full"
           style={{
-            top: '-10%', right: '-10%',
+            top: '-5%', right: '-5%',
             width: '600px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(251,146,60,0.10) 0%, transparent 65%)',
-            filter: 'blur(80px)',
-            animation: 'bloomB 15s ease-in-out infinite',
+            background: 'radial-gradient(ellipse at center, rgba(251,146,60,0.30) 0%, transparent 65%)',
+            filter: 'blur(40px)',
+            animation: 'blobB 17s ease-in-out infinite',
           }}
         />
+        {/* Blob 3 — violet, top-left */}
         <div
           className="absolute rounded-full"
           style={{
-            top: '10%', left: '-12%',
-            width: '500px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.07) 0%, transparent 65%)',
-            filter: 'blur(80px)',
-            animation: 'bloomC 18s ease-in-out infinite',
+            top: '0%', left: '-5%',
+            width: '550px', height: '500px',
+            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.25) 0%, transparent 65%)',
+            filter: 'blur(45px)',
+            animation: 'blobC 20s ease-in-out infinite',
           }}
         />
+        {/* Blob 4 — indigo, bottom-right */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            bottom: '0%', right: '10%',
+            width: '500px', height: '400px',
+            background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.22) 0%, transparent 65%)',
+            filter: 'blur(50px)',
+            animation: 'blobD 14s ease-in-out infinite',
+          }}
+        />
+        {/* Blob 5 — amber, bottom-left */}
+        <div
+          className="absolute rounded-full"
+          style={{
+            bottom: '0%', left: '10%',
+            width: '480px', height: '380px',
+            background: 'radial-gradient(ellipse at center, rgba(251,191,36,0.22) 0%, transparent 65%)',
+            filter: 'blur(45px)',
+            animation: 'blobE 22s ease-in-out infinite',
+          }}
+        />
+        {/* Dot grid */}
         <div
           className="absolute inset-0"
           style={{
@@ -51,17 +76,29 @@ export default function Hero() {
       </div>
 
       <style>{`
-        @keyframes bloomA {
-          0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
-          50% { transform: translateX(-50%) translateY(-30px) scale(1.06); }
+        @keyframes blobA {
+          0%, 100% { transform: translateX(-50%) translateY(0px) scale(1); }
+          33%  { transform: translateX(-52%) translateY(-35px) scale(1.07); }
+          66%  { transform: translateX(-48%) translateY(-15px) scale(1.03); }
         }
-        @keyframes bloomB {
-          0%, 100% { transform: translateY(0) scale(1); }
-          60% { transform: translateY(25px) scale(1.08); }
+        @keyframes blobB {
+          0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+          40%  { transform: translateY(30px) translateX(-20px) scale(1.09); }
+          75%  { transform: translateY(10px) translateX(10px) scale(1.04); }
         }
-        @keyframes bloomC {
-          0%, 100% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(-20px) scale(1.04); }
+        @keyframes blobC {
+          0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+          30%  { transform: translateY(-25px) translateX(15px) scale(1.05); }
+          70%  { transform: translateY(15px) translateX(-10px) scale(1.08); }
+        }
+        @keyframes blobD {
+          0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+          50%  { transform: translateY(-30px) translateX(-20px) scale(1.10); }
+        }
+        @keyframes blobE {
+          0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+          45%  { transform: translateY(-20px) translateX(25px) scale(1.06); }
+          80%  { transform: translateY(10px) translateX(-10px) scale(0.97); }
         }
         @keyframes floatCard1 {
           0%, 100% { transform: rotate(-6deg) translateY(0px); }
@@ -91,7 +128,7 @@ export default function Hero() {
 
       {/* Floating cards */}
       <div
-        className="hidden xl:block absolute top-[26%] left-6 z-20"
+        className="hidden xl:block absolute top-[50%] left-20 z-20"
         style={{ animation: 'floatCard1 7s ease-in-out infinite' }}
       >
         <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-3.5 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14)] w-[220px]">
@@ -111,7 +148,7 @@ export default function Hero() {
       </div>
 
       <div
-        className="hidden xl:block absolute top-[18%] right-6 z-20"
+        className="hidden xl:block absolute top-[26%] right-20 z-20"
         style={{ animation: 'floatCard2 9s ease-in-out infinite' }}
       >
         <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-4 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.16)] w-52.5">
@@ -130,7 +167,7 @@ export default function Hero() {
       </div>
 
       <div
-        className="hidden xl:block absolute top-[40%] right-10 z-20"
+        className="hidden xl:block absolute top-[70%] right-25 z-20"
         style={{ animation: 'floatCard3 11s ease-in-out infinite' }}
       >
         <div className="bg-white border border-black/[0.07] rounded-2xl px-4 py-3.5 shadow-[0_12px_40px_-8px_rgba(0,0,0,0.14)] flex items-center gap-3 w-[210px]">
@@ -227,60 +264,22 @@ export default function Hero() {
         >
           <Link
             href="/signup"
-            className="w-full sm:w-auto group px-8 py-4 rounded-full bg-[#E83A2E] text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_24px_-4px_rgba(232,58,46,0.35)] hover:shadow-[0_14px_32px_-4px_rgba(232,58,46,0.45)] hover:-translate-y-0.5 transition-all duration-300"
+            className="w-full sm:w-auto group px-8 py-4 rounded-2xl bg-[#E83A2E] text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_24px_-4px_rgba(232,58,46,0.35)] hover:shadow-[0_14px_32px_-4px_rgba(232,58,46,0.45)] hover:-translate-y-0.5 transition-all duration-300"
           >
             Start building free
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
           </Link>
           <Link
-            href="/login"
-            className="w-full sm:w-auto px-8 py-4 rounded-full border border-black/10 bg-white text-gray-700 font-bold text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-gray-50 transition-all duration-300"
+            href="/invite"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-black/10 bg-white text-gray-700 font-bold text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-gray-50 transition-all duration-300"
           >
-            Sign in
+            Request an invite
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
-        <p
-          className="mt-7 sm:mt-8 text-[10px] sm:text-[12px] font-semibold text-gray-400 tracking-widest uppercase px-4 sm:px-0 text-center"
-          style={{ animation: 'heroFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.38s both' }}
-        >
-          No credit card &nbsp;·&nbsp; Setup in 2 minutes
-        </p>
-
-        {/* Dashboard image */}
-        <div
-          className="mt-10 sm:mt-20 relative w-full max-w-[1100px]"
-          style={{ animation: 'heroFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.38s both' }}
-        >
-          <div
-            className="absolute -inset-x-12 bottom-0 h-20 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, white 10%, transparent 100%)', zIndex: 10 }}
-          />
-          <div className="relative rounded-t-[20px] overflow-hidden shadow-[0_30px_100px_-20px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.06)]">
-            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#E83A2E]/50 to-transparent z-20" />
-            <div className="bg-[#f5f5f5] border-b border-black/[0.06] px-3 py-1.5 sm:py-2 flex items-center gap-2">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#FF5F57]" />
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#FEBC2E]" />
-                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[#28C840]" />
-              </div>
-              <div className="flex-1 mx-2">
-                <div className="bg-white border border-black/8 rounded px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] text-gray-400 font-medium w-full max-w-45 mx-auto text-center">
-                  digione.ai/dashboard
-                </div>
-              </div>
-            </div>
-            <Image
-              src="/image.webp"
-              alt="DigiOne Dashboard"
-              width={1100}
-              height={620}
-              className="w-full h-auto object-cover"
-              priority
-            />
-          </div>
-        </div>
       </div>
+
     </section>
   );
 }

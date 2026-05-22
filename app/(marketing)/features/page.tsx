@@ -50,38 +50,16 @@ export default function FeaturesPage() {
     <div className="min-h-screen bg-white">
       {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div style={{
-            position: 'absolute', top: '-15%', left: '50%', transform: 'translateX(-50%)',
-            width: '800px', height: '600px',
-            backgroundImage: 'radial-gradient(ellipse, rgba(232,58,46,0.08) 0%, transparent 65%)',
-            filter: 'blur(70px)',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 60%)',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 60%)',
-          }} />
-        </div>
         <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/8 shadow-[0_2px_10px_rgba(0,0,0,0.05)] text-[12px] font-semibold text-gray-500 mb-7">
-            <Sparkles className="w-3.5 h-3.5 text-[#E83A2E]" />
-            Everything you need
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] border border-black/[0.06] text-[12px] font-semibold text-gray-500 mb-6">
+            <Sparkles className="w-3.5 h-3.5" />
+            Features
           </div>
-          <h1 className="text-[48px] sm:text-[60px] font-black tracking-[-0.04em] leading-[1.04] text-gray-900 mb-5">
-            Features built for{' '}
-            <span style={{
-              backgroundImage: 'linear-gradient(135deg, #E83A2E 0%, #ff7040 100%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent', color: 'transparent',
-            }}>
-              growth.
-            </span>
+          <h1 className="text-[36px] sm:text-[52px] font-black tracking-[-0.03em] text-gray-900 leading-[1.1] mb-4 max-w-2xl mx-auto">
+            Everything you need to sell
           </h1>
-          <p className="text-[17px] text-gray-500 font-medium leading-relaxed max-w-2xl mx-auto mb-10">
-            Stop stitching together 5 different tools. DigiOne gives you an all-in-one suite to sell digital products, courses, and communities seamlessly.
+          <p className="text-[16px] sm:text-[18px] text-gray-500 font-medium max-w-xl mx-auto leading-relaxed mb-10">
+            No code, no complicated setups — just tools that work for Indian creators.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link

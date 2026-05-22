@@ -3,7 +3,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
 import { revalidateStorefrontPaths } from '@/app/actions/revalidate';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
@@ -13,14 +13,13 @@ type ProductInsert = Database['public']['Tables']['products']['Insert'];
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
 export function useProducts() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
       try {
-        const profileId = await getCreatorProfileId(supabase);
+        const profileId = await getCreatorProfileId();
         const { data, error } = await supabase
           .from('products')
           .select('*')
@@ -38,7 +37,7 @@ export function useProducts() {
   const createMutation = useMutation({
     mutationFn: async (newProduct: Omit<ProductInsert, 'creator_id'>) => {
       try {
-        const profileId = await getCreatorProfileId(supabase);
+        const profileId = await getCreatorProfileId();
         const { data, error } = await supabase
           .from('products')
           .insert({ ...newProduct, creator_id: profileId } as ProductInsert)

@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getSiteDisplayUrl, getSitePublicPath } from '@/lib/site-urls';
 import {
   Globe, Copy, ExternalLink, AlertTriangle, RefreshCw,
@@ -58,7 +58,6 @@ export default function SettingsPanel({
   showSlug?: boolean;
 }) {
   const router = useRouter();
-  const supabase = createClient();
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
 

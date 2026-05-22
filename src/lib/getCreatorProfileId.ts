@@ -3,18 +3,13 @@
 // DB tables: users, profiles (read only)
 "use client";
 
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
-/**
- * Returns the profiles.id (creator_id) for the currently logged-in user.
- * products, sites, creator_balances, etc. all use profiles.id as creator_id FK.
- * Throws if the user isn't found or no profile exists (signup trigger may have failed).
- */
-export async function getCreatorProfileId(
-  supabase: ReturnType<typeof createClient>
-): Promise<string> {
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Not logged in');
+export async function getCreatorProfileId(): Promise<string> {
+  // getSession() reads from the cookie cache — no network call, no race with TanStack Query on client nav
+  const { data: { session }, error: authError } = await supabase.auth.getSession();
+  if (authError || !session?.user) throw new Error('Not logged in');
+  const user = session.user;
 
   // users.auth_provider_id stores the Supabase auth UID
   // profiles.user_id → users.id  (not the auth UID)

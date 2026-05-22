@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Save, Loader2, CheckCircle2, ExternalLink, Monitor, Tablet, Smartphone,
@@ -56,7 +56,6 @@ export default function SiteVisualEditor({
   showSlug = true,
 }: SiteVisualEditorProps) {
   const router = useRouter();
-  const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewWrapperRef = useRef<HTMLDivElement>(null);
 

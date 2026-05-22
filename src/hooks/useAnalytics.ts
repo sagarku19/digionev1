@@ -5,7 +5,7 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export type ProductStat = {
@@ -19,13 +19,11 @@ export type ProductStat = {
 const EMPTY = { totalRevenue: 0, totalSales: 0, orders: [] as any[], topProducts: [] as ProductStat[], prevRevenue: 0, prevSales: 0 };
 
 export function useAnalytics(dateRange: { start: string, end: string }) {
-  const supabase = createClient();
-
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['analytics', dateRange.start, dateRange.end],
     staleTime: 5 * 60 * 1000, // 5 min — don't refetch on every navigation
     queryFn: async () => {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
 
       // Step 1: get all product IDs owned by this creator
       const { data: creatorProducts, error: productsError } = await supabase

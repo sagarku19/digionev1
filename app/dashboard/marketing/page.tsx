@@ -27,7 +27,7 @@ export default function MarketingPage() {
   useEffect(() => {
     (async () => {
       try {
-        const pid = await getCreatorProfileId(supabase);
+        const pid = await getCreatorProfileId();
         const { data: { user } } = await supabase.auth.getUser();
         const uid = user?.id;
 

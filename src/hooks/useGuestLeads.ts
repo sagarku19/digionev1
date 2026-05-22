@@ -1,15 +1,14 @@
 "use client";
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export function useGuestLeads(filterSiteId?: string) {
-  const supabase = createClient();
-
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['guest-leads', filterSiteId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
 
       // Resolve profile.id from auth user_id (sites.creator_id = profiles.id)
       const { data: profile } = await supabase

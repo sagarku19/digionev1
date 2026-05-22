@@ -1,21 +1,21 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
 export function useCreator() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['creator-profile'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
 
       // auth UID → users.auth_provider_id → users.id → profiles.user_id
       const { data, error } = await supabase

@@ -8,7 +8,6 @@ import {
   Banknote,
   Fingerprint,
   CheckCircle2,
-  ArrowUpRight,
   Plus,
   type LucideIcon,
 } from 'lucide-react';
@@ -20,25 +19,20 @@ type Feature = {
   tag: string;
   layout: 'wide' | 'narrow';
   accent: string;
-  surface: string;
+  iconBg: string;
+  tagColor: string;
   graphic: () => React.ReactElement;
 };
 
 /* ==========================================================================
    GRAPHICS
-   Unified design language across all six:
-   - White surface, 1px border-black/6, radius-2xl
-   - Shadow: 0 8px 24px -8px rgba(0,0,0,0.08)
-   - Internal type scale: tag 9px / primary 10-11px / secondary 9px
-   - Consistent chrome paddings (px-3.5 py-2.5 for headers)
    ========================================================================== */
 
 const graphicCard =
-  'rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)]';
+  'rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-[0_4px_20px_-6px_rgba(0,0,0,0.10)]';
 
 const BuilderGraphic = () => (
   <div className={graphicCard}>
-    {/* browser chrome */}
     <div className="flex items-center gap-2 px-3.5 py-2.5 bg-gray-50/80 border-b border-black/[0.05]">
       <div className="flex gap-1.5">
         <div className="w-2 h-2 rounded-full bg-[#FF5F57]" />
@@ -46,50 +40,47 @@ const BuilderGraphic = () => (
         <div className="w-2 h-2 rounded-full bg-[#28C840]" />
       </div>
       <div className="flex-1 flex justify-center">
-        <span className="inline-flex items-center gap-1.5 text-[9px] text-gray-500 font-medium bg-white border border-black/[0.05] px-2.5 py-0.5 rounded-md">
+        <span className="inline-flex items-center gap-1.5 text-[9px] text-gray-500 font-medium bg-white border border-black/[0.06] px-2.5 py-0.5 rounded-md">
           <span className="w-1 h-1 rounded-full bg-green-500" />
           digione.ai/arjun
         </span>
       </div>
       <span className="text-[8px] font-black text-[#E83A2E] bg-[#E83A2E]/10 px-1.5 py-0.5 rounded">LIVE</span>
     </div>
-    {/* split view */}
-    <div className="grid grid-cols-5 divide-x divide-black/[0.05]" style={{ minHeight: 172 }}>
-      {/* editor column */}
+    <div className="grid grid-cols-5 divide-x divide-black/[0.05]" style={{ minHeight: 168 }}>
       <div className="col-span-2 p-3 bg-gray-50/50 space-y-1.5">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.15em]">Layers</span>
           <Plus className="w-2.5 h-2.5 text-gray-300" />
         </div>
-        <div className="bg-white border border-[#E83A2E]/30 rounded-lg px-2 py-1.5 ring-2 ring-[#E83A2E]/10">
+        <div className="bg-white border border-[#E83A2E]/25 rounded-lg px-2 py-1.5 ring-2 ring-[#E83A2E]/8 shadow-sm">
           <div className="flex items-center gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-[#E83A2E]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#E83A2E]" />
             <span className="text-[9px] font-bold text-gray-900">Hero</span>
           </div>
           <p className="text-[8px] text-gray-400 mt-0.5">Figma Masterclass</p>
         </div>
         {[
-          { color: 'bg-[#E83A2E]/20', label: 'CTA Button' },
-          { color: 'bg-gray-200', label: 'Image' },
-          { color: 'bg-gray-200', label: 'Reviews' },
+          { color: 'bg-[#E83A2E]/15', label: 'CTA Button' },
+          { color: 'bg-gray-200/70', label: 'Image' },
+          { color: 'bg-gray-200/70', label: 'Reviews' },
         ].map((l) => (
-          <div key={l.label} className="flex items-center gap-1.5 px-2 py-1 rounded">
+          <div key={l.label} className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-white/60 transition-colors">
             <div className={`w-3 h-3 rounded ${l.color}`} />
             <span className="text-[9px] text-gray-500 font-medium">{l.label}</span>
           </div>
         ))}
       </div>
-      {/* preview column */}
-      <div className="col-span-3 p-3 bg-white flex flex-col items-center justify-center">
-        <div className="w-full bg-gradient-to-b from-[#fff5f4] to-white border border-black/[0.05] rounded-xl p-3 text-center">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E83A2E] to-orange-500 mx-auto mb-1.5 shadow-sm" />
+      <div className="col-span-3 p-3 bg-white flex flex-col items-center justify-center gap-2">
+        <div className="w-full bg-gradient-to-b from-[#fff5f4] to-white border border-black/[0.05] rounded-xl p-3 text-center shadow-sm">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E83A2E] to-orange-400 mx-auto mb-1.5 shadow-sm" />
           <p className="text-[11px] font-black text-gray-900 leading-tight">Figma Masterclass</p>
           <p className="text-[8px] text-gray-400 mt-0.5 font-medium">by Arjun Sharma</p>
-          <div className="mt-2 bg-[#E83A2E] text-white text-[9px] font-black rounded-full px-3 py-1.5 inline-block shadow-sm">
+          <div className="mt-2.5 bg-[#E83A2E] text-white text-[9px] font-black rounded-full px-3 py-1.5 inline-block shadow-[0_2px_8px_-2px_rgba(232,58,46,0.4)]">
             Buy Now — ₹999
           </div>
         </div>
-        <span className="text-[8px] text-green-600 font-bold flex items-center gap-1 mt-2">
+        <span className="text-[8px] text-green-600 font-bold flex items-center gap-1">
           <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> Auto-saved
         </span>
       </div>
@@ -98,7 +89,7 @@ const BuilderGraphic = () => (
 );
 
 const DMGraphic = () => (
-  <div className={`${graphicCard} mx-auto max-w-[280px]`}>
+  <div className={`${graphicCard} mx-auto`}>
     <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-black/[0.05] bg-gray-50/50">
       <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 via-rose-500 to-orange-400 flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-sm">
         P
@@ -112,9 +103,9 @@ const DMGraphic = () => (
         Active
       </div>
     </div>
-    <div className="px-3.5 pt-3 pb-1">
+    <div className="px-3.5 pt-2.5 pb-1.5">
       <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.15em] mb-1.5">Triggers</p>
-      <div className="flex gap-1">
+      <div className="flex gap-1 flex-wrap">
         {['COURSE', 'LINK', 'PDF'].map((k) => (
           <span
             key={k}
@@ -125,14 +116,14 @@ const DMGraphic = () => (
         ))}
       </div>
     </div>
-    <div className="px-3.5 pt-2.5 pb-3.5 space-y-1.5">
+    <div className="px-3.5 pt-2 pb-3.5 space-y-1.5">
       <div className="flex justify-end">
         <span className="bg-gray-100 text-gray-700 text-[10px] font-semibold px-3 py-1.5 rounded-[14px] rounded-br-sm">
           COURSE 👀
         </span>
       </div>
       <div className="flex justify-start">
-        <div className="bg-gradient-to-br from-[#E83A2E] to-rose-500 text-white text-[10px] font-semibold px-3 py-2 rounded-[14px] rounded-bl-sm max-w-[200px] leading-snug shadow-sm">
+        <div className="bg-gradient-to-br from-[#E83A2E] to-rose-500 text-white text-[10px] font-semibold px-3 py-2 rounded-[14px] rounded-bl-sm max-w-[200px] leading-snug shadow-[0_2px_10px_-2px_rgba(232,58,46,0.35)]">
           Hey Priya! 🎉 Here&apos;s your link → digione.ai/priya/course
         </div>
       </div>
@@ -142,10 +133,10 @@ const DMGraphic = () => (
 );
 
 const WorkflowGraphic = () => (
-  <div className={`${graphicCard} mx-auto max-w-[280px]`}>
+  <div className={`${graphicCard} mx-auto`}>
     <div className="px-3.5 py-3 border-b border-black/[0.05] bg-gray-50/50 flex items-center justify-between">
       <div className="flex items-center gap-1.5">
-        <div className="w-1 h-1 rounded-full bg-gray-400" />
+        <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
         <p className="text-[11px] font-black text-gray-800">Purchase Flow</p>
       </div>
       <span className="flex items-center gap-1 text-[9px] font-bold text-green-600 bg-green-50 border border-green-200/70 px-1.5 py-0.5 rounded-full">
@@ -161,7 +152,7 @@ const WorkflowGraphic = () => (
       ].map((step, i) => (
         <div key={i} className="flex items-center gap-2.5 px-1">
           <div
-            className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] shrink-0 ${
+            className={`w-7 h-7 rounded-xl flex items-center justify-center text-[11px] shrink-0 ${
               step.done ? 'bg-green-50 border border-green-200/70' : 'bg-amber-50 border border-amber-200/70'
             }`}
           >
@@ -202,7 +193,7 @@ const AffiliateGraphic = () => (
             <p className="text-[11px] font-bold text-gray-800 truncate">{r.name}</p>
             <div className="mt-1 h-1 w-full rounded-full bg-gray-100 overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500"
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-700"
                 style={{ width: `${r.pct}%` }}
               />
             </div>
@@ -221,10 +212,10 @@ const PayoutGraphic = () => (
   <div className={graphicCard}>
     <div className="relative p-4 bg-gradient-to-br from-emerald-500 via-emerald-500 to-teal-600 text-white overflow-hidden">
       <div
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 opacity-30 pointer-events-none"
         style={{
           backgroundImage:
-            'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 40%)',
+            'radial-gradient(circle at 15% 50%, rgba(255,255,255,0.35) 0%, transparent 45%), radial-gradient(circle at 85% 20%, rgba(255,255,255,0.15) 0%, transparent 40%)',
         }}
       />
       <div className="relative flex items-start justify-between">
@@ -232,10 +223,10 @@ const PayoutGraphic = () => (
           <p className="text-[9px] font-bold uppercase tracking-[0.15em] opacity-70 mb-1">
             Available Balance
           </p>
-          <p className="text-[24px] font-black tracking-tight leading-none">₹1,24,850</p>
+          <p className="text-[26px] font-black tracking-tight leading-none">₹1,24,850</p>
           <p className="text-[9px] opacity-70 mt-1 font-medium">Cashfree · Instant UPI</p>
         </div>
-        <button className="bg-white/15 backdrop-blur-sm border border-white/25 text-white text-[9px] font-black rounded-full px-2.5 py-1 hover:bg-white/25 transition-colors">
+        <button className="bg-white/20 backdrop-blur-sm border border-white/25 text-white text-[9px] font-black rounded-full px-2.5 py-1 hover:bg-white/30 transition-colors">
           Withdraw
         </button>
       </div>
@@ -255,11 +246,7 @@ const PayoutGraphic = () => (
             <p className="text-[9px] text-gray-400 leading-tight">{p.upi}</p>
           </div>
           <div className="text-right shrink-0">
-            <p
-              className={`text-[11px] font-black leading-tight ${
-                p.paid ? 'text-emerald-600' : 'text-amber-500'
-              }`}
-            >
+            <p className={`text-[11px] font-black leading-tight ${p.paid ? 'text-emerald-600' : 'text-amber-500'}`}>
               {p.amt}
             </p>
             <p className="text-[9px] text-gray-400 leading-tight">{p.time}</p>
@@ -271,7 +258,7 @@ const PayoutGraphic = () => (
 );
 
 const LedgerGraphic = () => (
-  <div className={`${graphicCard} mx-auto max-w-[280px]`}>
+  <div className={`${graphicCard} mx-auto`}>
     <div className="flex items-center justify-between px-3.5 py-3 border-b border-black/[0.05] bg-gray-50/50">
       <p className="text-[11px] font-black text-gray-800">Ledger</p>
       <span className="flex items-center gap-1 text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-200/70 px-2 py-0.5 rounded-full">
@@ -286,7 +273,7 @@ const LedgerGraphic = () => (
         { id: '#TXN-8819', name: 'Karan Singh', amt: '₹2,999', tag: 'Template' },
       ].map((t, i) => (
         <div key={i} className="flex items-center gap-3 px-3.5 py-2.5">
-          <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-200/70 flex items-center justify-center shrink-0">
+          <div className="w-7 h-7 rounded-xl bg-blue-50 border border-blue-200/70 flex items-center justify-center shrink-0">
             <Fingerprint className="w-3 h-3 text-blue-500" />
           </div>
           <div className="flex-1 min-w-0">
@@ -297,9 +284,7 @@ const LedgerGraphic = () => (
           </div>
           <div className="text-right shrink-0">
             <p className="text-[11px] font-black text-gray-900 leading-tight">{t.amt}</p>
-            <p className="text-[9px] text-green-600 font-bold leading-tight flex items-center justify-end gap-0.5">
-              🔒 Locked
-            </p>
+            <p className="text-[9px] text-green-600 font-bold leading-tight">🔒 Locked</p>
           </div>
         </div>
       ))}
@@ -309,8 +294,6 @@ const LedgerGraphic = () => (
 
 /* ==========================================================================
    FEATURES CONFIG
-   layout: 'wide' = col-span-2 on desktop, horizontal content+graphic split
-           'narrow' = col-span-1, vertical stack
    ========================================================================== */
 
 const features: Feature[] = [
@@ -321,7 +304,8 @@ const features: Feature[] = [
     tag: 'Builder',
     layout: 'wide',
     accent: 'from-orange-500 to-[#E83A2E]',
-    surface: 'from-[#fff6f4] to-[#fff]',
+    iconBg: 'bg-gradient-to-br from-orange-500 to-[#E83A2E]',
+    tagColor: 'text-orange-500 bg-orange-50 border-orange-200/60',
     graphic: BuilderGraphic,
   },
   {
@@ -331,7 +315,8 @@ const features: Feature[] = [
     tag: 'AI',
     layout: 'narrow',
     accent: 'from-[#E83A2E] to-rose-500',
-    surface: 'from-rose-50/60 to-white',
+    iconBg: 'bg-gradient-to-br from-[#E83A2E] to-rose-500',
+    tagColor: 'text-rose-500 bg-rose-50 border-rose-200/60',
     graphic: DMGraphic,
   },
   {
@@ -341,7 +326,8 @@ const features: Feature[] = [
     tag: 'Automation',
     layout: 'narrow',
     accent: 'from-amber-500 to-orange-500',
-    surface: 'from-amber-50/60 to-white',
+    iconBg: 'bg-gradient-to-br from-amber-500 to-orange-500',
+    tagColor: 'text-amber-600 bg-amber-50 border-amber-200/60',
     graphic: WorkflowGraphic,
   },
   {
@@ -351,7 +337,8 @@ const features: Feature[] = [
     tag: 'Growth',
     layout: 'wide',
     accent: 'from-violet-500 to-indigo-500',
-    surface: 'from-violet-50/60 to-white',
+    iconBg: 'bg-gradient-to-br from-violet-500 to-indigo-500',
+    tagColor: 'text-violet-600 bg-violet-50 border-violet-200/60',
     graphic: AffiliateGraphic,
   },
   {
@@ -361,7 +348,8 @@ const features: Feature[] = [
     tag: 'Payments',
     layout: 'wide',
     accent: 'from-emerald-500 to-teal-500',
-    surface: 'from-emerald-50/60 to-white',
+    iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-500',
+    tagColor: 'text-emerald-600 bg-emerald-50 border-emerald-200/60',
     graphic: PayoutGraphic,
   },
   {
@@ -371,18 +359,19 @@ const features: Feature[] = [
     tag: 'Security',
     layout: 'narrow',
     accent: 'from-blue-500 to-cyan-500',
-    surface: 'from-blue-50/60 to-white',
+    iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
+    tagColor: 'text-blue-600 bg-blue-50 border-blue-200/60',
     graphic: LedgerGraphic,
   },
 ];
 
 /* ==========================================================================
-   CARD COMPONENTS
+   CARD SHELL
    ========================================================================== */
 
 const CardShell = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div
-    className={`relative overflow-hidden rounded-[22px] sm:rounded-[26px] bg-white border border-black/[0.06] hover:border-black/[0.11] hover:shadow-[0_18px_50px_-14px_rgba(0,0,0,0.10)] hover:-translate-y-[2px] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group h-full ${className}`}
+    className={`relative overflow-hidden rounded-[24px] sm:rounded-[28px] bg-white border border-black/[0.06] hover:border-black/10 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_56px_-16px_rgba(0,0,0,0.12)] hover:-translate-y-[3px] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group h-full ${className}`}
   >
     {children}
   </div>
@@ -391,44 +380,40 @@ const CardShell = ({ children, className = '' }: { children: React.ReactNode; cl
 const CardHeader = ({ feat }: { feat: Feature }) => {
   const Icon = feat.icon;
   return (
-    <>
-      <div className="flex items-center gap-2 mb-5">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3">
         <div
-          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${feat.accent} flex items-center justify-center shadow-[0_4px_12px_-3px_rgba(0,0,0,0.25)] group-hover:scale-105 group-hover:-rotate-2 transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]`}
+          className={`w-10 h-10 rounded-2xl ${feat.iconBg} flex items-center justify-center shadow-[0_4px_14px_-3px_rgba(0,0,0,0.25)] group-hover:scale-[1.08] group-hover:-rotate-3 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shrink-0`}
         >
-          <Icon className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-white" strokeWidth={2.2} />
+          <Icon className="w-5 h-5 text-white" strokeWidth={2.1} />
         </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">
+        <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${feat.tagColor}`}>
           {feat.tag}
         </span>
       </div>
-      <h3 className="text-[18px] sm:text-[20px] lg:text-[22px] font-black text-gray-900 mb-2.5 tracking-[-0.015em] leading-[1.2]">
-        {feat.title}
-      </h3>
-      <p className="text-gray-500 font-medium text-[13.5px] sm:text-[14.5px] leading-[1.55] max-w-[42ch]">
-        {feat.desc}
-      </p>
-    </>
+      <div>
+        <h3 className="text-[19px] sm:text-[21px] font-black text-gray-900 mb-2.5 tracking-[-0.02em] leading-[1.2]">
+          {feat.title}
+        </h3>
+        <p className="text-gray-500 font-medium text-[13.5px] sm:text-[14px] leading-[1.6] max-w-[40ch]">
+          {feat.desc}
+        </p>
+      </div>
+    </div>
   );
 };
 
 const GraphicSurface = ({ feat, className = '' }: { feat: Feature; className?: string }) => {
   const Graphic = feat.graphic;
   return (
-    <div
-      className={`relative rounded-2xl bg-gradient-to-br ${feat.surface} p-4 sm:p-5 overflow-hidden ${className}`}
-    >
-      {/* dotted grid backdrop */}
+    <div className={`relative rounded-2xl bg-gray-50/80 p-4 sm:p-5 overflow-hidden ${className}`}>
       <div
-        className="absolute inset-0 opacity-40 pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage:
-            'radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)',
           backgroundSize: '14px 14px',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 100%)',
-          maskImage:
-            'radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%)',
         }}
       />
       <div className="relative">
@@ -444,50 +429,46 @@ const GraphicSurface = ({ feat, className = '' }: { feat: Feature; className?: s
 
 export default function Features() {
   return (
-    <section id="features" className="py-10 sm:py-18 bg-[#fafafa] relative overflow-hidden">
+    <section id="features" className="py-16 sm:py-24 bg-[#fafafa] relative overflow-hidden">
       {/* top hairline */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.08] to-transparent" />
+      <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.06] to-transparent" />
 
-      {/* dotted background (subtle) */}
+      {/* subtle dot grid */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage:
-            'radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 80% 60% at 50% 25%, #000 10%, transparent 100%)',
-          maskImage:
-            'radial-gradient(ellipse 80% 60% at 50% 25%, #000 10%, transparent 100%)',
+          backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+          WebkitMaskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, #000 0%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, #000 0%, transparent 100%)',
         }}
       />
 
       {/* brand glow */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none"
+        className="absolute top-0 left-1/2 -translate-x-1/2 pointer-events-none opacity-60"
         style={{
-          width: '900px',
-          height: '500px',
-          background:
-            'radial-gradient(ellipse at center, rgba(232,58,46,0.07) 0%, transparent 65%)',
-          filter: 'blur(60px)',
+          width: '800px',
+          height: '400px',
+          background: 'radial-gradient(ellipse at center top, rgba(232,58,46,0.07) 0%, transparent 70%)',
         }}
       />
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8">
+
         {/* ============ HEADER ============ */}
         <InView className="text-center mb-14 sm:mb-20">
           <div className="iv">
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-6 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
-              <span className="w-1 h-1 rounded-full bg-[#E83A2E]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 text-[11px] font-black uppercase tracking-[0.2em] text-[#E83A2E] mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E] animate-pulse" />
               Unfair Advantage
-            </p>
-            <h2 className="text-[2.1rem] sm:text-5xl md:text-[3.5rem] font-black text-gray-900 mb-5 tracking-[-0.035em] leading-[1.05]">
-              Everything wired together.
-              <br />
-              <span className="text-gray-400">Zero duct-tape required.</span>
+            </div>
+            <h2 className="text-[2rem] sm:text-[3rem] md:text-[3.6rem] font-black text-gray-900 mb-5 tracking-[-0.035em] leading-[1.05]">
+              Everything wired together.{' '}
+              <span className="text-gray-300">Zero duct-tape.</span>
             </h2>
-            <p className="text-[15px] sm:text-xl font-medium text-gray-500 max-w-xl mx-auto leading-relaxed">
+            <p className="text-[15px] sm:text-[17px] font-medium text-gray-500 max-w-lg mx-auto leading-relaxed">
               Landing pages, AI bots, automation logic, and payment rails — one unified stack.
             </p>
           </div>
@@ -500,34 +481,32 @@ export default function Features() {
             return (
               <InView
                 key={i}
-                style={{ '--delay': `${i * 70}ms` }}
+                style={{ '--delay': `${i * 60}ms` }}
                 className={isWide ? 'md:col-span-2' : 'md:col-span-1'}
               >
                 <div className="iv h-full">
                   <CardShell>
-                    {/* accent hairline on hover */}
+                    {/* accent top bar — visible on hover */}
                     <div
-                      className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${feat.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                      className={`absolute top-0 inset-x-0 h-[2.5px] bg-gradient-to-r ${feat.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                     />
-                    {/* ambient accent glow on hover */}
+                    {/* ambient corner glow */}
                     <div
-                      className={`absolute -bottom-12 -right-12 w-48 h-48 rounded-full bg-gradient-to-tl ${feat.accent} opacity-0 group-hover:opacity-[0.05] transition-opacity duration-700 pointer-events-none blur-2xl`}
+                      className={`absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-gradient-to-tl ${feat.accent} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-700 pointer-events-none blur-3xl`}
                     />
 
                     {isWide ? (
-                      /* ============ WIDE CARD ============
-                         Horizontal on desktop, vertical on mobile */
+                      /* WIDE — horizontal on md+, vertical stack on mobile */
                       <div className="flex flex-col md:flex-row h-full">
-                        <div className="flex-1 p-6 sm:p-8 md:p-9 flex flex-col justify-center md:max-w-[44%]">
+                        <div className="flex-none md:w-[42%] p-6 sm:p-8 flex flex-col justify-center">
                           <CardHeader feat={feat} />
                         </div>
-                        <div className="flex-1 p-4 sm:p-5 md:p-6 md:pl-0 flex items-center">
+                        <div className="flex-1 p-4 sm:p-5 md:pl-0 flex items-center">
                           <GraphicSurface feat={feat} className="w-full" />
                         </div>
                       </div>
                     ) : (
-                      /* ============ NARROW CARD ============
-                         Vertical stack on all sizes */
+                      /* NARROW — vertical stack */
                       <div className="flex flex-col h-full">
                         <div className="p-6 sm:p-7">
                           <CardHeader feat={feat} />
@@ -543,20 +522,6 @@ export default function Features() {
             );
           })}
         </div>
-
-        {/* ============ BOTTOM CTA STRIP ============ */}
-        {/* <InView className="mt-14 sm:mt-20 text-center">
-          <div className="iv">
-            <a
-              href="#pricing"
-              className="inline-flex items-center gap-2 text-[14px] sm:text-[15px] font-bold text-gray-700 hover:text-[#E83A2E] transition-colors group"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E] animate-pulse" />
-              And 40+ more features shipping every month
-              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </a>
-          </div>
-        </InView> */}
       </div>
     </section>
   );

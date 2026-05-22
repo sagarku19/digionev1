@@ -8,7 +8,7 @@ const stats = [
 
 export default function Marquee() {
   return (
-    <section className="bg-white overflow-hidden py-20">
+    <section className="bg-white overflow-hidden pt-4 pb-20">
       <div className="max-w-7xl mx-auto px-4 text-center mb-16">
         <p className="text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)] mb-10">
           Creators from these platforms use DigiOne

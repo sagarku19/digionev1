@@ -7,7 +7,7 @@ import { LogOut, User, Bell, Search, Sun, Moon, Settings, Sparkles } from 'lucid
 import { useCreator } from '@/hooks/useCreator';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useProducts } from '@/hooks/useProducts';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 
 function useClickOutside(ref: React.RefObject<HTMLElement | null>, onClose: () => void) {
@@ -68,7 +68,6 @@ export default function TopBar() {
   useClickOutside(profileRef, () => setShowDropdown(false));
 
   const handleSignOut = async () => {
-    const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/login');
   };

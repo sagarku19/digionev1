@@ -70,7 +70,7 @@ export default function CommunityPage() {
   const loadPosts = useCallback(async () => {
     setLoading(true);
     try {
-      const pid = await getCreatorProfileId(supabase);
+      const pid = await getCreatorProfileId();
       setProfileId(pid);
 
       // Load posts with author profile

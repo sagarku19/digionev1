@@ -104,19 +104,17 @@ export default function DiscoverPage() {
     <div className="min-h-screen bg-[var(--bg-primary)]">
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b border-[var(--border)]">
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-tertiary)] via-transparent to-transparent" />
-
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-8">
           <div className="text-center max-w-3xl mx-auto mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-full text-[var(--text-secondary)] text-xs font-medium mb-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] border border-black/[0.06] text-[12px] font-semibold text-gray-500 mb-6">
               <Sparkles className="w-3.5 h-3.5" />
-              Discover amazing digital products
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--text-primary)] mb-4">
               Discover
+            </div>
+            <h1 className="text-[36px] sm:text-[52px] font-black tracking-[-0.03em] text-gray-900 leading-[1.1] mb-4 max-w-2xl mx-auto">
+              Find the best digital products
             </h1>
-            <p className="text-lg text-[var(--text-secondary)] max-w-xl mx-auto">
-              Explore courses, templates, digital downloads and more from talented creators across India.
+            <p className="text-[16px] sm:text-[18px] text-gray-500 font-medium max-w-xl mx-auto leading-relaxed">
+              Browse products made by India's top creators.
             </p>
           </div>
 

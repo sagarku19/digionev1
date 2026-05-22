@@ -1,20 +1,20 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
 
 type CouponInsert = Database['public']['Tables']['coupons']['Insert'];
 
 export function useCoupons() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: coupons = [], isLoading, error } = useQuery({
     queryKey: ['coupons'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
 
       const { data, error } = await supabase
         .from('coupons')
@@ -29,8 +29,9 @@ export function useCoupons() {
 
   const createMutation = useMutation({
     mutationFn: async (newCoupon: Omit<CouponInsert, 'creator_id'>) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
 
       const { data, error } = await supabase
         .from('coupons')

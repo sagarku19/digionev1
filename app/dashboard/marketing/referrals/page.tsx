@@ -56,7 +56,7 @@ export default function ReferralsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const pid = await getCreatorProfileId(supabase);
+      const pid = await getCreatorProfileId();
       const { data: rc } = await supabase
         .from('referral_codes').select('*')
         .eq('owner_creator_id', pid).order('created_at', { ascending: false });
@@ -82,7 +82,7 @@ export default function ReferralsPage() {
     if (!newCode.trim() || newCode.length < 4) { setFormError('Code must be at least 4 characters.'); return; }
     setSaving(true);
     try {
-      const pid = await getCreatorProfileId(supabase);
+      const pid = await getCreatorProfileId();
       const { error } = await supabase.from('referral_codes').insert({
         code: newCode.toUpperCase().trim(),
         owner_creator_id: pid,

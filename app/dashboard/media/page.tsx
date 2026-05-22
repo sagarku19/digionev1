@@ -172,7 +172,7 @@ export default function MediaPage() {
   }, [supabase]);
 
   useEffect(() => {
-    getCreatorProfileId(supabase).then(pid => {
+    getCreatorProfileId().then(pid => {
       setProfileId(pid);
       loadFiles(pid);
     }).catch(e => {

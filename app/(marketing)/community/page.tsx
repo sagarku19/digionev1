@@ -149,31 +149,29 @@ export default function CommunityPage() {
     <div className="min-h-screen bg-[var(--bg-primary)]">
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-[var(--border)]">
-        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-tertiary)] via-transparent to-transparent" />
-
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-full text-[var(--text-secondary)] text-xs font-medium mb-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] border border-black/[0.06] text-[12px] font-semibold text-gray-500 mb-6">
               <Users className="w-3.5 h-3.5" />
-              Join 2,500+ Indian creators
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--text-primary)] mb-4">
               Community
+            </div>
+            <h1 className="text-[36px] sm:text-[52px] font-black tracking-[-0.03em] text-gray-900 leading-[1.1] mb-4 max-w-2xl mx-auto">
+              Join 2,500+ Indian creators
             </h1>
-            <p className="text-lg text-[var(--text-secondary)] max-w-xl mx-auto mb-8">
-              Connect with fellow creators, share ideas, get feedback, and grow together. The most active creator community in India.
+            <p className="text-[16px] sm:text-[18px] text-gray-500 font-medium max-w-xl mx-auto leading-relaxed mb-8">
+              Share wins, get feedback, and grow alongside creators who get it.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-sm font-bold transition-all shadow-sm"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#E83A2E] text-white rounded-xl text-sm font-bold transition-all shadow-[0_4px_14px_-2px_rgba(232,58,46,0.35)] hover:-translate-y-0.5"
               >
                 Join the Community
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl text-sm font-medium transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-black/10 text-gray-700 hover:bg-gray-50 rounded-xl text-sm font-medium transition-all"
               >
                 I already have an account
               </Link>

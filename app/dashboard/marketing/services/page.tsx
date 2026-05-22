@@ -64,7 +64,7 @@ export default function ServicesPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const pid = await getCreatorProfileId(supabase);
+      const pid = await getCreatorProfileId();
       setProfileId(pid);
 
       const { data: svcs } = await (supabase as any).from('services').select('*')

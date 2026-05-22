@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Clock, Tag } from 'lucide-react';
+import { ArrowRight, Clock, Tag, PenLine } from 'lucide-react';
 
 const posts = [
   {
@@ -66,27 +66,17 @@ export default function BlogPage() {
     <main className="bg-white min-h-screen">
 
       {/* Header */}
-      <section className="pt-36 pb-16 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)`,
-            backgroundSize: '30px 30px',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 55%)',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 55%)',
-          }}
-        />
-        <div className="max-w-4xl mx-auto px-5 text-center relative z-10">
-          <p className="inline-flex items-center text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
-            Blog
-          </p>
-          <h1 className="text-[42px] sm:text-[56px] font-black text-gray-900 tracking-[-0.04em] leading-[1.05] mb-4">
-            Creator playbook.
-          </h1>
-          <p className="text-[17px] text-gray-500 font-medium max-w-md mx-auto leading-relaxed">
-            Guides, strategies, and stories for Indian creators building real income online.
-          </p>
+      <section className="pt-32 pb-16 px-4 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] border border-black/[0.06] text-[12px] font-semibold text-gray-500 mb-6">
+          <PenLine className="w-3.5 h-3.5" />
+          Blog
         </div>
+        <h1 className="text-[36px] sm:text-[52px] font-black tracking-[-0.03em] text-gray-900 leading-[1.1] mb-4 max-w-2xl mx-auto">
+          Creator resources & guides
+        </h1>
+        <p className="text-[16px] sm:text-[18px] text-gray-500 font-medium max-w-xl mx-auto leading-relaxed">
+          Practical tips, strategies, and stories from India's creator economy.
+        </p>
       </section>
 
       <section className="pb-24 px-5 sm:px-8">

@@ -1,16 +1,15 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export function useAbTests() {
-  const supabase = createClient();
-
   const { data: tests = [], isLoading, error } = useQuery({
     queryKey: ['ab-tests'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
 
       const { data, error } = await (supabase as any)
         .from('ab_tests')

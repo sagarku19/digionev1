@@ -3,7 +3,7 @@
 // DB tables: affiliates (read/write), profiles (read via getCreatorProfileId)
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import { Database } from '@/types/database.types';
 
@@ -11,13 +11,12 @@ type AffiliateRow = Database['public']['Tables']['affiliates']['Row'];
 type AffiliateInsert = Database['public']['Tables']['affiliates']['Insert'];
 
 export function useAffiliates() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: affiliates = [], isLoading, error } = useQuery({
     queryKey: ['affiliates'],
     queryFn: async () => {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
       const { data, error } = await supabase
         .from('affiliates')
         .select('*')
@@ -30,7 +29,7 @@ export function useAffiliates() {
 
   const createMutation = useMutation({
     mutationFn: async (payload: { affiliate_user_id: string; commission_percent: number }) => {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
       const { data, error } = await supabase
         .from('affiliates')
         .insert({

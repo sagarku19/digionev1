@@ -38,6 +38,11 @@ export default function MarketingNav() {
   }, []);
 
   useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setProfileDropdownOpen(false);
@@ -114,7 +119,7 @@ export default function MarketingNav() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'pt-1 sm:pt-4 px-3 sm:px-4' : 'pt-2 sm:pt-6 px-3 sm:px-4'}`}>
         <div className={`mx-auto max-w-7xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isScrolled 
-            ? 'bg-white/80 backdrop-blur-xl border border-black/[0.04] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl md:rounded-full py-1.5 px-3 md:px-5' 
+            ? 'bg-white/80 backdrop-blur-xl border border-black/[0.04] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl py-1.5 px-3 md:px-5' 
             : 'bg-transparent border-transparent py-2 px-2 sm:px-0'
         }`}>
           <div className="flex h-12 md:h-14 items-center justify-between">

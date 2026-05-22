@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Settings, Globe, Search, Share2, FileText, AlertTriangle,
@@ -109,7 +109,6 @@ export default function SiteEditShell({
   siteId, typeLabel, typeIcon: TypeIcon, typeIconColor, topBarExtra, children, onSave,
 }: SiteEditShellProps) {
   const router = useRouter();
-  const supabase = createClient();
 
   const [activeTab, setActiveTab] = useState('general');
   const [saving, setSaving] = useState(false);

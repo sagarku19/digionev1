@@ -193,7 +193,7 @@ export default function ProfileSettingsPage() {
 
   const loadProfile = async () => {
     try {
-      const pid = await getCreatorProfileId(supabase);
+      const pid = await getCreatorProfileId();
       setProfileId(pid);
       const { data } = await supabase.from('profiles').select('*').eq('id', pid).single();
       if (data) {

@@ -69,52 +69,17 @@ export default function PricingPage() {
     <main className="bg-white min-h-screen">
 
       {/* Hero */}
-      <section className="pt-36 pb-20 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div
-            className="absolute rounded-full"
-            style={{
-              top: '-20%', left: '50%', transform: 'translateX(-50%)',
-              width: '800px', height: '500px',
-              background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.08) 0%, rgba(255,120,60,0.04) 40%, transparent 70%)',
-              filter: 'blur(50px)',
-              animation: 'ctaBloom 10s ease-in-out infinite',
-            }}
-          />
+      <section className="pt-32 pb-16 px-4 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] border border-black/[0.06] text-[12px] font-semibold text-gray-500 mb-6">
+          <Zap className="w-3.5 h-3.5" />
+          Pricing
         </div>
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)`,
-            backgroundSize: '24px 24px',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 60%)',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 60%)',
-          }}
-        />
-        <div className="max-w-4xl mx-auto px-5 text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-6 bg-[#E83A2E]/[0.07] rounded-full border border-[#E83A2E]/15 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-            Simple Pricing
-          </div>
-          <h1 className="text-[48px] sm:text-[64px] md:text-[76px] font-black text-gray-900 tracking-[-0.04em] leading-[1.05] mb-6">
-            Start free.
-            <br />
-            <span
-              style={{
-                background: 'linear-gradient(135deg, #a1a1aa 0%, #d4d4d8 50%, #a1a1aa 100%)',
-                backgroundSize: '200% auto',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              Scale when you&apos;re ready.
-            </span>
-          </h1>
-          <p className="text-[18px] sm:text-[20px] text-gray-500 font-medium leading-relaxed max-w-2xl mx-auto">
-            No hidden fees. No lock-in. Just a platform designed to increase your conversion rate and grow with your revenue.
-          </p>
-        </div>
+        <h1 className="text-[36px] sm:text-[52px] font-black tracking-[-0.03em] text-gray-900 leading-[1.1] mb-4 max-w-2xl mx-auto">
+          Simple pricing, serious results
+        </h1>
+        <p className="text-[16px] sm:text-[18px] text-gray-500 font-medium max-w-xl mx-auto leading-relaxed">
+          Start free. Upgrade when you're ready. No surprise fees.
+        </p>
       </section>
 
       <style>{`

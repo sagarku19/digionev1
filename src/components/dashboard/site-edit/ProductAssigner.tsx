@@ -3,7 +3,7 @@
 // Parent manages assigned set; changes propagate immediately. DB save happens on parent Save.
 
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { Package } from 'lucide-react';
 
 export default function ProductAssigner({
@@ -15,7 +15,6 @@ export default function ProductAssigner({
   assigned: Set<string>;
   onChange: (assigned: Set<string>) => void;
 }) {
-  const supabase = createClient();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

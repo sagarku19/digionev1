@@ -1,21 +1,21 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/types/database.types';
 
 type SiteConfigRow = any;
 type SiteConfigUpdate = any;
 
 export function useSiteConfig() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: config, isLoading, error } = useQuery({
     queryKey: ['siteConfig'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
 
       const { data, error } = await (supabase as any)
         .from('site_config')
@@ -30,8 +30,9 @@ export function useSiteConfig() {
 
   const updateMutation = useMutation({
     mutationFn: async (updates: SiteConfigUpdate) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error("Not logged in");
+      const user = session.user;
       
       if (!config) {
         // Create if missing

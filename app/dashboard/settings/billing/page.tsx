@@ -168,7 +168,7 @@ export default function KYCAndBillingPage() {
     setErrorMsg(''); setSuccessMsg('');
     setIsSubmitting(true);
     try {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
       const { error } = await supabase.from('creator_kyc').upsert({
         creator_id: profileId,
         legal_name: form.legal_name,

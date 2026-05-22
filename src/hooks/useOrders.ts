@@ -3,7 +3,7 @@
 // DB tables: orders, order_items, products (read only)
 
 import { useQuery } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export type Order = {
@@ -24,12 +24,10 @@ export type Order = {
 };
 
 export function useOrders(limit = 100) {
-  const supabase = createClient();
-
   const { data: orders = [], isLoading, error } = useQuery<Order[]>({
     queryKey: ['creator-orders'],
     queryFn: async () => {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
 
       // Try creator_id column first (requires migration).
       // Fall back to finding orders via products owned by this creator.

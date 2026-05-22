@@ -3,7 +3,7 @@
 // DB tables: sites, site_main, site_singlepage, linkinbio_pages (read)
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 
 export type SiteWithMain = {
   id: string;
@@ -28,14 +28,14 @@ export type SiteWithMain = {
 };
 
 export function useSites() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: sites = [], isLoading, error } = useQuery<SiteWithMain[]>({
     queryKey: ['creator-sites'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error('Not authenticated');
+      const user = session.user;
 
       // Resolve creator's internal users.id from auth uid
       const { data: publicUser } = await supabase

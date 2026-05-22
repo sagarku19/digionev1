@@ -3,17 +3,16 @@
 // DB tables: notifications (read/write)
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export function useNotifications() {
-  const supabase = createClient();
   const queryClient = useQueryClient();
 
   const { data: notifications = [], isLoading, error } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
 
       const { data, error } = await supabase
         .from('notifications')
@@ -41,7 +40,7 @@ export function useNotifications() {
 
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      const profileId = await getCreatorProfileId(supabase);
+      const profileId = await getCreatorProfileId();
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
