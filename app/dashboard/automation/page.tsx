@@ -3,7 +3,7 @@
 import React from 'react';
 import {
   Mail, ArrowRight, Table2, PhoneForwarded, Send, Zap,
-  CheckCircle2, Link2,
+  CheckCircle2, Link2, Instagram,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -22,6 +22,19 @@ const TOOLS: {
   connectionStatus: ConnectionStatus;
   href: string;
 }[] = [
+  {
+    id: 'instagram',
+    title: 'Instagram Auto DM',
+    description: 'Auto-reply to comments and DMs, capture leads, and run story automations on Instagram.',
+    icon: Instagram,
+    color: 'text-pink-600 dark:text-pink-400',
+    bg: 'bg-pink-50 dark:bg-pink-500/10',
+    badge: 'Hot',
+    badgeColor: 'bg-red-500/10 text-red-500',
+    actionStatus: 'connect',
+    connectionStatus: 'not_connected',
+    href: '/dashboard/autodm',
+  },
   {
     id: 'email',
     title: 'Email Sequences',

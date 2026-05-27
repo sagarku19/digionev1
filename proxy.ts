@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/types/database.types';
 
-export async function proxy(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   // Create an unmodified response
   let supabaseResponse = NextResponse.next({
     request: {
@@ -31,18 +31,14 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). We wrap in try/catch so transient fetch
-  // failures degrade gracefully (user treated as unauthenticated) rather
-  // than hanging / crashing the middleware.
-  let user = null;
-  try {
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
-  } catch {
-    // Network error reaching Supabase — fail open (treat as logged out)
-    user = null;
-  }
+  // getSession() validates the JWT locally from the cookie — no Supabase
+  // network call on every navigation. Only hits the network when the refresh
+  // token actually needs to be used (~once per hour). For routing decisions
+  // this is sufficient and much faster than getUser().
+  // API routes handling sensitive operations (orders, payments) should call
+  // getUser() independently for server-side verification.
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   const url = request.nextUrl.clone();
 

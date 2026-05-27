@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useCallback } from 'react';
 import {
@@ -23,10 +23,13 @@ type View =
   | 'posts'
   | 'analytics'
   | 'settings'
+  | 'templates'
   | 'guide';
 
-type TriggerType = 'comment' | 'story_mention' | 'dm_keyword' | 'post_like';
+type TriggerType = 'comment' | 'story_mention' | 'dm_keyword' | 'post_like' | 'live_comment' | 'story_reply' | 'story_reaction' | 'story_poll';
 type ListenerType = 'MESSAGE' | 'SMARTAI';
+type MatchMode = 'exact' | 'fuzzy' | 'ai_intent' | 'sentiment';
+type TemplateType = 'comment_dm' | 'dm_keyword' | 'story_reply' | 'live_comment' | 'custom';
 
 interface Keyword { id: string; word: string }
 interface Trigger { id: string; type: TriggerType }
@@ -42,6 +45,10 @@ interface Automation {
   dmCount: number;
   commentCount: number;
   createdAt: string;
+  matchMode: MatchMode;
+  negativeKeywords: Keyword[];
+  multilingual: boolean;
+  templateType: TemplateType;
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -59,6 +66,10 @@ const MOCK_AUTOMATIONS: Automation[] = [
     dmCount: 342,
     commentCount: 128,
     createdAt: '2026-04-10',
+    matchMode: 'exact',
+    negativeKeywords: [],
+    multilingual: false,
+    templateType: 'comment_dm',
   },
   {
     id: '2',
@@ -72,6 +83,10 @@ const MOCK_AUTOMATIONS: Automation[] = [
     dmCount: 89,
     commentCount: 0,
     createdAt: '2026-04-14',
+    matchMode: 'fuzzy',
+    negativeKeywords: [],
+    multilingual: true,
+    templateType: 'dm_keyword',
   },
 ];
 
@@ -95,6 +110,10 @@ const TRIGGER_LABELS: Record<TriggerType, string> = {
   story_mention: 'Story Mention',
   dm_keyword: 'DM Keyword',
   post_like: 'Post Like',
+  live_comment: 'Live Stream Comment',
+  story_reply: 'Story Reply / Reaction',
+  story_reaction: 'Story Reaction',
+  story_poll: 'Story Poll Response',
 };
 
 const TRIGGER_ICONS: Record<TriggerType, React.ElementType> = {
@@ -102,6 +121,28 @@ const TRIGGER_ICONS: Record<TriggerType, React.ElementType> = {
   story_mention: AtSign,
   dm_keyword: MessageCircle,
   post_like: Heart,
+  live_comment: Radio,
+  story_reply: Image,
+  story_reaction: Heart,
+  story_poll: BarChart3,
+};
+
+const TRIGGER_DESCS: Record<TriggerType, string> = {
+  comment: 'Fires when someone comments on your post',
+  story_mention: 'Fires when you are tagged in a story',
+  dm_keyword: 'Fires when DM contains keyword',
+  post_like: 'Fires when someone likes your post',
+  live_comment: 'Fires when someone comments a keyword during your live',
+  story_reply: 'Fires when someone replies or reacts to your story',
+  story_reaction: 'Fires on emoji reactions to your story',
+  story_poll: 'Fires when someone votes on your story poll',
+};
+
+const MATCH_MODE_LABELS: Record<MatchMode, string> = {
+  exact: 'Exact Match',
+  fuzzy: 'Fuzzy Match',
+  ai_intent: 'AI Intent',
+  sentiment: 'Sentiment',
 };
 
 // ─── Reusable UI ──────────────────────────────────────────────────────────────
@@ -172,29 +213,56 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
 
   return (
     <div className="space-y-6">
-      <div className="pt-1">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Overview</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Your Instagram automation performance at a glance.</p>
+      {/* Hero banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pink-500/10 via-violet-500/5 to-transparent border border-pink-500/20 p-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-pink-500/30">
+              <Instagram className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Instagram Automation</h1>
+              <p className="text-sm text-[var(--text-secondary)] mt-0.5">Auto DM · Smart Replies · Lead Capture</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              {activeCount} Running
+            </span>
+            <button
+              onClick={() => onNavigate('automations')}
+              className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-pink-500/20"
+            >
+              <Zap className="w-4 h-4" /> Go Live
+            </button>
+          </div>
+        </div>
+        {/* Decorative blobs */}
+        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-violet-500/10 blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-4 right-16 w-24 h-24 rounded-full bg-pink-500/10 blur-2xl pointer-events-none" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Stat cards — 4-col on md+, 2×2 on mobile */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={Zap} label="Active Automations" value={activeCount} sub={`of ${automations.length} total`} color="pink" />
         <StatCard icon={Send} label="DMs Sent" value={totalDMs.toLocaleString()} sub="all time" color="violet" />
         <StatCard icon={Users} label="Leads Captured" value={MOCK_LEADS.length} sub="from all sources" color="emerald" />
         <StatCard icon={MessageSquare} label="Comments Replied" value={totalComments.toLocaleString()} sub="auto-replies" color="blue" />
       </div>
 
-      {/* Quick actions */}
+      {/* Quick actions — 4 cards including Templates */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[
           { label: 'Create Automation', desc: 'Set up keywords and triggers', icon: Plus, view: 'automations' as View, color: 'from-pink-500 to-violet-500' },
           { label: 'View Leads', desc: `${MOCK_LEADS.length} people captured`, icon: Users, view: 'leads' as View, color: 'from-emerald-500 to-teal-500' },
           { label: 'DM Inbox', desc: `${MOCK_DMS.length} messages sent`, icon: MessageCircle, view: 'dms' as View, color: 'from-blue-500 to-indigo-500' },
+          { label: 'Templates', desc: 'Start from a ready-made setup', icon: Sparkles, view: 'templates' as View, color: 'from-violet-500 to-pink-500' },
         ].map(q => (
           <button
             key={q.label}
             onClick={() => onNavigate(q.view)}
-            className="group bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 text-left flex items-center gap-4 hover:border-pink-500/40 transition-all"
+            className="group bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 text-left flex items-center gap-4 hover:border-pink-500/40"
           >
             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${q.color} flex items-center justify-center shrink-0 shadow-lg`}>
               <q.icon className="w-5 h-5 text-white" />
@@ -258,6 +326,10 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
       dmCount: 0,
       commentCount: 0,
       createdAt: new Date().toISOString().slice(0, 10),
+      matchMode: 'exact',
+      negativeKeywords: [],
+      multilingual: false,
+      templateType: 'custom',
     };
     setAutomations(prev => [newA, ...prev]);
     onEdit(newA.id);
@@ -293,7 +365,7 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
           </div>
         )}
         {filtered.map(a => (
-          <div key={a.id} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 hover:border-pink-500/30 transition-all">
+          <div key={a.id} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 hover:border-pink-500/30">
             <div className="flex items-start gap-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${a.active ? 'bg-pink-500/10' : 'bg-[var(--bg-tertiary)]'}`}>
                 <Zap className={`w-5 h-5 ${a.active ? 'text-pink-500' : 'text-[var(--text-secondary)]'}`} />
@@ -337,6 +409,7 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
 function BuilderView({ automation, onUpdate, onBack }: { automation: Automation; onUpdate: (a: Automation) => void; onBack: () => void }) {
   const [local, setLocal] = useState<Automation>(automation);
   const [newKeyword, setNewKeyword] = useState('');
+  const [newNegKeyword, setNewNegKeyword] = useState('');
   const [activeTab, setActiveTab] = useState<'keywords' | 'triggers' | 'listener' | 'message'>('keywords');
 
   const save = () => { onUpdate(local); onBack(); };
@@ -350,6 +423,17 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
 
   function removeKeyword(id: string) {
     setLocal(p => ({ ...p, keywords: p.keywords.filter(k => k.id !== id) }));
+  }
+
+  function addNegKeyword() {
+    const word = newNegKeyword.trim().toLowerCase();
+    if (!word || local.negativeKeywords.some(k => k.word === word)) return;
+    setLocal(p => ({ ...p, negativeKeywords: [...p.negativeKeywords, { id: Date.now().toString(), word }] }));
+    setNewNegKeyword('');
+  }
+
+  function removeNegKeyword(id: string) {
+    setLocal(p => ({ ...p, negativeKeywords: p.negativeKeywords.filter(k => k.id !== id) }));
   }
 
   function toggleTrigger(type: TriggerType) {
@@ -367,6 +451,13 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
     { id: 'listener', label: 'AI / Message', icon: Bot },
     { id: 'message', label: 'DM Content', icon: Send },
   ] as const;
+
+  const matchModes: { mode: MatchMode; desc: string }[] = [
+    { mode: 'exact', desc: 'Only exact word matches' },
+    { mode: 'fuzzy', desc: 'Allows typos & variations' },
+    { mode: 'ai_intent', desc: 'AI understands meaning' },
+    { mode: 'sentiment', desc: 'Matches by emotion/tone' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -409,7 +500,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
 
       {/* Keywords tab */}
       {activeTab === 'keywords' && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-4">
+        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-5">
           <div>
             <h3 className="text-sm font-bold text-[var(--text-primary)]">Trigger Keywords</h3>
             <p className="text-xs text-[var(--text-secondary)] mt-1">When someone comments or DMs these words, the automation fires.</p>
@@ -437,6 +528,74 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
               </span>
             ))}
           </div>
+
+          {/* Match Mode selector */}
+          <div className="border-t border-[var(--border)] pt-4 space-y-3">
+            <p className="text-xs font-bold text-[var(--text-primary)]">Match Mode</p>
+            <div className="flex flex-wrap gap-2">
+              {matchModes.map(({ mode, desc }) => (
+                <button
+                  key={mode}
+                  title={desc}
+                  onClick={() => setLocal(p => ({ ...p, matchMode: mode }))}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    local.matchMode === mode
+                      ? 'bg-pink-500 text-white shadow shadow-pink-500/30'
+                      : 'bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-pink-500/40 hover:text-pink-500'
+                  }`}
+                >
+                  {MATCH_MODE_LABELS[mode]}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-[var(--text-secondary)]">
+              {matchModes.find(m => m.mode === local.matchMode)?.desc}
+            </p>
+          </div>
+
+          {/* Negative Keywords */}
+          <div className="border-t border-[var(--border)] pt-4 space-y-3">
+            <div>
+              <p className="text-xs font-bold text-red-400">Negative Keywords</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">If any of these appear, the automation will NOT fire.</p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                value={newNegKeyword}
+                onChange={e => setNewNegKeyword(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addNegKeyword()}
+                placeholder="Add negative keyword..."
+                className="flex-1 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-red-500/40"
+              />
+              <button onClick={addNegKeyword} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors">
+                Add
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {local.negativeKeywords.length === 0 && <p className="text-xs text-[var(--text-secondary)]">No negative keywords yet.</p>}
+              {local.negativeKeywords.map(k => (
+                <span key={k.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full text-sm font-semibold">
+                  -{k.word}
+                  <button onClick={() => removeNegKeyword(k.id)} className="hover:text-red-300 transition-colors">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Multilingual toggle */}
+          <div className="border-t border-[var(--border)] pt-4 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-bold text-[var(--text-primary)]">Detect keywords in any language (AI-powered)</p>
+                <Badge color="pink">PRO</Badge>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">Match keywords regardless of script or language</p>
+            </div>
+            <Toggle checked={local.multilingual} onChange={v => setLocal(p => ({ ...p, multilingual: v }))} />
+          </div>
+
           <div className="border-t border-[var(--border)] pt-4">
             <p className="text-xs text-[var(--text-secondary)] font-semibold mb-2">Pro tip: Use broader keywords for higher reach</p>
             <div className="flex flex-wrap gap-2">
@@ -465,22 +624,17 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
                 <button
                   key={type}
                   onClick={() => toggleTrigger(type)}
-                  className={`flex items-center gap-4 p-4 rounded-xl border text-left transition-all ${active ? 'border-pink-500/50 bg-pink-500/5' : 'border-[var(--border)] bg-[var(--bg-tertiary)] hover:border-pink-500/30'}`}
+                  className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${active ? 'border-pink-500/50 bg-pink-500/5' : 'border-[var(--border)] bg-[var(--bg-tertiary)] hover:border-pink-500/30'}`}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${active ? 'bg-pink-500/15 text-pink-500' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
-                    <Icon className="w-5 h-5" />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${active ? 'bg-pink-500/15 text-pink-500' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
+                    <Icon className="w-4.5 h-4.5" />
                   </div>
-                  <div className="flex-1">
-                    <p className={`text-sm font-semibold ${active ? 'text-pink-500' : 'text-[var(--text-primary)]'}`}>{TRIGGER_LABELS[type]}</p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                      {type === 'comment' && 'Fires when someone comments on your post'}
-                      {type === 'story_mention' && 'Fires when you are tagged in a story'}
-                      {type === 'dm_keyword' && 'Fires when DM contains keyword'}
-                      {type === 'post_like' && 'Fires when someone likes your post'}
-                    </p>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-semibold truncate ${active ? 'text-pink-500' : 'text-[var(--text-primary)]'}`}>{TRIGGER_LABELS[type]}</p>
+                    <p className="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-snug">{TRIGGER_DESCS[type]}</p>
                   </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-pink-500 bg-pink-500' : 'border-[var(--border)]'}`}>
-                    {active && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-pink-500 bg-pink-500' : 'border-[var(--border)]'}`}>
+                    {active && <CheckCircle2 className="w-2.5 h-2.5 text-white" />}
                   </div>
                 </button>
               );
@@ -621,7 +775,7 @@ function LeadsView() {
         </select>
       </div>
 
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden overflow-hidden">
+      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--border)]">
@@ -674,7 +828,7 @@ function DMsView() {
       </div>
       <div className="space-y-3">
         {MOCK_DMS.map(dm => (
-          <div key={dm.id} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 hover:border-pink-500/20 transition-all">
+          <div key={dm.id} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 hover:border-pink-500/20">
             <div className="flex items-start gap-4">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
                 {dm.receiver[1].toUpperCase()}
@@ -858,6 +1012,144 @@ function SettingsView() {
   );
 }
 
+// ─── Templates View ───────────────────────────────────────────────────────────
+
+interface TemplateCard {
+  type: Exclude<TemplateType, 'custom'>;
+  title: string;
+  desc: string;
+  gradient: string;
+  icon: React.ElementType;
+  features: string[];
+  defaultKeywords: string[];
+  defaultPrompt: string;
+  defaultTriggers: TriggerType[];
+}
+
+const TEMPLATE_CARDS: TemplateCard[] = [
+  {
+    type: 'comment_dm',
+    title: 'Comment to DM',
+    desc: 'Auto-DM anyone who comments your trigger word on a post.',
+    gradient: 'from-pink-500 to-violet-500',
+    icon: MessageSquare,
+    features: ['Post comment trigger', 'Instant DM delivery', 'Public comment reply'],
+    defaultKeywords: ['PRICE', 'LINK', 'PDF', 'COURSE'],
+    defaultPrompt: 'Hi {name}! Thanks for your comment. Here is the link you requested: 👇',
+    defaultTriggers: ['comment'],
+  },
+  {
+    type: 'dm_keyword',
+    title: 'DM Keyword Reply',
+    desc: 'Auto-respond when someone DMs you a specific keyword.',
+    gradient: 'from-violet-500 to-blue-500',
+    icon: MessageCircle,
+    features: ['DM keyword trigger', 'Smart AI option', 'Conversation starter'],
+    defaultKeywords: ['pricing', 'catalog', 'faq'],
+    defaultPrompt: 'Hey {name}! Great question. Here is everything you need to know: 📋',
+    defaultTriggers: ['dm_keyword'],
+  },
+  {
+    type: 'story_reply',
+    title: 'Story Reply Flow',
+    desc: 'Engage with everyone who replies or reacts to your stories.',
+    gradient: 'from-pink-500 to-rose-500',
+    icon: Image,
+    features: ['Story reply trigger', 'Story reaction trigger', 'Warm lead follow-up'],
+    defaultKeywords: ['yes', 'interested', 'more'],
+    defaultPrompt: 'Hey {name}! Glad you liked the story! Here is what I wanted to share with you: 🎁',
+    defaultTriggers: ['story_reply', 'story_reaction'],
+  },
+  {
+    type: 'live_comment',
+    title: 'Live Stream DM',
+    desc: 'Capture leads in real time while you go live on Instagram.',
+    gradient: 'from-orange-500 to-amber-500',
+    icon: Radio,
+    features: ['Live comment trigger', 'Real-time delivery', 'High-intent audience'],
+    defaultKeywords: ['link', 'send', 'want', 'yes'],
+    defaultPrompt: 'Hi {name}! You asked during the live — here is the resource I mentioned: 🔗',
+    defaultTriggers: ['live_comment'],
+  },
+];
+
+function TemplatesView({ onEdit, setAutomations }: { onEdit: (id: string) => void; setAutomations: React.Dispatch<React.SetStateAction<Automation[]>> }) {
+  function useTemplate(card: TemplateCard) {
+    const newA: Automation = {
+      id: Date.now().toString(),
+      name: card.title,
+      active: false,
+      keywords: card.defaultKeywords.map((w, i) => ({ id: `${Date.now()}-${i}`, word: w.toLowerCase() })),
+      triggers: card.defaultTriggers.map((t, i) => ({ id: `${Date.now()}-t${i}`, type: t })),
+      listener: 'MESSAGE',
+      prompt: card.defaultPrompt,
+      commentReply: 'Check your DMs! 📩',
+      dmCount: 0,
+      commentCount: 0,
+      createdAt: new Date().toISOString().slice(0, 10),
+      matchMode: 'exact',
+      negativeKeywords: [],
+      multilingual: false,
+      templateType: card.type,
+    };
+    setAutomations(prev => [newA, ...prev]);
+    onEdit(newA.id);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="pt-1">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Templates</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">Start with a pre-built automation and customise it to your needs.</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {TEMPLATE_CARDS.map(card => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={card.type}
+              className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:border-pink-500/30 flex flex-col"
+            >
+              {/* Gradient icon area */}
+              <div className={`h-28 bg-gradient-to-br ${card.gradient} flex items-center justify-center relative overflow-hidden`}>
+                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_50%,white,transparent_60%)]" />
+                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                  <Icon className="w-7 h-7 text-white" />
+                </div>
+              </div>
+
+              {/* Card body */}
+              <div className="p-5 flex flex-col gap-3 flex-1">
+                <div>
+                  <h3 className="text-base font-bold text-[var(--text-primary)]">{card.title}</h3>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{card.desc}</p>
+                </div>
+
+                <ul className="space-y-1.5">
+                  {card.features.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => useTemplate(card)}
+                  className={`mt-auto w-full bg-gradient-to-r ${card.gradient} hover:opacity-90 text-white text-sm font-bold py-2.5 rounded-xl transition-all shadow-lg`}
+                >
+                  Use Template
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function GuideView() {
   const steps = [
     { num: 1, title: 'Connect Instagram', desc: 'Link your Instagram Business or Creator account via OAuth in Settings.' },
@@ -919,6 +1211,7 @@ const NAV_ITEMS: { view: View; icon: React.ElementType; label: string; badge?: s
   { view: 'dms', icon: MessageCircle, label: 'DM Inbox', badge: String(MOCK_DMS.length) },
   { view: 'analytics', icon: BarChart3, label: 'Analytics' },
   { view: 'settings', icon: Settings, label: 'Settings' },
+  { view: 'templates', icon: Sparkles, label: 'Templates' },
   { view: 'guide', icon: FileText, label: 'Guide' },
 ];
 
@@ -965,6 +1258,7 @@ export default function AutoDMPage() {
       case 'dms': return <DMsView />;
       case 'analytics': return <AnalyticsView automations={automations} />;
       case 'settings': return <SettingsView />;
+      case 'templates': return <TemplatesView onEdit={handleEdit} setAutomations={setAutomations} />;
       case 'guide': return <GuideView />;
       default: return null;
     }

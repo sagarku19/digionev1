@@ -6,3 +6,5 @@ tags: []
 notes
 
 Refactor to make codebase better
+
+organise codebase better after creating all the dasboard site design better
