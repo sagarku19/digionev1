@@ -35,6 +35,21 @@ DigiOne is a creator monetization platform. Creators sign up, build a storefront
 
 ---
 
+## Reference Files
+
+Files in `.claude/rules/` are **auto-loaded by Claude Code** on every session.
+
+| File | Read when |
+|---|---|
+| `.claude/rules/agent-roles.md` | Assigning work across agents or checking which agent owns a file |
+| `.claude/rules/mcp-tools.md` | Exploring the codebase — pick the right graph tool before grepping |
+| `.claude/rules/feature-checklists.md` | Adding a new dashboard feature, storefront section, or fixing a bug |
+| `.claude/rules/hooks-reference.md` | You need data in a client component and are unsure which hook to use |
+| `.claude/rules/data-patterns.md` | Writing data fetching code in any component or route handler |
+| `.claude/rules/anti-patterns.md` | About to do something that feels like it might be wrong — check here first |
+
+---
+
 ## Project Structure
 
 ```
@@ -42,7 +57,7 @@ digionev1/
 ├── app/
 │   ├── (auth)/                   # Login, signup, password reset
 │   ├── (marketing)/              # Public landing pages, blog, pricing
-│   ├── (storefront)/             # Creator public pages (link-in-bio, store, product pages)
+│   ├── (storefront)/             # Creator public pages (link-in-bio, store, product, pay, upsells)
 │   ├── (buyer)/                  # Checkout and cart experience
 │   ├── dashboard/                # Authenticated creator CRM
 │   │   ├── analytics/
@@ -53,18 +68,22 @@ digionev1/
 │   │   ├── orders/
 │   │   ├── marketing/            # Coupons, affiliates, leads, referrals
 │   │   ├── automation/           # Email, WhatsApp, Telegram, Google Sheets
-│   │   └── settings/             # Profile, billing, subscription
-│   └── api/                      # Server-side route handlers only
-│       ├── checkout/             # Cashfree payment creation
-│       ├── webhook/cashfree/     # Payment confirmation (source of truth)
-│       └── upload/               # Supabase Storage
+│   │   ├── settings/             # Profile, billing, subscription
+│   │   └── …                     # autodm, help, integration, media, notifications, payouts
+│   ├── api/                      # Server-side route handlers — 14+ routes (partial list)
+│   │   ├── checkout/             # Cashfree payment creation
+│   │   ├── webhook/cashfree/     # Payment confirmation (source of truth)
+│   │   ├── upload/               # Supabase Storage
+│   │   └── …                     # auth, sites, leads, coupons, payouts, discover, products, linkinbio
+│   └── …                         # account, actions, payment
 ├── src/
 │   ├── components/
 │   │   ├── dashboard/            # Dashboard UI (Sidebar, TopBar, editors)
 │   │   ├── storefront/           # Public creator page components
 │   │   ├── marketing/            # Landing page sections
 │   │   ├── store/                # Shared (ProductCard, CartButton)
-│   │   └── ui/                   # Atomic primitives (DataTable, SideDrawer, etc.)
+│   │   ├── ui/                   # Atomic primitives (DataTable, SideDrawer, etc.)
+│   │   └── assets/               # Shared SVG/image assets (DigiOneLogo, etc.)
 │   ├── hooks/                    # All TanStack Query hooks
 │   ├── lib/                      # Supabase clients, utilities, theme helpers
 │   ├── contexts/                 # React contexts (DashboardThemeContext)
@@ -110,50 +129,6 @@ digionev1/
 - No `useEffect` for data fetching — use TanStack Query hooks.
 - No new packages without asking first.
 - No comments explaining what code does — write self-documenting names instead.
-
----
-
-## Data Fetching Patterns
-
-### Client Components (dashboard)
-```typescript
-// Always use TanStack Query via custom hooks — never raw Supabase in components
-const { products } = useProducts();
-const { profile } = useCreator();
-const { unreadCount } = useNotifications();
-```
-
-### Server Components (storefront, marketing)
-```typescript
-// Server supabase client is correct here
-import { createClient } from '@/lib/supabase/server';
-const supabase = await createClient();
-```
-
-### Route Handlers (API)
-```typescript
-import { createClient } from '@/lib/supabase/server';
-// server client only — never browser client in route handlers
-```
-
----
-
-## Key Hooks Reference
-
-| Hook | Returns |
-|---|---|
-| `useCreator()` | `{ profile }` — authenticated creator's profile |
-| `useProducts()` | `{ products }` — creator's product list |
-| `useNotifications()` | `{ unreadCount, notifications }` |
-| `useOrders()` | `{ orders }` |
-| `useEarnings()` | `{ earnings, stats }` |
-| `useCustomers()` | `{ customers }` |
-| `useSites()` | `{ sites }` — creator's storefront sites |
-| `useStorefront(slug)` | Storefront data for a given slug |
-| `useCart()` | Cart state for buyer checkout |
-| `useAnalytics()` | Analytics data |
-| `useCoupons()` | Coupon management |
-| `useAffiliates()` | Affiliate program data |
 
 ---
 
@@ -226,95 +201,6 @@ Buyer clicks "Buy"
 ```
 
 Never short-circuit this. Never confirm payments client-side.
-
----
-
-## Agent Roles (for parallel tasks)
-
-Each agent owns one domain. Agents must not touch files outside their domain.
-
-### Frontend Agent
-**Owns:** `src/components/`, `app/(marketing)/`, `app/(auth)/`, `app/globals.css`
-**Job:** UI components, layouts, responsiveness, animations, accessibility
-**Never:** Database queries, API route changes, imports from other icon libraries
-
-### Dashboard Agent
-**Owns:** `app/dashboard/`, `src/components/dashboard/`
-**Job:** Creator CRM — products, analytics, earnings, settings, site builder
-**Never:** Direct Supabase calls in components (use hooks), hardcoded colors (use CSS vars)
-
-### Storefront Agent
-**Owns:** `app/(storefront)/`, `src/components/storefront/`, `src/components/store/`
-**Job:** Public creator pages, checkout UX, product display, theme rendering
-**Never:** Dashboard imports, hardcoded colors (use `var(--creator-*)`)
-
-### Backend Agent
-**Owns:** `app/api/`, `src/lib/`, `supabase/`
-**Job:** API routes, Supabase queries, Cashfree integration, webhooks
-**Never:** Expose secrets to client, skip input validation, use browser Supabase client
-
-### Review Agent
-**Owns:** Everything (read-only)
-**Job:** Audit for TS errors, security issues, broken rules, UX regressions
-**Output format:** `FILE → LINE → PROBLEM → SUGGESTED FIX` — one line per issue
-
----
-
-## How to Add a New Feature (checklist)
-
-### New dashboard feature
-1. `app/dashboard/[feature]/page.tsx` — page
-2. `src/hooks/use[Feature].ts` — TanStack Query hook
-3. `src/components/dashboard/` — UI components
-4. `src/components/dashboard/Sidebar.tsx` — add nav link
-5. `app/api/[feature]/route.ts` — any data mutations
-
-### New storefront section
-1. `src/components/storefront/sections/` — component
-2. `src/components/dashboard/site-edit/section-defs.ts` — register it
-3. `src/components/storefront/SectionRenderer.tsx` — add case
-4. Add editor tab if user needs to configure it
-
-### Bug fix
-1. Find the exact file and line
-2. Fix only that — no surrounding cleanup or refactoring
-3. Run `npx tsc --noEmit` to confirm TypeScript passes
-
----
-
-## MCP Tools: code-review-graph
-
-**Use the knowledge graph BEFORE Grep/Glob/Read when exploring the codebase.** It is faster, uses fewer tokens, and provides structural context (callers, dependents, test coverage) that file scanning cannot.
-
-| Tool | Use when |
-|---|---|
-| `semantic_search_nodes` | Finding functions/classes by name or concept |
-| `query_graph` | Tracing callers, callees, imports, tests |
-| `detect_changes` | Reviewing code changes — gives risk-scored analysis |
-| `get_review_context` | Need source snippets for review — token-efficient |
-| `get_impact_radius` | Understanding blast radius of a change |
-| `get_affected_flows` | Finding which execution paths are impacted |
-| `get_architecture_overview` | High-level codebase structure |
-| `refactor_tool` | Planning renames, finding dead code |
-
-Fall back to Grep/Glob/Read only when the graph doesn't cover what you need. The graph auto-updates on file changes via hooks.
-
----
-
-## What NOT to Do
-
-| Never | Why |
-|---|---|
-| `createClient()` in client components | Use pre-configured imports from `@/lib/supabase/*` |
-| Write to `orders`/`creator_balances` client-side | Revenue integrity — server only |
-| Use `any` type | Strict TypeScript is non-negotiable |
-| Import from icon libraries other than lucide-react | Consistency |
-| Create new CSS files | Extend `globals.css` only |
-| Use `useEffect` for data fetching | Use TanStack Query hooks |
-| Add `console.log` | Clean production code |
-| Call Cashfree from the browser | Security — always via `/api/checkout/*` |
-| Install new packages without asking | Intentional stack, no bloat |
-| Touch `types/database.types.ts` | Auto-generated — run `npm run update-types` instead |
 
 ---
 
