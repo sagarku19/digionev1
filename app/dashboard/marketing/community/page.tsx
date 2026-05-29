@@ -2,11 +2,10 @@
 // Community — real DB-backed posts with likes, category filter, compose, delete.
 // DB: community_posts, community_reactions (tables from migration)
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import { useCreator } from '@/hooks/useCreator';
+import { useCommunity, type CommunityPost } from '@/hooks/useCommunity';
 import {
   MessageCircle, Send, ThumbsUp, Pin, Share2,
   X, Loader2, AlertCircle, Zap, ChevronRight,
@@ -43,19 +42,21 @@ function Avatar({ name, url, size = 'md' }: { name: string; url?: string | null;
   );
 }
 
-type Post = {
-  id: string; content: string; category: string; is_pinned: boolean;
-  created_at: string; creator_id: string;
-  profiles?: { full_name: string; avatar_url: string | null };
-  reaction_count: number; my_reaction: boolean;
-};
-
 export default function CommunityPage() {
-  const supabase = createClient();
   const { profile } = useCreator();
-  const [profileId, setProfileId] = useState<string | null>(null);
-  const [posts, setPosts]         = useState<Post[]>([]);
-  const [loading, setLoading]     = useState(true);
+  const {
+    posts: serverPosts,
+    creatorId: profileId,
+    isLoading: loading,
+    createPost,
+    deletePost: deleteCommPost,
+    toggleReaction,
+  } = useCommunity();
+  const [optimistic, setOptimistic] = useState<Record<string, { reaction_count: number; my_reaction: boolean }>>({});
+  const posts: CommunityPost[] = serverPosts.map(p => optimistic[p.id]
+    ? { ...p, ...optimistic[p.id] }
+    : p
+  );
   const [posting, setPosting]     = useState(false);
   const [newContent, setNewContent] = useState('');
   const [newCategory, setNewCategory] = useState('General');
@@ -67,96 +68,52 @@ export default function CommunityPage() {
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
   const avatarUrl  = (profile as any)?.avatar_url;
 
-  const loadPosts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const pid = await getCreatorProfileId();
-      setProfileId(pid);
-
-      // Load posts with author profile
-      const { data: postsData, error: postsErr } = await (supabase as any)
-        .from('community_posts')
-        .select('*, profiles(full_name, avatar_url)')
-        .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (postsErr) throw postsErr;
-
-      // Load my reactions
-      const { data: myReactions } = await (supabase as any)
-        .from('community_reactions')
-        .select('post_id')
-        .eq('creator_id', pid);
-
-      const mySet = new Set((myReactions as any[])?.map((r: any) => r.post_id) ?? []);
-
-      // Count reactions per post
-      const { data: reactionCounts } = await (supabase as any)
-        .from('community_reactions')
-        .select('post_id');
-
-      const countMap: Record<string, number> = {};
-      (reactionCounts as any[])?.forEach((r: any) => { countMap[r.post_id] = (countMap[r.post_id] || 0) + 1; });
-
-      setPosts((postsData ?? []).map((p: any) => ({
-        ...p,
-        reaction_count: countMap[p.id] || 0,
-        my_reaction: mySet.has(p.id),
-      })));
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
-
-  useEffect(() => { loadPosts(); }, [loadPosts]);
-
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newContent.trim() || !profileId) return;
     setPosting(true);
     try {
-      const { error } = await (supabase as any).from('community_posts').insert({
-        creator_id: profileId,
-        content: newContent.trim(),
-        category: newCategory,
-        is_pinned: false,
-      });
-      if (error) throw error;
+      await createPost({ content: newContent.trim(), category: newCategory });
       setNewContent('');
       setNewCategory('General');
-      await loadPosts();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      setError((e as Error).message);
     } finally {
       setPosting(false);
     }
   };
 
-  const toggleLike = async (post: Post) => {
+  const toggleLike = async (post: CommunityPost) => {
     if (!profileId) return;
-    if (post.my_reaction) {
-      await (supabase as any).from('community_reactions').delete()
-        .eq('post_id', post.id).eq('creator_id', profileId);
-    } else {
-      await (supabase as any).from('community_reactions').insert({
-        post_id: post.id, creator_id: profileId, reaction: 'like',
+    // Read the latest optimistic snapshot so rapid double-clicks toggle correctly
+    // instead of both reading the same stale `post.my_reaction`.
+    const cur = optimistic[post.id] ?? { reaction_count: post.reaction_count, my_reaction: post.my_reaction };
+    const hadReacted = cur.my_reaction;
+    setOptimistic(prev => ({
+      ...prev,
+      [post.id]: {
+        my_reaction: !hadReacted,
+        reaction_count: hadReacted ? cur.reaction_count - 1 : cur.reaction_count + 1,
+      },
+    }));
+    try {
+      await toggleReaction({ postId: post.id, hasReacted: hadReacted });
+    } catch {
+      // Roll back on error.
+      setOptimistic(prev => {
+        const next = { ...prev };
+        delete next[post.id];
+        return next;
       });
     }
-    // Optimistic update
-    setPosts(prev => prev.map(p => p.id === post.id ? {
-      ...p,
-      my_reaction: !p.my_reaction,
-      reaction_count: p.my_reaction ? p.reaction_count - 1 : p.reaction_count + 1,
-    } : p));
   };
 
   const deletePost = async (id: string) => {
-    await (supabase as any).from('community_posts').delete().eq('id', id);
-    setPosts(prev => prev.filter(p => p.id !== id));
-    setDeleteTarget(null);
+    try {
+      await deleteCommPost(id);
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
   const filtered = posts.filter(p =>
