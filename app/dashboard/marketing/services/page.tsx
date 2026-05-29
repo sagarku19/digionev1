@@ -2,9 +2,8 @@
 // Services — full CRUD for creator services (1:1, retainer, audit) + booking management.
 // DB: services, service_bookings (tables from migration)
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
+import React, { useState, useEffect } from 'react';
+import { useServices, type Service, type Booking } from '@/hooks/useServices';
 import {
   Video, Briefcase, FileSearch, Plus, X, Trash2, ToggleLeft, ToggleRight,
   AlertCircle, Loader2, Calendar, Users, IndianRupee, Clock, CheckCircle2,
@@ -38,15 +37,17 @@ function CopyLink({ url }: { url: string }) {
   );
 }
 
-type Service = { id: string; title: string; description: string | null; service_type: string; price: number; duration_minutes: number | null; is_active: boolean; metadata: any; created_at: string };
-type Booking = { id: string; service_id: string; customer_name: string | null; customer_email: string | null; status: string; booked_at: string | null; amount_paid: number | null; created_at: string };
-
 export default function ServicesPage() {
-  const supabase   = createClient();
-  const [profileId, setProfileId]     = useState<string | null>(null);
-  const [services, setServices]       = useState<Service[]>([]);
-  const [bookings, setBookings]       = useState<Booking[]>([]);
-  const [loading, setLoading]         = useState(true);
+  const {
+    services,
+    bookings,
+    isLoading: loading,
+    createService,
+    updateService,
+    deleteService: deleteSvc,
+    toggleActive: toggleSvcActive,
+    updateBookingStatus: updateBkgStatus,
+  } = useServices();
   const [showModal, setShowModal]     = useState(false);
   const [editService, setEditService] = useState<Service | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -61,31 +62,10 @@ export default function ServicesPage() {
 
   useEffect(() => { setOrigin(window.location.origin); }, []);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const pid = await getCreatorProfileId();
-      setProfileId(pid);
-
-      const { data: svcs } = await (supabase as any).from('services').select('*')
-        .eq('creator_id', pid).order('created_at', { ascending: false });
-      setServices(svcs ?? []);
-
-      if (svcs && svcs.length > 0) {
-        const { data: bkgs } = await (supabase as any).from('service_bookings').select('*')
-          .in('service_id', svcs.map((s: any) => s.id)).order('created_at', { ascending: false });
-        setBookings(bkgs ?? []);
-      }
-    } catch {}
-    setLoading(false);
-  }, [supabase]);
-
-  useEffect(() => { load(); }, [load]);
-
   const openCreate = () => { setEditService(null); setForm(emptyForm); setFormError(''); setShowModal(true); };
   const openEdit   = (s: Service) => {
     setEditService(s);
-    setForm({ title: s.title, description: s.description ?? '', service_type: s.service_type, price: s.price, duration_minutes: s.duration_minutes ?? 30, calendly_url: s.metadata?.calendly_url ?? '' });
+    setForm({ title: s.title, description: s.description ?? '', service_type: s.service_type, price: s.price, duration_minutes: s.duration_minutes ?? 30, calendly_url: (s.metadata as { calendly_url?: string } | null)?.calendly_url ?? '' });
     setFormError(''); setShowModal(true);
   };
 
@@ -97,7 +77,6 @@ export default function ServicesPage() {
     setSaving(true);
     try {
       const payload = {
-        creator_id: profileId!,
         title: form.title.trim(),
         description: form.description.trim() || null,
         service_type: form.service_type,
@@ -106,35 +85,19 @@ export default function ServicesPage() {
         is_active: true,
         metadata: form.calendly_url ? { calendly_url: form.calendly_url } : null,
       };
-      if (editService) {
-        await (supabase as any).from('services').update(payload).eq('id', editService.id);
-      } else {
-        await (supabase as any).from('services').insert(payload);
-      }
+      if (editService) await updateService({ id: editService.id, updates: payload });
+      else await createService(payload as Omit<Service, 'id' | 'created_at'>);
       setShowModal(false);
-      await load();
-    } catch (err: any) {
-      setFormError(err.message ?? 'Failed to save service.');
+    } catch (err) {
+      setFormError((err as Error).message ?? 'Failed to save service.');
     } finally {
       setSaving(false);
     }
   };
 
-  const toggleActive = async (svc: Service) => {
-    await (supabase as any).from('services').update({ is_active: !svc.is_active }).eq('id', svc.id);
-    setServices(prev => prev.map(s => s.id === svc.id ? { ...s, is_active: !s.is_active } : s));
-  };
-
-  const deleteService = async (id: string) => {
-    await (supabase as any).from('services').delete().eq('id', id);
-    setServices(prev => prev.filter(s => s.id !== id));
-    setDeleteConfirm(null);
-  };
-
-  const updateBookingStatus = async (id: string, status: string) => {
-    await (supabase as any).from('service_bookings').update({ status }).eq('id', id);
-    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
-  };
+  const toggleActive = (svc: Service) => { toggleSvcActive(svc); };
+  const deleteService = (id: string) => { deleteSvc(id); setDeleteConfirm(null); };
+  const updateBookingStatus = (id: string, status: string) => { updateBkgStatus({ id, status }); };
 
   const activeServices = services.filter(s => s.is_active).length;
   const totalRevenue   = bookings.filter(b => b.status === 'completed').reduce((s, b) => s + (b.amount_paid ?? 0), 0);
@@ -250,8 +213,8 @@ export default function ServicesPage() {
                     </div>
 
                     <div className="border-t border-[var(--border)] pt-3 mt-auto">
-                      {svc.metadata?.calendly_url ? (
-                        <a href={svc.metadata.calendly_url} target="_blank" rel="noreferrer"
+                      {(svc.metadata as { calendly_url?: string } | null)?.calendly_url ? (
+                        <a href={(svc.metadata as { calendly_url?: string }).calendly_url} target="_blank" rel="noreferrer"
                           className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
                           <LinkIcon className="w-3 h-3" /> Calendly linked
                         </a>
