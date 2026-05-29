@@ -1,62 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
+import { useMarketingStats } from '@/hooks/useMarketingStats';
 import {
   Ticket, Users, Share2, Calendar, Megaphone,
   ChevronRight, TrendingUp, ArrowUpRight, Zap,
   MessageCircle, BarChart3, Target, Sparkles,
 } from 'lucide-react';
 
-type Stats = {
-  coupons: number;
-  activeCoupons: number;
-  leads: number;
-  affiliates: number;
-  referralCodes: number;
-  referrals: number;
-};
-
 export default function MarketingPage() {
-  const supabase = createClient();
-  const [stats, setStats] = useState<Stats>({ coupons: 0, activeCoupons: 0, leads: 0, affiliates: 0, referralCodes: 0, referrals: 0 });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const pid = await getCreatorProfileId();
-        const { data: { user } } = await supabase.auth.getUser();
-        const uid = user?.id;
-
-        const [couponsRes, leadsRes, affiliatesRes, refCodesRes] = await Promise.all([
-          supabase.from('coupons').select('id, is_active').eq('creator_id', uid ?? ''),
-          supabase.from('lead_form').select('id', { count: 'exact', head: true }).in('site_id',
-            (await supabase.from('sites').select('id').eq('creator_id', pid)).data?.map(s => s.id) ?? []
-          ),
-          supabase.from('affiliates').select('id').eq('creator_id', pid),
-          supabase.from('referral_codes').select('id').eq('owner_creator_id', pid),
-        ]);
-
-        const codeIds = refCodesRes.data?.map(r => r.id) ?? [];
-        const refCount = codeIds.length
-          ? (await supabase.from('order_referrals').select('id', { count: 'exact', head: true }).in('referral_code_id', codeIds)).count ?? 0
-          : 0;
-
-        setStats({
-          coupons: couponsRes.data?.length ?? 0,
-          activeCoupons: couponsRes.data?.filter(c => c.is_active).length ?? 0,
-          leads: leadsRes.count ?? 0,
-          affiliates: affiliatesRes.data?.length ?? 0,
-          referralCodes: refCodesRes.data?.length ?? 0,
-          referrals: refCount,
-        });
-      } catch {}
-      setLoading(false);
-    })();
-  }, []);
+  const { stats, isLoading: loading } = useMarketingStats();
 
   const tools = [
     {
