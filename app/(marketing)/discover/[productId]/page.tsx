@@ -1,35 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import {
-  ArrowLeft, Package, BookOpen, Layout, Sparkles, Layers,
-  ShoppingCart, ExternalLink, Share2, Heart, Star, User,
+  ArrowLeft, Package, BookOpen, Layout, Sparkles,
+  ShoppingCart, Share2, Heart, Star, User,
   Clock, Shield, ChevronRight,
 } from 'lucide-react';
+import { useDiscoverProduct } from '@/hooks/useDiscoverProduct';
 
 interface Creator {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
   email: string | null;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  category: string | null;
-  thumbnail_url: string | null;
-  images: any;
-  content: any;
-  creator_id: string;
-  product_link: string | null;
-  post_purchase_instructions: string | null;
-  created_at: string | null;
-  profiles: Creator | Creator[] | null;
 }
 
 interface RelatedProduct {
@@ -62,31 +47,12 @@ function formatPrice(price: number) {
 
 export default function DiscoverProductPage() {
   const { productId } = useParams<{ productId: string }>();
-  const router = useRouter();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [related, setRelated] = useState<RelatedProduct[]>([]);
-  const [creatorProducts, setCreatorProducts] = useState<RelatedProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading: loading, isError } = useDiscoverProduct(productId);
+  const product = data?.product ?? null;
+  const related = data?.related ?? [];
+  const creatorProducts = data?.creatorProducts ?? [];
   const [activeImage, setActiveImage] = useState(0);
   const [liked, setLiked] = useState(false);
-
-  useEffect(() => {
-    if (!productId) return;
-    setLoading(true);
-    fetch(`/api/discover/${productId}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) {
-          setProduct(null);
-        } else {
-          setProduct(data.product);
-          setRelated(data.related || []);
-          setCreatorProducts(data.creatorProducts || []);
-        }
-      })
-      .catch(() => setProduct(null))
-      .finally(() => setLoading(false));
-  }, [productId]);
 
   if (loading) {
     return (
@@ -111,7 +77,7 @@ export default function DiscoverProductPage() {
     );
   }
 
-  if (!product) {
+  if (isError || !product) {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
         <div className="text-center">
@@ -138,8 +104,8 @@ export default function DiscoverProductPage() {
   const allImages: string[] = [];
   if (product.thumbnail_url) allImages.push(product.thumbnail_url);
   if (Array.isArray(product.images)) {
-    product.images.forEach((img: any) => {
-      const url = typeof img === 'string' ? img : img?.url;
+    product.images.forEach((img: unknown) => {
+      const url = typeof img === 'string' ? img : (img as { url?: string } | null)?.url;
       if (url && !allImages.includes(url)) allImages.push(url);
     });
   }
