@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
+import { useProfileQuery, useProfileMutations } from '@/hooks/useProfile';
 import {
   Save, CheckCircle2, User, AtSign, Phone, Loader2, AlertCircle,
   Twitter, Instagram, Youtube, Globe, Camera, BadgeCheck,
@@ -160,14 +161,12 @@ function OtpModal({
 }
 
 export default function ProfileSettingsPage() {
-  const supabase = createClient();
-
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [profileId, setProfileId] = useState('');
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { data: profile, isLoading: loading } = useProfileQuery(profileId);
+  const { updateProfile, setEmailVerified, setMobileVerified } = useProfileMutations();
 
   const [form, setForm] = useState({
     full_name: '',
@@ -191,62 +190,55 @@ export default function ProfileSettingsPage() {
 
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
-  const loadProfile = async () => {
-    try {
-      const pid = await getCreatorProfileId();
-      setProfileId(pid);
-      const { data } = await supabase.from('profiles').select('*').eq('id', pid).single();
-      if (data) {
-        setProfile(data as Profile);
-        const meta = (data as any).metadata ?? {};
-        setForm({
-          full_name: data.full_name ?? '',
-          email: data.email ?? '',
-          mobile: data.mobile ?? '',
-          avatar_url: data.avatar_url ?? '',
-          tagline: meta.tagline ?? '',
-          location: meta.location ?? '',
-          category: meta.category ?? '',
-          website: meta.website ?? '',
-          twitter: meta.twitter ?? '',
-          instagram: meta.instagram ?? '',
-          youtube: meta.youtube ?? '',
-          linkedin: meta.linkedin ?? '',
-          telegram: meta.telegram ?? '',
-        });
-      }
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    getCreatorProfileId().then(setProfileId).catch((e) => setError(e.message));
+  }, []);
 
-  useEffect(() => { loadProfile(); }, []);
+  useEffect(() => {
+    if (!profile) return;
+    const meta = (profile as any).metadata ?? {};
+    setForm({
+      full_name: profile.full_name ?? '',
+      email: profile.email ?? '',
+      mobile: profile.mobile ?? '',
+      avatar_url: profile.avatar_url ?? '',
+      tagline: meta.tagline ?? '',
+      location: meta.location ?? '',
+      category: meta.category ?? '',
+      website: meta.website ?? '',
+      twitter: meta.twitter ?? '',
+      instagram: meta.instagram ?? '',
+      youtube: meta.youtube ?? '',
+      linkedin: meta.linkedin ?? '',
+      telegram: meta.telegram ?? '',
+    });
+  }, [profile]);
 
   const handleSave = async () => {
+    if (!profileId) return;
     setSaving(true);
     setError('');
     try {
-      const { error: err } = await supabase.from('profiles').update({
-        full_name: form.full_name.trim() || null,
-        email: form.email.trim() || null,
-        mobile: form.mobile.trim() || null,
-        avatar_url: form.avatar_url.trim() || null,
-        metadata: {
-          tagline: form.tagline.trim() || null,
-          location: form.location.trim() || null,
-          category: form.category.trim() || null,
-          website: form.website.trim() || null,
-          twitter: form.twitter.trim() || null,
-          instagram: form.instagram.trim() || null,
-          youtube: form.youtube.trim() || null,
-          linkedin: form.linkedin.trim() || null,
-          telegram: form.telegram.trim() || null,
-        },
-      } as any).eq('id', profileId);
-      if (err) throw err;
-      await loadProfile();
+      await updateProfile({
+        creatorId: profileId,
+        updates: {
+          full_name: form.full_name.trim() || null,
+          email: form.email.trim() || null,
+          mobile: form.mobile.trim() || null,
+          avatar_url: form.avatar_url.trim() || null,
+          metadata: {
+            tagline: form.tagline.trim() || null,
+            location: form.location.trim() || null,
+            category: form.category.trim() || null,
+            website: form.website.trim() || null,
+            twitter: form.twitter.trim() || null,
+            instagram: form.instagram.trim() || null,
+            youtube: form.youtube.trim() || null,
+            linkedin: form.linkedin.trim() || null,
+            telegram: form.telegram.trim() || null,
+          },
+        } as any,
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: any) {
@@ -257,14 +249,10 @@ export default function ProfileSettingsPage() {
   };
 
   const handleVerifySuccess = async () => {
+    if (!verifyModal) return;
+    if (verifyModal.type === 'email') await setEmailVerified(profileId);
+    else await setMobileVerified(profileId);
     setVerifyModal(null);
-    // Update verified flag in profiles table
-    if (verifyModal?.type === 'email') {
-      await supabase.from('profiles').update({ email_verified: true } as any).eq('id', profileId);
-    } else {
-      await supabase.from('profiles').update({ mobile_verified: true } as any).eq('id', profileId);
-    }
-    await loadProfile();
   };
 
   const CATEGORIES = [

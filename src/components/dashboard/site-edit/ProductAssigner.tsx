@@ -2,12 +2,12 @@
 // ProductAssigner — controlled product picker.
 // Parent manages assigned set; changes propagate immediately. DB save happens on parent Save.
 
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import React from 'react';
+import { useProducts } from '@/hooks/useProducts';
 import { Package } from 'lucide-react';
 
 export default function ProductAssigner({
-  siteId,
+  siteId: _siteId,
   assigned,
   onChange,
 }: {
@@ -15,31 +15,7 @@ export default function ProductAssigner({
   assigned: Set<string>;
   onChange: (assigned: Set<string>) => void;
 }) {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); return; }
-
-      const { data: userRow } = await supabase.from('users').select('id').eq('auth_provider_id', user.id).single();
-      if (!userRow) { setLoading(false); return; }
-      const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', userRow.id).single();
-      if (!profile) { setLoading(false); return; }
-
-      const { data: prods } = await supabase
-        .from('products')
-        .select('id, name, price, thumbnail_url, is_published')
-        .eq('creator_id', profile.id)
-        .order('created_at', { ascending: false });
-
-      setProducts(prods ?? []);
-      setLoading(false);
-    };
-    load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId]);
+  const { products, isLoading: loading } = useProducts();
 
   const toggle = (id: string) => {
     const next = new Set(assigned);

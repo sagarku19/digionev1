@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useProfileQuery, useProfileMutations } from '@/hooks/useProfile';
+import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import { User as UserIcon, Mail, Camera, Loader2, Save } from 'lucide-react';
 
 interface ProfileData {
@@ -12,70 +14,36 @@ interface ProfileData {
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData>({ full_name: '', avatar_url: '' });
   const [email, setEmail] = useState<string>('');
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
-  const supabase = createClient();
+  const [profileId, setProfileId] = useState('');
+  const { data: profileRow, isLoading: loading } = useProfileQuery(profileId);
+  const { updateProfile } = useProfileMutations();
 
   useEffect(() => {
-    async function loadUser() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          window.location.href = '/login';
-          return;
-        }
-
-        setEmail(session.user.email || '');
-
-        const { data, error } = await supabase
-          .from('users')
-          .select('profiles(full_name, avatar_url)')
-          .eq('auth_provider_id', session.user.id)
-          .maybeSingle();
-
-        if (data && data.profiles) {
-          const pData = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
-          if (pData) setProfile({ full_name: pData.full_name, avatar_url: pData.avatar_url });
-        }
-      } catch (err) {
-        console.error('Error loading profile:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUser();
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) { window.location.href = '/login'; return; }
+      setEmail(session.user.email || '');
+      getCreatorProfileId().then(setProfileId).catch(() => {});
+    });
   }, []);
+
+  useEffect(() => {
+    if (!profileRow) return;
+    setProfile({ full_name: profileRow.full_name, avatar_url: profileRow.avatar_url });
+  }, [profileRow]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profileId) return;
     setSaving(true);
     setMessage({ text: '', type: '' });
-
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error('Not authenticated');
-
-      // Update users table link if needed or directly profiles
-      const { data: userData } = await supabase
-        .from('users')
-        .select('id')
-        .eq('auth_provider_id', session.user.id)
-        .single();
-        
-      if (!userData) throw new Error('User not found in system table');
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: profile.full_name,
-          avatar_url: profile.avatar_url
-        })
-        .eq('id', userData.id);
-
-      if (error) throw error;
-      
+      await updateProfile({
+        creatorId: profileId,
+        updates: { full_name: profile.full_name, avatar_url: profile.avatar_url },
+      });
       setMessage({ text: 'Profile updated successfully!', type: 'success' });
     } catch (err: any) {
       setMessage({ text: err.message || 'Failed to update profile', type: 'error' });
