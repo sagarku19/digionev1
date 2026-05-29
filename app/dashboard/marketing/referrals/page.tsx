@@ -2,9 +2,8 @@
 // Referral Program — create codes, per-code analytics, activity feed.
 // DB: referral_codes, order_referrals (direct Supabase)
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
+import React, { useState } from 'react';
+import { useReferrals, type ReferralCode } from '@/hooks/useReferrals';
 import {
   Gift, Plus, X, Copy, Check, Trash2, ToggleLeft, ToggleRight,
   AlertCircle, RefreshCw, Loader2, Users, TrendingUp, IndianRupee,
@@ -28,21 +27,15 @@ function genCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
-type RCode = {
-  id: string; code: string; is_active: boolean | null;
-  created_at: string | null; metadata: any;
-};
-type Referral = {
-  id: string; referral_code_id: string | null;
-  commission_amount: number | null; status: string | null;
-  created_at: string | null;
-};
-
 export default function ReferralsPage() {
-  const supabase  = createClient();
-  const [codes, setCodes]       = useState<RCode[]>([]);
-  const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const {
+    codes,
+    redemptions: referrals,
+    isLoading: loading,
+    createCode,
+    toggleActive,
+    deleteCode: deleteRefCode,
+  } = useReferrals();
   const [showModal, setShowModal] = useState(false);
   const [newCode, setNewCode]   = useState(genCode());
   const [rewardPct, setRewardPct] = useState(10);
@@ -53,63 +46,25 @@ export default function ReferralsPage() {
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digione.ai';
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const pid = await getCreatorProfileId();
-      const { data: rc } = await supabase
-        .from('referral_codes').select('*')
-        .eq('owner_creator_id', pid).order('created_at', { ascending: false });
-      setCodes(rc ?? []);
-
-      if (rc && rc.length > 0) {
-        const { data: refs } = await supabase
-          .from('order_referrals').select('*')
-          .in('referral_code_id', rc.map(r => r.id))
-          .order('created_at', { ascending: false });
-        setReferrals(refs ?? []);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase]);
-
-  useEffect(() => { load(); }, [load]);
-
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
     if (!newCode.trim() || newCode.length < 4) { setFormError('Code must be at least 4 characters.'); return; }
     setSaving(true);
     try {
-      const pid = await getCreatorProfileId();
-      const { error } = await supabase.from('referral_codes').insert({
-        code: newCode.toUpperCase().trim(),
-        owner_creator_id: pid,
-        is_active: true,
-        metadata: { reward_percent: rewardPct },
-      });
-      if (error) throw error;
+      await createCode({ code: newCode.toUpperCase().trim(), reward_percent: rewardPct });
       setShowModal(false);
       setNewCode(genCode());
-      await load();
-    } catch (err: any) {
-      setFormError(err.message ?? 'Failed to create code.');
+    } catch (err) {
+      setFormError((err as Error).message ?? 'Failed to create code.');
     } finally {
       setSaving(false);
     }
   };
 
-  const toggleCode = async (code: RCode) => {
-    await supabase.from('referral_codes').update({ is_active: !code.is_active }).eq('id', code.id);
-    await load();
-  };
+  const toggleCode = (code: ReferralCode) => { toggleActive(code); };
 
-  const deleteCode = async (id: string) => {
-    await supabase.from('referral_codes').delete().eq('id', id);
-    setDeleteConfirm(null);
-    await load();
-  };
+  const deleteCode = (id: string) => { deleteRefCode(id); setDeleteConfirm(null); };
 
   const refsForCode = (id: string) => referrals.filter(r => r.referral_code_id === id);
   const totalRevenue = referrals.reduce((s, r) => s + (r.commission_amount ?? 0), 0);
