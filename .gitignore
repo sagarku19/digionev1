@@ -39,8 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-# .next
-# .agent
-# .antigravity
 .vscode
+
+# AI assistant personal overrides (per-machine, never committed)
 CLAUDE.local.md
+GEMINI.local.md
+.claude/settings.local.json
