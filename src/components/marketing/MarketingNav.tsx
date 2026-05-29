@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 interface UserProfile {
   full_name: string | null;
@@ -24,11 +26,12 @@ export default function MarketingNav() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
-  const supabaseRef = useRef(createClient());
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const queryClient = useQueryClient();
+  const { isLoggedIn, userEmail, profile } = useAuthSession();
+  const userProfile: UserProfile | null = profile ? { full_name: profile.full_name, avatar_url: profile.avatar_url, email: userEmail } : null;
 
   useEffect(() => {
     setIsScrolled(window.scrollY > 20);
@@ -52,64 +55,20 @@ export default function MarketingNav() {
     return () => document.removeEventListener('mousedown', handler);
   }, [profileDropdownOpen]);
 
+  // Source of truth: TanStack Query. This subscription only triggers invalidation.
   useEffect(() => {
-    const supabase = supabaseRef.current;
-    const loadProfile = async (user: any) => {
-      try {
-        const { data } = await supabase
-          .from('users')
-          .select('id, profiles(full_name, avatar_url)')
-          .eq('auth_provider_id', user.id)
-          .maybeSingle();
-
-        const rawProfile = Array.isArray(data?.profiles)
-          ? (data?.profiles[0] ?? null)
-          : ((data?.profiles as unknown) as UserProfile | null) ?? null;
-
-        const pd: UserProfile = {
-          full_name: rawProfile?.full_name || null,
-          avatar_url: rawProfile?.avatar_url || null,
-          email: user.email,
-        };
-        setUserProfile(pd);
-      } catch {
-        setUserProfile({ full_name: null, avatar_url: null, email: user.email });
-      }
-    };
-
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const loggedIn = !!session?.user;
-        setIsLoggedIn(loggedIn);
-        if (loggedIn && session?.user) await loadProfile(session.user);
-      } catch {
-        setIsLoggedIn(false);
-      }
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const loggedIn = !!session?.user;
-      setIsLoggedIn(loggedIn);
-      if (loggedIn && session?.user) {
-        await loadProfile(session.user);
-      } else {
-        setUserProfile(null);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      queryClient.invalidateQueries({ queryKey: ['auth', 'session'] });
     });
-
     return () => subscription.unsubscribe();
-  }, []);
+  }, [queryClient]);
 
   const handleSignOut = async () => {
-    await supabaseRef.current.auth.signOut();
-    setIsLoggedIn(false);
-    setUserProfile(null);
+    await supabase.auth.signOut();
     setProfileDropdownOpen(false);
     setMobileMenuOpen(false);
     setShowSignOutConfirm(false);
+    // onAuthStateChange will invalidate the session query automatically.
   };
 
   const initials = userProfile?.full_name ? userProfile.full_name.charAt(0).toUpperCase() : 'C';
