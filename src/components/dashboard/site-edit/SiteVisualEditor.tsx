@@ -107,12 +107,13 @@ export default function SiteVisualEditor({
 
   // ── Load data ──
   const queryClient = useQueryClient();
-  const { data: editData } = useSiteEditQuery(siteId, { include: ['main', 'nav', 'tokens'] });
+  const { data: editData, isError } = useSiteEditQuery(siteId, { include: ['main', 'nav', 'tokens'] });
   // Hydrate local form state from cache exactly once per siteId. Background refetches
   // would otherwise clobber unsaved user edits.
   const hydratedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (isError) { setLoading(false); return; }
     if (!editData || hydratedRef.current === siteId) return;
     hydratedRef.current = siteId;
     const s = editData.site;
@@ -153,7 +154,7 @@ export default function SiteVisualEditor({
     }
 
     setLoading(false);
-  }, [editData]);
+  }, [editData, siteId, isError]);
 
   // ── Push theme changes to iframe in real time ──
   const handlePaletteChange = useCallback((next: Record<string, string>) => {

@@ -338,11 +338,12 @@ export default function EditMainStorePage() {
   // ─── Load data ────────────────────────────────────────────────────────────
 
   const queryClient = useQueryClient();
-  const { data: editData } = useSiteEditQuery(siteId, { include: ['main', 'nav', 'tokens', 'sections', 'assignments'] });
+  const { data: editData, isError } = useSiteEditQuery(siteId, { include: ['main', 'nav', 'tokens', 'sections', 'assignments'] });
   // Hydrate local state once per siteId. Background refetches must not overwrite user edits.
   const hydratedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (isError) { setLoading(false); return; }
     if (!editData || hydratedRef.current === siteId) return;
     hydratedRef.current = siteId;
     const s = editData.site;
@@ -403,7 +404,7 @@ export default function EditMainStorePage() {
 
     setAssigned(new Set(asgn.map((a) => a.product_id)));
     setLoading(false);
-  }, [editData]);
+  }, [editData, siteId, isError]);
 
   // ─── Slug availability check ─────────────────────────────────────────────
 

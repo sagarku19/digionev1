@@ -429,12 +429,13 @@ export default function EditLinkInBioPage() {
 
   // ── Load data ──
   const queryClient = useQueryClient();
-  const { data: loaded } = useLinkInBioSiteQuery(siteId);
+  const { data: loaded, isError } = useLinkInBioSiteQuery(siteId);
   // Hydrate local state from cache exactly once per siteId. Background refetches must
   // not clobber unsaved user edits in the editor.
   const hydratedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (isError) { setLoading(false); return; }
     if (!loaded || hydratedRef.current === siteId) return;
     hydratedRef.current = siteId;
 
@@ -517,7 +518,7 @@ export default function EditLinkInBioPage() {
     setProducts(loaded.products);
 
     setLoading(false);
-  }, [loaded, siteId]);
+  }, [loaded, siteId, isError]);
 
   // ── Slug availability check ──
   useEffect(() => {

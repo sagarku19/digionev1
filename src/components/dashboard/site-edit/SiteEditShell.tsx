@@ -144,11 +144,12 @@ export default function SiteEditShell({
   const [navItems, setNavItems] = useState<{ label: string; url: string }[]>([]);
 
   const queryClient = useQueryClient();
-  const { data: siteEditData } = useSiteEditQuery(siteId, { include: ['main', 'nav'] });
+  const { data: siteEditData, isError } = useSiteEditQuery(siteId, { include: ['main', 'nav'] });
   // Hydrate local state once per siteId. Background refetches must not overwrite user edits.
   const hydratedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (isError) { setLoading(false); return; }
     if (!siteEditData || hydratedRef.current === siteId) return;
     hydratedRef.current = siteId;
     const s = siteEditData.site;
@@ -172,7 +173,7 @@ export default function SiteEditShell({
     );
     setNavItems((nav?.nav_items as { label: string; url: string }[]) ?? []);
     setLoading(false);
-  }, [siteEditData]);
+  }, [siteEditData, siteId, isError]);
 
   const editData: SiteEditData = {
     site, siteMain, navItems, metaTitle, metaDesc, social, legal, customDomain,
