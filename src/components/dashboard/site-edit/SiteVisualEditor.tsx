@@ -6,6 +6,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSiteEditQuery } from '@/hooks/useSiteEdit';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Save, Loader2, CheckCircle2, ExternalLink, Monitor, Tablet, Smartphone,
@@ -104,54 +106,54 @@ export default function SiteVisualEditor({
   }, []);
 
   // ── Load data ──
+  const queryClient = useQueryClient();
+  const { data: editData } = useSiteEditQuery(siteId, { include: ['main', 'nav', 'tokens'] });
+  // Hydrate local form state from cache exactly once per siteId. Background refetches
+  // would otherwise clobber unsaved user edits.
+  const hydratedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [{ data: s }, { data: sm }, { data: nav }, { data: tokens }] = await Promise.all([
-          supabase.from('sites').select('*').eq('id', siteId).single(),
-          supabase.from('site_main').select('*').eq('site_id', siteId).maybeSingle(),
-          supabase.from('site_navigation').select('*').eq('site_id', siteId).maybeSingle(),
-          supabase.from('site_design_tokens').select('color_palette').eq('site_id', siteId).maybeSingle(),
-        ]);
+    if (!editData || hydratedRef.current === siteId) return;
+    hydratedRef.current = siteId;
+    const s = editData.site;
+    const sm = editData.main;
+    const nav = editData.nav;
+    const tokens = editData.tokens;
 
-        setSite(s);
-        setSiteMain(sm);
+    setSite(s);
+    setSiteMain(sm);
 
-        setHeaderData({
-          logoUrl: nav?.header_logo_url ?? '',
-          logoAlt: nav?.header_logo_alt ?? '',
-          navItems: (nav?.nav_items as { label: string; url: string }[]) ?? [],
-          showSearch: nav?.show_search ?? false,
-          showCart: nav?.show_cart_icon ?? true,
-          stickyHeader: nav?.sticky_header ?? true,
-        });
+    setHeaderData({
+      logoUrl: nav?.header_logo_url ?? '',
+      logoAlt: nav?.header_logo_alt ?? '',
+      navItems: (nav?.nav_items as { label: string; url: string }[]) ?? [],
+      showSearch: nav?.show_search ?? false,
+      showCart: nav?.show_cart_icon ?? true,
+      stickyHeader: nav?.sticky_header ?? true,
+    });
 
-        setFooterData({
-          social: (sm?.social_links as Record<string, string>) ?? { instagram: '', youtube: '', twitter: '', linkedin: '' },
-          legal: (sm?.legal_pages as Record<string, boolean>) ?? { about: false, terms: false, privacy: false, refund: false },
-          contactEmail: sm?.contact_email ?? '',
-          contactPhone: sm?.contact_mobile ?? '',
-          copyrightText: nav?.footer_bottom_text ?? '',
-        });
+    setFooterData({
+      social: (sm?.social_links as Record<string, string>) ?? { instagram: '', youtube: '', twitter: '', linkedin: '' },
+      legal: (sm?.legal_pages as Record<string, boolean>) ?? { about: false, terms: false, privacy: false, refund: false },
+      contactEmail: sm?.contact_email ?? '',
+      contactPhone: sm?.contact_mobile ?? '',
+      copyrightText: nav?.footer_bottom_text ?? '',
+    });
 
-        setSettingsData({
-          metaTitle: sm?.meta_keywords ?? '',
-          metaDesc: sm?.meta_description ?? '',
-          customDomain: s?.custom_domain ?? '',
-          slug: s?.slug ?? '',
-          originalSlug: s?.slug ?? null,
-        });
+    setSettingsData({
+      metaTitle: sm?.meta_keywords ?? '',
+      metaDesc: sm?.meta_description ?? '',
+      customDomain: s?.custom_domain ?? '',
+      slug: s?.slug ?? '',
+      originalSlug: s?.slug ?? null,
+    });
 
-        if (tokens?.color_palette) {
-          setPalette(tokens.color_palette as Record<string, string>);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId]);
+    if (tokens?.color_palette) {
+      setPalette(tokens.color_palette as Record<string, string>);
+    }
+
+    setLoading(false);
+  }, [editData]);
 
   // ── Push theme changes to iframe in real time ──
   const handlePaletteChange = useCallback((next: Record<string, string>) => {
@@ -215,13 +217,17 @@ export default function SiteVisualEditor({
 
       if (onTypeSave) await onTypeSave();
 
+      // Refresh the cached read so the next mount sees the latest DB state. Hydration
+      // is gated by hydratedRef so this won't clobber the form on background refetch.
+      queryClient.invalidateQueries({ queryKey: ['sites', 'edit-state', siteId] });
+
       setSaved(true);
       setPreviewKey(Date.now());
       setTimeout(() => setSaved(false), 3000);
     } finally {
       setSaving(false);
     }
-  }, [supabase, siteId, siteMain, site, settingsData, footerData, headerData, palette, showSlug, onTypeSave]);
+  }, [siteId, siteMain, site, settingsData, footerData, headerData, palette, showSlug, onTypeSave, queryClient]);
 
   // ── Helpers ──
   const displayTitle = siteMain?.title ?? site?.slug ?? 'Untitled';

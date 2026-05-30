@@ -6,6 +6,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSiteEditQuery } from '@/hooks/useSiteEdit';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { revalidateStorefrontPaths } from '@/app/actions/revalidate';
 import { useTheme } from '@/contexts/DashboardThemeContext';
@@ -335,79 +337,73 @@ export default function EditMainStorePage() {
 
   // ─── Load data ────────────────────────────────────────────────────────────
 
+  const queryClient = useQueryClient();
+  const { data: editData } = useSiteEditQuery(siteId, { include: ['main', 'nav', 'tokens', 'sections', 'assignments'] });
+  // Hydrate local state once per siteId. Background refetches must not overwrite user edits.
+  const hydratedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [{ data: s }, { data: sm }, { data: nav }, { data: tokens }, { data: config }, { data: asgn }] = await Promise.all([
-          supabase.from('sites').select('*').eq('id', siteId).single(),
-          supabase.from('site_main').select('*').eq('site_id', siteId).maybeSingle(),
-          supabase.from('site_navigation').select('*').eq('site_id', siteId).maybeSingle(),
-          supabase.from('site_design_tokens').select('color_palette').eq('site_id', siteId).maybeSingle(),
-          supabase.from('site_sections_config').select('sections').eq('site_id', siteId).maybeSingle(),
-          supabase.from('site_product_assignments').select('product_id').eq('site_id', siteId),
-        ]);
+    if (!editData || hydratedRef.current === siteId) return;
+    hydratedRef.current = siteId;
+    const s = editData.site;
+    const sm = editData.main;
+    const nav = editData.nav;
+    const tokens = editData.tokens;
+    const config = editData.sections;
+    const asgn = editData.assignments ?? [];
 
-        setSite(s);
-        setIsPublished(s?.is_active ?? true);
-        setSlug(s?.slug ?? '');
-        setOriginalSlug(s?.slug ?? null);
+    setSite(s);
+    setIsPublished(s?.is_active ?? true);
+    setSlug(s?.slug ?? '');
+    setOriginalSlug(s?.slug ?? null);
 
-        setTitle(sm?.title ?? '');
-        setDescription(sm?.meta_description ?? '');
+    setTitle(sm?.title ?? '');
+    setDescription(sm?.meta_description ?? '');
 
-        setHeaderData({
-          logoUrl: nav?.header_logo_url ?? '',
-          logoAlt: nav?.header_logo_alt ?? '',
-          navItems: (nav?.nav_items as { label: string; url: string }[]) ?? [],
-          showSearch: nav?.show_search ?? false,
-          showCart: nav?.show_cart_icon ?? true,
-          stickyHeader: nav?.sticky_header ?? true,
-        });
+    setHeaderData({
+      logoUrl: nav?.header_logo_url ?? '',
+      logoAlt: nav?.header_logo_alt ?? '',
+      navItems: (nav?.nav_items as { label: string; url: string }[]) ?? [],
+      showSearch: nav?.show_search ?? false,
+      showCart: nav?.show_cart_icon ?? true,
+      stickyHeader: nav?.sticky_header ?? true,
+    });
 
-        setFooterData({
-          social: (sm?.social_links as Record<string, string>) ?? { instagram: '', youtube: '', twitter: '', linkedin: '' },
-          legal: (sm?.legal_pages as Record<string, boolean>) ?? { about: false, terms: false, privacy: false, refund: false },
-          contactEmail: sm?.contact_email ?? '',
-          contactPhone: sm?.contact_mobile ?? '',
-          copyrightText: nav?.footer_bottom_text ?? '',
-        });
+    setFooterData({
+      social: (sm?.social_links as Record<string, string>) ?? { instagram: '', youtube: '', twitter: '', linkedin: '' },
+      legal: (sm?.legal_pages as Record<string, boolean>) ?? { about: false, terms: false, privacy: false, refund: false },
+      contactEmail: sm?.contact_email ?? '',
+      contactPhone: sm?.contact_mobile ?? '',
+      copyrightText: nav?.footer_bottom_text ?? '',
+    });
 
-        setSettingsData({
-          metaTitle: sm?.meta_keywords ?? '',
-          metaDesc: sm?.meta_description ?? '',
-          customDomain: s?.custom_domain ?? '',
-          slug: s?.slug ?? '',
-          originalSlug: s?.slug ?? null,
-        });
+    setSettingsData({
+      metaTitle: sm?.meta_keywords ?? '',
+      metaDesc: sm?.meta_description ?? '',
+      customDomain: s?.custom_domain ?? '',
+      slug: s?.slug ?? '',
+      originalSlug: s?.slug ?? null,
+    });
 
-        // Hero data from site_main metadata
-        const meta = sm?.metadata as Record<string, any> ?? {};
-        if (meta.hero) {
-          setHeroData({ ...heroData, ...meta.hero });
-        }
+    const meta = (sm?.metadata as Record<string, any>) ?? {};
+    if (meta.hero) {
+      setHeroData((prev) => ({ ...prev, ...meta.hero }));
+    }
+    if (meta.appearance) {
+      setAppearance((prev) => ({ ...prev, ...meta.appearance }));
+    }
 
-        // Appearance from metadata
-        if (meta.appearance) {
-          setAppearance((prev) => ({ ...prev, ...meta.appearance }));
-        }
+    setCustomCss(meta.customCss ?? '');
+    setCustomJs(meta.customJs ?? '');
 
-        // Advanced
-        setCustomCss(meta.customCss ?? '');
-        setCustomJs(meta.customJs ?? '');
+    if (tokens?.color_palette) setPalette(tokens.color_palette as Record<string, string>);
 
-        if (tokens?.color_palette) setPalette(tokens.color_palette as Record<string, string>);
+    const raw = (config?.sections as Section[] | null);
+    if (raw) setSections([...raw].sort((a, b) => a.sort_order - b.sort_order));
 
-        const raw = config?.sections as Section[] | null;
-        if (raw) setSections([...raw].sort((a, b) => a.sort_order - b.sort_order));
-
-        setAssigned(new Set((asgn ?? []).map((a: any) => a.product_id)));
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId]);
+    setAssigned(new Set(asgn.map((a) => a.product_id)));
+    setLoading(false);
+  }, [editData]);
 
   // ─── Slug availability check ─────────────────────────────────────────────
 
@@ -526,6 +522,9 @@ export default function EditMainStorePage() {
 
       // 7. revalidate ISR
       try { await revalidateStorefrontPaths([`/store/${slug}`, '/']); } catch { /* non-fatal */ }
+
+      // 8. Refresh cached read so a later mount sees fresh data. Hydration is gated by hydratedRef.
+      queryClient.invalidateQueries({ queryKey: ['sites', 'edit-state', siteId] });
 
       setPreviewKey(Date.now());
       setSaved(true);

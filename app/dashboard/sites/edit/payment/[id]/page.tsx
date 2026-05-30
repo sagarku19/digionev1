@@ -1,9 +1,9 @@
 ﻿'use client';
 // Edit page: Payment Link — visual editor with live preview.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { useSiteEditQuery, useSiteEditMutations } from '@/hooks/useSiteEdit';
 import SiteVisualEditor from '@/components/dashboard/site-edit/SiteVisualEditor';
 import { CreditCard, Globe, IndianRupee, ToggleLeft } from 'lucide-react';
 
@@ -12,35 +12,27 @@ const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] borde
 export default function EditPaymentPage() {
   const params = useParams();
   const siteId = params.id as string;
-  const supabase = createClient();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
   const [isFlexible, setIsFlexible] = useState(false);
 
+  const { data: editData } = useSiteEditQuery(siteId, { include: ['main'] });
+  const { savePaymentConfig } = useSiteEditMutations(siteId);
+  // Hydrate local form once per siteId. Background refetches must not overwrite user edits.
+  const hydratedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const load = async () => {
-      const { data: sm } = await supabase
-        .from('site_main')
-        .select('title, meta_description')
-        .eq('site_id', siteId)
-        .maybeSingle();
-      setTitle(sm?.title ?? '');
-      setDescription(sm?.meta_description ?? '');
-    };
-    load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId]);
+    if (!editData || hydratedRef.current === siteId) return;
+    hydratedRef.current = siteId;
+    const sm = editData.main;
+    setTitle(sm?.title ?? '');
+    setDescription(sm?.meta_description ?? '');
+  }, [editData, siteId]);
 
   const handleTypeSave = async () => {
-    const { data: existing } = await supabase.from('site_main').select('site_id').eq('site_id', siteId).maybeSingle();
-    const payload = { title, meta_description: description };
-    if (existing) {
-      await supabase.from('site_main').update(payload).eq('site_id', siteId);
-    } else {
-      await supabase.from('site_main').insert({ site_id: siteId, ...payload });
-    }
+    await savePaymentConfig({ title, meta_description: description });
   };
 
   return (

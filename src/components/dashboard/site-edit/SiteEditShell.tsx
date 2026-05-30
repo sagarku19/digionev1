@@ -3,9 +3,11 @@
 // Provides: top bar, tab sidebar, and all common tabs (Navigation, Domain, SEO, Social, Legal, Danger).
 // Each type-specific page supplies only the "General" tab content via children.
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSiteEditQuery } from '@/hooks/useSiteEdit';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Settings, Globe, Search, Share2, FileText, AlertTriangle,
@@ -141,37 +143,36 @@ export default function SiteEditShell({
   // Navigation
   const [navItems, setNavItems] = useState<{ label: string; url: string }[]>([]);
 
+  const queryClient = useQueryClient();
+  const { data: siteEditData } = useSiteEditQuery(siteId, { include: ['main', 'nav'] });
+  // Hydrate local state once per siteId. Background refetches must not overwrite user edits.
+  const hydratedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [{ data: s }, { data: sm }, { data: nav }] = await Promise.all([
-          supabase.from('sites').select('*').eq('id', siteId).single(),
-          supabase.from('site_main').select('*').eq('site_id', siteId).maybeSingle(),
-          supabase.from('site_navigation').select('*').eq('site_id', siteId).maybeSingle(),
-        ]);
-        setSite(s);
-        setSiteMain(sm);
-        setCustomDomain(s?.custom_domain ?? '');
-        setMetaTitle(sm?.meta_keywords ?? '');
-        setMetaDesc(sm?.meta_description ?? '');
-        setSocial(
-          (sm?.social_links as Record<string, string>) ?? {
-            instagram: '', youtube: '', twitter: '', linkedin: '',
-          }
-        );
-        setLegal(
-          (sm?.legal_pages as Record<string, boolean>) ?? {
-            about: false, terms: false, privacy: false, refund: false,
-          }
-        );
-        setNavItems((nav?.nav_items as { label: string; url: string }[]) ?? []);
-      } finally {
-        setLoading(false);
+    if (!siteEditData || hydratedRef.current === siteId) return;
+    hydratedRef.current = siteId;
+    const s = siteEditData.site;
+    const sm = siteEditData.main;
+    const nav = siteEditData.nav;
+
+    setSite(s);
+    setSiteMain(sm);
+    setCustomDomain(s?.custom_domain ?? '');
+    setMetaTitle(sm?.meta_keywords ?? '');
+    setMetaDesc(sm?.meta_description ?? '');
+    setSocial(
+      (sm?.social_links as Record<string, string>) ?? {
+        instagram: '', youtube: '', twitter: '', linkedin: '',
       }
-    };
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId]);
+    );
+    setLegal(
+      (sm?.legal_pages as Record<string, boolean>) ?? {
+        about: false, terms: false, privacy: false, refund: false,
+      }
+    );
+    setNavItems((nav?.nav_items as { label: string; url: string }[]) ?? []);
+    setLoading(false);
+  }, [siteEditData]);
 
   const editData: SiteEditData = {
     site, siteMain, navItems, metaTitle, metaDesc, social, legal, customDomain,
@@ -207,6 +208,9 @@ export default function SiteEditShell({
 
       // Let the type-specific page save its own data
       if (onSave) await onSave(editData);
+
+      // Refresh cached read so a later mount sees fresh data; hydration is gated by hydratedRef.
+      queryClient.invalidateQueries({ queryKey: ['sites', 'edit-state', siteId] });
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
