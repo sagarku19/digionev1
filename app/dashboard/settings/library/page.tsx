@@ -1,19 +1,8 @@
 ﻿'use client';
 
-import React, { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import React, { useState } from 'react';
 import { Download, Library, ExternalLink, Package, FileText, BookOpen, Tag, Search } from 'lucide-react';
-
-interface PurchasedProduct {
-  id: string;
-  name: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  category: string | null;
-  price_at_purchase: number;
-  purchased_at: string;
-  file_url: string | null;
-}
+import { useLibrary } from '@/hooks/useLibrary';
 
 function formatINR(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -27,59 +16,8 @@ const CATEGORY_ICON: Record<string, React.ElementType> = {
 };
 
 export default function LibraryPage() {
-  const [products, setProducts] = useState<PurchasedProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: products = [], isLoading } = useLibrary();
   const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    async function load() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setIsLoading(false); return; }
-
-      const { data } = await supabase
-        .from('orders')
-        .select(`
-          id,
-          created_at,
-          status,
-          order_items (
-            price_at_purchase,
-            products (
-              id, name, description, thumbnail_url, category, file_url
-            )
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'paid')
-        .order('created_at', { ascending: false });
-
-      if (data) {
-        const flat: PurchasedProduct[] = [];
-        for (const order of data) {
-          for (const item of (order.order_items as any[]) ?? []) {
-            const p = item.products;
-            if (!p) continue;
-            flat.push({
-              id: p.id,
-              name: p.name,
-              description: p.description,
-              thumbnail_url: p.thumbnail_url,
-              category: p.category,
-              file_url: p.file_url,
-              price_at_purchase: item.price_at_purchase,
-              purchased_at: order.created_at,
-            });
-          }
-        }
-        // dedupe by product id (keep first / latest)
-        const seen = new Set<string>();
-        setProducts(flat.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; }));
-      }
-      setIsLoading(false);
-    }
-    load();
-  }, []);
 
   const filtered = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
