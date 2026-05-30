@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useProfileQuery, useProfileMutations } from '@/hooks/useProfile';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
@@ -29,10 +29,14 @@ export default function ProfilePage() {
     });
   }, []);
 
+  // Hydrate form from server data exactly once per profileId. Without the guard,
+  // background refetches (or the post-save invalidation) would clobber unsaved edits.
+  const hydratedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!profileRow) return;
+    if (!profileRow || !profileId || hydratedRef.current === profileId) return;
+    hydratedRef.current = profileId;
     setProfile({ full_name: profileRow.full_name, avatar_url: profileRow.avatar_url });
-  }, [profileRow]);
+  }, [profileRow, profileId]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();

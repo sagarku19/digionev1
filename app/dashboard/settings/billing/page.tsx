@@ -2,7 +2,7 @@
 // Billing & KYC — full identity verification + bank + UPI + address.
 // DB tables: creator_kyc (read/write via upsert)
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useEarnings } from '@/hooks/useEarnings';
 import {
   ShieldCheck, ShieldAlert, Building2, AlertCircle, Clock,
@@ -152,9 +152,14 @@ export default function KYCAndBillingPage() {
   const [form, setForm] = useState(empty);
   const set = (k: keyof KycData, v: string) => setForm(f => ({ ...f, [k]: v }));
 
+  // Hydrate form from server data exactly once. Without the guard, the post-save
+  // useEarnings invalidation would clobber any edits the user typed after submitting.
+  const hydratedRef = useRef(false);
   useEffect(() => {
-    if (kyc) setForm({ ...empty, ...kyc });
-  }, [kyc]);
+    if (!kyc || hydratedRef.current) return;
+    hydratedRef.current = true;
+    setForm({ ...empty, ...kyc });
+  }, [kyc, empty]);
 
   const isVerified = kyc?.status === 'verified';
   const isPending = kyc?.status === 'pending';

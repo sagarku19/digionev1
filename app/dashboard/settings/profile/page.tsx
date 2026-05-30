@@ -2,7 +2,7 @@
 // Profile Settings — creator name, email, phone, avatar + email/phone verification.
 // DB tables: profiles (read/write), auth (email OTP via supabase)
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import { useProfileQuery, useProfileMutations } from '@/hooks/useProfile';
@@ -194,8 +194,12 @@ export default function ProfileSettingsPage() {
     getCreatorProfileId().then(setProfileId).catch((e) => setError(e.message));
   }, []);
 
+  // Hydrate form from server data exactly once per profileId. Without the guard,
+  // background refetches (or the post-save invalidation) would clobber unsaved edits.
+  const hydratedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || !profileId || hydratedRef.current === profileId) return;
+    hydratedRef.current = profileId;
     const meta = (profile as any).metadata ?? {};
     setForm({
       full_name: profile.full_name ?? '',
@@ -212,7 +216,7 @@ export default function ProfileSettingsPage() {
       linkedin: meta.linkedin ?? '',
       telegram: meta.telegram ?? '',
     });
-  }, [profile]);
+  }, [profile, profileId]);
 
   const handleSave = async () => {
     if (!profileId) return;
