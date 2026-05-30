@@ -19,6 +19,8 @@ import {
   Undo2, Redo2,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/DashboardThemeContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
 
 // ─── Device presets ──────────────────────────────────────────
 const DEVICES = [
@@ -426,121 +428,96 @@ export default function EditLinkInBioPage() {
   }, [handleUndo, handleRedo]);
 
   // ── Load data ──
+  const queryClient = useQueryClient();
+  const { data: loaded } = useLinkInBioSiteQuery(siteId);
+  // Hydrate local state from cache exactly once per siteId. Background refetches must
+  // not clobber unsaved user edits in the editor.
+  const hydratedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [{ data: s }, { data: tokens }] = await Promise.all([
-          supabase.from('sites').select('*').eq('id', siteId).single(),
-          supabase.from('site_design_tokens').select('color_palette').eq('site_id', siteId).maybeSingle(),
-        ]);
+    if (!loaded || hydratedRef.current === siteId) return;
+    hydratedRef.current = siteId;
 
-        setSite(s);
-        if (tokens?.color_palette) setPalette(tokens.color_palette as Record<string, string>);
+    const s = loaded.site;
+    const tokens = loaded.tokens;
+    const page = loaded.page;
+    const rawBlocks = loaded.blocks;
+    const rawItems = loaded.items;
 
-        setSlug(s?.slug ?? '');
-        setOriginalSlug(s?.slug ?? null);
-        setIsPublished(s?.is_active ?? true);
+    setSite(s);
+    if (tokens?.color_palette) setPalette(tokens.color_palette as Record<string, string>);
 
-        // ── V2: Fetch from linkinbio_pages ──
-        const { data: page } = await (supabase.from('linkinbio_pages' as any) as any)
-          .select('*')
-          .eq('site_id', siteId)
-          .maybeSingle();
+    setSlug(s?.slug ?? '');
+    setOriginalSlug(s?.slug ?? null);
+    setIsPublished(s?.is_active ?? true);
 
-        if (page) {
-          const theme = (page.theme as any) ?? {};
-          const layout = (page.layout as any) ?? {};
-          const settings = (page.settings as any) ?? {};
+    if (page) {
+      const theme = (page.theme as any) ?? {};
+      const layout = (page.layout as any) ?? {};
+      const settings = (page.settings as any) ?? {};
 
-          const pageSeo = (page.seo as any) ?? {};
-          setSeo({
-            title: pageSeo.custom_title ?? '',
-            description: pageSeo.custom_description ?? '',
-            image: pageSeo.custom_image ?? '',
-          });
+      const pageSeo = (page.seo as any) ?? {};
+      setSeo({
+        title: pageSeo.custom_title ?? '',
+        description: pageSeo.custom_description ?? '',
+        image: pageSeo.custom_image ?? '',
+      });
 
-          setProfile({
-            displayName: page.display_name ?? '',
-            bioText: page.bio ?? '',
-            avatarUrl: page.avatar_url ?? '',
-            coverImageUrl: page.cover_url ?? '',
-            socialLinks: (settings.socialLinks as SocialLink[]) ?? [],
-            avatarShape: (settings.avatarShape as 'circular' | 'rounded' | 'square') ?? 'circular',
-            avatarBorder: settings.avatarBorder ?? true,
-          });
-          setAppearance({
-            layoutStyle: layout.style ?? 'classic',
-            buttonStyle: theme.buttonStyle ?? 'rounded',
-            backgroundType: theme.backgroundType ?? 'solid',
-            backgroundValue: theme.backgroundValue ?? '',
-            showWatermark: settings.showWatermark ?? true,
-            showShareButton: settings.showShareButton ?? true,
-            fontFamily: theme.fontFamily ?? 'system',
-            cardStyle: theme.cardStyle ?? 'solid',
-            animation: theme.animation ?? 'none',
-            borderRadius: theme.borderRadius ?? 'md',
-            spacing: theme.spacing ?? 'default',
-          });
-        }
+      setProfile({
+        displayName: page.display_name ?? '',
+        bioText: page.bio ?? '',
+        avatarUrl: page.avatar_url ?? '',
+        coverImageUrl: page.cover_url ?? '',
+        socialLinks: (settings.socialLinks as SocialLink[]) ?? [],
+        avatarShape: (settings.avatarShape as 'circular' | 'rounded' | 'square') ?? 'circular',
+        avatarBorder: settings.avatarBorder ?? true,
+      });
+      setAppearance({
+        layoutStyle: layout.style ?? 'classic',
+        buttonStyle: theme.buttonStyle ?? 'rounded',
+        backgroundType: theme.backgroundType ?? 'solid',
+        backgroundValue: theme.backgroundValue ?? '',
+        showWatermark: settings.showWatermark ?? true,
+        showShareButton: settings.showShareButton ?? true,
+        fontFamily: theme.fontFamily ?? 'system',
+        cardStyle: theme.cardStyle ?? 'solid',
+        animation: theme.animation ?? 'none',
+        borderRadius: theme.borderRadius ?? 'md',
+        spacing: theme.spacing ?? 'default',
+      });
+    }
 
-        // ── V2: Fetch blocks + items ──
-        const { data: rawBlocks } = await (supabase.from('linkinbio_blocks' as any) as any)
-          .select('*')
-          .eq('page_id', page?.id)
-          .order('sort_order', { ascending: true });
-
-        if (rawBlocks && rawBlocks.length > 0) {
-          const blockIds = rawBlocks.map((b: any) => b.id);
-          const { data: rawItems } = await (supabase.from('linkinbio_items' as any) as any)
-            .select('*')
-            .in('block_id', blockIds)
-            .order('sort_order', { ascending: true });
-
-          const itemsByBlock: Record<string, any> = {};
-          for (const item of rawItems ?? []) {
-            itemsByBlock[item.block_id] = item;
-          }
-
-          setLinks(rawBlocks.map((b: any) => {
-            const content = (b.content as any) ?? {};
-            const style = (b.style as any) ?? {};
-            const item = itemsByBlock[b.id];
-
-            // Reconstruct the flat BioLink shape the editor expects
-            return {
-              id: b.id,
-              link_type: b.type,
-              title: item?.title ?? content.title ?? '',
-              description: item?.description ?? content.description ?? '',
-              url: item?.url ?? content.url ?? '',
-              thumbnail_url: item?.thumbnail_url ?? content.thumbnail_url ?? '',
-              product_id: item?.product_id ?? '',
-              icon_type: item?.metadata?.icon_type ?? style.icon_type ?? 'external',
-              style_variant: item?.metadata?.style_variant ?? style.variant ?? 'default',
-              is_visible: b.is_visible ?? true,
-              sort_order: b.sort_order ?? 0,
-              metadata: { ...content, ...(item?.metadata ?? {}) },
-              _item_id: item?.id ?? null, // track item ID for updates
-            };
-          }));
-        }
-
-        // Load ALL products (not just published) so creator can link any product
-        if (s?.creator_id) {
-          const { data: prods } = await supabase
-            .from('products')
-            .select('id, name, price, thumbnail_url, is_published')
-            .eq('creator_id', s.creator_id)
-            .order('created_at', { ascending: false });
-          setProducts(prods ?? []);
-        }
-      } finally {
-        setLoading(false);
+    if (rawBlocks.length > 0) {
+      const itemsByBlock: Record<string, any> = {};
+      for (const item of rawItems) {
+        itemsByBlock[item.block_id] = item;
       }
-    };
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId]);
+      setLinks(rawBlocks.map((b: any) => {
+        const content = (b.content as any) ?? {};
+        const style = (b.style as any) ?? {};
+        const item = itemsByBlock[b.id];
+        return {
+          id: b.id,
+          link_type: b.type,
+          title: item?.title ?? content.title ?? '',
+          description: item?.description ?? content.description ?? '',
+          url: item?.url ?? content.url ?? '',
+          thumbnail_url: item?.thumbnail_url ?? content.thumbnail_url ?? '',
+          product_id: item?.product_id ?? '',
+          icon_type: item?.metadata?.icon_type ?? style.icon_type ?? 'external',
+          style_variant: item?.metadata?.style_variant ?? style.variant ?? 'default',
+          is_visible: b.is_visible ?? true,
+          sort_order: b.sort_order ?? 0,
+          metadata: { ...content, ...(item?.metadata ?? {}) },
+          _item_id: item?.id ?? null,
+        };
+      }));
+    }
+
+    setProducts(loaded.products);
+
+    setLoading(false);
+  }, [loaded, siteId]);
 
   // ── Slug availability check ──
   useEffect(() => {
@@ -906,13 +883,14 @@ export default function EditLinkInBioPage() {
         }
       }
 
+      queryClient.invalidateQueries({ queryKey: ['sites', 'linkinbio', siteId] });
       setSaved(true);
       setPreviewKey(Date.now());
       setTimeout(() => setSaved(false), 3000);
     } finally {
       setSaving(false);
     }
-  }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo, isPublished]);
+  }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo, isPublished, queryClient]);
 
   // ── Derived ──
   const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
