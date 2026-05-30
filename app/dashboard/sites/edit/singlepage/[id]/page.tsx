@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { useProducts } from '@/hooks/useProducts';
 import { revalidateStorefrontPaths } from '@/app/actions/revalidate';
+import { useQueryClient } from '@tanstack/react-query';
+import { useSinglePageSiteQuery } from '@/hooks/useSinglePageSite';
 
 import type { SinglePageContentData } from '@/src/components/dashboard/site-edit/tabs/singlepage/singlepage-types';
 import SinglePageLogoEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageLogoEditor';
@@ -243,118 +245,119 @@ export default function EditSinglePagePage() {
   }, [handleUndo, handleRedo]);
 
   // ── Load data ──
+  const queryClient = useQueryClient();
+  const { data: loaded, isError } = useSinglePageSiteQuery(siteId);
+  // Hydrate local state from cache exactly once per siteId. Background refetches
+  // must not clobber unsaved user edits.
+  const hydratedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [{ data: s }, { data: tokens }] = await Promise.all([
-          supabase.from('sites').select('*').eq('id', siteId).single(),
-          supabase.from('site_design_tokens').select('color_palette').eq('site_id', siteId).maybeSingle(),
-        ]);
+    if (isError) { setLoading(false); return; }
+    if (!loaded || hydratedRef.current === siteId) return;
+    hydratedRef.current = siteId;
 
-        setSite(s);
-        if (tokens?.color_palette) setPalette(tokens.color_palette as Record<string, string>);
+    const s = loaded.site;
+    const tokens = loaded.tokens;
+    const page = loaded.page;
 
-        setSlug(s?.slug ?? '');
-        setOriginalSlug(s?.slug ?? null);
-        setIsPublished(s?.is_active ?? true);
+    setSite(s);
+    if (tokens?.color_palette) setPalette(tokens.color_palette as Record<string, string>);
 
-        const { data: page } = await supabase.from('site_singlepage').select('*').eq('site_id', siteId).maybeSingle();
+    setSlug(s?.slug ?? '');
+    setOriginalSlug(s?.slug ?? null);
+    setIsPublished(s?.is_active ?? true);
 
-        if (page) {
-          const pageMeta = page.metadata as any || {};
+    if (page) {
+      const pageMeta = (page.metadata as any) || {};
 
-          setContent({
-            title: page.title || '',
-            description: page.description || '',
-            heroImage: page.hero_image_url || '',
-            videoUrl: pageMeta?.video_url || '',
-            stats: pageMeta?.stats || [],
-            productId: page.product_id || null,
-            upsellProductIds: pageMeta?.upsell_product_ids || [],
-            fakePrice: pageMeta?.fake_price || 0,
-            features: pageMeta?.features || [],
-            whatsIncluded: (page.guarantee_badges as string[]) || [],
-            contentBlocks: pageMeta?.content_blocks || [],
-            creatorProfile: pageMeta?.creator_profile || { name: '', avatarUrl: '', bio: '' },
-            faqs: (page.faq_items as any[]) || [],
-            testimonials: (page.testimonials as any[]) || [],
-            logoUrl: pageMeta?.logo_url || '',
-            logoShape: pageMeta?.logo_shape || 'free',
-            headerText: pageMeta?.header_text || '',
-            headerAlignment: pageMeta?.header_alignment || 'center',
-            showLogo: pageMeta?.show_logo ?? true,
-            headerStyle: pageMeta?.header_style || 'standard',
-            logoPlacement: pageMeta?.logo_placement || 'top-bar',
-            logoHeaderGap: pageMeta?.logo_header_gap || 'md',
-            headerDivider: pageMeta?.header_divider ?? false,
-            headerWidth: pageMeta?.header_width || 'full',
-            socialLinks: pageMeta?.social_links || [],
-            socialDisplayStyle: pageMeta?.social_display_style || 'icons-only',
-            socialPosition: pageMeta?.social_position || 'footer',
-            checkoutStyle: pageMeta?.checkout_style || 'embedded',
-            checkoutAlignment: pageMeta?.checkout_alignment || 'center',
-            ctaText: pageMeta?.cta_text || '',
-            ctaSubtext: pageMeta?.cta_subtext || '',
-            ctaButtonStyle: pageMeta?.cta_button_style || 'solid',
-            ctaButtonSize: pageMeta?.cta_button_size || 'lg',
-            showTrustBadges: pageMeta?.show_trust_badges ?? true,
-            trustBadges: pageMeta?.trust_badges || [],
-            showPaymentIcons: pageMeta?.show_payment_icons ?? true,
-            customCss: pageMeta?.custom_css || '',
-            customJs: pageMeta?.custom_js || '',
-            customHeadTags: pageMeta?.custom_head_tags || '',
-            contactEmail: pageMeta?.contact_email || '',
-            contactMobile: pageMeta?.contact_mobile || '',
-            contactWhatsApp: pageMeta?.contact_whatsapp || '',
-            redirectAfterPurchase: pageMeta?.redirect_after_purchase || '',
-            passwordProtection: pageMeta?.password_protection ?? false,
-            pagePassword: pageMeta?.page_password || '',
-            analyticsGoogleId: pageMeta?.analytics_google_id || '',
-            analyticsFbPixelId: pageMeta?.analytics_fb_pixel_id || '',
-          });
+      setContent({
+        title: page.title || '',
+        description: page.description || '',
+        heroImage: page.hero_image_url || '',
+        videoUrl: pageMeta?.video_url || '',
+        stats: pageMeta?.stats || [],
+        productId: page.product_id || null,
+        upsellProductIds: pageMeta?.upsell_product_ids || [],
+        fakePrice: pageMeta?.fake_price || 0,
+        features: pageMeta?.features || [],
+        whatsIncluded: (page.guarantee_badges as string[]) || [],
+        contentBlocks: pageMeta?.content_blocks || [],
+        creatorProfile: pageMeta?.creator_profile || { name: '', avatarUrl: '', bio: '' },
+        faqs: (page.faq_items as any[]) || [],
+        testimonials: (page.testimonials as any[]) || [],
+        logoUrl: pageMeta?.logo_url || '',
+        logoShape: pageMeta?.logo_shape || 'free',
+        headerText: pageMeta?.header_text || '',
+        headerAlignment: pageMeta?.header_alignment || 'center',
+        showLogo: pageMeta?.show_logo ?? true,
+        headerStyle: pageMeta?.header_style || 'standard',
+        logoPlacement: pageMeta?.logo_placement || 'top-bar',
+        logoHeaderGap: pageMeta?.logo_header_gap || 'md',
+        headerDivider: pageMeta?.header_divider ?? false,
+        headerWidth: pageMeta?.header_width || 'full',
+        socialLinks: pageMeta?.social_links || [],
+        socialDisplayStyle: pageMeta?.social_display_style || 'icons-only',
+        socialPosition: pageMeta?.social_position || 'footer',
+        checkoutStyle: pageMeta?.checkout_style || 'embedded',
+        checkoutAlignment: pageMeta?.checkout_alignment || 'center',
+        ctaText: pageMeta?.cta_text || '',
+        ctaSubtext: pageMeta?.cta_subtext || '',
+        ctaButtonStyle: pageMeta?.cta_button_style || 'solid',
+        ctaButtonSize: pageMeta?.cta_button_size || 'lg',
+        showTrustBadges: pageMeta?.show_trust_badges ?? true,
+        trustBadges: pageMeta?.trust_badges || [],
+        showPaymentIcons: pageMeta?.show_payment_icons ?? true,
+        customCss: pageMeta?.custom_css || '',
+        customJs: pageMeta?.custom_js || '',
+        customHeadTags: pageMeta?.custom_head_tags || '',
+        contactEmail: pageMeta?.contact_email || '',
+        contactMobile: pageMeta?.contact_mobile || '',
+        contactWhatsApp: pageMeta?.contact_whatsapp || '',
+        redirectAfterPurchase: pageMeta?.redirect_after_purchase || '',
+        passwordProtection: pageMeta?.password_protection ?? false,
+        pagePassword: pageMeta?.page_password || '',
+        analyticsGoogleId: pageMeta?.analytics_google_id || '',
+        analyticsFbPixelId: pageMeta?.analytics_fb_pixel_id || '',
+      });
 
-          setSiteSettings({
-            showBuyNow: page.show_buy_now ?? true,
-            showAddToCart: page.show_add_to_cart ?? true,
-            enableReviews: page.enable_reviews ?? false,
-            countdownEnd: page.countdown_end_at || '',
-            passwordProtection: pageMeta?.password_protection ?? false,
-            pagePassword: pageMeta?.page_password || '',
-            analyticsGoogleId: pageMeta?.analytics_google_id || '',
-            analyticsFbPixelId: pageMeta?.analytics_fb_pixel_id || '',
-          });
+      setSiteSettings({
+        showBuyNow: page.show_buy_now ?? true,
+        showAddToCart: page.show_add_to_cart ?? true,
+        enableReviews: page.enable_reviews ?? false,
+        countdownEnd: page.countdown_end_at || '',
+        passwordProtection: pageMeta?.password_protection ?? false,
+        pagePassword: pageMeta?.page_password || '',
+        analyticsGoogleId: pageMeta?.analytics_google_id || '',
+        analyticsFbPixelId: pageMeta?.analytics_fb_pixel_id || '',
+      });
 
-          setSeo({
-            title: typeof pageMeta?.custom_title === 'string' ? pageMeta.custom_title : '',
-            description: page.meta_description || '',
-            image: typeof pageMeta?.custom_image === 'string' ? pageMeta.custom_image : '',
-          });
+      setSeo({
+        title: typeof pageMeta?.custom_title === 'string' ? pageMeta.custom_title : '',
+        description: page.meta_description || '',
+        image: typeof pageMeta?.custom_image === 'string' ? pageMeta.custom_image : '',
+      });
 
-          const theme = (page.theme as any) ?? {};
-          setAppearance({
-            layoutStyle: theme.layoutStyle ?? 'classic',
-            buttonStyle: theme.buttonStyle ?? 'rounded',
-            backgroundType: theme.backgroundType ?? 'solid',
-            backgroundValue: theme.backgroundValue ?? '',
-            showWatermark: theme.showWatermark ?? true,
-            showShareButton: theme.showShareButton ?? true,
-            fontFamily: theme.fontFamily ?? 'system',
-            cardStyle: theme.cardStyle ?? 'solid',
-            animation: theme.animation ?? 'none',
-            borderRadius: theme.borderRadius ?? 'md',
-            spacing: theme.spacing ?? 'default',
-            headingStyle: theme.headingStyle ?? 'minimal',
-            sectionSpacing: theme.sectionSpacing ?? 'comfortable',
-            shadowIntensity: theme.shadowIntensity ?? 'medium',
-          });
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId]);
+      const theme = (page.theme as any) ?? {};
+      setAppearance({
+        layoutStyle: theme.layoutStyle ?? 'classic',
+        buttonStyle: theme.buttonStyle ?? 'rounded',
+        backgroundType: theme.backgroundType ?? 'solid',
+        backgroundValue: theme.backgroundValue ?? '',
+        showWatermark: theme.showWatermark ?? true,
+        showShareButton: theme.showShareButton ?? true,
+        fontFamily: theme.fontFamily ?? 'system',
+        cardStyle: theme.cardStyle ?? 'solid',
+        animation: theme.animation ?? 'none',
+        borderRadius: theme.borderRadius ?? 'md',
+        spacing: theme.spacing ?? 'default',
+        headingStyle: theme.headingStyle ?? 'minimal',
+        sectionSpacing: theme.sectionSpacing ?? 'comfortable',
+        shadowIntensity: theme.shadowIntensity ?? 'medium',
+      });
+    }
+
+    setLoading(false);
+  }, [loaded, siteId, isError]);
 
   // ── Slug availability check ──
   useEffect(() => {
@@ -506,6 +509,7 @@ export default function EditSinglePagePage() {
       }
 
       setPreviewKey(Date.now());
+      queryClient.invalidateQueries({ queryKey: ['sites', 'singlepage', siteId] });
     } catch (e: any) {
       console.error('Save failed', e);
       alert('Failed to save changes.');
