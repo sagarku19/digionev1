@@ -2,11 +2,13 @@
 // DB tables: creator_balances, creator_payouts, creator_kyc, users, profiles (read only)
 "use client";
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export function useEarnings() {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['creator-earnings'],
     queryFn: async () => {
@@ -40,12 +42,28 @@ export function useEarnings() {
     }
   });
 
+  const updateKycMutation = useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      try {
+        const creatorId = await getCreatorProfileId();
+        const { error } = await supabase.from('creator_kyc').upsert({ creator_id: creatorId, ...payload });
+        if (error) throw error;
+      } catch (err) {
+        console.error('useEarnings updateKyc error:', err);
+        throw err;
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['creator-earnings'] }),
+  });
+
   return {
     creatorBalances: data?.balances,
     payouts: data?.payouts || [],
     kyc: data?.kyc,
     isLoading,
     error,
-    refreshEarnings: refetch
+    refreshEarnings: refetch,
+    updateKyc: updateKycMutation.mutateAsync,
+    isUpdatingKyc: updateKycMutation.isPending,
   };
 }

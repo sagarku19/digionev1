@@ -4,8 +4,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useEarnings } from '@/hooks/useEarnings';
-import { createClient } from '@/lib/supabase/client';
-import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import {
   ShieldCheck, ShieldAlert, Building2, AlertCircle, Clock,
   ChevronRight, User, CreditCard, Eye, EyeOff,
@@ -133,8 +131,7 @@ const STATES = [
 ];
 
 export default function KYCAndBillingPage() {
-  const { kyc, isLoading, refreshEarnings } = useEarnings();
-  const supabase = createClient();
+  const { kyc, isLoading, updateKyc } = useEarnings();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -168,9 +165,7 @@ export default function KYCAndBillingPage() {
     setErrorMsg(''); setSuccessMsg('');
     setIsSubmitting(true);
     try {
-      const profileId = await getCreatorProfileId();
-      const { error } = await supabase.from('creator_kyc').upsert({
-        creator_id: profileId,
+      await updateKyc({
         legal_name: form.legal_name,
         pan_enc: form.pan_enc,
         bank_account_enc: form.bank_account_enc,
@@ -188,12 +183,10 @@ export default function KYCAndBillingPage() {
         country: form.country || 'India',
         status: 'pending',
         kyc_level: 'basic',
-      }).eq('creator_id', profileId);
-      if (error) throw error;
+      });
       setSuccessMsg('Details submitted! Our compliance team will review within 1–2 business days.');
-      refreshEarnings();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to submit KYC details.');
+    } catch (err) {
+      setErrorMsg((err as Error).message || 'Failed to submit KYC details.');
     } finally {
       setIsSubmitting(false);
     }
