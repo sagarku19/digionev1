@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, Suspense } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { supabase } from '@/lib/supabase/client';
+import { useAuthSession, useLoginMutation } from '@/hooks/useAuthSession';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 
@@ -19,51 +20,100 @@ function GoogleIcon() {
 }
 
 function LoginContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  /* ── Email / password login ── */
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const loginMutation = useLoginMutation();
+  const loading = loginMutation.isPending || redirecting;
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+  // If a returning user hits /login while already authenticated (e.g., browser
+  // back from /dashboard), bounce them to their landing page and use
+  // location.replace so /login is dropped from history.
+  const { isLoggedIn, isLoading: sessionLoading } = useAuthSession();
+  const autoRedirectFired = useRef(false);
 
-    if (signInError) {
-      setError('Invalid email or password.');
-      setLoading(false);
-      return;
-    }
+  useEffect(() => {
+    if (sessionLoading || !isLoggedIn || autoRedirectFired.current) return;
+    autoRedirectFired.current = true;
 
-    if (data.user) {
+    (async () => {
       const returnUrl = searchParams.get('returnUrl');
       if (returnUrl) {
-        router.push(returnUrl);
+        window.location.replace(returnUrl);
         return;
       }
 
-      const { data: userData } = await supabase
-        .from('users')
-        .select('role')
-        .eq('auth_provider_id', data.user.id)
-        .single();
-
-      const role = userData?.role || 'user';
-      if (role === 'creator' || role === 'super_admin') {
-        router.push('/dashboard');
-      } else {
-        router.push('/account/library');
+      let role = 'user';
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('role')
+            .eq('auth_provider_id', user.id)
+            .single();
+          role = userData?.role || 'user';
+        }
+      } catch {
+        // Fall through with role='user'.
       }
-    }
+
+      window.location.replace(
+        role === 'creator' || role === 'super_admin' ? '/dashboard' : '/account/library'
+      );
+    })();
+  }, [sessionLoading, isLoggedIn, searchParams]);
+
+  // Uses window.location.href instead of router.push so the navigation does a
+  // full reload. router.push relies on the in-page Next router and can silently
+  // fail to navigate if proxy.ts redirects mid-flight while React is still
+  // settling auth state.
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: async (user) => {
+          setRedirecting(true);
+
+          const returnUrl = searchParams.get('returnUrl');
+          if (returnUrl) {
+            window.location.href = returnUrl;
+            return;
+          }
+
+          // Resolve role to decide between /dashboard and /account/library.
+          // If the query fails (RLS, missing row), default to the buyer route
+          // rather than leaving the form spinning forever.
+          let role = 'user';
+          try {
+            const { data: userData } = await supabase
+              .from('users')
+              .select('role')
+              .eq('auth_provider_id', user.id)
+              .single();
+            role = userData?.role || 'user';
+          } catch {
+            // Fall through with role='user'.
+          }
+
+          window.location.href = role === 'creator' || role === 'super_admin'
+            ? '/dashboard'
+            : '/account/library';
+        },
+        onError: (err) => {
+          setError(err.message || 'Login failed. Please try again.');
+        },
+      }
+    );
   };
 
   /* ── Google OAuth ── */
@@ -82,6 +132,10 @@ function LoginContent() {
       setGoogleLoading(false);
     }
   };
+
+  if (sessionLoading || isLoggedIn) {
+    return <div />;
+  }
 
   return (
     <>
