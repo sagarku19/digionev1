@@ -18,3 +18,4 @@ tags: []
 | Call Cashfree from the browser | Security — always via `/api/checkout/*` |
 | Install new packages without asking | Intentional stack, no bloat |
 | Touch `types/database.types.ts` | Auto-generated — run `npm run update-types` instead |
+| Replace `getSession()` with `getUser()` in `proxy.ts` | Intentional — see comment in `proxy.ts:34-46`. `getUser()` breaks first-navigation-after-login. |

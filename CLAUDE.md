@@ -102,6 +102,7 @@ digionev1/
 - **Never mutate `orders`, `creator_balances`, or `transaction_ledger` from client-side code.** These must only be written via `/api/*` server route handlers.
 - **Never use `any` for database rows.** Use types from `types/database.types.ts`.
 - **Never bypass RLS.** Every query must go through Row Level Security.
+- **`proxy.ts` intentionally uses `getSession()` (not `getUser()`) for routing** — the "insecure user" console warning is expected. Sensitive server reads must still call `getUser()`.
 
 ### TypeScript
 - Strict mode always. Zero `any` without a documented reason.
