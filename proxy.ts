@@ -31,14 +31,7 @@ export default async function proxy(request: NextRequest) {
     }
   );
 
-  // getSession() validates the JWT locally from the cookie — no Supabase
-  // network call on every navigation. Only hits the network when the refresh
-  // token actually needs to be used (~once per hour). For routing decisions
-  // this is sufficient and much faster than getUser().
-  // API routes handling sensitive operations (orders, payments) should call
-  // getUser() independently for server-side verification.
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user ?? null;
+  const { data: { user } } = await supabase.auth.getUser();
 
   const url = request.nextUrl.clone();
 
