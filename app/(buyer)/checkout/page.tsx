@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { load } from '@cashfreepayments/cashfree-js';
 import { useCart, useCartTotal } from '@/hooks/useCart';
 import { Loader2, ShieldCheck, Package, Trash2, AlertTriangle } from 'lucide-react';
 
@@ -39,10 +40,13 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create order');
 
-      // @ts-ignore
-      const { load } = await import('@cashfreepayments/cashfree-js');
+      if (data.status === 'completed') {
+        window.location.href = `/payment/status?order_id=${data.orderId}`;
+        return;
+      }
+
       const cashfree = await load({
-        mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === 'production' ? 'production' : 'sandbox',
+        mode: data.environment === 'production' ? 'production' : 'sandbox',
       });
 
       cashfree.checkout({
