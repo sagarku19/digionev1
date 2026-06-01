@@ -60,7 +60,7 @@ export default function TopBar() {
   const [searchFocused, setSearchFocused] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
-  const { profile } = useCreator();
+  const { profile, isLoading: profileLoading } = useCreator();
   const { unreadCount } = useNotifications();
   const { theme, setTheme } = useTheme();
 
@@ -128,7 +128,7 @@ export default function TopBar() {
           <Bell className="w-[15px] h-[15px] shrink-0" />
           <span className="text-[12px] font-medium">Notifications</span>
           {unreadCount > 0 && (
-            <span className="min-w-4.5 h-4.5 bg-[#E83A2E] text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none px-1">
+            <span className="min-w-4.5 h-4.5 bg-[var(--brand)] text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none px-1">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -149,17 +149,22 @@ export default function TopBar() {
           >
             {/* Avatar */}
             <div
-              className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-1 ring-black/5 dark:ring-white/10"
-              style={{ background: '#E83A2E' }}
+              className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-1 ring-black/5 dark:ring-white/10 bg-[var(--brand)]"
             >
               {avatarUrl
                 ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                : <span className="text-white text-[10px] font-bold">{initial}</span>
+                : profileLoading
+                  ? <div className="w-full h-full rounded-full bg-[var(--bg-secondary)] animate-pulse" />
+                  : <span className="text-white text-[10px] font-bold">{initial}</span>
               }
             </div>
-            <span className="hidden sm:block text-[13px] font-semibold text-gray-800 dark:text-zinc-200 max-w-[96px] truncate">
-              {fullName}
-            </span>
+            {profileLoading ? (
+              <span className="hidden sm:block h-3 w-20 rounded-[var(--radius-sm)] bg-[var(--bg-secondary)] animate-pulse" />
+            ) : (
+              <span className="hidden sm:block text-[13px] font-semibold text-gray-800 dark:text-zinc-200 max-w-[96px] truncate">
+                {fullName}
+              </span>
+            )}
             {/* Caret */}
             <svg
               className={`w-3 h-3 text-gray-400 dark:text-zinc-500 transition-transform duration-150 ${showDropdown ? 'rotate-180' : ''}`}
@@ -171,22 +176,28 @@ export default function TopBar() {
 
           {/* Dropdown */}
           {showDropdown && (
-            <div className="absolute right-0 mt-1.5 w-56 bg-white dark:bg-[#141415] border border-gray-100 dark:border-white/[0.07] rounded-[var(--radius-lg)] shadow-xl shadow-black/[0.08] dark:shadow-black/40 py-1.5 z-50">
+            <div className="absolute right-0 mt-1.5 w-56 bg-[var(--bg-elevated)] border border-gray-100 dark:border-white/[0.07] rounded-[var(--radius-lg)] shadow-xl shadow-black/[0.08] dark:shadow-black/40 py-1.5 z-50">
 
               {/* User header */}
               <div className="px-3 py-3 mb-1">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-white dark:ring-[#141415]"
-                    style={{ background: 'linear-gradient(135deg, #E83A2E, #ff6b4a)' }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-white dark:ring-[var(--bg-elevated)]"
+                    style={{ background: 'linear-gradient(135deg, var(--brand), #ff6b4a)' }}
                   >
                     {avatarUrl
                       ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                      : <span className="text-white text-sm font-bold">{initial}</span>
+                      : profileLoading
+                        ? <div className="w-full h-full rounded-full bg-[var(--bg-secondary)] animate-pulse" />
+                        : <span className="text-white text-sm font-bold">{initial}</span>
                     }
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-gray-900 dark:text-white truncate">{fullName}</p>
+                    {profileLoading ? (
+                      <div className="h-3.5 w-28 rounded-[var(--radius-sm)] bg-[var(--bg-secondary)] animate-pulse" />
+                    ) : (
+                      <p className="text-[13px] font-semibold text-gray-900 dark:text-white truncate">{fullName}</p>
+                    )}
                     <div className="flex items-center gap-1 mt-0.5">
                       <Sparkles className="w-2.5 h-2.5 text-amber-400" />
                       <span className="text-[10.5px] font-semibold text-amber-600 dark:text-amber-400">
@@ -272,7 +283,7 @@ export default function TopBar() {
     {showSignOutConfirm && (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSignOutConfirm(false)} />
-        <div className="relative w-full max-w-sm bg-white dark:bg-[#141415] rounded-[var(--radius-lg)] shadow-2xl border border-gray-100 dark:border-white/[0.08] p-6">
+        <div className="relative w-full max-w-sm bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] shadow-2xl border border-gray-100 dark:border-white/[0.08] p-6">
           <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
             <LogOut className="w-5 h-5 text-red-500" />
           </div>
@@ -334,7 +345,7 @@ function DropdownItem({
       <span className="text-gray-400 dark:text-zinc-500">{icon}</span>
       <span className="flex-1 text-left">{label}</span>
       {badge && (
-        <span className="min-w-4.5 h-4.5 bg-[#E83A2E] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+        <span className="min-w-4.5 h-4.5 bg-[var(--brand)] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
           {badge}
         </span>
       )}

@@ -349,7 +349,7 @@ export default function SiteVisualEditor({
         </div>{/* end LEFT PANEL */}
 
         {/* ═══ RIGHT PANEL — full-height preview ═══ */}
-        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[#080818]">
+        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[var(--bg-tertiary)]">
 
           {/* Preview Header */}
           <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-4 gap-3 relative">

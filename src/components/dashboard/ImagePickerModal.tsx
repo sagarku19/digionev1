@@ -364,7 +364,7 @@ export default function ImagePickerModal({
                   onCropComplete={onCropComplete}
                   cropShape="rect"
                   showGrid
-                  style={{ containerStyle: { background: '#111' } }}
+                  style={{ containerStyle: { background: 'var(--bg-tertiary)' } }}
                 />
               </div>
 

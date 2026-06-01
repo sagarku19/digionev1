@@ -89,7 +89,7 @@ export default function Sidebar() {
     if (!isOpen) setVisible(false);
   };
 
-  const { profile } = useCreator();
+  const { profile, isLoading: profileLoading } = useCreator();
   const { unreadCount } = useNotifications();
 
   // Hide sidebar entirely on full-screen editor pages
@@ -127,10 +127,10 @@ export default function Sidebar() {
         }`}
     >
       {active && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[#E83A2E]" />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[var(--brand)]" />
       )}
       <Icon className={`w-[18px] h-[18px] shrink-0 transition-colors ${active
-        ? 'text-[#E83A2E]'
+        ? 'text-[var(--brand)]'
         : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
         }`} />
       <span className="flex-1 truncate">{label}</span>
@@ -240,9 +240,9 @@ export default function Sidebar() {
                             }`}
                         >
                           {childActive && (
-                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[#E83A2E]" />
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[var(--brand)]" />
                           )}
-                          <item.icon className={`w-[18px] h-[18px] shrink-0 ${childActive ? 'text-[#E83A2E]' : 'text-[var(--text-secondary)]'}`} />
+                          <item.icon className={`w-[18px] h-[18px] shrink-0 ${childActive ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)]'}`} />
                           <span className="flex-1 text-left">{item.label}</span>
                           <ChevronDown className={`w-3.5 h-3.5 text-[var(--text-secondary)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
                         </button>
@@ -336,16 +336,22 @@ export default function Sidebar() {
               className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] hover:bg-[var(--bg-tertiary)] transition"
             >
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden" style={{ backgroundColor: '#E83A2E' }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-[var(--brand)]">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : profileLoading ? (
+                  <div className="w-full h-full rounded-full bg-[var(--bg-secondary)] animate-pulse" />
                 ) : (
                   <span className="text-white text-[11px] font-bold">{userInitials}</span>
                 )}
               </div>
               {/* Info */}
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate leading-tight">{userName}</p>
+                {profileLoading ? (
+                  <div className="h-3 w-24 rounded-[var(--radius-sm)] bg-[var(--bg-secondary)] animate-pulse" />
+                ) : (
+                  <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate leading-tight">{userName}</p>
+                )}
                 <p className="text-[10px] text-[var(--text-secondary)] truncate leading-tight mt-px">Free Plan</p>
               </div>
               <MoreHorizontal className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />
