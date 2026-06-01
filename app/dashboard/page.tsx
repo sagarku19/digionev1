@@ -238,8 +238,8 @@ export default function DashboardHome() {
               <div className="h-[260px] min-w-0 w-full">
                 {analyticsLoading ? (
                   <div className="h-full w-full rounded-[var(--radius-lg)] bg-gray-100 dark:bg-zinc-900/60 animate-pulse" />
-                ) : null}
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} style={analyticsLoading ? { display: 'none' } : {}}>
+                ) : (
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <AreaChart data={chartData} margin={{ top: 2, right: 4, bottom: 0, left: 0 }}>
                     <defs>
                       <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
@@ -285,6 +285,7 @@ export default function DashboardHome() {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
+                )}
               </div>
             </div>
 
