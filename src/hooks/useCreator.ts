@@ -13,9 +13,8 @@ export function useCreator() {
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['creator-profile'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
 
       // auth UID → users.auth_provider_id → users.id → profiles.user_id
       const { data, error } = await supabase

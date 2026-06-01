@@ -13,9 +13,8 @@ export function useSiteConfig() {
   const { data: config, isLoading, error } = useQuery({
     queryKey: ['siteConfig'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
 
       const { data, error } = await (supabase as any)
         .from('site_config')
@@ -30,9 +29,8 @@ export function useSiteConfig() {
 
   const updateMutation = useMutation({
     mutationFn: async (updates: SiteConfigUpdate) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
       
       if (!config) {
         // Create if missing

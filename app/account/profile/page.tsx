@@ -22,9 +22,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) { window.location.href = '/login'; return; }
-      setEmail(session.user.email || '');
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { window.location.href = '/login'; return; }
+      setEmail(user.email || '');
       getCreatorProfileId().then(setProfileId).catch(() => {});
     });
   }, []);

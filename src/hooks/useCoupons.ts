@@ -12,9 +12,8 @@ export function useCoupons() {
   const { data: coupons = [], isLoading, error } = useQuery({
     queryKey: ['coupons'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
 
       const { data, error } = await supabase
         .from('coupons')
@@ -29,9 +28,8 @@ export function useCoupons() {
 
   const createMutation = useMutation({
     mutationFn: async (newCoupon: Omit<CouponInsert, 'creator_id'>) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
 
       const { data, error } = await supabase
         .from('coupons')

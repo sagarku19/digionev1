@@ -33,9 +33,8 @@ export function useSites() {
   const { data: sites = [], isLoading, error } = useQuery<SiteWithMain[]>({
     queryKey: ['creator-sites'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error('Not authenticated');
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
       // Resolve creator's internal users.id from auth uid
       const { data: publicUser } = await supabase

@@ -7,9 +7,8 @@ export function useAbTests() {
   const { data: tests = [], isLoading, error } = useQuery({
     queryKey: ['ab-tests'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
 
       const { data, error } = await (supabase as any)
         .from('ab_tests')

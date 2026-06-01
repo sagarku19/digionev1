@@ -12,9 +12,8 @@ export function usePayoutRequests() {
   const { data: payouts = [], isLoading, error } = useQuery({
     queryKey: ['payout-requests'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
 
       const { data, error } = await (supabase as any)
         .from('payout_requests')
@@ -29,9 +28,8 @@ export function usePayoutRequests() {
 
   const requestPayout = useMutation({
     mutationFn: async (amount: number) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Not logged in");
-      const user = session.user;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not logged in");
 
       const payload: PayoutInsert = {
         creator_id: user.id,

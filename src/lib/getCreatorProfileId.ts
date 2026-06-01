@@ -6,10 +6,10 @@
 import { supabase } from '@/lib/supabase/client';
 
 export async function getCreatorProfileId(): Promise<string> {
-  // getSession() reads from the cookie cache — no network call, no race with TanStack Query on client nav
-  const { data: { session }, error: authError } = await supabase.auth.getSession();
-  if (authError || !session?.user) throw new Error('Not logged in');
-  const user = session.user;
+  // getUser() verifies the JWT with Supabase Auth before we trust user.id.
+  // getSession() alone is insecure for reads of user fields.
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw new Error('Not logged in');
 
   // users.auth_provider_id stores the Supabase auth UID
   // profiles.user_id → users.id  (not the auth UID)
