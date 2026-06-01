@@ -11,7 +11,7 @@
 }
 
 @keyframes marqueescroll {
-  from { transform: translateX(0); }
+  from { transform: translateX(0); }  
   to   { transform: translateX(-50%); }
 }
 
