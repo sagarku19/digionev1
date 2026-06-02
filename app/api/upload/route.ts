@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
+import { createServiceClient } from '@/lib/supabase/service';
 
 export async function POST(req: Request) {
   try {
+    const supabase = createServiceClient();
     const { filename, bucket = 'products' } = await req.json();
     
     if (!filename) {
