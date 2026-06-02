@@ -64,17 +64,21 @@ Role is read from the JWT in `proxy.ts` for the route guard, and from the DB for
 
 RLS is the entire authz model. There is **no** "is this user allowed?" code in the app — it's all in Postgres policies. Treat the policies in `supabase/migrations/` as the source of truth.
 
+**Implementation:** all policies live in `supabase/migrations/20260602000000_rls_policies.sql`. Full per-table reference + the access-pattern taxonomy is in `supabase/exports/RLS-POLICIES.md`. Every owner check resolves through the helper `public.current_profile_id()` (STABLE SECURITY DEFINER → `select id from profiles where user_id = auth.uid()`), since `profiles.id` is the `creator_id` used across the schema. `service_role` bypasses RLS, so revenue tables carry **read-only** policies for creators and rely on service-role API routes for all writes (no INSERT/UPDATE policy needed for those writes to work).
+
+> History: RLS was effectively off (only `public_images`) until 2026-06-02. If you're reading an older snapshot, see `supabase/exports/INVENTORY.md`.
+
 Tables you should not touch without understanding their RLS:
 
 | Table | What RLS expects |
 |---|---|
-| `orders` | Buyers can read their own. Creators can read orders where `metadata.creator_profile_id` matches. **Writes: service role only.** |
+| `orders` | Buyers read their own (`user_id = auth.uid()`). Creators read their own (`creator_id = current_profile_id()`). **Writes: service role only.** |
 | `creator_balances` | Creator reads their own row. **Writes: service role only.** |
 | `transaction_ledger` | Creator reads their own. **Writes: service role only, with `record_hash` for audit.** |
 | `creator_payouts` | Creator reads/inserts their own. |
-| `creator_kyc` | Creator reads/updates their own. Payout API checks `status === 'verified'`. |
+| `creator_kyc` | Creator reads/inserts/updates their own (app upserts client-side). Payout API checks `status === 'verified'`. |
 | `products` | Creator owns rows where `creator_id = profile.id`. Public read where `is_published AND deleted_at IS NULL`. |
-| `coupons` | Creator owns. Public read on validate (service role). |
+| `coupons` | Creator owns (no anon read). Public validation goes through `/api/coupons/validate` (service role). |
 | `sites`, `site_main`, `site_singlepage`, `linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` | Owned by `creator_id`. Public read when `is_active`. |
 | `lead_form`, `linkinbio_analytics` | Creator reads via site ownership. Public insert via service role (rate-limited at the route). |
 

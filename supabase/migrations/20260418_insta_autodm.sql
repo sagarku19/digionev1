@@ -178,5 +178,83 @@ create table if not exists public.insta_webhook_events (
 create index if not exists idx_insta_webhook_user on public.insta_webhook_events(insta_user_id);
 create index if not exists idx_insta_webhook_created on public.insta_webhook_events(created_at desc);
 
+-- ============================================================================
+-- RLS — Instagram auto-DM tables (private creator feature, no public read)
+-- ============================================================================
+-- Ownership anchor: insta_users.profile_id = profiles.id (the creator).
+-- All other tables resolve ownership through their FK chain to insta_users.
+-- Webhook events are written by the Instagram webhook (service-role), so the
+-- creator gets read-only there. service_role bypasses RLS for all writes.
+--
+-- Helper is (re)created defensively so this file is self-contained even if the
+-- main RLS migration (20260602000000_rls_policies.sql) hasn't run yet.
+-- ----------------------------------------------------------------------------
+create or replace function public.current_profile_id()
+returns uuid language sql stable security definer set search_path = public as $fn$
+  select id from public.profiles where user_id = auth.uid() limit 1;
+$fn$;
+revoke all on function public.current_profile_id() from public;
+grant execute on function public.current_profile_id() to authenticated, anon, service_role;
 
-# stiill need to run and fix auto DM Page
+-- insta_users: creator manages own.
+alter table public.insta_users enable row level security;
+drop policy if exists insta_users_all_own on public.insta_users;
+create policy insta_users_all_own on public.insta_users
+  for all to authenticated
+  using (profile_id = public.current_profile_id())
+  with check (profile_id = public.current_profile_id());
+
+-- insta_subscriptions: creator reads/manages own.
+alter table public.insta_subscriptions enable row level security;
+drop policy if exists insta_subscriptions_all_own on public.insta_subscriptions;
+create policy insta_subscriptions_all_own on public.insta_subscriptions
+  for all to authenticated
+  using (profile_id = public.current_profile_id())
+  with check (profile_id = public.current_profile_id());
+
+-- insta_automations → insta_users
+alter table public.insta_automations enable row level security;
+drop policy if exists insta_automations_all_own on public.insta_automations;
+create policy insta_automations_all_own on public.insta_automations
+  for all to authenticated
+  using (exists (select 1 from public.insta_users u
+                 where u.id = insta_user_id and u.profile_id = public.current_profile_id()))
+  with check (exists (select 1 from public.insta_users u
+                 where u.id = insta_user_id and u.profile_id = public.current_profile_id()));
+
+-- insta_keywords / insta_triggers / insta_listeners / insta_posts / insta_dms → insta_automations → insta_users
+do $rls$
+declare t text;
+begin
+  foreach t in array array['insta_keywords','insta_triggers','insta_listeners','insta_posts','insta_dms']
+  loop
+    execute format('alter table public.%I enable row level security;', t);
+    execute format('drop policy if exists %I on public.%I;', t||'_all_own', t);
+    execute format($p$create policy %I on public.%I for all to authenticated
+      using (exists (select 1 from public.insta_automations a
+                     join public.insta_users u on u.id = a.insta_user_id
+                     where a.id = %I.automation_id and u.profile_id = public.current_profile_id()))
+      with check (exists (select 1 from public.insta_automations a
+                     join public.insta_users u on u.id = a.insta_user_id
+                     where a.id = %I.automation_id and u.profile_id = public.current_profile_id()));$p$,
+      t||'_all_own', t, t, t);
+  end loop;
+end $rls$;
+
+-- insta_leads → insta_users (creator reads; insert via webhook service-role)
+alter table public.insta_leads enable row level security;
+drop policy if exists insta_leads_select_own on public.insta_leads;
+create policy insta_leads_select_own on public.insta_leads
+  for select to authenticated
+  using (exists (select 1 from public.insta_users u
+                 where u.id = insta_user_id and u.profile_id = public.current_profile_id()));
+
+-- insta_webhook_events → insta_users (creator read-only; writes service-role)
+alter table public.insta_webhook_events enable row level security;
+drop policy if exists insta_webhook_events_select_own on public.insta_webhook_events;
+create policy insta_webhook_events_select_own on public.insta_webhook_events
+  for select to authenticated
+  using (exists (select 1 from public.insta_users u
+                 where u.id = insta_user_id and u.profile_id = public.current_profile_id()));
+
+-- still need to run and fix auto DM Page (pending feature — see SUPABASE.md)

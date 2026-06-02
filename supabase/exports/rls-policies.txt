@@ -1,0 +1,113 @@
+-[ RECORD 1 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | public
+tablename  | public_images
+policyname | Public images are viewable by everyone
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | SELECT
+using_expr | true
+with_check | 
+-[ RECORD 2 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | Creators can manage own files
+permissive | PERMISSIVE
+roles      | {authenticated}
+cmd        | ALL
+using_expr | ((bucket_id = 'uploads'::text) AND ((storage.foldername(name))[2] = ( SELECT (profiles.id)::text AS id                                                       +
+           |    FROM profiles                                                                                                                                             +
+           |   WHERE (profiles.user_id = auth.uid()))))
+with_check | 
+-[ RECORD 3 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | Creators can upload own files
+permissive | PERMISSIVE
+roles      | {authenticated}
+cmd        | INSERT
+using_expr | 
+with_check | ((bucket_id = 'uploads'::text) AND ((storage.foldername(name))[1] = 'creators'::text) AND ((storage.foldername(name))[2] = ( SELECT (profiles.id)::text AS id+
+           |    FROM profiles                                                                                                                                             +
+           |   WHERE (profiles.user_id = auth.uid()))))
+-[ RECORD 4 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | FULL Control 1pl33po_0
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | SELECT
+using_expr | (bucket_id = 'public-asset'::text)
+with_check | 
+-[ RECORD 5 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | FULL Control 1pl33po_1
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | INSERT
+using_expr | 
+with_check | (bucket_id = 'public-asset'::text)
+-[ RECORD 6 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | FULL Control 1pl33po_2
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | UPDATE
+using_expr | (bucket_id = 'public-asset'::text)
+with_check | 
+-[ RECORD 7 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | FULL Control 1pl33po_3
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | DELETE
+using_expr | (bucket_id = 'public-asset'::text)
+with_check | 
+-[ RECORD 8 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | Public read access
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | SELECT
+using_expr | (bucket_id = 'uploads'::text)
+with_check | 
+-[ RECORD 9 ]-------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | all vslhqb_0
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | SELECT
+using_expr | (bucket_id = 'user_files'::text)
+with_check | 
+-[ RECORD 10 ]------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | all vslhqb_1
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | INSERT
+using_expr | 
+with_check | (bucket_id = 'user_files'::text)
+-[ RECORD 11 ]------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | all vslhqb_2
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | UPDATE
+using_expr | (bucket_id = 'user_files'::text)
+with_check | 
+-[ RECORD 12 ]------------------------------------------------------------------------------------------------------------------------------------------------------------
+schemaname | storage
+tablename  | objects
+policyname | all vslhqb_3
+permissive | PERMISSIVE
+roles      | {public}
+cmd        | DELETE
+using_expr | (bucket_id = 'user_files'::text)
+with_check | 
+

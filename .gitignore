@@ -45,3 +45,7 @@ next-env.d.ts
 CLAUDE.local.md
 GEMINI.local.md
 .claude/settings.local.json
+
+# Supabase CLI local state + build artifacts (per-machine, not source)
+supabase/.temp/
+supabase/exports/_*
