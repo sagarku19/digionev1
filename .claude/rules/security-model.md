@@ -26,7 +26,7 @@ How auth, authorization, and money integrity work in DigiOne. Read this before t
 | Server (cookie) | `lib/supabase/server.ts` | anon | enforced | Server Components, Server Actions, Route Handlers that need the **logged-in user**. Reads RLS-filtered to that user. |
 | Service | `lib/supabase/service.ts` | service role | **bypassed** | Route Handlers only. Required for any write to `orders`, `creator_balances`, `transaction_ledger`, and for cross-user lookups (e.g. resolving auth user → public user → profile). |
 
-**Rule:** if a route imports `createClient` from `@supabase/supabase-js` directly, it should use `createServiceClient()` from `lib/supabase/service.ts` instead. Same effect, one source of truth for env handling.
+**Rule:** `/api/*` routes must use `createServiceClient()` from `lib/supabase/service.ts` for service-role access. Never import `createClient` from `@supabase/supabase-js` directly in route handlers. One source of truth for env handling, RLS-bypass behavior, and `Database` typing.
 
 ## Auth flow
 
