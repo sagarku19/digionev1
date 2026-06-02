@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 
     let query = supabase
       .from('products')
-      .select('id, name as title, slug, price, thumbnail_url as cover_image, is_published')
+      .select('id, name, price, thumbnail_url, is_published')
       .ilike('name', `%${q}%`)
       .eq('is_published', true);
 
