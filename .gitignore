@@ -48,4 +48,3 @@ GEMINI.local.md
 
 # Supabase CLI local state + build artifacts (per-machine, not source)
 supabase/.temp/
-supabase/exports/_*
