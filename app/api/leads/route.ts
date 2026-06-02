@@ -2,16 +2,11 @@
 // Requires form_id (linked to forms table) and site_id.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/database.types';
-
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY! // service role — bypasses RLS
-);
+import { createServiceClient } from '@/lib/supabase/service';
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = createServiceClient();
     const body = await req.json() as {
       formId?: string;
       siteId?: string;
