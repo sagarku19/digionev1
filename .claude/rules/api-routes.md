@@ -297,7 +297,7 @@ Returns a signed upload URL for a Supabase Storage bucket.
 
 - All routes return JSON. Errors: `{ error: string }` with the appropriate status code.
 - Auth-required routes always use `await createClient()` from `lib/supabase/server.ts` + `supabase.auth.getUser()`. Never `getSession()` (see `.claude/rules/anti-patterns.md`).
-- Service-role writes must use `createServiceClient()` from `lib/supabase/service.ts`. Routes that still call `createClient(...)` from `@supabase/supabase-js` directly are pending cleanup — match the helper before adding new behaviour.
+- Service-role writes must use `createServiceClient()` from `lib/supabase/service.ts`. Never import `createClient` from `@supabase/supabase-js` directly in `/api/*` route handlers.
 - Cashfree calls always go through `${CASHFREE_ENV}/orders` with `x-api-version: 2023-08-01`.
 - Cashfree return/notify URLs are built from `NEXT_PUBLIC_APP_URL` — never hardcode.
 - Server-side price verification is mandatory in any route that creates an order. Never trust `price` or `amount` from the client.
