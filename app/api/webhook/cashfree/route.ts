@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/service';
 import crypto from 'crypto';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 export async function POST(req: Request) {
   try {
@@ -27,6 +22,8 @@ export async function POST(req: Request) {
       console.warn('[webhook/cashfree] Invalid signature');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
+
+    const supabase = createServiceClient();
 
     const payload = JSON.parse(rawBody);
     const gatewayOrderId = payload.data?.order?.order_id;
