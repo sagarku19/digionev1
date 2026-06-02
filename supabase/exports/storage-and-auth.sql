@@ -12,13 +12,17 @@
 -- ----------------------------------------------------------------------------
 -- 1. STORAGE BUCKETS  (idempotent)
 -- ----------------------------------------------------------------------------
--- products bucket — RLS deferred; public: true gives read access, service_role writes via /api/upload.
+-- products bucket — public, image covers, per-creator path.
+-- creator-content + creator-private — private (public: false). RLS deferred;
+-- service_role bypasses RLS for /api/upload writes; reads go through future signed-URL endpoints.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
-  ('public-asset', 'public-asset', true, 5242880, null),
-  ('uploads',      'uploads',      true, null,    null),
-  ('user_files',   'user_files',   true, null,    null),
-  ('products',     'products',     true, 5242880, array['image/png','image/jpeg','image/webp','image/gif'])
+  ('public-asset',     'public-asset',     true,  5242880,    null),
+  ('uploads',          'uploads',          true,  null,       null),
+  ('user_files',       'user_files',       true,  null,       null),
+  ('products',         'products',         true,  5242880,    array['image/png','image/jpeg','image/webp','image/gif']),
+  ('creator-content',  'creator-content',  false, 524288000,  array['application/pdf','application/zip','application/x-zip-compressed','application/epub+zip','application/octet-stream','video/mp4','video/quicktime','video/webm','audio/mpeg','audio/mp4','audio/wav','image/png','image/jpeg','image/webp','text/plain','text/csv']),
+  ('creator-private',  'creator-private',  false, 10485760,   array['application/pdf','image/png','image/jpeg','image/webp'])
 on conflict (id) do update
   set public = excluded.public,
       file_size_limit = excluded.file_size_limit,

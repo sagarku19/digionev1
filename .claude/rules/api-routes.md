@@ -279,10 +279,25 @@ Returns a signed upload URL for a Supabase Storage bucket.
 
 ```json
 // Request
-{ "filename": "string", "bucket": "products" | "public-asset", "creatorId": "uuid (required when bucket === 'products')" }
+{
+  "filename": "string",
+  "bucket": "public-asset" | "products" | "creator-content" | "creator-private",
+  "creatorId": "uuid (required for all buckets except public-asset)",
+  "productId": "uuid (optional; creator-content uses 'unassigned' folder if omitted)",
+  "category": "'kyc' | 'contracts' | 'other' (required when bucket === 'creator-private')"
+}
 ```
 
-**File path:** Layout depends on bucket. `public-asset` → `linkinbio/{timestamp}_{filename}`. `products` → `{creator_id}/{timestamp}_{filename}` (per-creator folder).
+**File paths per bucket:**
+
+| Bucket | Public? | Path layout |
+|---|---|---|
+| `public-asset` | yes | `linkinbio/{timestamp}_{filename}` |
+| `products` | yes | `{creator_id}/{timestamp}_{filename}` |
+| `creator-content` | **no** | `{creator_id}/{product_id or "unassigned"}/{timestamp}_{filename}` |
+| `creator-private` | **no** | `{creator_id}/{category}/{timestamp}_{filename}` |
+
+`publicUrl` in the response is `null` for private buckets. Reads for private buckets must go through dedicated signed-URL endpoints (not yet implemented for `creator-content` / `creator-private` — see `.claude/rules/security-model.md` for the access-check requirement).
 
 ```json
 // Success
