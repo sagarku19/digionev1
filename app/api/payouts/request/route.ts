@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/service';
 
 export async function POST(req: Request) {
   try {
@@ -18,10 +18,7 @@ export async function POST(req: Request) {
     }
 
     // Initialize Admin Client to bypass RLS for secure ledger writes
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabaseAdmin = createServiceClient();
 
     // 1. Verify KYC Status - Must be verified to withdraw
     const { data: kyc } = await supabaseAdmin
