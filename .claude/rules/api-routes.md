@@ -283,7 +283,7 @@ Returns a signed upload URL for a Supabase Storage bucket.
   "filename": "string (sanitized: [A-Za-z0-9._-]+, max 200 chars, no leading dot)",
   "bucket": "public-asset" | "creator-public" | "creator-content" | "creator-private",
   "productId": "uuid (optional; creator-content uses 'unassigned' folder if omitted; format-validated when present)",
-  "kind": "'cover' | 'linkinbio' | 'avatar' | 'banner' | 'other' (defaults to 'other'; allowlist enforced when bucket === 'creator-public')",
+  "kind": "'cover' | 'linkinbio' | 'avatar' | 'banner' | 'other' (defaults to 'other'; allowlist enforced when bucket is 'creator-public' or 'public-asset')",
   "category": "'kyc' | 'contracts' | 'other' (required when bucket === 'creator-private')"
 }
 ```
@@ -310,7 +310,9 @@ Returns a signed upload URL for a Supabase Storage bucket.
 { "signedUrl": "https://...", "path": "1234_image.png", "publicUrl": "https://{supabase}/storage/v1/object/public/{bucket}/{path}" }
 ```
 
-**Hardening (2026-06-03):** route now requires a cookie session. `creatorId` is derived server-side. Filename is sanitized to `[A-Za-z0-9._-]+` (max 200 chars, no leading dot). `productId` is UUID-format-validated. Still outstanding: rate limiting, structured logging, error-message sanitization, resumable uploads for `creator-content`.
+**Hardening (2026-06-03):** route requires a cookie session. `creatorId` derived server-side. Filename sanitized to `[A-Za-z0-9._-]+` (max 200 chars, no leading dot). `productId` is UUID-format-validated. Storage errors are logged server-side as JSON via `console.error` with `reqId` correlation and **never** leak Supabase internals to the client — clients get generic messages (`Failed to create upload URL`, `Internal server error`). Every response carries an `X-Request-ID` header (echoed from `x-request-id` request header if present, else generated). Still outstanding: rate limiting, resumable uploads for `creator-content`, log shipping to a real observability backend.
+
+**`public-asset` path migration:** new uploads use `digione/{kind}/{ts}_{filename}`. Pre-2026-06-03 objects at `public-asset/linkinbio/...` and `public-asset/{filename}` remain readable at their original URLs; this change is forward-only.
 
 ---
 

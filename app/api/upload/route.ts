@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { isUuid, sanitizeFilename } from '@/lib/upload-validators';
+import crypto from 'crypto';
 
 type Bucket = 'public-asset' | 'creator-public' | 'creator-content' | 'creator-private';
 
@@ -15,13 +16,30 @@ const VALID_BUCKETS: ReadonlySet<Bucket> = new Set([
 const PUBLIC_KINDS = new Set(['cover', 'linkinbio', 'avatar', 'banner', 'other']);
 const PRIVATE_CATEGORIES = new Set(['kyc', 'contracts', 'other']);
 
+type LogLevel = 'warn' | 'error';
+
+function log(level: LogLevel, reqId: string, event: string, data?: Record<string, unknown>) {
+  const line = JSON.stringify({ reqId, ts: new Date().toISOString(), event, ...(data ?? {}) });
+  if (level === 'error') console.error('[api/upload]', line);
+  else console.warn('[api/upload]', line);
+}
+
+function json(reqId: string, body: unknown, status: number) {
+  return NextResponse.json(body, {
+    status,
+    headers: { 'X-Request-ID': reqId },
+  });
+}
+
 export async function POST(req: Request) {
+  const reqId = req.headers.get('x-request-id') ?? crypto.randomUUID();
+
   try {
     // AuthN: session required before any business logic.
     const cookieClient = await createClient();
     const { data: { user } } = await cookieClient.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return json(reqId, { error: 'Unauthorized' }, 401);
     }
 
     const body = await req.json().catch(() => null) as {
@@ -32,39 +50,39 @@ export async function POST(req: Request) {
       category?: unknown;
     } | null;
     if (!body) {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+      return json(reqId, { error: 'Invalid JSON body' }, 400);
     }
 
     const { filename: rawFilename, bucket = 'creator-public', productId, kind = 'other', category } = body;
 
-    // Filename: sanitize against path-traversal and abuse.
     if (typeof rawFilename !== 'string') {
-      return NextResponse.json({ error: 'Filename required' }, { status: 400 });
+      return json(reqId, { error: 'Filename required' }, 400);
     }
     const safeName = sanitizeFilename(rawFilename);
     if (!safeName) {
-      return NextResponse.json({ error: 'Filename invalid (allowed: letters, digits, . _ -, max 200 chars)' }, { status: 400 });
+      return json(reqId, { error: 'Filename invalid (allowed: letters, digits, . _ -, max 200 chars)' }, 400);
     }
 
     if (typeof bucket !== 'string' || !VALID_BUCKETS.has(bucket as Bucket)) {
-      return NextResponse.json({ error: 'Invalid bucket' }, { status: 400 });
+      return json(reqId, { error: 'Invalid bucket' }, 400);
     }
     const typedBucket = bucket as Bucket;
 
-    if (typedBucket === 'creator-public' && (typeof kind !== 'string' || !PUBLIC_KINDS.has(kind))) {
-      return NextResponse.json({ error: 'kind must be one of: cover, linkinbio, avatar, banner, other' }, { status: 400 });
+    // public-asset and creator-public both use the {kind} subfolder taxonomy.
+    if (
+      (typedBucket === 'creator-public' || typedBucket === 'public-asset')
+      && (typeof kind !== 'string' || !PUBLIC_KINDS.has(kind))
+    ) {
+      return json(reqId, { error: 'kind must be one of: cover, linkinbio, avatar, banner, other' }, 400);
     }
     if (typedBucket === 'creator-private' && (typeof category !== 'string' || !PRIVATE_CATEGORIES.has(category))) {
-      return NextResponse.json({ error: 'category required (kyc | contracts | other) for creator-private' }, { status: 400 });
+      return json(reqId, { error: 'category required (kyc | contracts | other) for creator-private' }, 400);
     }
-    // productId is user-supplied and interpolated into the storage path for creator-content.
-    // Without UUID format check, '../another' escapes the creator folder.
     if (productId !== undefined && !isUuid(productId)) {
-      return NextResponse.json({ error: 'productId must be a UUID' }, { status: 400 });
+      return json(reqId, { error: 'productId must be a UUID' }, 400);
     }
 
-    // AuthZ: derive creatorId server-side from the authenticated session.
-    // 3-hop resolve: auth.users -> public.users -> public.profiles.
+    // AuthZ: derive creatorId server-side. 3-hop resolve.
     const serviceDb = createServiceClient();
     const { data: publicUser } = await serviceDb
       .from('users')
@@ -72,7 +90,8 @@ export async function POST(req: Request) {
       .eq('auth_provider_id', user.id)
       .maybeSingle();
     if (!publicUser) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 403 });
+      log('warn', reqId, 'profile_lookup_failed', { stage: 'users', authId: user.id });
+      return json(reqId, { error: 'User profile not found' }, 403);
     }
     const { data: profile } = await serviceDb
       .from('profiles')
@@ -80,14 +99,14 @@ export async function POST(req: Request) {
       .eq('user_id', publicUser.id)
       .maybeSingle();
     if (!profile) {
-      return NextResponse.json({ error: 'Creator profile not found' }, { status: 403 });
+      log('warn', reqId, 'profile_lookup_failed', { stage: 'profiles', userId: publicUser.id });
+      return json(reqId, { error: 'Creator profile not found' }, 403);
     }
     const creatorId = profile.id;
 
     // TODO(quota): when creator_subscriptions wiring is ready, look up the calling
     // creator's plan from subscription_plans.features.storage_gb, sum existing
     // creator-content usage for creatorId, and reject if this upload would exceed.
-    // Until then, only the bucket-level file_size_limit (500 MB) applies.
 
     const ts = Date.now();
     const filePath = buildPath(typedBucket, {
@@ -103,18 +122,28 @@ export async function POST(req: Request) {
       .from(typedBucket)
       .createSignedUploadUrl(filePath);
 
-    if (error) throw error;
+    if (error || !data) {
+      // Log Supabase internals server-side; do not leak to client.
+      log('error', reqId, 'storage_signed_url_failed', {
+        bucket: typedBucket,
+        code: error?.name,
+        message: error?.message,
+      });
+      return json(reqId, { error: 'Failed to create upload URL' }, 502);
+    }
 
-    return NextResponse.json({
+    const isPublicBucket = typedBucket === 'public-asset' || typedBucket === 'creator-public';
+    return json(reqId, {
       signedUrl: data.signedUrl,
       path: data.path,
-      publicUrl:
-        typedBucket === 'public-asset' || typedBucket === 'creator-public'
-          ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${typedBucket}/${data.path}`
-          : null,
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+      publicUrl: isPublicBucket
+        ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${typedBucket}/${data.path}`
+        : null,
+    }, 200);
+  } catch (err) {
+    // Catch-all. Never reveal err.message to the client.
+    log('error', reqId, 'unhandled', { message: err instanceof Error ? err.message : String(err) });
+    return json(reqId, { error: 'Internal server error' }, 500);
   }
 }
 
@@ -125,7 +154,7 @@ function buildPath(
   const { safeName, ts, creatorId, productId, kind, category } = args;
   switch (bucket) {
     case 'public-asset':
-      return `linkinbio/${ts}_${safeName}`;
+      return `digione/${kind}/${ts}_${safeName}`;
     case 'creator-public':
       return `${creatorId}/${kind}/${ts}_${safeName}`;
     case 'creator-content':
