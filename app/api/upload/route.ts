@@ -16,6 +16,13 @@ const VALID_BUCKETS: ReadonlySet<Bucket> = new Set([
 const PUBLIC_KINDS = new Set(['cover', 'linkinbio', 'avatar', 'banner', 'other']);
 const PRIVATE_CATEGORIES = new Set(['kyc', 'contracts', 'other']);
 
+// Per-creator storage quota for the creator-content bucket. Hardcoded default
+// because the real per-plan version is blocked: creator_subscriptions table
+// doesn't exist yet AND subscription_plans.features is a tag array, not a
+// numeric quota map. When both land, replace this constant with a lookup
+// keyed off the calling creator's plan_type.
+const CREATOR_CONTENT_QUOTA_BYTES = 1 * 1024 * 1024 * 1024; // 1 GB
+
 type LogLevel = 'warn' | 'error';
 
 function log(level: LogLevel, reqId: string, event: string, data?: Record<string, unknown>) {
@@ -104,9 +111,29 @@ export async function POST(req: Request) {
     }
     const creatorId = profile.id;
 
-    // TODO(quota): when creator_subscriptions wiring is ready, look up the calling
-    // creator's plan from subscription_plans.features.storage_gb, sum existing
-    // creator-content usage for creatorId, and reject if this upload would exceed.
+    // Storage quota gate for creator-content. Sums existing object bytes under
+    // this creator's folder and rejects new uploads if already at/over quota.
+    // We can't predict the new file's size at signed-URL creation time; the
+    // 500 MB bucket-level file_size_limit bounds individual files.
+    if (typedBucket === 'creator-content') {
+      const { data: usageRow, error: usageError } = await serviceDb.rpc(
+        'sum_bucket_bytes_for_prefix',
+        { p_bucket_id: 'creator-content', p_prefix: `${creatorId}/` }
+      );
+      if (usageError) {
+        log('error', reqId, 'quota_lookup_failed', { code: usageError.code, message: usageError.message });
+        return json(reqId, { error: 'Failed to verify storage quota' }, 502);
+      }
+      const usedBytes = Number(usageRow ?? 0);
+      if (usedBytes >= CREATOR_CONTENT_QUOTA_BYTES) {
+        log('warn', reqId, 'quota_exceeded', { creatorId, usedBytes, quotaBytes: CREATOR_CONTENT_QUOTA_BYTES });
+        return json(reqId, {
+          error: 'Storage quota exceeded',
+          usedBytes,
+          quotaBytes: CREATOR_CONTENT_QUOTA_BYTES,
+        }, 413);
+      }
+    }
 
     const ts = Date.now();
     const filePath = buildPath(typedBucket, {

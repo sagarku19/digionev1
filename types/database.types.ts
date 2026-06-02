@@ -3173,7 +3173,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      sum_bucket_bytes_for_prefix: {
+        Args: { p_bucket_id: string; p_prefix: string }
+        Returns: number
+      }
     }
     Enums: {
       ab_test_status: "draft" | "running" | "paused" | "concluded"
