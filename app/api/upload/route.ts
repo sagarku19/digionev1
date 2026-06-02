@@ -1,25 +1,27 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 
-type Bucket = 'products' | 'public-asset' | 'creator-content' | 'creator-private';
+type Bucket = 'public-asset' | 'creator-public' | 'creator-content' | 'creator-private';
 
 const VALID_BUCKETS: ReadonlySet<Bucket> = new Set([
-  'products',
   'public-asset',
+  'creator-public',
   'creator-content',
   'creator-private',
 ]);
 
+const PUBLIC_KINDS = new Set(['cover', 'linkinbio', 'avatar', 'banner', 'other']);
 const PRIVATE_CATEGORIES = new Set(['kyc', 'contracts', 'other']);
 
 export async function POST(req: Request) {
   try {
     const supabase = createServiceClient();
-    const { filename, bucket = 'products', creatorId, productId, category } = await req.json() as {
+    const { filename, bucket = 'creator-public', creatorId, productId, kind = 'other', category } = await req.json() as {
       filename?: string;
       bucket?: Bucket;
       creatorId?: string;
       productId?: string;
+      kind?: string;
       category?: string;
     };
 
@@ -33,6 +35,9 @@ export async function POST(req: Request) {
     if (needsCreator && !creatorId) {
       return NextResponse.json({ error: 'creatorId required for this bucket' }, { status: 400 });
     }
+    if (bucket === 'creator-public' && !PUBLIC_KINDS.has(kind)) {
+      return NextResponse.json({ error: 'kind must be one of: cover, linkinbio, avatar, banner, other' }, { status: 400 });
+    }
     if (bucket === 'creator-private' && (!category || !PRIVATE_CATEGORIES.has(category))) {
       return NextResponse.json({ error: 'category required (kyc | contracts | other) for creator-private' }, { status: 400 });
     }
@@ -44,7 +49,7 @@ export async function POST(req: Request) {
 
     const safeName = filename.replace(/\s+/g, '_');
     const ts = Date.now();
-    const filePath = buildPath(bucket, { safeName, ts, creatorId, productId, category });
+    const filePath = buildPath(bucket, { safeName, ts, creatorId, productId, kind, category });
 
     const { data, error } = await supabase.storage
       .from(bucket)
@@ -56,7 +61,7 @@ export async function POST(req: Request) {
       signedUrl: data.signedUrl,
       path: data.path,
       publicUrl:
-        bucket === 'public-asset' || bucket === 'products'
+        bucket === 'public-asset' || bucket === 'creator-public'
           ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${data.path}`
           : null,
     });
@@ -67,14 +72,14 @@ export async function POST(req: Request) {
 
 function buildPath(
   bucket: Bucket,
-  args: { safeName: string; ts: number; creatorId?: string; productId?: string; category?: string }
+  args: { safeName: string; ts: number; creatorId?: string; productId?: string; kind: string; category?: string }
 ): string {
-  const { safeName, ts, creatorId, productId, category } = args;
+  const { safeName, ts, creatorId, productId, kind, category } = args;
   switch (bucket) {
     case 'public-asset':
       return `linkinbio/${ts}_${safeName}`;
-    case 'products':
-      return `${creatorId}/${ts}_${safeName}`;
+    case 'creator-public':
+      return `${creatorId}/${kind}/${ts}_${safeName}`;
     case 'creator-content':
       return productId
         ? `${creatorId}/${productId}/${ts}_${safeName}`

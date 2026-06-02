@@ -281,9 +281,10 @@ Returns a signed upload URL for a Supabase Storage bucket.
 // Request
 {
   "filename": "string",
-  "bucket": "public-asset" | "products" | "creator-content" | "creator-private",
+  "bucket": "public-asset" | "creator-public" | "creator-content" | "creator-private",
   "creatorId": "uuid (required for all buckets except public-asset)",
   "productId": "uuid (optional; creator-content uses 'unassigned' folder if omitted)",
+  "kind": "'cover' | 'linkinbio' | 'avatar' | 'banner' | 'other' (defaults to 'other'; allowlist enforced when bucket === 'creator-public')",
   "category": "'kyc' | 'contracts' | 'other' (required when bucket === 'creator-private')"
 }
 ```
@@ -293,7 +294,7 @@ Returns a signed upload URL for a Supabase Storage bucket.
 | Bucket | Public? | Path layout |
 |---|---|---|
 | `public-asset` | yes | `linkinbio/{timestamp}_{filename}` |
-| `products` | yes | `{creator_id}/{timestamp}_{filename}` |
+| `creator-public` | yes | `{creator_id}/{kind}/{timestamp}_{filename}` |
 | `creator-content` | **no** | `{creator_id}/{product_id or "unassigned"}/{timestamp}_{filename}` |
 | `creator-private` | **no** | `{creator_id}/{category}/{timestamp}_{filename}` |
 

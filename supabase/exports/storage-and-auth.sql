@@ -12,15 +12,18 @@
 -- ----------------------------------------------------------------------------
 -- 1. STORAGE BUCKETS  (idempotent)
 -- ----------------------------------------------------------------------------
--- products bucket — public, image covers, per-creator path.
+-- creator-public — all creator-uploaded public images (covers, link-in-bio,
+--   avatar, banner, other) via {creator_id}/{kind}/{ts}_{file} path. Replaces
+--   the earlier products bucket which has been dropped.
 -- creator-content + creator-private — private (public: false). RLS deferred;
--- service_role bypasses RLS for /api/upload writes; reads go through future signed-URL endpoints.
+--   service_role bypasses RLS for /api/upload writes; reads go through future
+--   signed-URL endpoints.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('public-asset',     'public-asset',     true,  5242880,    null),
   ('uploads',          'uploads',          true,  null,       null),
   ('user_files',       'user_files',       true,  null,       null),
-  ('products',         'products',         true,  5242880,    array['image/png','image/jpeg','image/webp','image/gif']),
+  ('creator-public',   'creator-public',   true,  5242880,    array['image/png','image/jpeg','image/webp','image/gif','image/svg+xml','image/x-icon']),
   ('creator-content',  'creator-content',  false, 524288000,  array['application/pdf','application/zip','application/x-zip-compressed','application/epub+zip','application/octet-stream','video/mp4','video/quicktime','video/webm','audio/mpeg','audio/mp4','audio/wav','image/png','image/jpeg','image/webp','text/plain','text/csv']),
   ('creator-private',  'creator-private',  false, 10485760,   array['application/pdf','image/png','image/jpeg','image/webp'])
 on conflict (id) do update
