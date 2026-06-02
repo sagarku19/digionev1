@@ -25,7 +25,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | GET | `/api/products/search` | none | service role | — |
 | GET | `/api/sites/check-slug` | none | service role | — |
 | POST | `/api/sites/create` | cookie session | server + service role | `sites`, `site_main`/`site_singlepage`/`linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` |
-| POST | `/api/upload` | none | service role | Supabase Storage (signed URL) |
+| POST | `/api/upload` | cookie session | server + service role | Supabase Storage (signed URL) |
 
 ---
 
@@ -280,20 +280,21 @@ Returns a signed upload URL for a Supabase Storage bucket.
 ```json
 // Request
 {
-  "filename": "string",
+  "filename": "string (sanitized: [A-Za-z0-9._-]+, max 200 chars, no leading dot)",
   "bucket": "public-asset" | "creator-public" | "creator-content" | "creator-private",
-  "creatorId": "uuid (required for all buckets except public-asset)",
-  "productId": "uuid (optional; creator-content uses 'unassigned' folder if omitted)",
+  "productId": "uuid (optional; creator-content uses 'unassigned' folder if omitted; format-validated when present)",
   "kind": "'cover' | 'linkinbio' | 'avatar' | 'banner' | 'other' (defaults to 'other'; allowlist enforced when bucket === 'creator-public')",
   "category": "'kyc' | 'contracts' | 'other' (required when bucket === 'creator-private')"
 }
 ```
 
+`creatorId` is no longer accepted from the request body — it is derived server-side from the authenticated session via the 3-hop `auth.users → users → profiles` lookup.
+
 **File paths per bucket:**
 
 | Bucket | Public? | Owner | Path layout |
 |---|---|---|---|
-| `public-asset` | yes | **DigiOne** (platform-managed stock content, demo files, sample assets) | `linkinbio/{timestamp}_{filename}` |
+| `public-asset` | yes | **DigiOne** (platform-managed stock content, demo files, sample assets) | `digione/{kind}/{timestamp}_{filename}` |
 | `creator-public` | yes | Creator | `{creator_id}/{kind}/{timestamp}_{filename}` |
 | `creator-content` | **no** | Creator | `{creator_id}/{product_id or "unassigned"}/{timestamp}_{filename}` |
 | `creator-private` | **no** | Creator | `{creator_id}/{category}/{timestamp}_{filename}` |
@@ -309,7 +310,7 @@ Returns a signed upload URL for a Supabase Storage bucket.
 { "signedUrl": "https://...", "path": "1234_image.png", "publicUrl": "https://{supabase}/storage/v1/object/public/{bucket}/{path}" }
 ```
 
-**Gap:** no auth check. Anyone can request signed upload URLs for the `products` bucket. Add a session check before exposing publicly. See `.claude/rules/security-model.md` → Public endpoints.
+**Hardening (2026-06-03):** route now requires a cookie session. `creatorId` is derived server-side. Filename is sanitized to `[A-Za-z0-9._-]+` (max 200 chars, no leading dot). `productId` is UUID-format-validated. Still outstanding: rate limiting, structured logging, error-message sanitization, resumable uploads for `creator-content`.
 
 ---
 
