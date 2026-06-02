@@ -3,13 +3,7 @@
 // Uses Cashfree Sandbox/Production based on CASHFREE_ENVIRONMENT env var.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/database.types';
-
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY! // service role — bypasses RLS for payment_submissions write
-);
+import { createServiceClient } from '@/lib/supabase/service';
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -33,6 +27,7 @@ interface CashfreeOrderBody {
 
 export async function POST(req: NextRequest) {
   try {
+    const supabase = createServiceClient();
     const body = await req.json() as {
       siteId?: string;
       name?: string;
