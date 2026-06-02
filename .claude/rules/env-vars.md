@@ -21,8 +21,7 @@ Canonical inventory of every `process.env.*` read by the codebase. If you add or
 |---|---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | public | every supabase client, every API route | Project URL. Same value across all envs of one Supabase project. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | `lib/supabase/client.ts`, `lib/supabase/server.ts`, `proxy.ts` | Anon key. RLS-bound. Safe to expose. |
-| `SUPABASE_SERVICE_KEY` | **secret** | `lib/supabase/service.ts`, all `/api/*` routes that write to `orders`, `creator_balances`, `transaction_ledger` | Service role. Bypasses RLS. Server-only. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **secret** | `app/api/payouts/request/route.ts` only (as fallback for `SUPABASE_SERVICE_KEY`) | Legacy name. Set to the same value as `SUPABASE_SERVICE_KEY` until the fallback is removed. |
+| `SUPABASE_SERVICE_KEY` | **secret** | `lib/supabase/service.ts` — accessed by all `/api/*` routes via `createServiceClient()` | Service role. Bypasses RLS. Server-only. |
 
 ## Cashfree
 
@@ -42,6 +41,5 @@ Canonical inventory of every `process.env.*` read by the codebase. If you add or
 
 ## Known cleanup
 
-- **`SUPABASE_SERVICE_KEY` vs `SUPABASE_SERVICE_ROLE_KEY`** — pick one and remove the fallback in `app/api/payouts/request/route.ts:23`.
 - **`CASHFREE_ENVIRONMENT` vs `NEXT_PUBLIC_CASHFREE_ENV`** — two sources of truth. If they drift, sandbox-signed orders will fail to redirect to prod (or vice versa). Consider deriving the public one from the server one at build time.
 - **No env-var validation at boot.** Missing values throw lazily on first request. A `lib/env.ts` with a Zod parse at startup would surface misconfig earlier.
