@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { isUuid, sanitizeFilename } from '@/lib/upload-validators';
 import crypto from 'crypto';
 
@@ -91,25 +92,11 @@ export async function POST(req: Request) {
 
     // AuthZ: derive creatorId server-side. 3-hop resolve.
     const serviceDb = createServiceClient();
-    const { data: publicUser } = await serviceDb
-      .from('users')
-      .select('id')
-      .eq('auth_provider_id', user.id)
-      .maybeSingle();
-    if (!publicUser) {
-      log('warn', reqId, 'profile_lookup_failed', { stage: 'users', authId: user.id });
-      return json(reqId, { error: 'User profile not found' }, 403);
-    }
-    const { data: profile } = await serviceDb
-      .from('profiles')
-      .select('id')
-      .eq('user_id', publicUser.id)
-      .maybeSingle();
-    if (!profile) {
-      log('warn', reqId, 'profile_lookup_failed', { stage: 'profiles', userId: publicUser.id });
+    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, user.id);
+    if (!creatorId) {
+      log('warn', reqId, 'profile_lookup_failed', { authId: user.id });
       return json(reqId, { error: 'Creator profile not found' }, 403);
     }
-    const creatorId = profile.id;
 
     // Storage quota gate for creator-content. Sums existing object bytes under
     // this creator's folder and rejects new uploads if already at/over quota.

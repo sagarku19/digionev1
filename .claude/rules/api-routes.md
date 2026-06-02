@@ -26,6 +26,8 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | GET | `/api/sites/check-slug` | none | service role | — |
 | POST | `/api/sites/create` | cookie session | server + service role | `sites`, `site_main`/`site_singlepage`/`linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` |
 | POST | `/api/upload` | cookie session | server + service role | Supabase Storage (signed URL) |
+| GET | `/api/deliverables/[productId]` | cookie session | server + service role | — (mints signed download URLs) |
+| POST | `/api/private/download` | cookie session | server + service role | — (mints signed download URL) |
 
 ---
 
@@ -313,6 +315,50 @@ Returns a signed upload URL for a Supabase Storage bucket.
 **Hardening (2026-06-03):** route requires a cookie session. `creatorId` derived server-side. Filename sanitized to `[A-Za-z0-9._-]+` (max 200 chars, no leading dot). `productId` is UUID-format-validated. Storage errors are logged server-side as JSON via `console.error` with `reqId` correlation and **never** leak Supabase internals to the client — clients get generic messages (`Failed to create upload URL`, `Internal server error`). Every response carries an `X-Request-ID` header (echoed from `x-request-id` request header if present, else generated). `creator-content` uploads are gated by a per-creator storage quota (1 GB hardcoded default — real per-plan version is blocked on `creator_subscriptions` table + a numeric quota schema). Quota check goes through the `public.sum_bucket_bytes_for_prefix(bucket, prefix)` RPC. Over-quota returns `413` with `{ usedBytes, quotaBytes }`. Still outstanding: rate limiting, resumable uploads for `creator-content`, log shipping to a real observability backend.
 
 **`public-asset` path migration:** new uploads use `digione/{kind}/{ts}_{filename}`. Pre-2026-06-03 objects at `public-asset/linkinbio/...` and `public-asset/{filename}` remain readable at their original URLs; this change is forward-only.
+
+---
+
+## Downloads (private buckets)
+
+### `GET /api/deliverables/[productId]` (auth required)
+
+Buyer-facing endpoint. Returns short-TTL signed download URLs for every file the creator uploaded under `creator-content/{creator_id}/{productId}/`.
+
+**Access:** verifies a `user_product_access` row exists for `(auth user.id, productId)`. 403 if no row.
+
+```json
+// Success
+{
+  "productId": "uuid",
+  "productName": "string",
+  "ttlSeconds": 600,
+  "files": [
+    { "name": "course.zip", "path": "{creator_id}/{productId}/{ts}_course.zip", "signedUrl": "...", "bytes": 12345, "mimeType": "application/zip", "createdAt": "..." }
+  ]
+}
+```
+
+**Errors:** `400` (invalid productId), `401` (no session), `403` (no access row), `404` (product not found), `502` (storage list/sign error), `500` (other). TTL is 10 minutes. Max 50 files returned. All responses include `X-Request-ID` + `Cache-Control: no-store`.
+
+---
+
+### `POST /api/private/download` (auth required)
+
+Creator-facing endpoint. Mints a signed download URL for a file in `creator-private` or `creator-content` that the calling creator owns. Used by dashboard surfaces (KYC review of own docs, deliverable preview before publishing).
+
+```json
+// Request
+{ "bucket": "creator-private" | "creator-content", "path": "{creator_id}/..." }
+```
+
+```json
+// Success
+{ "bucket": "creator-private", "path": "{creator_id}/kyc/...", "signedUrl": "...", "ttlSeconds": 600 }
+```
+
+**Ownership:** `path` must start with the calling creator's `profile.id`. Strict prefix match. Rejects `..`, leading `/`, backslashes. 403 if path doesn't belong to the caller.
+
+**Errors:** `400` (invalid JSON / bucket / path), `401` (no session), `403` (profile not found / ownership violation), `502` (storage sign error), `500` (other). TTL is 10 minutes.
 
 ---
 
