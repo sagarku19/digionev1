@@ -12,11 +12,13 @@
 -- ----------------------------------------------------------------------------
 -- 1. STORAGE BUCKETS  (idempotent)
 -- ----------------------------------------------------------------------------
+-- products bucket — RLS deferred; public: true gives read access, service_role writes via /api/upload.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('public-asset', 'public-asset', true, 5242880, null),
   ('uploads',      'uploads',      true, null,    null),
-  ('user_files',   'user_files',   true, null,    null)
+  ('user_files',   'user_files',   true, null,    null),
+  ('products',     'products',     true, 5242880, array['image/png','image/jpeg','image/webp','image/gif'])
 on conflict (id) do update
   set public = excluded.public,
       file_size_limit = excluded.file_size_limit,

@@ -279,10 +279,10 @@ Returns a signed upload URL for a Supabase Storage bucket.
 
 ```json
 // Request
-{ "filename": "string", "bucket": "products" | "public-asset" }
+{ "filename": "string", "bucket": "products" | "public-asset", "creatorId": "uuid (required when bucket === 'products')" }
 ```
 
-**File path:** `{prefix}{timestamp}_{sanitized-filename}`. `bucket: 'public-asset'` prefixes `linkinbio/`.
+**File path:** Layout depends on bucket. `public-asset` → `linkinbio/{timestamp}_{filename}`. `products` → `{creator_id}/{timestamp}_{filename}` (per-creator folder).
 
 ```json
 // Success
