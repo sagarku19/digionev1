@@ -12,17 +12,21 @@
 -- ----------------------------------------------------------------------------
 -- 1. STORAGE BUCKETS  (idempotent)
 -- ----------------------------------------------------------------------------
--- creator-public — all creator-uploaded public images (covers, link-in-bio,
---   avatar, banner, other) via {creator_id}/{kind}/{ts}_{file} path. Replaces
+-- public-asset    — DigiOne-managed public assets (stock images, demo content,
+--   sample link-in-bio backgrounds). Public. Intended to be DigiOne-write-only
+--   long-term; currently still accepts creator writes via /api/upload until the
+--   read-only flip lands.
+-- creator-public  — all creator-uploaded public images (covers, link-in-bio,
+--   avatar, banner, other) via {creator_id}/{kind}/{ts}_{file} path. Replaced
 --   the earlier products bucket which has been dropped.
 -- creator-content + creator-private — private (public: false). RLS deferred;
 --   service_role bypasses RLS for /api/upload writes; reads go through future
 --   signed-URL endpoints.
+-- (Legacy uploads + user_files buckets dropped 2026-06-03 — see
+--  migrations/20260605100000_drop_legacy_storage_buckets.sql for the record.)
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values
   ('public-asset',     'public-asset',     true,  5242880,    null),
-  ('uploads',          'uploads',          true,  null,       null),
-  ('user_files',       'user_files',       true,  null,       null),
   ('creator-public',   'creator-public',   true,  5242880,    array['image/png','image/jpeg','image/webp','image/gif','image/svg+xml','image/x-icon']),
   ('creator-content',  'creator-content',  false, 524288000,  array['application/pdf','application/zip','application/x-zip-compressed','application/epub+zip','application/octet-stream','video/mp4','video/quicktime','video/webm','audio/mpeg','audio/mp4','audio/wav','image/png','image/jpeg','image/webp','text/plain','text/csv']),
   ('creator-private',  'creator-private',  false, 10485760,   array['application/pdf','image/png','image/jpeg','image/webp'])
@@ -35,32 +39,9 @@ on conflict (id) do update
 -- 2. STORAGE RLS POLICIES on storage.objects
 --    (storage.objects already has RLS enabled by Supabase)
 -- ----------------------------------------------------------------------------
-drop policy if exists "Creators can manage own files" on storage.objects;
-create policy "Creators can manage own files" on storage.objects
-  for all to authenticated
-  using (
-    bucket_id = 'uploads'
-    and (storage.foldername(name))[2] = (
-      select profiles.id::text from profiles where profiles.user_id = auth.uid()
-    )
-  );
-
-drop policy if exists "Creators can upload own files" on storage.objects;
-create policy "Creators can upload own files" on storage.objects
-  for insert to authenticated
-  with check (
-    bucket_id = 'uploads'
-    and (storage.foldername(name))[1] = 'creators'
-    and (storage.foldername(name))[2] = (
-      select profiles.id::text from profiles where profiles.user_id = auth.uid()
-    )
-  );
-
-drop policy if exists "Public read access" on storage.objects;
-create policy "Public read access" on storage.objects
-  for select to public using (bucket_id = 'uploads');
-
--- public-asset bucket — full public control
+-- public-asset bucket — full public control (mirrors the current production state
+-- where creators still upload link-in-bio images here). Will tighten to
+-- DigiOne-write-only when the repurposing PR lands.
 drop policy if exists "FULL Control 1pl33po_0" on storage.objects;
 create policy "FULL Control 1pl33po_0" on storage.objects for select to public using (bucket_id = 'public-asset');
 drop policy if exists "FULL Control 1pl33po_1" on storage.objects;
@@ -70,15 +51,14 @@ create policy "FULL Control 1pl33po_2" on storage.objects for update to public u
 drop policy if exists "FULL Control 1pl33po_3" on storage.objects;
 create policy "FULL Control 1pl33po_3" on storage.objects for delete to public using (bucket_id = 'public-asset');
 
--- user_files bucket — full public control
-drop policy if exists "all vslhqb_0" on storage.objects;
-create policy "all vslhqb_0" on storage.objects for select to public using (bucket_id = 'user_files');
-drop policy if exists "all vslhqb_1" on storage.objects;
-create policy "all vslhqb_1" on storage.objects for insert to public with check (bucket_id = 'user_files');
-drop policy if exists "all vslhqb_2" on storage.objects;
-create policy "all vslhqb_2" on storage.objects for update to public using (bucket_id = 'user_files');
-drop policy if exists "all vslhqb_3" on storage.objects;
-create policy "all vslhqb_3" on storage.objects for delete to public using (bucket_id = 'user_files');
+-- creator-public, creator-content, creator-private — RLS policies intentionally
+-- deferred. public: false on the private pair blocks anonymous reads via
+-- /object/public/... paths; service_role bypasses RLS for /api/upload writes;
+-- read paths for the private buckets will be signed-URL endpoints minted by
+-- access-checked routes.
+-- TODO when auth gate lands: add per-creator INSERT/UPDATE/DELETE policies
+-- scoped to (storage.foldername(name))[1] = profiles.id; SELECT for the two
+-- private buckets stays default-deny.
 
 -- ----------------------------------------------------------------------------
 -- 3. AUTH TRIGGERS on auth.users

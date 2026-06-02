@@ -291,12 +291,16 @@ Returns a signed upload URL for a Supabase Storage bucket.
 
 **File paths per bucket:**
 
-| Bucket | Public? | Path layout |
-|---|---|---|
-| `public-asset` | yes | `linkinbio/{timestamp}_{filename}` |
-| `creator-public` | yes | `{creator_id}/{kind}/{timestamp}_{filename}` |
-| `creator-content` | **no** | `{creator_id}/{product_id or "unassigned"}/{timestamp}_{filename}` |
-| `creator-private` | **no** | `{creator_id}/{category}/{timestamp}_{filename}` |
+| Bucket | Public? | Owner | Path layout |
+|---|---|---|---|
+| `public-asset` | yes | **DigiOne** (platform-managed stock content, demo files, sample assets) | `linkinbio/{timestamp}_{filename}` |
+| `creator-public` | yes | Creator | `{creator_id}/{kind}/{timestamp}_{filename}` |
+| `creator-content` | **no** | Creator | `{creator_id}/{product_id or "unassigned"}/{timestamp}_{filename}` |
+| `creator-private` | **no** | Creator | `{creator_id}/{category}/{timestamp}_{filename}` |
+
+**`public-asset` ownership note:** intended as DigiOne-managed (admins or seed scripts populate it with stock images, sample link-in-bio backgrounds, demo files that creators reference but don't upload). The route currently still accepts creator writes to this bucket for link-in-bio backwards-compat — that's a deferred tighten-up. All net-new creator uploads should target `creator-public` instead.
+
+**Legacy buckets dropped 2026-06-03:** `uploads` and `user_files` from earlier dev iterations no longer exist. See `supabase/migrations/20260605100000_drop_legacy_storage_buckets.sql`.
 
 `publicUrl` in the response is `null` for private buckets. Reads for private buckets must go through dedicated signed-URL endpoints (not yet implemented for `creator-content` / `creator-private` — see `.claude/rules/security-model.md` for the access-check requirement).
 
