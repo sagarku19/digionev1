@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/database.types';
+import { createServiceClient } from '@/lib/supabase/service';
 import crypto from 'crypto';
-
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -14,6 +8,7 @@ const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
 
 export async function POST(req: Request) {
   try {
+    const supabase = createServiceClient();
     const { items, buyerId, couponCode, contact, upsellPageId } = await req.json();
 
     if (!items || items.length === 0) {
