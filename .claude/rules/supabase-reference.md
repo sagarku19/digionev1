@@ -159,13 +159,59 @@ Public URL pattern: `${NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${buck
 
 ## Regenerating types
 
-After any Supabase schema change:
+After any Supabase schema change. **Never edit `types/database.types.ts` by hand** — your edit will be wiped the next time types are regenerated.
+
+### Preferred path — `npm run update-types`
 
 ```powershell
 npm run update-types
 ```
 
-This writes `types/database.types.ts`. Never edit that file by hand — your edit will be wiped the next time the script runs.
+Wraps `supabase gen types typescript --project-id qcendfisvyjnwmefruba`. Writes to `types/database.types.ts`.
+
+### Windows fallback — Supabase MCP
+
+The `supabase` npx package ships precompiled binaries for `darwin-arm64`, `darwin-x64`, `linux-x64`, `linux-arm64`. **It has no `win32-x64` binary**, so `npm run update-types` fails on Windows with:
+
+```
+Error: No matching Supabase CLI binary package found for win32-x64
+```
+
+When you can't run the CLI, use the Supabase MCP to regenerate types instead. Requires an authenticated MCP session (one-time OAuth via `mcp__plugin_supabase_supabase__authenticate`).
+
+```text
+# 1. Call the MCP tool — output exceeds context window, gets saved to a
+#    tool-results .txt file wrapped in JSON: {"types":"export type Json = ...\n..."}.
+mcp__plugin_supabase_supabase__generate_typescript_types
+  project_id: qcendfisvyjnwmefruba
+
+# 2. Strip the JSON envelope and write the TS source to the right path.
+#    Python (cross-platform) is the most reliable way:
+python3 - <<'PY'
+import json
+src = r"<path-to-mcp-tool-results-file>.txt"
+dst = r"types\database.types.ts"
+with open(src, 'r', encoding='utf-8') as f:
+    payload = json.load(f)
+with open(dst, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(payload['types'])
+PY
+
+# 3. Verify the new types include the schema change just made.
+#    For a new RPC named foo_bar:
+#    grep -n "foo_bar" types\database.types.ts
+
+# 4. Confirm consumers still compile:
+npx tsc --noEmit
+```
+
+The tool-results file lives under `C:\Users\<you>\.claude\projects\<project-slug>\<session-id>\tool-results\` — the Bash tool prints the full path after the MCP call returns.
+
+**Why not just `cp` the file?** The MCP output is `{"types":"export type Json = ...\n..."}` — a raw copy gives you a one-line file of escaped JSON, not valid TypeScript. The Python `json.load` + write step strips the envelope.
+
+### Why this matters
+
+`/api/upload`'s subscription quota check (commit `87c2d41`, 2026-06-03) added a new `sum_bucket_bytes_for_prefix` RPC via `apply_migration`. Without regenerating types in the same session, the route's `serviceDb.rpc('sum_bucket_bytes_for_prefix', {...})` call fails tsc with `Argument of type '"sum_bucket_bytes_for_prefix"' is not assignable to parameter of type 'never'`. **Rule:** any time you add a function / table / column via `apply_migration`, regenerate types before continuing.
 
 ## Gotchas
 
