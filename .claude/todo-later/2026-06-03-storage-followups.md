@@ -12,7 +12,7 @@ Captured 2026-06-03 after the storage taxonomy + `/api/upload` hardening sweep (
 
 - **4 buckets:** `public-asset` (DigiOne-managed), `creator-public`, `creator-content` (private), `creator-private` (private)
 - **3 routes:** `/api/upload` (POST), `/api/deliverables/[productId]` (GET, buyer-side), `/api/private/download` (POST, creator-side)
-- **Audit grade:** 8 PASS / 2 FAIL / 1 DEFERRED / 1 partial (see [`/api/upload` hardening note in api-routes.md](./api-routes.md))
+- **Audit grade:** 8 PASS / 2 FAIL / 1 DEFERRED / 1 partial (see [`/api/upload` hardening note in api-routes.md](../rules/api-routes.md))
 
 ## High-priority gaps (real production blockers)
 
