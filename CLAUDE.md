@@ -56,11 +56,13 @@ Files in `.claude/rules/` are **auto-loaded by Claude Code** on every session.
 
 ## Deferred Work — `.claude/todo-later/`
 
-Items consciously punted from earlier sessions live here as `YYYY-MM-DD-<topic>.md`. **Not** auto-loaded — read them only when picking up that topic again or when the user asks "what's left on X."
+Items consciously punted from earlier sessions live here as `N-YYYY-MM-DD-<topic>.md`, where `N` is the order added (1 = oldest). **Not** auto-loaded — read them only when picking up that topic again or when the user asks "what's left on X."
 
 | File | What |
 |---|---|
-| `.claude/todo-later/2026-06-03-storage-followups.md` | 12 deferred items for `/api/upload`, `/api/deliverables/*`, `/api/private/download`, bucket policies. Read when touching any of those routes/buckets or asking "what's left on storage?" |
+| `.claude/todo-later/1-2026-06-03-storage-followups.md` | 12 deferred items for `/api/upload`, `/api/deliverables/*`, `/api/private/download`, bucket policies. Read when touching any of those routes/buckets or asking "what's left on storage?" |
+| `.claude/todo-later/2-2026-06-03-db-audit.md` | Full read-only audit of the live Supabase DB (2026-06-03): inventory, RLS gaps, dead schema, missing indexes, revenue-table integrity. Evidence for the roadmap. |
+| `.claude/todo-later/3-2026-06-03-new-db-audit.md` | **The forward plan.** Staged roadmap (Stages 1-7) for schema fixes → code reconciliation → RLS → security → performance → migration history. Read when picking up post-frontend DB work. |
 
 ---
 
