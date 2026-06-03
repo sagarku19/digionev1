@@ -63,6 +63,7 @@ Items consciously punted from earlier sessions live here as `N-YYYY-MM-DD-<topic
 | `.claude/todo-later/1-2026-06-03-storage-followups.md` | 12 deferred items for `/api/upload`, `/api/deliverables/*`, `/api/private/download`, bucket policies. Read when touching any of those routes/buckets or asking "what's left on storage?" |
 | `.claude/todo-later/2-2026-06-03-db-audit.md` | Full read-only audit of the live Supabase DB (2026-06-03): inventory, RLS gaps, dead schema, missing indexes, revenue-table integrity. Evidence for the roadmap. |
 | `.claude/todo-later/3-2026-06-03-new-db-audit.md` | **The forward plan.** Staged roadmap (Stages 1-7) for schema fixes → code reconciliation → RLS → security → performance → migration history. Read when picking up post-frontend DB work. |
+| `.claude/todo-later/4-2026-06-04-discover-routes-removal.md` | Audit verdict: `/api/discover` and `/api/discover/[productId]` add zero behavior over public RLS — delete and inline into Server Components. Read when touching `/discover` pages or `useDiscoverProduct`. |
 
 ---
 
