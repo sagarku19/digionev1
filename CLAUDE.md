@@ -53,6 +53,7 @@ Files in `.claude/rules/` are **auto-loaded by Claude Code** on every session.
 | `.claude/rules/supabase-reference.md` | Editing any Supabase client, auth call, RLS query, or storage upload |
 | `.claude/rules/google-oauth-reference.md` | Editing the Google sign-in flow, `/api/auth/callback`, or anything that depends on `user_metadata.role` |
 | `.claude/rules/cashfree-reference.md` | Editing checkout, the Cashfree webhook, payment status pages, or the browser checkout SDK |
+| `.claude/rules/storage-followups.md` | Touching `/api/upload`, `/api/deliverables/*`, `/api/private/download`, the storage buckets, or asking "what's left on storage?" |
 
 ---
 
