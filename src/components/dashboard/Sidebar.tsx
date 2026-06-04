@@ -147,7 +147,7 @@ export default function Sidebar() {
       {/* Mobile hamburger */}
       <button
         onClick={() => setIsOpen(true)}
-        className="md:hidden fixed top-2.5 left-3 p-1.5 text-gray-700 dark:text-[var(--text-secondary)] transition-all active:scale-95"
+        className="md:hidden fixed top-2.5 left-3 p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all active:scale-95"
         style={{ zIndex: 9999 }}
       >
         <Menu className="w-6 h-6" />
@@ -168,7 +168,7 @@ export default function Sidebar() {
         className={`
           fixed top-0 left-0 h-full bg-[var(--bg-primary)]
           border-r border-[var(--border)]
-          w-[256px] flex flex-col shadow-2xl md:shadow-none
+          w-[256px] flex flex-col shadow-[var(--shadow-lg)] md:shadow-none
           transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
           ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
@@ -363,18 +363,17 @@ export default function Sidebar() {
                 className="absolute bottom-full left-3 right-3 mb-1 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] shadow-xl py-1 z-50"
                 onMouseLeave={() => setProfileMenuOpen(false)}
               >
-                {/* Plan suggestion */}
                 <div className="px-2 pt-2 pb-1">
-                  <div className="rounded-[var(--radius-sm)] bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-400/20 px-3 py-2.5">
+                  <div className="rounded-[var(--radius-sm)] bg-[var(--warning-bg)] border border-[var(--warning)]/20 px-3 py-2.5">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <Sparkles className="w-3 h-3 text-amber-500" />
-                      <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">Free Plan</span>
+                      <Sparkles className="w-3 h-3 text-[var(--warning)]" />
+                      <span className="text-[11px] font-bold text-[var(--warning)]">Free Plan</span>
                     </div>
                     <p className="text-[10.5px] text-[var(--text-secondary)] leading-relaxed mb-2">Unlock lower fees, priority support and more.</p>
                     <Link
                       href="/dashboard/settings/subscription"
                       onClick={() => { close(); setProfileMenuOpen(false); }}
-                      className="block w-full text-center py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md text-[11px] font-semibold transition"
+                      className="block w-full text-center py-1 bg-[var(--warning)] hover:opacity-90 text-[var(--text-on-brand)] rounded-md text-[11px] font-semibold transition"
                     >
                       Upgrade to Pro
                     </Link>

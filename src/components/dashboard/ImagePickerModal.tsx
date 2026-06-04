@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 /**
  * ImagePickerModal — full-featured image picker with:
  *  • Library tab: browse & search public stock images
@@ -47,11 +47,11 @@ const ASPECT_RATIOS = [
 const CATEGORIES = ['all', 'abstract', 'nature', 'gradient', 'pattern', 'texture', 'minimal', 'dark', 'other'] as const;
 
 // ─── Styles ─────────────────────────────────────────────────
-const BTN_BASE = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150';
-const BTN_PRIMARY = `${BTN_BASE} bg-pink-600 hover:bg-pink-500 text-white shadow-sm shadow-pink-500/20`;
-const BTN_GHOST = `${BTN_BASE} text-gray-500 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)]`;
-const CHIP_ON = 'bg-pink-100 dark:bg-pink-500/20 text-pink-700 dark:text-pink-300 border-pink-300 dark:border-pink-500/40';
-const CHIP_OFF = 'bg-gray-50 dark:bg-[var(--bg-secondary)]/60 text-[var(--text-secondary)] border-transparent hover:border-gray-300 dark:hover:border-gray-600';
+const BTN_BASE = 'px-3 py-1.5 rounded-[var(--radius-md)] text-xs font-semibold transition-all duration-150';
+const BTN_PRIMARY = `${BTN_BASE} bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)]`;
+const BTN_GHOST = `${BTN_BASE} text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]`;
+const CHIP_ON = 'bg-[var(--brand)]/10 text-[var(--brand)] border-[var(--brand)]/30';
+const CHIP_OFF = 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border-transparent hover:border-[var(--border)]';
 
 const PAGE_SIZE = 24;
 const CACHE_KEY = 'public_images_cache';
@@ -296,7 +296,7 @@ export default function ImagePickerModal({
         <button
           key={img.id}
           onClick={() => selectImage(img.url)}
-          className="group relative aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-pink-500 transition-all duration-150"
+          className="group relative aspect-square rounded-[var(--radius-lg)] overflow-hidden border-2 border-transparent hover:border-[var(--brand)] transition-all duration-150"
         >
           <img
             src={img.url}
@@ -305,8 +305,8 @@ export default function ImagePickerModal({
             loading="lazy"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-white/90 dark:bg-[var(--bg-secondary)]/90 rounded-lg shadow-lg">
-              <Crop className="w-4 h-4 text-pink-600" />
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-[var(--surface)]/90 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)]">
+              <Crop className="w-4 h-4 text-[var(--brand)]" />
             </div>
           </div>
           {img.name && (
@@ -323,26 +323,26 @@ export default function ImagePickerModal({
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-      {/* Overlay — no backdrop-blur (perf) */}
-      <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-[var(--bg-primary)] rounded-2xl shadow-2xl border border-[var(--border)] flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[90vh] bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border border-[var(--border)] flex flex-col overflow-hidden">
 
         {/* ═══ Header ═══ */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-pink-100 dark:bg-pink-500/15 rounded-lg">
-              <ImageIcon className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+            <div className="p-1.5 bg-[var(--surface-muted)] rounded-[var(--radius-md)]">
+              <ImageIcon className="w-4 h-4 text-[var(--text-secondary)]" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-[var(--text-primary)]">{cropSrc ? 'Crop Image' : title}</h2>
-              <p className="text-[10px] text-gray-400 mt-0.5">
+              <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
                 {cropSrc ? 'Adjust crop area and aspect ratio' : 'Browse library or upload your own'}
               </p>
             </div>
           </div>
-          <button onClick={handleClose} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition">
+          <button onClick={handleClose} className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-[var(--radius-md)] transition">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -353,7 +353,7 @@ export default function ImagePickerModal({
           {/* ── Crop View ── */}
           {cropSrc ? (
             <div className="flex flex-col">
-              <div className="relative w-full h-80 bg-gray-900">
+              <div className="relative w-full h-80 bg-[var(--surface-muted)]">
                 <Cropper
                   image={cropSrc}
                   crop={crop}
@@ -370,13 +370,13 @@ export default function ImagePickerModal({
 
               <div className="p-4 space-y-3 border-t border-[var(--border)]">
                 <div>
-                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Aspect Ratio</label>
+                  <label className="block text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">Aspect Ratio</label>
                   <div className="flex gap-1.5">
                     {ASPECT_RATIOS.map((r, i) => (
                       <button
                         key={r.label}
                         onClick={() => setAspectIdx(i)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition ${
+                        className={`px-3 py-1.5 rounded-[var(--radius-md)] border text-xs font-semibold transition ${
                           aspectIdx === i ? CHIP_ON : CHIP_OFF
                         }`}
                       >
@@ -387,9 +387,9 @@ export default function ImagePickerModal({
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Zoom</label>
+                  <label className="block text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-1.5">Zoom</label>
                   <div className="flex items-center gap-3">
-                    <ZoomOut className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <ZoomOut className="w-3.5 h-3.5 text-[var(--text-tertiary)] shrink-0" />
                     <input
                       type="range"
                       min={1}
@@ -397,12 +397,12 @@ export default function ImagePickerModal({
                       step={0.05}
                       value={zoom}
                       onChange={e => setZoom(Number(e.target.value))}
-                      className="flex-1 accent-pink-500 h-1.5"
+                      className="flex-1 accent-[var(--brand)] h-1.5"
                     />
-                    <ZoomIn className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <ZoomIn className="w-3.5 h-3.5 text-[var(--text-tertiary)] shrink-0" />
                     <button
                       onClick={() => { setZoom(1); setCrop({ x: 0, y: 0 }); }}
-                      className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition"
+                      className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-[var(--radius-md)] transition"
                       title="Reset"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
@@ -414,13 +414,13 @@ export default function ImagePickerModal({
           ) : (
             <>
               {/* ── Tab bar ── */}
-              <div className="flex gap-1 mx-4 mt-3 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)]/60 rounded-xl">
+              <div className="flex gap-1 mx-4 mt-3 p-1 bg-[var(--surface-muted)] rounded-[var(--radius-lg)]">
                 <button
                   onClick={() => setTab('library')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold transition ${
                     tab === 'library'
-                      ? 'bg-white dark:bg-gray-700 text-[var(--text-primary)] shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   <FolderOpen className="w-3.5 h-3.5" />
@@ -428,10 +428,10 @@ export default function ImagePickerModal({
                 </button>
                 <button
                   onClick={() => setTab('upload')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold transition ${
                     tab === 'upload'
-                      ? 'bg-white dark:bg-gray-700 text-[var(--text-primary)] shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                      ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   <Upload className="w-3.5 h-3.5" />
@@ -443,13 +443,13 @@ export default function ImagePickerModal({
               {tab === 'library' && (
                 <div className="p-4 space-y-3">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--text-tertiary)]" />
                     <input
                       type="text"
                       value={searchInput}
                       onChange={e => setSearchInput(e.target.value)}
                       placeholder="Search images..."
-                      className="w-full pl-9 pr-3 py-2 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm outline-none focus:ring-2 focus:ring-pink-500 text-[var(--text-primary)] placeholder-gray-400 transition"
+                      className="w-full pl-9 pr-3 py-2 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] text-sm outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-shadow"
                     />
                   </div>
 
@@ -458,7 +458,7 @@ export default function ImagePickerModal({
                       <button
                         key={cat}
                         onClick={() => setCategory(cat)}
-                        className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold capitalize transition ${
+                        className={`px-2.5 py-1 rounded-[var(--radius-md)] border text-[11px] font-semibold capitalize transition ${
                           category === cat ? CHIP_ON : CHIP_OFF
                         }`}
                       >
@@ -469,13 +469,13 @@ export default function ImagePickerModal({
 
                   {loading ? (
                     <div className="flex items-center justify-center py-16">
-                      <Loader2 className="w-5 h-5 animate-spin text-pink-500" />
+                      <Loader2 className="w-5 h-5 animate-spin text-[var(--brand)]" />
                     </div>
                   ) : images.length === 0 ? (
                     <div className="text-center py-16">
-                      <ImageIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-                      <p className="text-sm text-gray-400">No images found</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Try a different search or category</p>
+                      <ImageIcon className="w-8 h-8 text-[var(--text-tertiary)] mx-auto mb-2" />
+                      <p className="text-sm text-[var(--text-secondary)]">No images found</p>
+                      <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Try a different search or category</p>
                     </div>
                   ) : (
                     <>
@@ -505,19 +505,19 @@ export default function ImagePickerModal({
                     onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`relative flex flex-col items-center justify-center py-16 px-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${
+                    className={`relative flex flex-col items-center justify-center py-16 px-6 border-2 border-dashed rounded-[var(--radius-lg)] cursor-pointer transition-all duration-200 ${
                       dragOver
-                        ? 'border-pink-500 bg-pink-50 dark:bg-pink-500/5'
-                        : 'border-gray-300 dark:border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 bg-[var(--bg-secondary)]/40'
+                        ? 'border-[var(--brand)] bg-[var(--brand)]/5'
+                        : 'border-[var(--border)] hover:border-[var(--brand)]/50 bg-[var(--surface-muted)]'
                     }`}
                   >
-                    <div className={`p-3 rounded-2xl mb-3 transition-colors ${dragOver ? 'bg-pink-100 dark:bg-pink-500/15' : 'bg-gray-100 dark:bg-[var(--bg-secondary)]'}`}>
-                      <Upload className={`w-6 h-6 ${dragOver ? 'text-pink-600' : 'text-gray-400'}`} />
+                    <div className={`p-3 rounded-[var(--radius-lg)] mb-3 transition-colors ${dragOver ? 'bg-[var(--brand)]/10' : 'bg-[var(--surface-hover)]'}`}>
+                      <Upload className={`w-6 h-6 ${dragOver ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)]'}`} />
                     </div>
-                    <p className="text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)]">
+                    <p className="text-sm font-semibold text-[var(--text-secondary)]">
                       {dragOver ? 'Drop image here' : 'Click or drag an image'}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP, GIF up to 10MB</p>
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">JPG, PNG, WebP, GIF up to 10MB</p>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -529,16 +529,16 @@ export default function ImagePickerModal({
 
                   <div className="mt-4">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                      <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">or paste URL</span>
-                      <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                      <div className="flex-1 h-px bg-[var(--border)]" />
+                      <span className="text-[10px] text-[var(--text-tertiary)] font-semibold uppercase tracking-wider">or paste URL</span>
+                      <div className="flex-1 h-px bg-[var(--border)]" />
                     </div>
                     <div className="flex gap-2">
                       <input
                         ref={urlInputRef}
                         type="url"
                         placeholder="https://example.com/image.jpg"
-                        className="flex-1 px-3 py-2 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm outline-none focus:ring-2 focus:ring-pink-500 text-[var(--text-primary)] placeholder-gray-400 transition"
+                        className="flex-1 px-3 py-2 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] text-sm outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-shadow"
                         onKeyDown={e => {
                           if (e.key === 'Enter') {
                             const val = (e.target as HTMLInputElement).value.trim();
@@ -565,7 +565,7 @@ export default function ImagePickerModal({
 
         {/* ═══ Footer ═══ */}
         {cropSrc && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)] bg-[var(--bg-secondary)]/50 shrink-0">
+          <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)] bg-[var(--surface-muted)] shrink-0">
             <button
               onClick={() => { setCropSrc(null); setCrop({ x: 0, y: 0 }); setZoom(1); }}
               className={BTN_GHOST}

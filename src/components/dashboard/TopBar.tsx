@@ -26,12 +26,12 @@ function PageBreadcrumb({ pathname }: { pathname: string | null }) {
   const raw = pathname?.split('/dashboard')[1] || '';
   const segments = raw.split('/').filter(Boolean);
   const lastSeg = segments[segments.length - 1];
-  
+
   let label = 'Overview';
   if (lastSeg) {
     const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(lastSeg);
     const prevSeg = segments.length > 1 ? segments[segments.length - 2] : '';
-    
+
     if (isUUID) {
       if (prevSeg === 'products') {
         const product = products?.find((p: any) => p.id === lastSeg);
@@ -47,7 +47,7 @@ function PageBreadcrumb({ pathname }: { pathname: string | null }) {
   }
 
   return (
-    <span className="text-[15px] md:text-[20px] font-semibold text-gray-900 dark:text-white tracking-tight md:pl-6 truncate max-w-[200px] sm:max-w-xs md:max-w-md">
+    <span className="text-[15px] md:text-[20px] font-semibold text-[var(--text-primary)] tracking-tight md:pl-6 truncate max-w-[200px] sm:max-w-xs md:max-w-md">
       {label}
     </span>
   );
@@ -83,7 +83,7 @@ export default function TopBar() {
 
   return (
     <>
-    <header className="h-[52px] w-full flex items-center justify-between px-4 sm:px-5 sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border)]">
+    <header className="h-[52px] w-full flex items-center justify-between px-4 sm:px-5 sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-subtle)]">
 
       {/* ── Left: Breadcrumb ── */}
       <div className="flex items-center gap-3 pl-[52px] md:pl-0">
@@ -95,21 +95,21 @@ export default function TopBar() {
 
         {/* Search — desktop only */}
         <div className={`relative hidden lg:flex items-center mr-1 transition-all duration-200 ${searchFocused ? 'w-52' : 'w-40'}`}>
-          <Search className="absolute left-2.5 w-3.5 h-3.5 text-gray-400 dark:text-zinc-500 pointer-events-none" />
+          <Search className="absolute left-2.5 w-3.5 h-3.5 text-[var(--text-tertiary)] pointer-events-none" />
           <input
             type="text"
             placeholder="Search…"
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            className="w-full h-8 pl-8 pr-3 rounded-[var(--radius-sm)] bg-gray-100/80 dark:bg-white/[0.05] border border-transparent focus:border-gray-200 dark:focus:border-white/10 text-[12.5px] text-gray-800 dark:text-zinc-200 focus:outline-none focus:bg-white dark:focus:bg-white/[0.08] transition-all placeholder:text-gray-400 dark:placeholder:text-zinc-600"
+            className="w-full h-8 pl-8 pr-3 rounded-[var(--radius-md)] bg-[var(--surface-muted)] border border-transparent focus:border-[var(--border-strong)] text-[12.5px] text-[var(--text-primary)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all placeholder:text-[var(--text-tertiary)]"
           />
-          <kbd className={`absolute right-2.5 text-[10px] text-gray-300 dark:text-zinc-600 font-mono transition-opacity ${searchFocused ? 'opacity-0' : 'opacity-100'}`}>
+          <kbd className={`absolute right-2.5 text-[10px] text-[var(--text-tertiary)] font-mono transition-opacity ${searchFocused ? 'opacity-0' : 'opacity-100'}`}>
             ⌘K
           </kbd>
         </div>
 
         {/* Theme toggle — desktop only */}
-        <div className="hidden lg:flex items-center h-8 bg-gray-100 dark:bg-zinc-800 rounded-[var(--radius-sm)] border border-gray-200 dark:border-zinc-700 p-0.75 gap-0.75">
+        <div className="hidden lg:flex items-center h-8 bg-[var(--surface-muted)] rounded-[var(--radius-sm)] border border-[var(--border)] p-0.75 gap-0.75">
           <ThemeBtn active={theme === 'light'} onClick={() => setTheme('light')} title="Light">
             <Sun className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium">Light</span>
@@ -123,7 +123,7 @@ export default function TopBar() {
         {/* Notifications — desktop only */}
         <Link
           href="/dashboard/notifications"
-          className="relative h-8 px-3 rounded-[var(--radius-sm)] hidden lg:flex items-center gap-2 text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-100 bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 transition-colors"
+          className="relative h-8 px-3 rounded-[var(--radius-sm)] hidden lg:flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-muted)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors"
         >
           <Bell className="w-[15px] h-[15px] shrink-0" />
           <span className="text-[12px] font-medium">Notifications</span>
@@ -135,7 +135,7 @@ export default function TopBar() {
         </Link>
 
         {/* Divider — desktop only */}
-        <div className="hidden lg:block w-px h-4 bg-gray-200 dark:bg-white/[0.07] mx-1" />
+        <div className="hidden lg:block w-px h-4 bg-[var(--border)] mx-1" />
 
         {/* Profile dropdown */}
         <div className="relative" ref={profileRef}>
@@ -143,31 +143,31 @@ export default function TopBar() {
             onClick={() => setShowDropdown(!showDropdown)}
             className={`flex items-center gap-2 h-8 pl-1 pr-2.5 rounded-[var(--radius-sm)] transition-colors ${
               showDropdown
-                ? 'bg-gray-100 dark:bg-white/[0.08]'
-                : 'hover:bg-gray-100/80 dark:hover:bg-white/[0.06]'
+                ? 'bg-[var(--surface-hover)]'
+                : 'hover:bg-[var(--surface-hover)]'
             }`}
           >
             {/* Avatar */}
             <div
-              className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-1 ring-black/5 dark:ring-white/10 bg-[var(--brand)]"
+              className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-1 ring-black/5 bg-[var(--brand)]"
             >
               {avatarUrl
                 ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                 : profileLoading
-                  ? <div className="w-full h-full rounded-full bg-[var(--bg-secondary)] animate-pulse" />
+                  ? <div className="w-full h-full rounded-full bg-[var(--surface-muted)] animate-pulse" />
                   : <span className="text-white text-[10px] font-bold">{initial}</span>
               }
             </div>
             {profileLoading ? (
-              <span className="hidden sm:block h-3 w-20 rounded-[var(--radius-sm)] bg-[var(--bg-secondary)] animate-pulse" />
+              <span className="hidden sm:block h-3 w-20 rounded-[var(--radius-sm)] bg-[var(--surface-muted)] animate-pulse" />
             ) : (
-              <span className="hidden sm:block text-[13px] font-semibold text-gray-800 dark:text-zinc-200 max-w-[96px] truncate">
+              <span className="hidden sm:block text-[13px] font-semibold text-[var(--text-primary)] max-w-[96px] truncate">
                 {fullName}
               </span>
             )}
             {/* Caret */}
             <svg
-              className={`w-3 h-3 text-gray-400 dark:text-zinc-500 transition-transform duration-150 ${showDropdown ? 'rotate-180' : ''}`}
+              className={`w-3 h-3 text-[var(--text-tertiary)] transition-transform duration-150 ${showDropdown ? 'rotate-180' : ''}`}
               viewBox="0 0 12 12" fill="none"
             >
               <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -176,31 +176,31 @@ export default function TopBar() {
 
           {/* Dropdown */}
           {showDropdown && (
-            <div className="absolute right-0 mt-1.5 w-56 bg-[var(--bg-elevated)] border border-gray-100 dark:border-white/[0.07] rounded-[var(--radius-lg)] shadow-xl shadow-black/[0.08] dark:shadow-black/40 py-1.5 z-50">
+            <div className="absolute right-0 mt-1.5 w-56 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] py-1.5 z-50">
 
               {/* User header */}
               <div className="px-3 py-3 mb-1">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-white dark:ring-[var(--bg-elevated)]"
+                    className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-[var(--border)]"
                     style={{ background: 'linear-gradient(135deg, var(--brand), #ff6b4a)' }}
                   >
                     {avatarUrl
                       ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                       : profileLoading
-                        ? <div className="w-full h-full rounded-full bg-[var(--bg-secondary)] animate-pulse" />
+                        ? <div className="w-full h-full rounded-full bg-[var(--surface-muted)] animate-pulse" />
                         : <span className="text-white text-sm font-bold">{initial}</span>
                     }
                   </div>
                   <div className="min-w-0">
                     {profileLoading ? (
-                      <div className="h-3.5 w-28 rounded-[var(--radius-sm)] bg-[var(--bg-secondary)] animate-pulse" />
+                      <div className="h-3.5 w-28 rounded-[var(--radius-sm)] bg-[var(--surface-muted)] animate-pulse" />
                     ) : (
-                      <p className="text-[13px] font-semibold text-gray-900 dark:text-white truncate">{fullName}</p>
+                      <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{fullName}</p>
                     )}
                     <div className="flex items-center gap-1 mt-0.5">
-                      <Sparkles className="w-2.5 h-2.5 text-amber-400" />
-                      <span className="text-[10.5px] font-semibold text-amber-600 dark:text-amber-400">
+                      <Sparkles className="w-2.5 h-2.5 text-[var(--warning)]" />
+                      <span className="text-[10.5px] font-semibold text-[var(--warning)]">
                         Free Plan
                       </span>
                     </div>
@@ -208,7 +208,7 @@ export default function TopBar() {
                 </div>
               </div>
 
-              <div className="h-px bg-gray-100 dark:bg-white/[0.06] mx-2 mb-1" />
+              <div className="h-px bg-[var(--border-subtle)] mx-2 mb-1" />
 
               {/* Menu items */}
               <div className="px-1.5 space-y-0.5">
@@ -233,17 +233,17 @@ export default function TopBar() {
               {/* Theme toggle — mobile only */}
               <div className="lg:hidden px-1.5 mt-0.5">
                 <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)]">
-                  <span className="text-gray-400 dark:text-zinc-500">
+                  <span className="text-[var(--text-tertiary)]">
                     {theme === 'light' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
                   </span>
-                  <span className="flex-1 text-left text-[12.5px] font-medium text-gray-700 dark:text-zinc-300">Theme</span>
-                  <div className="flex items-center h-7 bg-gray-100 dark:bg-zinc-700 rounded-[var(--radius-sm)] border border-gray-200 dark:border-zinc-600 p-0.5 gap-0.5">
+                  <span className="flex-1 text-left text-[12.5px] font-medium text-[var(--text-secondary)]">Theme</span>
+                  <div className="flex items-center h-7 bg-[var(--surface-muted)] rounded-[var(--radius-sm)] border border-[var(--border)] p-0.5 gap-0.5">
                     <button
                       onClick={() => setTheme('light')}
                       className={`h-6 px-2 gap-1 rounded flex items-center justify-center text-[11px] font-medium transition-all duration-150 ${
                         theme === 'light'
-                          ? 'bg-white dark:bg-zinc-600 text-gray-800 dark:text-zinc-100 shadow-sm border border-gray-200 dark:border-zinc-500'
-                          : 'text-gray-400 dark:text-zinc-500'
+                          ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] border border-[var(--border)]'
+                          : 'text-[var(--text-tertiary)]'
                       }`}
                     >
                       <Sun className="w-3 h-3" />
@@ -252,8 +252,8 @@ export default function TopBar() {
                       onClick={() => setTheme('dark')}
                       className={`h-6 px-2 gap-1 rounded flex items-center justify-center text-[11px] font-medium transition-all duration-150 ${
                         theme === 'dark'
-                          ? 'bg-white dark:bg-zinc-600 text-gray-800 dark:text-zinc-100 shadow-sm border border-gray-200 dark:border-zinc-500'
-                          : 'text-gray-400 dark:text-zinc-500'
+                          ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] border border-[var(--border)]'
+                          : 'text-[var(--text-tertiary)]'
                       }`}
                     >
                       <Moon className="w-3 h-3" />
@@ -262,12 +262,12 @@ export default function TopBar() {
                 </div>
               </div>
 
-              <div className="h-px bg-gray-100 dark:bg-white/[0.06] mx-2 my-1" />
+              <div className="h-px bg-[var(--border-subtle)] mx-2 my-1" />
 
               <div className="px-1.5">
                 <button
                   onClick={confirmSignOut}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/[0.08] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-medium text-[var(--danger)] hover:bg-[var(--danger-bg)] transition-colors"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   Sign out
@@ -282,23 +282,23 @@ export default function TopBar() {
     {/* ── Sign-out confirm modal ── */}
     {showSignOutConfirm && (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4">
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSignOutConfirm(false)} />
-        <div className="relative w-full max-w-sm bg-[var(--bg-elevated)] rounded-[var(--radius-lg)] shadow-2xl border border-gray-100 dark:border-white/[0.08] p-6">
-          <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-            <LogOut className="w-5 h-5 text-red-500" />
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowSignOutConfirm(false)} />
+        <div className="relative w-full max-w-sm bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] border border-[var(--border)] p-6">
+          <div className="w-10 h-10 rounded-full bg-[var(--danger-bg)] flex items-center justify-center mb-4">
+            <LogOut className="w-5 h-5 text-[var(--danger)]" />
           </div>
-          <h3 className="text-[15px] font-semibold text-gray-900 dark:text-white mb-1">Sign out?</h3>
-          <p className="text-[13px] text-gray-500 dark:text-zinc-400 mb-5">You will be redirected to the login page.</p>
+          <h3 className="text-[15px] font-semibold text-[var(--text-primary)] mb-1">Sign out?</h3>
+          <p className="text-[13px] text-[var(--text-secondary)] mb-5">You will be redirected to the login page.</p>
           <div className="flex gap-2">
             <button
               onClick={() => setShowSignOutConfirm(false)}
-              className="flex-1 h-9 rounded-[var(--radius-sm)] border border-gray-200 dark:border-white/[0.08] text-[13px] font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-white/[0.05] transition-colors"
+              className="flex-1 h-9 rounded-[var(--radius-sm)] border border-[var(--border)] text-[13px] font-medium text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSignOut}
-              className="flex-1 h-9 rounded-[var(--radius-sm)] bg-red-500 hover:bg-red-600 text-white text-[13px] font-semibold transition-colors"
+              className="flex-1 h-9 rounded-[var(--radius-sm)] bg-[var(--danger)] hover:opacity-90 text-[var(--text-on-brand)] text-[13px] font-semibold transition-colors"
             >
               Sign out
             </button>
@@ -323,8 +323,8 @@ function ThemeBtn({
       title={title}
       className={`h-6.5 px-3 gap-1.5 rounded-[var(--radius-sm)] flex items-center justify-center transition-all duration-150 ${
         active
-          ? 'bg-white dark:bg-zinc-700 text-gray-800 dark:text-zinc-100 shadow-sm border border-gray-200 dark:border-zinc-600'
-          : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300'
+          ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] border border-[var(--border)]'
+          : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
       }`}
     >
       {children}
@@ -340,9 +340,9 @@ function DropdownItem({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-100/80 dark:hover:bg-white/[0.06] transition-colors"
+      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] text-[12.5px] font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] transition-colors"
     >
-      <span className="text-gray-400 dark:text-zinc-500">{icon}</span>
+      <span className="text-[var(--text-tertiary)]">{icon}</span>
       <span className="flex-1 text-left">{label}</span>
       {badge && (
         <span className="min-w-4.5 h-4.5 bg-[var(--brand)] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">

@@ -17,9 +17,9 @@ export interface ConfirmDialogProps {
 }
 
 export function ConfirmDialog({
-  isOpen, onClose, onConfirm, title, description, 
-  confirmLabel = 'Confirm', cancelLabel = 'Cancel', 
-  isDestructive = false, requiredText
+  isOpen, onClose, onConfirm, title, description,
+  confirmLabel = 'Confirm', cancelLabel = 'Cancel',
+  isDestructive = false, requiredText,
 }: ConfirmDialogProps) {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export function ConfirmDialog({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-0">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -53,26 +53,32 @@ export function ConfirmDialog({
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-md border border-[var(--color-border)] overflow-hidden"
+            className="relative bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-md border border-[var(--border)] overflow-hidden"
           >
             <div className="px-6 py-5 flex items-start gap-4">
-              <div className={`p-2.5 rounded-full shrink-0 mt-0.5 ${isDestructive ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/30'}`}>
+              <div
+                className={`p-2.5 rounded-full shrink-0 mt-0.5 ${
+                  isDestructive
+                    ? 'bg-[var(--danger-bg)] text-[var(--danger)]'
+                    : 'bg-[var(--info-bg)] text-[var(--info)]'
+                }`}
+              >
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-[var(--color-text-primary)]">{title}</h3>
-                <p className="mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed">
+                <h3 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h3>
+                <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">
                   {description}
                 </p>
 
                 {requiredText && (
                   <div className="mt-4">
-                    <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                       Type <strong>{requiredText}</strong> to confirm:
                     </label>
-                    <input 
+                    <input
                       type="text"
-                      className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md bg-transparent focus:ring-1 focus:ring-[var(--brand)] focus:border-[var(--brand)] outline-none text-sm"
+                      className="w-full px-3 py-2 border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] text-sm"
                       value={text}
                       onChange={e => setText(e.target.value)}
                       placeholder={requiredText}
@@ -82,21 +88,21 @@ export function ConfirmDialog({
               </div>
             </div>
 
-            <div className="px-6 py-4 bg-gray-50/50 dark:bg-zinc-800/30 border-t border-[var(--color-border)] flex justify-end gap-3 flex-col-reverse sm:flex-row">
-              <button 
+            <div className="px-6 py-4 bg-[var(--surface-muted)] border-t border-[var(--border-subtle)] flex justify-end gap-3 flex-col-reverse sm:flex-row">
+              <button
                 onClick={onClose}
                 disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] bg-transparent border border-[var(--color-border)] rounded-md hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-50 transition-colors"
+                className="px-3 py-2 text-sm font-medium text-[var(--text-primary)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] border border-[var(--border)] rounded-[var(--radius-sm)] disabled:opacity-50 transition-colors focus:outline-none focus:shadow-[var(--focus-ring)]"
               >
                 {cancelLabel}
               </button>
-              <button 
+              <button
                 onClick={handleConfirm}
                 disabled={loading || !isValid}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm disabled:opacity-50 transition-colors ${
-                  isDestructive 
-                    ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 
-                    : 'bg-[var(--brand)] hover:bg-[var(--brand-hover)] focus:ring-[var(--brand)]'
+                className={`px-3 py-2 text-sm font-medium text-[var(--text-on-brand)] rounded-[var(--radius-sm)] disabled:opacity-50 transition-colors focus:outline-none focus:shadow-[var(--focus-ring)] ${
+                  isDestructive
+                    ? 'bg-[var(--danger)] hover:opacity-90'
+                    : 'bg-[var(--brand)] hover:bg-[var(--brand-hover)]'
                 }`}
               >
                 {loading ? 'Processing...' : confirmLabel}

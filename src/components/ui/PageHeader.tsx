@@ -9,24 +9,24 @@ export interface PageHeaderProps {
 
 export function PageHeader({ title, description, action, breadcrumbs }: PageHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
-      <div>
+    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mt-6 mb-4">
+      <div className="min-w-0">
         {breadcrumbs && (
-          <div className="mb-2 text-sm text-[var(--color-text-tertiary)]">
+          <div className="mb-2 text-sm text-[var(--text-tertiary)]">
             {breadcrumbs}
           </div>
         )}
-        <h1 className="text-2xl sm:text-3xl font-display font-bold text-[var(--color-text-primary)] tracking-tight">
+        <h1 className="text-2xl font-semibold font-display text-[var(--text-primary)] tracking-tight truncate">
           {title}
         </h1>
         {description && (
-          <p className="mt-1 text-sm sm:text-base text-[var(--color-text-secondary)] max-w-2xl">
+          <p className="mt-1 text-sm text-[var(--text-secondary)] max-w-2xl">
             {description}
           </p>
         )}
       </div>
       {action && (
-        <div className="flex-shrink-0 flex items-center gap-3">
+        <div className="flex-shrink-0 flex items-center gap-2">
           {action}
         </div>
       )}
