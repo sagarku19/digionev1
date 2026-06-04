@@ -1,7 +1,12 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Card } from '@/components/ui/Card';
+import { KpiGrid } from '@/components/ui/KpiGrid';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import {
   TrendingUp, TrendingDown, ShoppingCart, DollarSign,
   BarChart2, Package, ArrowUpRight, ArrowDownRight, Minus
@@ -36,46 +41,27 @@ function pctChange(current: number, prev: number) {
 function DeltaBadge({ current, prev }: { current: number; prev: number }) {
   const delta = pctChange(current, prev);
   if (delta > 0) return (
-    <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-400">
+    <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-[var(--success)]">
       <ArrowUpRight size={13} /> +{delta}%
     </span>
   );
   if (delta < 0) return (
-    <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-red-400">
+    <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-[var(--danger)]">
       <ArrowDownRight size={13} /> {delta}%
     </span>
   );
   return (
-    <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-gray-400">
+    <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-[var(--text-tertiary)]">
       <Minus size={13} /> 0%
     </span>
-  );
-}
-
-function SkeletonCard() {
-  return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 animate-pulse">
-      <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
-      <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
-      <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
-    </div>
-  );
-}
-
-function SkeletonChart() {
-  return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 animate-pulse">
-      <div className="h-5 w-36 bg-gray-200 dark:bg-gray-700 rounded mb-6" />
-      <div className="h-65 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)]" />
-    </div>
   );
 }
 
 const CustomTooltip = ({ active, payload, label, formatter }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-[var(--radius-sm)] px-3 py-2 shadow-xl text-sm">
-      <p className="text-gray-400 mb-1">{label}</p>
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 shadow-[var(--shadow-md)] text-sm">
+      <p className="text-[var(--text-tertiary)] mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="font-semibold" style={{ color: p.color }}>
           {formatter ? formatter(p.value) : p.value}
@@ -135,45 +121,52 @@ export default function AnalyticsPage() {
     return timeSeriesData.reduce((best, d) => d.revenue > best.revenue ? d : best, timeSeriesData[0]);
   }, [timeSeriesData]);
 
+  const periodToggle = (
+    <div className="flex bg-[var(--surface-muted)] rounded-[var(--radius-sm)] p-1 border border-[var(--border)]">
+      {PERIODS.map(({ label, value }) => (
+        <button
+          key={value}
+          onClick={() => setDaysBack(value)}
+          className={`px-4 py-1.5 text-sm font-medium rounded-[var(--radius-sm)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+            daysBack === value
+              ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="space-y-6 pb-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] pt-4">Analytics</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-            Track revenue, sales volume, and top performing products.
-          </p>
-        </div>
-        <div className="flex bg-[var(--bg-primary)] rounded-[var(--radius-sm)] p-1 border border-[var(--border)]">
-          {PERIODS.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setDaysBack(value)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-[var(--radius-sm)] transition-all ${
-                daysBack === value
-                  ? 'bg-white dark:bg-indigo-600 text-[var(--text-primary)] shadow-sm'
-                  : 'text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="space-y-6 pb-12">
+      <PageHeader
+        title="Analytics"
+        description="Track revenue, sales volume, and top performing products."
+        action={periodToggle}
+      />
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <KpiGrid>
         {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+          <>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
+                <Skeleton className="h-4 w-24 mb-3" />
+                <Skeleton className="h-8 w-32 mb-2" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            ))}
+          </>
         ) : (
           <>
             {/* Revenue */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-xs)]">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Revenue</span>
-                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)]">
-                  <DollarSign size={14} className="text-gray-700 dark:text-[var(--text-secondary)]" />
+                <span className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">Revenue</span>
+                <span className="p-1.5 bg-[var(--surface-muted)] rounded-[var(--radius-sm)]">
+                  <DollarSign size={14} className="text-[var(--text-secondary)]" />
                 </span>
               </div>
               <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
@@ -181,16 +174,16 @@ export default function AnalyticsPage() {
               </p>
               <div className="flex items-center gap-2">
                 <DeltaBadge current={stats.totalRevenue} prev={stats.prevRevenue} />
-                <span className="text-xs text-gray-400">vs prev period</span>
+                <span className="text-xs text-[var(--text-tertiary)]">vs prev period</span>
               </div>
             </div>
 
             {/* Sales */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-xs)]">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Orders</span>
-                <span className="p-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)]">
-                  <ShoppingCart size={14} className="text-gray-700 dark:text-[var(--text-secondary)]" />
+                <span className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">Orders</span>
+                <span className="p-1.5 bg-[var(--surface-muted)] rounded-[var(--radius-sm)]">
+                  <ShoppingCart size={14} className="text-[var(--text-secondary)]" />
                 </span>
               </div>
               <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
@@ -198,16 +191,16 @@ export default function AnalyticsPage() {
               </p>
               <div className="flex items-center gap-2">
                 <DeltaBadge current={stats.totalSales} prev={stats.prevSales} />
-                <span className="text-xs text-gray-400">vs prev period</span>
+                <span className="text-xs text-[var(--text-tertiary)]">vs prev period</span>
               </div>
             </div>
 
             {/* AOV */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-xs)]">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Avg. Order Value</span>
-                <span className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 rounded-[var(--radius-sm)]">
-                  <TrendingUp size={14} className="text-emerald-600 dark:text-emerald-400" />
+                <span className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">Avg. Order Value</span>
+                <span className="p-1.5 bg-[var(--success-bg)] rounded-[var(--radius-sm)]">
+                  <TrendingUp size={14} className="text-[var(--success)]" />
                 </span>
               </div>
               <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
@@ -215,63 +208,66 @@ export default function AnalyticsPage() {
               </p>
               <div className="flex items-center gap-2">
                 <DeltaBadge current={aov} prev={prevAov} />
-                <span className="text-xs text-gray-400">vs prev period</span>
+                <span className="text-xs text-[var(--text-tertiary)]">vs prev period</span>
               </div>
             </div>
 
             {/* Peak Day */}
-            <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-xs)]">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Peak Day</span>
-                <span className="p-1.5 bg-amber-100 dark:bg-amber-500/20 rounded-[var(--radius-sm)]">
-                  <BarChart2 size={14} className="text-amber-600 dark:text-amber-400" />
+                <span className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">Peak Day</span>
+                <span className="p-1.5 bg-[var(--warning-bg)] rounded-[var(--radius-sm)]">
+                  <BarChart2 size={14} className="text-[var(--warning)]" />
                 </span>
               </div>
               <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
                 {peakDay ? formatINR(peakDay.revenue) : '₹0'}
               </p>
-              <p className="text-xs text-gray-400">{peakDay?.name ?? '—'}</p>
+              <p className="text-xs text-[var(--text-tertiary)]">{peakDay?.name ?? '—'}</p>
             </div>
           </>
         )}
-      </div>
+      </KpiGrid>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Revenue Area Chart — 3 cols */}
-        <div className="lg:col-span-3 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
+        <Card className="lg:col-span-3">
           {isLoading ? (
-            <SkeletonChart />
+            <>
+              <Skeleton className="h-5 w-36 mb-6" />
+              <Skeleton className="h-[260px] w-full" rounded="md" />
+            </>
           ) : (
             <>
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-base font-semibold text-[var(--text-primary)]">Revenue Trend</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">Daily revenue over the selected period</p>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Daily revenue over the selected period</p>
                 </div>
-                <span className="text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-[var(--bg-secondary)] px-2 py-1 rounded-[var(--radius-sm)]">
+                <span className="text-xs font-medium text-[var(--text-secondary)] bg-[var(--surface-muted)] px-2 py-1 rounded-[var(--radius-sm)]">
                   {daysBack}D view
                 </span>
               </div>
-              <div className="h-65">
+              <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={timeSeriesData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
                     <defs>
                       <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366F1" stopOpacity={0.35} />
-                        <stop offset="95%" stopColor="#6366F1" stopOpacity={0} />
+                        <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="var(--brand)" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.15} vertical={false} />
+                    <CartesianGrid stroke="var(--border-subtle)" strokeDasharray="3 3" vertical={false} />
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                      tick={{ fontSize: 11, fill: 'var(--text-tertiary)', fontWeight: 500 }}
                       axisLine={false}
                       tickLine={false}
                       minTickGap={daysBack > 30 ? 14 : 8}
                     />
                     <YAxis
-                      tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                      tick={{ fontSize: 11, fill: 'var(--text-tertiary)', fontWeight: 500 }}
                       tickFormatter={(v) => formatINR(v)}
                       axisLine={false}
                       tickLine={false}
@@ -283,43 +279,46 @@ export default function AnalyticsPage() {
                     <Area
                       type="monotone"
                       dataKey="revenue"
-                      stroke="#6366F1"
+                      stroke="var(--brand)"
                       strokeWidth={2.5}
                       fillOpacity={1}
                       fill="url(#revGrad)"
                       dot={false}
-                      activeDot={{ r: 4, fill: '#6366F1' }}
+                      activeDot={{ r: 4, fill: 'var(--brand)' }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </>
           )}
-        </div>
+        </Card>
 
         {/* Sales Volume Bar Chart — 2 cols */}
-        <div className="lg:col-span-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
+        <Card className="lg:col-span-2">
           {isLoading ? (
-            <SkeletonChart />
+            <>
+              <Skeleton className="h-5 w-32 mb-6" />
+              <Skeleton className="h-[260px] w-full" rounded="md" />
+            </>
           ) : (
             <>
               <div className="mb-6">
                 <h2 className="text-base font-semibold text-[var(--text-primary)]">Sales Volume</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Orders per day</p>
+                <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Orders per day</p>
               </div>
-              <div className="h-65">
+              <div className="h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={timeSeriesData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.15} vertical={false} />
+                    <CartesianGrid stroke="var(--border-subtle)" strokeDasharray="3 3" vertical={false} />
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                      tick={{ fontSize: 11, fill: 'var(--text-tertiary)', fontWeight: 500 }}
                       axisLine={false}
                       tickLine={false}
                       minTickGap={daysBack > 30 ? 14 : 8}
                     />
                     <YAxis
-                      tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                      tick={{ fontSize: 11, fill: 'var(--text-tertiary)', fontWeight: 500 }}
                       axisLine={false}
                       tickLine={false}
                       width={30}
@@ -330,7 +329,7 @@ export default function AnalyticsPage() {
                     />
                     <Bar
                       dataKey="sales"
-                      fill="#8B5CF6"
+                      fill="var(--brand)"
                       radius={[4, 4, 0, 0]}
                       maxBarSize={daysBack <= 14 ? 32 : 20}
                     />
@@ -339,44 +338,45 @@ export default function AnalyticsPage() {
               </div>
             </>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Top Products */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5">
-        <div className="flex items-center gap-2 mb-5">
-          <Package size={16} className="text-gray-600 dark:text-[var(--text-secondary)]" />
+      <Card padded={false}>
+        <div className="flex items-center gap-2 px-5 py-5 border-b border-[var(--border-subtle)]">
+          <Package size={16} className="text-[var(--text-secondary)]" />
           <h2 className="text-base font-semibold text-[var(--text-primary)]">Top Products</h2>
-          <span className="ml-auto text-xs text-gray-400">by revenue · {daysBack}D</span>
+          <span className="ml-auto text-xs text-[var(--text-tertiary)]">by revenue · {daysBack}D</span>
         </div>
 
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="divide-y divide-[var(--border-subtle)]">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 animate-pulse">
-                <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-xl shrink-0" />
+              <div key={i} className="flex items-center gap-4 px-5 py-4">
+                <Skeleton rounded="lg" className="w-9 h-9 shrink-0" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3.5 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
-                  <div className="h-2 w-full bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full" />
+                  <Skeleton className="h-3.5 w-48" />
+                  <Skeleton className="h-2 w-full" rounded="full" />
                 </div>
-                <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded shrink-0" />
+                <Skeleton className="h-4 w-16 shrink-0" />
               </div>
             ))}
           </div>
         ) : stats.topProducts.length === 0 ? (
-          <div className="text-center py-10 text-gray-400">
-            <Package size={32} className="mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No product sales in this period</p>
-          </div>
+          <EmptyState
+            icon={Package}
+            title="No product sales in this period"
+            description="Sales data will appear here once orders are completed."
+          />
         ) : (
-          <div className="space-y-4">
+          <div className="divide-y divide-[var(--border-subtle)]">
             {stats.topProducts.map((p, idx) => {
               const maxRevenue = stats.topProducts[0]?.revenue || 1;
               const pct = Math.round((p.revenue / maxRevenue) * 100);
               return (
-                <div key={p.product_id} className="flex items-center gap-4">
+                <div key={p.product_id} className="flex items-center gap-4 px-5 py-4">
                   {/* Rank / Thumbnail */}
-                  <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-9 h-9 rounded-[var(--radius-lg)] overflow-hidden shrink-0 bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold">
                     {p.thumbnail_url ? (
                       <img src={p.thumbnail_url} alt={p.name} className="w-full h-full object-cover" />
                     ) : (
@@ -387,11 +387,11 @@ export default function AnalyticsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate pr-2">{p.name}</p>
-                      <span className="text-xs text-gray-400 shrink-0">{p.sales} sale{p.sales !== 1 ? 's' : ''}</span>
+                      <span className="text-xs text-[var(--text-tertiary)] shrink-0">{p.sales} sale{p.sales !== 1 ? 's' : ''}</span>
                     </div>
-                    <div className="h-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[var(--surface-muted)] rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-linear-to-r from-indigo-500 to-violet-500 transition-all duration-700"
+                        className="h-full rounded-full bg-[var(--brand)] transition-all duration-700"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -405,7 +405,7 @@ export default function AnalyticsPage() {
             })}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
