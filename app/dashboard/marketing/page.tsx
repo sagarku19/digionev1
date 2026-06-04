@@ -79,7 +79,7 @@ export default function MarketingPage() {
   };
 
   return (
-    <div className="pt-6 pb-16 space-y-8 max-w-[1200px] mx-auto">
+    <div className="pt-6 pb-16 space-y-8 w-full">
 
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-primary)] p-5 shadow-sm">

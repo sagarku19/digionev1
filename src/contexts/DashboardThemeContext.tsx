@@ -70,10 +70,10 @@ export function DashboardThemeProvider({ children }: { children: React.ReactNode
           `,
         }}
       />
-      <div 
+      <div
         id="dashboard-root"
         suppressHydrationWarning
-        className={`min-h-screen flex flex-col md:flex-row${theme === 'dark' ? ' dark' : ''}`}
+        className={`min-h-screen${theme === 'dark' ? ' dark' : ''}`}
       >
         {children}
       </div>

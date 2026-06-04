@@ -267,7 +267,7 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto space-y-4 pb-16 pt-4">
+      <div className="w-full space-y-4 pb-16 pt-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse space-y-4">
             <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
@@ -284,7 +284,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <div className="max-w-2xl mx-auto space-y-6 pb-16">
+      <div className="w-full space-y-6 pb-16">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 pt-4">
           <div>

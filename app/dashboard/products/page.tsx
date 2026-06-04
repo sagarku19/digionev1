@@ -74,6 +74,12 @@ function ProductsPageInner() {
   // Copied link feedback
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Hydration guard — client-only product data must not drive the SSR render
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const showLoading = !mounted || isLoading;
+  const showUpsellLoading = !mounted || upsellLoading;
+
   const publishedCount = products.filter((p: any) => p.is_published).length;
   const draftCount = products.filter((p: any) => !p.is_published).length;
 
@@ -165,9 +171,11 @@ function ProductsPageInner() {
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">Products</h1>
           <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mt-1">
-            {products.length > 0
-              ? `${products.length} product${products.length !== 1 ? 's' : ''} in your catalog`
-              : 'No products yet — create your first one.'}
+            {showLoading
+              ? ' '
+              : products.length > 0
+                ? `${products.length} product${products.length !== 1 ? 's' : ''} in your catalog`
+                : 'No products yet — create your first one.'}
           </p>
         </div>
         <button
@@ -183,7 +191,7 @@ function ProductsPageInner() {
         {/* ═══ LEFT: Product Grid ═══ */}
         <div className="flex-1 min-w-0 space-y-6">
           {/* Status Tabs with count badges */}
-          {products.length > 0 && (
+          {!showLoading && products.length > 0 && (
             <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] w-fit">
               {([
                 { key: 'all',       label: 'All',       count: products.length },
@@ -211,7 +219,7 @@ function ProductsPageInner() {
           )}
 
           {/* Search + Category Filter Bar */}
-          {products.length > 0 && (
+          {!showLoading && products.length > 0 && (
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="relative flex-1 max-w-md group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[var(--brand)] transition-colors" />
@@ -286,7 +294,7 @@ function ProductsPageInner() {
 
 
           {/* Loading */}
-          {isLoading && (
+          {showLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
                 <div key={i} className="bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-[var(--radius-lg)] p-4 animate-pulse shadow-sm">
@@ -299,7 +307,7 @@ function ProductsPageInner() {
           )}
 
           {/* Empty state */}
-          {!isLoading && products.length === 0 && (
+          {!showLoading && products.length === 0 && (
             <div className="flex flex-col items-center justify-center py-32 text-center bg-white/50 dark:bg-zinc-950/50 border border-dashed border-gray-300 dark:border-zinc-800 rounded-[var(--radius-lg)]">
               <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-full flex items-center justify-center mb-6 shadow-inner">
                 <Package className="w-10 h-10 text-indigo-500 dark:text-indigo-400" />
@@ -314,7 +322,7 @@ function ProductsPageInner() {
           )}
 
           {/* Product card grid */}
-          {!isLoading && filtered.length > 0 && (
+          {!showLoading && filtered.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filtered.map((product: any) => {
                 const isSelected = selectedIds.has(product.id);
@@ -427,7 +435,7 @@ function ProductsPageInner() {
             </div>
           )}
 
-          {!isLoading && products.length > 0 && filtered.length === 0 && (
+          {!showLoading && products.length > 0 && filtered.length === 0 && (
             <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-lg)]">
               <Search className="w-10 h-10 text-gray-300 dark:text-zinc-700 mx-auto mb-4" />
               <p className="text-gray-500 font-medium">No products match your filters</p>
@@ -467,7 +475,7 @@ function ProductsPageInner() {
                   </button>
                 </div>
 
-                {upsellLoading && (
+                {showUpsellLoading && (
                   <div className="space-y-4">
                     {[1, 2, 3].map(i => (
                       <div key={i} className="animate-pulse h-24 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-lg)]" />
@@ -475,7 +483,7 @@ function ProductsPageInner() {
                   </div>
                 )}
 
-                {!upsellLoading && upsellPages.length === 0 && (
+                {!showUpsellLoading && upsellPages.length === 0 && (
                   <div className="text-center py-12 px-4 rounded-[var(--radius-lg)] border border-dashed border-gray-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/20">
                     <div className="w-16 h-16 bg-gradient-to-tr from-gray-100 to-white dark:from-zinc-800 dark:to-zinc-900 rounded-[20px] flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-200/50 dark:border-zinc-700/50">
                       <Link2 className="w-7 h-7 text-gray-400 dark:text-gray-500" />
@@ -492,7 +500,7 @@ function ProductsPageInner() {
                   </div>
                 )}
 
-                {!upsellLoading && upsellPages.length > 0 && (
+                {!showUpsellLoading && upsellPages.length > 0 && (
                   <div className="space-y-4">
                     {upsellPages.map(up => (
                       <div

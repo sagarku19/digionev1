@@ -1318,7 +1318,7 @@ export default function AutoDMPage() {
         className="min-h-screen bg-[var(--bg-primary)] hidden md:block"
         style={{ marginLeft: SUB_SIDEBAR_W }}
       >
-        <div className="px-8 py-8 max-w-4xl mx-auto">
+        <div className="px-8 py-8 w-full">
           {renderView()}
         </div>
       </div>

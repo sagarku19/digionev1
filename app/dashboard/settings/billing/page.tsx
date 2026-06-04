@@ -204,7 +204,7 @@ export default function KYCAndBillingPage() {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-16 pt-4">
+    <div className="w-full space-y-6 pb-16 pt-4">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Billing & KYC</h1>

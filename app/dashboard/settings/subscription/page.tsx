@@ -112,7 +112,7 @@ export default function SubscriptionPage() {
   const currentPlan = 'free'; // TODO: fetch from subscriptions table
 
   return (
-    <div className="pb-16 pt-4 max-w-4xl mx-auto">
+    <div className="pb-16 pt-4 w-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-extrabold text-[var(--text-primary)]">Subscription</h1>

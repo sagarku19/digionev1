@@ -163,7 +163,7 @@ export default function DashboardHome() {
         <div className="absolute bottom-[20%] right-[10%] w-[30%] h-[30%] bg-purple-500/5 dark:bg-purple-500/5 blur-[120px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
       </div>
 
-      <div className="space-y-8 max-w-[1400px] mx-auto">
+      <div className="space-y-8 w-full">
         {/* ── Greeting header ── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="relative inline-block">

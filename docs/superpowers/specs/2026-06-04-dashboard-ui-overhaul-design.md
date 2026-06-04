@@ -252,7 +252,7 @@ All buttons share `rounded-[var(--radius-sm)] text-sm font-medium px-3 py-2 tran
 1. Open every `page.tsx` and dashboard-only child component in the batch.
 2. Replace tokens:
    - Hardcoded hex → matching `var(--*)`.
-   - `bg-white` / `bg-gray-*` → `bg-[var(--surface)]` or `bg-[var(--bg-*)]`.
+   - `bg-white` / `bg-gray-*` → `bg-[var(--surface)]` or a `--bg-*` token.
    - `text-gray-*` → `text-[var(--text-primary|secondary|tertiary)]`.
    - `border-gray-*` → `border-[var(--border)]` or `--border-subtle`.
 3. Replace inline card / empty-state / skeleton chrome with the new primitives.

@@ -1,7 +1,7 @@
 export default function DashboardLoading() {
   return (
     <div className="relative pt-6 pb-16 min-h-screen">
-      <div className="space-y-8 max-w-[1400px] mx-auto">
+      <div className="space-y-8 w-full">
         {/* Greeting */}
         <div className="space-y-2">
           <div

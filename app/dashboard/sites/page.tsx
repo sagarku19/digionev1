@@ -305,7 +305,7 @@ export default function SitesPage() {
 
   return (
     <>
-      <div className="pt-6 sm:pt-8 pb-16 min-h-screen max-w-[1600px] mx-auto">
+      <div className="pt-6 sm:pt-8 pb-16 min-h-screen w-full">
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
