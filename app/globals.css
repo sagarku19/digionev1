@@ -66,6 +66,51 @@
   --auth-surface:   #ffffff;
   --brand-gradient: linear-gradient(135deg, #E83A2E 0%, #ff7043 55%, #E83A2E 100%);
 
+  /* Surfaces */
+  --surface:        var(--bg-elevated);
+  --surface-hover:  #f7f7f8;
+  --surface-muted:  var(--bg-secondary);
+
+  /* Borders */
+  --border-strong:  #d4d4d8;
+  --border-subtle:  #f0f0f1;
+
+  /* Text */
+  --text-tertiary:  #a3a3a3;
+  --text-on-brand:  #ffffff;
+
+  /* Semantic surface pairs */
+  --info:        #2563eb;
+  --info-bg:     #eff6ff;
+  --success-bg:  #f0fdf4;
+  --warning-bg:  #fffbeb;
+  --danger-bg:   #fef2f2;
+
+  /* Radius */
+  --radius-md:    12px;
+  --radius-pill:  999px;
+
+  /* Shadow */
+  --shadow-xs: 0 1px 2px rgba(10, 10, 10, 0.04);
+  --shadow-sm: 0 1px 2px rgba(10, 10, 10, 0.06), 0 1px 3px rgba(10, 10, 10, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(10, 10, 10, 0.08), 0 2px 4px -2px rgba(10, 10, 10, 0.05);
+  --shadow-lg: 0 10px 25px -3px rgba(10, 10, 10, 0.10), 0 4px 10px -4px rgba(10, 10, 10, 0.06);
+
+  /* Focus */
+  --focus-ring: 0 0 0 3px rgba(232, 58, 46, 0.20);
+
+  /* Legacy aliases for in-flight primitive references */
+  --color-text-tertiary:    var(--text-tertiary);
+  --surface-color:          var(--surface);
+  --color-success-subtle:   var(--success-bg);
+  --color-warning-subtle:   var(--warning-bg);
+  --color-danger-subtle:    var(--danger-bg);
+  --color-success:          var(--success);
+  --color-warning:          var(--warning);
+  --color-danger:           var(--danger);
+  --color-text-primary:     var(--text-primary);
+  --color-text-secondary:   var(--text-secondary);
+
   /* Legacy aliases — kept for backward compat */
   --color-bg:     var(--bg-primary);
   --color-bg-2:   var(--bg-secondary);
@@ -110,6 +155,41 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --danger:  #f87171;
+
+  --surface:        var(--bg-elevated);
+  --surface-hover:  #1a1a1c;
+  --surface-muted:  var(--bg-secondary);
+
+  --border-strong:  #3a3a3d;
+  --border-subtle:  #1a1a1c;
+
+  --text-tertiary:  #525252;
+  --text-on-brand:  #ffffff;
+
+  --info:        #60a5fa;
+  --info-bg:     #1e293b;
+  --success-bg:  #052e16;
+  --warning-bg:  #422006;
+  --danger-bg:   #450a0a;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40), 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.50), 0 4px 10px -4px rgba(0, 0, 0, 0.40);
+
+  --focus-ring: 0 0 0 3px rgba(232, 58, 46, 0.35);
+
+  /* Legacy aliases for in-flight primitive references */
+  --color-text-tertiary:    var(--text-tertiary);
+  --surface-color:          var(--surface);
+  --color-success-subtle:   var(--success-bg);
+  --color-warning-subtle:   var(--warning-bg);
+  --color-danger-subtle:    var(--danger-bg);
+  --color-success:          var(--success);
+  --color-warning:          var(--warning);
+  --color-danger:           var(--danger);
+  --color-text-primary:     var(--text-primary);
+  --color-text-secondary:   var(--text-secondary);
 
   /* Legacy aliases */
   --color-bg:     var(--bg-primary);
