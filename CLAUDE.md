@@ -53,6 +53,7 @@ Files in `.claude/rules/` are **auto-loaded by Claude Code** on every session.
 | `.claude/rules/supabase-reference.md` | Editing any Supabase client, auth call, RLS query, or storage upload |
 | `.claude/rules/google-oauth-reference.md` | Editing the Google sign-in flow, `/api/auth/callback`, or anything that depends on `user_metadata.role` |
 | `.claude/rules/cashfree-reference.md` | Editing checkout, the Cashfree webhook, payment status pages, or the browser checkout SDK |
+| `.claude/rules/dashboard-design.md` | Building or modifying any page under `app/dashboard/**`, or any component in `src/components/dashboard/**` or `src/components/ui/**` — the dashboard design language (tokens, primitives, page anatomy, light + dark) |
 
 ## Deferred Work — `.claude/todo-later/`
 
