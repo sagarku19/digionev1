@@ -87,7 +87,7 @@ export default function CreatePaymentLinkPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pt-6 pb-12">
       <div className="w-full max-w-5xl mx-auto">
         {/* Top bar */}
         <div className="flex items-center justify-between mb-4">

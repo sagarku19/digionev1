@@ -6,7 +6,6 @@ import { useSites } from '@/hooks/useSites';
 import {
   Store, Layers, CreditCard, Link2, ArrowLeft,
 } from 'lucide-react';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 
 type SiteTypeOption = {
@@ -138,19 +137,24 @@ export default function NewSiteHub() {
 
   return (
     <div className="space-y-6 pb-12">
-      <PageHeader
-        title="What are you building?"
-        description="Pick a site type to start with. You can always add more later."
-        action={
-          <button
-            onClick={() => router.push('/dashboard/sites')}
-            className="group inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] border border-[var(--border)] px-3 py-2 rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-            Back to Sites
-          </button>
-        }
-      />
+      <div className="pt-6">
+        <button
+          onClick={() => router.push('/dashboard/sites')}
+          className="group inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] border border-[var(--border)] px-3 py-2 rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+          Back to Sites
+        </button>
+      </div>
+
+      <div className="text-center max-w-xl mx-auto">
+        <h1 className="text-2xl font-semibold font-display text-[var(--text-primary)] tracking-tight">
+          What are you building?
+        </h1>
+        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+          Pick a site type to start with. You can always add more later.
+        </p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {SITE_TYPES.map((t) => {
