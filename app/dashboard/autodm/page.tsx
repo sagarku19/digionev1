@@ -213,8 +213,8 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
 
   return (
     <div className="space-y-6">
-      {/* Hero banner — brand gradient kept as decorative */}
-      <div className="relative overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-r from-[var(--brand)]/10 via-[var(--brand)]/5 to-transparent border border-[var(--brand)]/20 p-6">
+      {/* Hero banner */}
+      <div className="rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-xs)] p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-pink-500/30">
@@ -238,9 +238,6 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
             </button>
           </div>
         </div>
-        {/* Decorative blobs */}
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-[var(--brand)]/10 blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-4 right-16 w-24 h-24 rounded-full bg-[var(--brand)]/10 blur-2xl pointer-events-none" />
       </div>
 
       {/* Stat cards — 4-col on md+, 2×2 on mobile */}
@@ -1315,7 +1312,7 @@ export default function AutoDMPage() {
 
       {/* ── Main content: offset by sub-sidebar width on md+ ── */}
       <div
-        className="min-h-screen bg-[var(--surface)] hidden md:block"
+        className="min-h-screen hidden md:block"
         style={{ marginLeft: SUB_SIDEBAR_W }}
       >
         <div className="px-8 py-8 w-full">
