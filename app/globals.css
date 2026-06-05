@@ -88,6 +88,17 @@
   --warning-bg:  #fffbeb;
   --danger-bg:   #fef2f2;
 
+  /* Semantic subtle/border aliases — used by sites/* and other content surfaces.
+     Subtle = same as -bg. Border = same as the base color (consumers add /20 themselves for opacity). */
+  --info-subtle:    var(--info-bg);
+  --success-subtle: var(--success-bg);
+  --warning-subtle: var(--warning-bg);
+  --danger-subtle:  var(--danger-bg);
+  --info-border:    var(--info);
+  --success-border: var(--success);
+  --warning-border: var(--warning);
+  --danger-border:  var(--danger);
+
   /* Radius */
   --radius-md:    12px;
   --radius-pill:  999px;
@@ -173,6 +184,15 @@
   --success-bg:  #052e16;
   --warning-bg:  #422006;
   --danger-bg:   #450a0a;
+
+  --info-subtle:    var(--info-bg);
+  --success-subtle: var(--success-bg);
+  --warning-subtle: var(--warning-bg);
+  --danger-subtle:  var(--danger-bg);
+  --info-border:    var(--info);
+  --success-border: var(--success);
+  --warning-border: var(--warning);
+  --danger-border:  var(--danger);
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.40), 0 1px 3px rgba(0, 0, 0, 0.30);
