@@ -10,6 +10,7 @@ import {
   CreditCard, Link2, Globe, Copy, Check,
   Trash2, EyeOff, Eye, Clock, Pencil, AlertTriangle, X
 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 // ─── Type filter config ─────────────────────────────────────
 const FILTER_TABS = [
@@ -309,24 +310,23 @@ export default function SitesPage() {
   return (
     <>
       <div className="space-y-6 pb-12">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">My Sites</h1>
-            <p className="text-sm font-medium text-[var(--text-secondary)] mt-1">
-              {sites.length > 0
-                ? `Managing ${sites.length} site${sites.length !== 1 ? 's' : ''}`
-                : 'No sites yet — create your first one.'}
-            </p>
-          </div>
-          <button
-            onClick={() => router.push('/dashboard/sites/new')}
-            className="inline-flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-5 py-2.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98] shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            <Plus className="w-4 h-4" />
-            Create New Site
-          </button>
-        </div>
+        <PageHeader
+          title="My Sites"
+          description={
+            sites.length > 0
+              ? `Managing ${sites.length} site${sites.length !== 1 ? 's' : ''}`
+              : 'No sites yet — create your first one.'
+          }
+          action={
+            <button
+              onClick={() => router.push('/dashboard/sites/new')}
+              className="inline-flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-3 py-2 rounded-[var(--radius-sm)] font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            >
+              <Plus className="w-4 h-4" />
+              Create New Site
+            </button>
+          }
+        />
 
         {/* Layout: left tabs + right list */}
         <div className="flex flex-col md:flex-row gap-8">
