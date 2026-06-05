@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // Coupons — full CRUD with stats, inline toggle/delete, bulk code generator, expiry tracking.
 // DB: coupons (via useCoupons hook + direct supabase for toggle/delete)
 
@@ -13,14 +13,14 @@ import {
 } from 'lucide-react';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] text-sm focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition';
 
 function CopyCode({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition" title="Copy">
-      {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+      className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]" title="Copy">
+      {copied ? <Check className="w-3.5 h-3.5 text-[var(--success)]" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
   );
 }
@@ -30,14 +30,14 @@ function isExpired(valid_until: string | null) {
 }
 
 function UsageBar({ current, max }: { current: number; max: number | null }) {
-  if (!max) return <span className="text-sm font-semibold text-[var(--text-primary)]">{current} <span className="text-gray-400 font-normal text-xs">uses</span></span>;
+  if (!max) return <span className="text-sm font-semibold text-[var(--text-primary)]">{current} <span className="text-[var(--text-tertiary)] font-normal text-xs">uses</span></span>;
   const pct = Math.min((current / max) * 100, 100);
   return (
     <div className="flex items-center gap-2 min-w-[80px]">
-      <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-red-500' : pct >= 75 ? 'bg-amber-500' : 'bg-indigo-500'}`} style={{ width: `${pct}%` }} />
+      <div className="flex-1 h-1.5 bg-[var(--surface-muted)] rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-[var(--danger)]' : pct >= 75 ? 'bg-[var(--warning)]' : 'bg-[var(--brand)]'}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-gray-500 shrink-0">{current}/{max}</span>
+      <span className="text-xs text-[var(--text-tertiary)] shrink-0">{current}/{max}</span>
     </div>
   );
 }
@@ -158,7 +158,7 @@ export default function CouponsPage() {
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Create and manage discount codes for your products</p>
           </div>
           <button onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-sm transition shrink-0">
+            className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
             <Plus className="w-4 h-4" /> New Coupon
           </button>
         </div>
@@ -166,18 +166,18 @@ export default function CouponsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total', value: totalCoupons, icon: Tag, color: 'text-gray-600 dark:text-[var(--text-secondary)]', bg: 'bg-[var(--bg-secondary)]' },
-            { label: 'Active', value: activeCoupons, icon: Zap, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-            { label: 'Redeemed', value: totalUses, icon: Check, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
-            { label: 'Expired', value: expiredCount, icon: Calendar, color: 'text-red-500 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10' },
+            { label: 'Total',    value: totalCoupons,  icon: Tag,      color: 'text-[var(--text-secondary)]', bg: 'bg-[var(--surface-muted)]' },
+            { label: 'Active',   value: activeCoupons, icon: Zap,      color: 'text-[var(--success)]',        bg: 'bg-[var(--success-bg)]' },
+            { label: 'Redeemed', value: totalUses,     icon: Check,    color: 'text-[var(--brand)]',          bg: 'bg-[var(--surface-muted)]' },
+            { label: 'Expired',  value: expiredCount,  icon: Calendar, color: 'text-[var(--danger)]',         bg: 'bg-[var(--danger-bg)]' },
           ].map(s => (
-            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 flex items-center gap-3">
+            <div key={s.label} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 flex items-center gap-3">
               <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
               <div>
                 <p className="text-xl font-extrabold text-[var(--text-primary)] leading-none">{s.value}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+                <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{s.label}</p>
               </div>
             </div>
           ))}
@@ -186,53 +186,53 @@ export default function CouponsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by code…"
-              className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 text-[var(--text-primary)] placeholder-gray-400" />
+              className="w-full pl-9 pr-4 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm outline-none focus:border-[var(--border-strong)] focus-visible:shadow-[var(--focus-ring)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]" />
           </div>
           <div className="flex gap-1.5">
             {(['all', 'active', 'inactive', 'expired'] as const).map(f => (
               <button key={f} onClick={() => setFilterStatus(f)}
-                className={`px-3 py-2 rounded-[var(--radius-sm)] text-xs font-semibold capitalize transition ${
-                  filterStatus === f ? 'bg-indigo-600 text-white' : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-indigo-400'
+                className={`px-3 py-2 rounded-[var(--radius-sm)] text-xs font-semibold capitalize transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                  filterStatus === f ? 'bg-[var(--brand)] text-[var(--text-on-brand)]' : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
                 }`}>{f}</button>
             ))}
           </div>
         </div>
 
         {/* Table */}
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
           <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
             <h2 className="text-sm font-bold text-[var(--text-primary)]">All Coupons</h2>
-            <span className="text-xs text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
+            <span className="text-xs text-[var(--text-tertiary)]">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
           </div>
 
           {isLoading ? (
             <div className="p-10 text-center">
-              <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-sm text-gray-500">Loading coupons…</p>
+              <div className="w-6 h-6 border-2 border-[var(--brand)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-[var(--text-tertiary)]">Loading coupons…</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center py-20 text-center">
-              <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4 border border-[var(--border)]">
-                <Ticket className="w-7 h-7 text-gray-300 dark:text-gray-700" />
+              <div className="w-14 h-14 bg-[var(--surface-muted)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4 border border-[var(--border)]">
+                <Ticket className="w-7 h-7 text-[var(--text-tertiary)]" />
               </div>
-              <p className="font-semibold text-gray-800 dark:text-[var(--text-primary)] mb-1">{search ? `No coupons matching "${search}"` : 'No coupons yet'}</p>
-              <p className="text-sm text-gray-500 mb-5 max-w-xs">Create discount codes to boost conversions and reward your audience.</p>
+              <p className="font-semibold text-[var(--text-primary)] mb-1">{search ? `No coupons matching "${search}"` : 'No coupons yet'}</p>
+              <p className="text-sm text-[var(--text-tertiary)] mb-5 max-w-xs">Create discount codes to boost conversions and reward your audience.</p>
               <button onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold shadow-sm transition">
+                className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold shadow-[var(--shadow-xs)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <Plus className="w-4 h-4" /> Create First Coupon
               </button>
             </div>
           ) : (
-            <div className="divide-y divide-[var(--border)]">
+            <div className="divide-y divide-[var(--border-subtle)]">
               {filtered.map((coupon: any) => {
                 const expired = isExpired(coupon.valid_until);
                 return (
-                  <div key={coupon.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]/60 transition group">
+                  <div key={coupon.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--surface-hover)] transition group">
                     {/* Code */}
                     <div className="flex items-center gap-2 min-w-[140px]">
-                      <span className="font-mono font-bold text-sm text-[var(--text-primary)] tracking-widest bg-gray-100 dark:bg-[var(--bg-secondary)] px-2.5 py-1 rounded-[var(--radius-sm)]">
+                      <span className="font-mono font-bold text-sm text-[var(--text-primary)] tracking-widest bg-[var(--surface-muted)] px-2.5 py-1 rounded-[var(--radius-sm)]">
                         {coupon.code}
                       </span>
                       <CopyCode code={coupon.code} />
@@ -241,8 +241,8 @@ export default function CouponsPage() {
                     {/* Discount */}
                     <span className={`hidden sm:inline-flex items-center gap-1 font-bold text-xs px-2.5 py-1 rounded-full ${
                       coupon.discount_type === 'percentage'
-                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
-                        : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                        ? 'bg-[var(--surface-muted)] text-[var(--brand)]'
+                        : 'bg-[var(--success-bg)] text-[var(--success)]'
                     }`}>
                       {coupon.discount_type === 'percentage' ? <><Percent className="w-3 h-3" />{coupon.discount_value}% off</> : <>₹{coupon.discount_value} off</>}
                     </span>
@@ -255,25 +255,25 @@ export default function CouponsPage() {
                     {/* Expiry */}
                     <div className="hidden lg:flex items-center gap-1 text-xs min-w-[100px]">
                       {coupon.valid_until ? (
-                        <span className={expired ? 'text-red-500 font-medium' : 'text-gray-500'}>
+                        <span className={expired ? 'text-[var(--danger)] font-medium' : 'text-[var(--text-tertiary)]'}>
                           <Calendar className="w-3 h-3 inline mr-1" />
                           {expired ? 'Expired ' : ''}{new Date(coupon.valid_until).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                         </span>
                       ) : (
-                        <span className="text-gray-400">No expiry</span>
+                        <span className="text-[var(--text-tertiary)]">No expiry</span>
                       )}
                     </div>
 
                     {/* Min order */}
                     {coupon.metadata?.min_order_value && (
-                      <span className="hidden xl:inline text-xs text-gray-400">Min ₹{coupon.metadata.min_order_value}</span>
+                      <span className="hidden xl:inline text-xs text-[var(--text-tertiary)]">Min ₹{coupon.metadata.min_order_value}</span>
                     )}
 
                     {/* Status pill */}
                     <span className={`hidden sm:inline-flex text-xs font-semibold px-2.5 py-0.5 rounded-full ${
-                      expired ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400'
-                      : coupon.is_active ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                      : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-500 dark:text-gray-500'
+                      expired ? 'bg-[var(--danger-bg)] text-[var(--danger)]'
+                      : coupon.is_active ? 'bg-[var(--success-bg)] text-[var(--success)]'
+                      : 'bg-[var(--surface-muted)] text-[var(--text-tertiary)]'
                     }`}>
                       {expired ? 'Expired' : coupon.is_active ? 'Active' : 'Paused'}
                     </span>
@@ -281,12 +281,12 @@ export default function CouponsPage() {
                     {/* Actions */}
                     <div className="flex items-center gap-1 ml-auto opacity-60 group-hover:opacity-100 transition">
                       <button onClick={() => handleToggle(coupon)} disabled={toggling === coupon.id}
-                        className="p-1.5 rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition"
+                        className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                         title={coupon.is_active ? 'Pause' : 'Activate'}>
-                        {coupon.is_active ? <ToggleRight className="w-5 h-5 text-emerald-500" /> : <ToggleLeft className="w-5 h-5" />}
+                        {coupon.is_active ? <ToggleRight className="w-5 h-5 text-[var(--success)]" /> : <ToggleLeft className="w-5 h-5" />}
                       </button>
                       <button onClick={() => setDeleteConfirm(coupon.id)}
-                        className="p-1.5 rounded-[var(--radius-sm)] text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
+                        className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -300,34 +300,34 @@ export default function CouponsPage() {
 
       {/* Create Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[var(--bg-primary)] rounded-[var(--radius-lg)] shadow-2xl w-full max-w-md border border-[var(--border)] max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] sticky top-0 bg-[var(--bg-primary)] z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-md border border-[var(--border)] max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] sticky top-0 bg-[var(--surface)] z-10">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-indigo-50 dark:bg-indigo-500/10 rounded-[var(--radius-sm)] flex items-center justify-center">
-                  <Ticket className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-8 h-8 bg-[var(--surface-muted)] rounded-[var(--radius-sm)] flex items-center justify-center">
+                  <Ticket className="w-4 h-4 text-[var(--brand)]" />
                 </div>
                 <h2 className="text-base font-bold text-[var(--text-primary)]">New Coupon</h2>
               </div>
               <button onClick={() => { setIsModalOpen(false); setErrorMsg(''); setBulkMode(false); }}
-                className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+                className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               {errorMsg && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-[var(--radius-sm)] text-sm text-red-700 dark:text-red-400">
+                <div className="flex items-center gap-2 p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-[var(--radius-sm)] text-sm text-[var(--danger)]">
                   <AlertCircle className="w-4 h-4 shrink-0" /> {errorMsg}
                 </div>
               )}
 
               {/* Single vs Bulk toggle */}
-              <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-sm)] w-fit">
+              <div className="flex items-center gap-2 p-1 bg-[var(--surface-muted)] rounded-[var(--radius-sm)] w-fit">
                 {([['Single', false], ['Bulk Generate', true]] as [string, boolean][]).map(([label, val]) => (
                   <button key={label} type="button" onClick={() => setBulkMode(val)}
-                    className={`px-4 py-1.5 rounded-[var(--radius-sm)] text-xs font-bold transition ${
-                      bulkMode === val ? 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)]'
+                    className={`px-4 py-1.5 rounded-[var(--radius-sm)] text-xs font-bold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                      bulkMode === val ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)]'
                     }`}>{label}</button>
                 ))}
               </div>
@@ -335,13 +335,13 @@ export default function CouponsPage() {
               {/* Code field — single only */}
               {!bulkMode ? (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Coupon Code</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Coupon Code</label>
                   <div className="flex gap-2">
                     <input type="text" value={formData.code}
                       onChange={e => setFormData(p => ({ ...p, code: e.target.value.toUpperCase().replace(/\s/g, '') }))}
                       className={`${INPUT} font-mono tracking-widest`} placeholder="SAVE20" maxLength={20} />
                     <button type="button" onClick={() => setFormData(p => ({ ...p, code: genCode() }))}
-                      className="p-2.5 border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition text-gray-500" title="Random">
+                      className="p-2.5 border border-[var(--border)] rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] transition text-[var(--text-secondary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]" title="Random">
                       <RefreshCw className="w-4 h-4" />
                     </button>
                   </div>
@@ -349,12 +349,12 @@ export default function CouponsPage() {
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Code Prefix</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Code Prefix</label>
                     <input type="text" value={bulkPrefix} onChange={e => setBulkPrefix(e.target.value.toUpperCase())}
                       className={`${INPUT} font-mono tracking-widest`} placeholder="SALE" maxLength={8} />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Count</label>
+                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Count</label>
                     <input type="number" min={2} max={50} value={bulkCount} onChange={e => setBulkCount(Number(e.target.value))}
                       className={INPUT} />
                   </div>
@@ -364,13 +364,14 @@ export default function CouponsPage() {
               {/* Discount type + value */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Type</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Type</label>
                   <div className="flex gap-2">
                     {(['percentage', 'fixed'] as const).map(t => (
                       <button key={t} type="button" onClick={() => setFormData(p => ({ ...p, discount_type: t }))}
-                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-sm)] text-xs font-semibold border-2 transition ${
-                          formData.discount_type === t ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
-                                                       : 'border-gray-200 dark:border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)]'
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-sm)] text-xs font-semibold border-2 transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                          formData.discount_type === t
+                            ? 'border-[var(--brand)] bg-[var(--surface-muted)] text-[var(--brand)]'
+                            : 'border-[var(--border)] text-[var(--text-secondary)]'
                         }`}>
                         {t === 'percentage' ? <Percent className="w-3 h-3" /> : <IndianRupee className="w-3 h-3" />}
                         {t === 'percentage' ? '%' : '₹'}
@@ -379,7 +380,7 @@ export default function CouponsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
                     Value {formData.discount_type === 'percentage' ? '(%)' : '(₹)'}
                   </label>
                   <input type="number" min={0} max={formData.discount_type === 'percentage' ? 100 : undefined}
@@ -390,13 +391,13 @@ export default function CouponsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Max Uses</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Max Uses</label>
                   <input type="number" min={1} value={formData.max_uses}
                     onChange={e => setFormData(p => ({ ...p, max_uses: e.target.value }))}
                     className={INPUT} placeholder="Unlimited" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Expiry Date</label>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Expiry Date</label>
                   <input type="date" value={formData.valid_until}
                     onChange={e => setFormData(p => ({ ...p, valid_until: e.target.value }))}
                     className={INPUT} />
@@ -404,14 +405,14 @@ export default function CouponsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Min. Order Value (₹) <span className="text-gray-400 font-normal">optional</span></label>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Min. Order Value (₹) <span className="text-[var(--text-tertiary)] font-normal">optional</span></label>
                 <input type="number" min={0} value={formData.min_order_value}
                   onChange={e => setFormData(p => ({ ...p, min_order_value: e.target.value }))}
                   className={INPUT} placeholder="No minimum" />
               </div>
 
               <button type="submit" disabled={isCreating}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-3 rounded-[var(--radius-sm)] font-bold text-sm shadow-sm transition-all">
+                className="w-full bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 text-[var(--text-on-brand)] py-3 rounded-[var(--radius-sm)] font-bold text-sm shadow-[var(--shadow-xs)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 {isCreating ? 'Creating…' : bulkMode ? `Generate ${bulkCount} Coupons →` : 'Create Coupon →'}
               </button>
             </form>
@@ -421,17 +422,17 @@ export default function CouponsPage() {
 
       {/* Delete Confirm Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 max-w-sm w-full shadow-2xl">
-            <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-              <Trash2 className="w-5 h-5 text-red-500" />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 max-w-sm w-full shadow-[var(--shadow-lg)]">
+            <div className="w-12 h-12 rounded-full bg-[var(--danger-bg)] flex items-center justify-center mb-4">
+              <Trash2 className="w-5 h-5 text-[var(--danger)]" />
             </div>
             <h3 className="font-bold text-[var(--text-primary)] mb-1">Delete coupon?</h3>
-            <p className="text-sm text-gray-500 mb-5">This coupon will be permanently removed.</p>
+            <p className="text-sm text-[var(--text-tertiary)] mb-5">This coupon will be permanently removed.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm font-semibold text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-[var(--border)] rounded-[var(--radius-sm)] text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
               <button onClick={() => handleDelete(deleteConfirm)} disabled={deleting === deleteConfirm}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white rounded-[var(--radius-sm)] text-sm font-semibold transition flex items-center justify-center gap-2">
+                className="flex-1 py-2.5 bg-[var(--danger)] hover:opacity-90 disabled:opacity-60 text-white rounded-[var(--radius-sm)] text-sm font-semibold transition flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 {deleting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 Delete
               </button>

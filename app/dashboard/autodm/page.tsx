@@ -149,12 +149,12 @@ const MATCH_MODE_LABELS: Record<MatchMode, string> = {
 
 function Badge({ children, color = 'default' }: { children: React.ReactNode; color?: 'green' | 'red' | 'yellow' | 'pink' | 'blue' | 'default' }) {
   const colors = {
-    green: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    red: 'bg-red-500/10 text-red-400 border-red-500/20',
-    yellow: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    pink: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    default: 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] border-[var(--border)]',
+    green:   'bg-[var(--success-bg)] text-[var(--success)] border-[var(--success)]/20',
+    red:     'bg-[var(--danger-bg)] text-[var(--danger)] border-[var(--danger)]/20',
+    yellow:  'bg-[var(--warning-bg)] text-[var(--warning)] border-[var(--warning)]/20',
+    pink:    'bg-[var(--brand)]/10 text-[var(--brand)] border-[var(--brand)]/20',
+    blue:    'bg-[var(--info-bg)] text-[var(--info)] border-[var(--info)]/20',
+    default: 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border-[var(--border)]',
   };
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${colors[color]}`}>
@@ -169,8 +169,8 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
       onClick={() => onChange(!checked)}
       role="switch"
       aria-checked={checked}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-        checked ? 'bg-pink-500' : 'bg-[var(--border)]'
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+        checked ? 'bg-[var(--brand)]' : 'bg-[var(--border)]'
       }`}
     >
       <span
@@ -184,21 +184,21 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 function StatCard({ icon: Icon, label, value, sub, color = 'pink' }: { icon: React.ElementType; label: string; value: string | number; sub?: string; color?: string }) {
   const colorMap: Record<string, string> = {
-    pink: 'text-pink-500 bg-pink-500/10',
-    violet: 'text-violet-400 bg-violet-500/10',
-    emerald: 'text-emerald-400 bg-emerald-500/10',
-    blue: 'text-blue-400 bg-blue-500/10',
-    amber: 'text-amber-400 bg-amber-500/10',
+    pink:    'text-[var(--brand)] bg-[var(--brand)]/10',
+    violet:  'text-[var(--brand)] bg-[var(--brand)]/10',
+    emerald: 'text-[var(--success)] bg-[var(--success-bg)]',
+    blue:    'text-[var(--info)] bg-[var(--info-bg)]',
+    amber:   'text-[var(--warning)] bg-[var(--warning-bg)]',
   };
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 flex flex-col gap-3">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorMap[color] ?? colorMap.pink}`}>
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 relative overflow-hidden p-6 flex flex-col gap-3">
+      <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center ${colorMap[color] ?? colorMap.pink}`}>
         <Icon className="w-5 h-5" />
       </div>
       <div>
         <p className="text-2xl font-bold text-[var(--text-primary)]">{value}</p>
         <p className="text-sm text-[var(--text-secondary)]">{label}</p>
-        {sub && <p className="text-xs text-[var(--text-secondary)] mt-0.5">{sub}</p>}
+        {sub && <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{sub}</p>}
       </div>
     </div>
   );
@@ -213,11 +213,11 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
 
   return (
     <div className="space-y-6">
-      {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pink-500/10 via-violet-500/5 to-transparent border border-pink-500/20 p-6">
+      {/* Hero banner — brand gradient kept as decorative */}
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-r from-[var(--brand)]/10 via-[var(--brand)]/5 to-transparent border border-[var(--brand)]/20 p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-pink-500/30">
+            <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-pink-500/30">
               <Instagram className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -226,21 +226,21 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--success-bg)] border border-[var(--success)]/20 text-xs font-bold text-[var(--success)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] animate-pulse" />
               {activeCount} Running
             </span>
             <button
               onClick={() => onNavigate('automations')}
-              className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-lg shadow-pink-500/20"
+              className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white text-sm font-bold px-4 py-2 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               <Zap className="w-4 h-4" /> Go Live
             </button>
           </div>
         </div>
         {/* Decorative blobs */}
-        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-violet-500/10 blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-4 right-16 w-24 h-24 rounded-full bg-pink-500/10 blur-2xl pointer-events-none" />
+        <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-[var(--brand)]/10 blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-4 right-16 w-24 h-24 rounded-full bg-[var(--brand)]/10 blur-2xl pointer-events-none" />
       </div>
 
       {/* Stat cards — 4-col on md+, 2×2 on mobile */}
@@ -254,24 +254,24 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
       {/* Quick actions — 4 cards including Templates */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[
-          { label: 'Create Automation', desc: 'Set up keywords and triggers', icon: Plus, view: 'automations' as View, color: 'from-pink-500 to-violet-500' },
-          { label: 'View Leads', desc: `${MOCK_LEADS.length} people captured`, icon: Users, view: 'leads' as View, color: 'from-emerald-500 to-teal-500' },
-          { label: 'DM Inbox', desc: `${MOCK_DMS.length} messages sent`, icon: MessageCircle, view: 'dms' as View, color: 'from-blue-500 to-indigo-500' },
-          { label: 'Templates', desc: 'Start from a ready-made setup', icon: Sparkles, view: 'templates' as View, color: 'from-violet-500 to-pink-500' },
+          { label: 'Create Automation', desc: 'Set up keywords and triggers', icon: Plus, view: 'automations' as View, gradient: 'from-pink-500 to-violet-500' },
+          { label: 'View Leads', desc: `${MOCK_LEADS.length} people captured`, icon: Users, view: 'leads' as View, gradient: 'from-[var(--success)] to-teal-500' },
+          { label: 'DM Inbox', desc: `${MOCK_DMS.length} messages sent`, icon: MessageCircle, view: 'dms' as View, gradient: 'from-[var(--info)] to-indigo-500' },
+          { label: 'Templates', desc: 'Start from a ready-made setup', icon: Sparkles, view: 'templates' as View, gradient: 'from-violet-500 to-pink-500' },
         ].map(q => (
           <button
             key={q.label}
             onClick={() => onNavigate(q.view)}
-            className="group bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 text-left flex items-center gap-4 hover:border-pink-500/40"
+            className="group bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 relative overflow-hidden p-6 text-left flex items-center gap-4 hover:border-[var(--brand)]/40 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${q.color} flex items-center justify-center shrink-0 shadow-lg`}>
+            <div className={`w-12 h-12 rounded-[var(--radius-md)] bg-gradient-to-br ${q.gradient} flex items-center justify-center shrink-0 shadow-lg`}>
               <q.icon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-pink-500 transition-colors">{q.label}</p>
+              <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--brand)] transition-colors">{q.label}</p>
               <p className="text-xs text-[var(--text-secondary)] mt-0.5">{q.desc}</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-[var(--text-secondary)] ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+            <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)] ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         ))}
       </div>
@@ -280,14 +280,14 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-bold text-[var(--text-primary)]">Recent Automations</h3>
-          <button onClick={() => onNavigate('automations')} className="text-xs text-pink-500 hover:text-pink-400 font-semibold flex items-center gap-1">
+          <button onClick={() => onNavigate('automations')} className="text-xs text-[var(--brand)] hover:opacity-80 font-semibold flex items-center gap-1 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded">
             View all <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
         <div className="space-y-3">
           {automations.map(a => (
-            <div key={a.id} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-5 hover:border-pink-500/30 hover:shadow-sm transition-all duration-200 py-4 flex items-center gap-4">
-              <div className={`w-2 h-2 rounded-full shrink-0 ${a.active ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]' : 'bg-[var(--border)]'}`} />
+            <div key={a.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] px-5 hover:border-[var(--brand)]/30 hover:shadow-[var(--shadow-xs)] transition-all duration-200 py-4 flex items-center gap-4">
+              <div className={`w-2 h-2 rounded-full shrink-0 ${a.active ? 'bg-[var(--success)] shadow-[0_0_6px_var(--success)]' : 'bg-[var(--border)]'}`} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{a.name}</p>
                 <p className="text-xs text-[var(--text-secondary)]">{a.dmCount} DMs · {a.keywords.length} keywords</p>
@@ -342,18 +342,18 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Automations</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">{automations.length} automation{automations.length !== 1 ? 's' : ''} configured</p>
         </div>
-        <button onClick={createNew} className="flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-colors shadow-lg shadow-pink-500/20 shrink-0">
+        <button onClick={createNew} className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-4 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
           <Plus className="w-4 h-4" /> New
         </button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search automations..."
-          className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40 transition-all"
+          className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-all"
         />
       </div>
 
@@ -365,10 +365,10 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
           </div>
         )}
         {filtered.map(a => (
-          <div key={a.id} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 hover:border-pink-500/30">
+          <div key={a.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 relative overflow-hidden p-6 hover:border-[var(--brand)]/30">
             <div className="flex items-start gap-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${a.active ? 'bg-pink-500/10' : 'bg-[var(--bg-tertiary)]'}`}>
-                <Zap className={`w-5 h-5 ${a.active ? 'text-pink-500' : 'text-[var(--text-secondary)]'}`} />
+              <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${a.active ? 'bg-[var(--brand)]/10' : 'bg-[var(--surface-muted)]'}`}>
+                <Zap className={`w-5 h-5 ${a.active ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)]'}`} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -384,17 +384,17 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-3">
                   {a.keywords.slice(0, 5).map(k => (
-                    <span key={k.id} className="px-2 py-0.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)]">#{k.word}</span>
+                    <span key={k.id} className="px-2 py-0.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)]">#{k.word}</span>
                   ))}
-                  {a.keywords.length > 5 && <span className="px-2 py-0.5 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)]">+{a.keywords.length - 5}</span>}
+                  {a.keywords.length > 5 && <span className="px-2 py-0.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)]">+{a.keywords.length - 5}</span>}
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Toggle checked={a.active} onChange={() => toggleActive(a.id)} />
-                <button onClick={() => onEdit(a.id)} className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+                <button onClick={() => onEdit(a.id)} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                   <Edit3 className="w-4 h-4" />
                 </button>
-                <button onClick={() => deleteAutomation(a.id)} className="p-2 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-400 transition-colors">
+                <button onClick={() => deleteAutomation(a.id)} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--danger-bg)] text-[var(--text-secondary)] hover:text-[var(--danger)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -462,7 +462,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)] transition-colors">
+        <button onClick={onBack} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
@@ -479,19 +479,19 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
             <Toggle checked={local.active} onChange={v => setLocal(p => ({ ...p, active: v }))} />
             <span className="text-[var(--text-secondary)]">{local.active ? 'Active' : 'Paused'}</span>
           </div>
-          <button onClick={save} className="bg-pink-500 hover:bg-pink-600 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-pink-500/20">
+          <button onClick={save} className="bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-5 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
             Save
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-1">
+      <div className="flex gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-1">
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setActiveTab(t.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === t.id ? 'bg-pink-500 text-white shadow' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-sm)] text-xs font-semibold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${activeTab === t.id ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
           >
             <t.icon className="w-3.5 h-3.5" /> {t.label}
           </button>
@@ -500,7 +500,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
 
       {/* Keywords tab */}
       {activeTab === 'keywords' && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-5">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-5">
           <div>
             <h3 className="text-sm font-bold text-[var(--text-primary)]">Trigger Keywords</h3>
             <p className="text-xs text-[var(--text-secondary)] mt-1">When someone comments or DMs these words, the automation fires.</p>
@@ -511,18 +511,18 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
               onChange={e => setNewKeyword(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addKeyword()}
               placeholder="Add keyword..."
-              className="flex-1 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+              className="flex-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
             />
-            <button onClick={addKeyword} className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors">
+            <button onClick={addKeyword} className="bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-md)] font-bold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
               Add
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {local.keywords.length === 0 && <p className="text-xs text-[var(--text-secondary)]">No keywords yet. Add some above.</p>}
+            {local.keywords.length === 0 && <p className="text-xs text-[var(--text-tertiary)]">No keywords yet. Add some above.</p>}
             {local.keywords.map(k => (
-              <span key={k.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500/10 border border-pink-500/20 text-pink-500 rounded-full text-sm font-semibold">
+              <span key={k.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--brand)]/10 border border-[var(--brand)]/20 text-[var(--brand)] rounded-full text-sm font-semibold">
                 #{k.word}
-                <button onClick={() => removeKeyword(k.id)} className="hover:text-pink-300 transition-colors">
+                <button onClick={() => removeKeyword(k.id)} className="hover:opacity-70 transition-opacity focus-visible:outline-none">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </span>
@@ -538,17 +538,17 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
                   key={mode}
                   title={desc}
                   onClick={() => setLocal(p => ({ ...p, matchMode: mode }))}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                     local.matchMode === mode
-                      ? 'bg-pink-500 text-white shadow shadow-pink-500/30'
-                      : 'bg-[var(--bg-tertiary)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-pink-500/40 hover:text-pink-500'
+                      ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-xs)]'
+                      : 'bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--brand)]/40 hover:text-[var(--brand)]'
                   }`}
                 >
                   {MATCH_MODE_LABELS[mode]}
                 </button>
               ))}
             </div>
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-xs text-[var(--text-tertiary)]">
               {matchModes.find(m => m.mode === local.matchMode)?.desc}
             </p>
           </div>
@@ -556,7 +556,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
           {/* Negative Keywords */}
           <div className="border-t border-[var(--border)] pt-4 space-y-3">
             <div>
-              <p className="text-xs font-bold text-red-400">Negative Keywords</p>
+              <p className="text-xs font-bold text-[var(--danger)]">Negative Keywords</p>
               <p className="text-xs text-[var(--text-secondary)] mt-0.5">If any of these appear, the automation will NOT fire.</p>
             </div>
             <div className="flex gap-2">
@@ -565,18 +565,18 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
                 onChange={e => setNewNegKeyword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addNegKeyword()}
                 placeholder="Add negative keyword..."
-                className="flex-1 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-red-500/40"
+                className="flex-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
               />
-              <button onClick={addNegKeyword} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-colors">
+              <button onClick={addNegKeyword} className="bg-[var(--danger)] hover:opacity-90 text-white px-4 py-2.5 rounded-[var(--radius-md)] font-bold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 Add
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {local.negativeKeywords.length === 0 && <p className="text-xs text-[var(--text-secondary)]">No negative keywords yet.</p>}
+              {local.negativeKeywords.length === 0 && <p className="text-xs text-[var(--text-tertiary)]">No negative keywords yet.</p>}
               {local.negativeKeywords.map(k => (
-                <span key={k.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full text-sm font-semibold">
+                <span key={k.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--danger-bg)] border border-[var(--danger)]/20 text-[var(--danger)] rounded-full text-sm font-semibold">
                   -{k.word}
-                  <button onClick={() => removeNegKeyword(k.id)} className="hover:text-red-300 transition-colors">
+                  <button onClick={() => removeNegKeyword(k.id)} className="hover:opacity-70 transition-opacity focus-visible:outline-none">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
@@ -600,7 +600,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
             <p className="text-xs text-[var(--text-secondary)] font-semibold mb-2">Pro tip: Use broader keywords for higher reach</p>
             <div className="flex flex-wrap gap-2">
               {['free', 'info', 'link', 'guide', 'send', 'course'].map(w => (
-                <button key={w} onClick={() => { setNewKeyword(w); }} className="px-2.5 py-1 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)] hover:border-pink-500/40 hover:text-pink-500 transition-all">
+                <button key={w} onClick={() => { setNewKeyword(w); }} className="px-2.5 py-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)] hover:border-[var(--brand)]/40 hover:text-[var(--brand)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                   #{w}
                 </button>
               ))}
@@ -611,7 +611,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
 
       {/* Triggers tab */}
       {activeTab === 'triggers' && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-4">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-4">
           <div>
             <h3 className="text-sm font-bold text-[var(--text-primary)]">Trigger Events</h3>
             <p className="text-xs text-[var(--text-secondary)] mt-1">Choose what actions activate this automation.</p>
@@ -624,16 +624,16 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
                 <button
                   key={type}
                   onClick={() => toggleTrigger(type)}
-                  className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${active ? 'border-pink-500/50 bg-pink-500/5' : 'border-[var(--border)] bg-[var(--bg-tertiary)] hover:border-pink-500/30'}`}
+                  className={`flex items-center gap-3 p-4 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5' : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'}`}
                 >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${active ? 'bg-pink-500/15 text-pink-500' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
+                  <div className={`w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${active ? 'bg-[var(--brand)]/15 text-[var(--brand)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
                     <Icon className="w-4.5 h-4.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-semibold truncate ${active ? 'text-pink-500' : 'text-[var(--text-primary)]'}`}>{TRIGGER_LABELS[type]}</p>
-                    <p className="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-snug">{TRIGGER_DESCS[type]}</p>
+                    <p className={`text-xs font-semibold truncate ${active ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{TRIGGER_LABELS[type]}</p>
+                    <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5 leading-snug">{TRIGGER_DESCS[type]}</p>
                   </div>
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-pink-500 bg-pink-500' : 'border-[var(--border)]'}`}>
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
                     {active && <CheckCircle2 className="w-2.5 h-2.5 text-white" />}
                   </div>
                 </button>
@@ -645,7 +645,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
 
       {/* Listener tab */}
       {activeTab === 'listener' && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-5">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-5">
           <div>
             <h3 className="text-sm font-bold text-[var(--text-primary)]">Response Type</h3>
             <p className="text-xs text-[var(--text-secondary)] mt-1">Choose how your automation responds to triggers.</p>
@@ -658,12 +658,12 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
               <button
                 key={opt.type}
                 onClick={() => setLocal(p => ({ ...p, listener: opt.type }))}
-                className={`p-5 rounded-xl border text-left transition-all ${local.listener === opt.type ? 'border-pink-500/50 bg-pink-500/5' : 'border-[var(--border)] bg-[var(--bg-tertiary)] hover:border-pink-500/30'}`}
+                className={`p-5 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${local.listener === opt.type ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5' : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'}`}
               >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${local.listener === opt.type ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
+                <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center mb-3 ${local.listener === opt.type ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-sm)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
                   <opt.icon className="w-5 h-5" />
                 </div>
-                <p className={`text-sm font-bold ${local.listener === opt.type ? 'text-pink-500' : 'text-[var(--text-primary)]'}`}>{opt.label}</p>
+                <p className={`text-sm font-bold ${local.listener === opt.type ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{opt.label}</p>
                 <p className="text-xs text-[var(--text-secondary)] mt-1">{opt.desc}</p>
                 {opt.type === 'SMARTAI' && <Badge color="pink">PRO</Badge>}
               </button>
@@ -677,7 +677,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
                 onChange={e => setLocal(p => ({ ...p, prompt: e.target.value }))}
                 placeholder="Tell the AI about your business, offer, and what to share in the DM..."
                 rows={4}
-                className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl p-4 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40 resize-none"
+                className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] resize-none transition"
               />
             </div>
           )}
@@ -687,7 +687,7 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
       {/* Message tab */}
       {activeTab === 'message' && (
         <div className="space-y-4">
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-4">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-4">
             <div>
               <h3 className="text-sm font-bold text-[var(--text-primary)]">DM Message</h3>
               <p className="text-xs text-[var(--text-secondary)] mt-1">The message sent to users who trigger this automation.</p>
@@ -695,38 +695,38 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-semibold text-[var(--text-secondary)]">Message text</label>
-                <span className="text-xs text-[var(--text-secondary)]">{local.prompt.length}/1000</span>
+                <span className="text-xs text-[var(--text-tertiary)]">{local.prompt.length}/1000</span>
               </div>
               <textarea
                 value={local.prompt}
                 onChange={e => setLocal(p => ({ ...p, prompt: e.target.value }))}
                 placeholder={`Hi {name}! Thanks for reaching out. Here's your link: ...`}
                 rows={5}
-                className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl p-4 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40 resize-none"
+                className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] resize-none transition"
               />
-              <p className="text-xs text-[var(--text-secondary)] mt-2">Use <code className="bg-[var(--bg-tertiary)] px-1 rounded">{'{name}'}</code> to personalise.</p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-2">Use <code className="bg-[var(--surface-muted)] px-1 rounded">{'{name}'}</code> to personalise.</p>
             </div>
           </div>
 
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-4">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-4">
             <div>
-              <h3 className="text-sm font-bold text-[var(--text-primary)]">Comment Reply <span className="text-[var(--text-secondary)] font-normal text-xs ml-1">optional</span></h3>
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">Comment Reply <span className="text-[var(--text-tertiary)] font-normal text-xs ml-1">optional</span></h3>
               <p className="text-xs text-[var(--text-secondary)] mt-1">Public reply on the post comment before sending the DM.</p>
             </div>
             <input
               value={local.commentReply}
               onChange={e => setLocal(p => ({ ...p, commentReply: e.target.value }))}
               placeholder="Check your DMs! 📩"
-              className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+              className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
             />
           </div>
 
           {/* Preview */}
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
             <p className="text-xs font-semibold text-[var(--text-secondary)] mb-3">Preview</p>
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 shrink-0" />
-              <div className="bg-[var(--bg-tertiary)] rounded-2xl rounded-tl-sm px-4 py-3 max-w-xs">
+              <div className="bg-[var(--surface-muted)] rounded-[var(--radius-lg)] rounded-tl-sm px-4 py-3 max-w-xs">
                 <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{local.prompt.replace('{name}', 'Alex') || 'Your message will appear here...'}</p>
               </div>
             </div>
@@ -755,19 +755,19 @@ function LeadsView() {
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Leads</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">{MOCK_LEADS.length} leads captured from Instagram</p>
         </div>
-        <button className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] px-3 py-2 rounded-xl transition-colors hover:border-pink-500/40 shrink-0">
+        <button className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] px-3 py-2 rounded-[var(--radius-md)] transition-colors hover:border-[var(--brand)]/40 shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
           <Download className="w-4 h-4" /> Export
         </button>
       </div>
 
       <div className="flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by username..."
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40" />
+            className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition" />
         </div>
         <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)}
-          className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40">
+          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2.5 text-sm text-[var(--text-primary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition">
           <option value="all">All Sources</option>
           <option value="comment">Comment</option>
           <option value="dm">DM</option>
@@ -775,7 +775,7 @@ function LeadsView() {
         </select>
       </div>
 
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[var(--border)]">
@@ -786,22 +786,22 @@ function LeadsView() {
           </thead>
           <tbody className="divide-y divide-[var(--border)]">
             {filtered.map(l => (
-              <tr key={l.id} className="hover:bg-[var(--bg-tertiary)]/50 transition-colors">
+              <tr key={l.id} className="hover:bg-[var(--surface-hover)] transition-colors">
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
                       {l.username[0].toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-[var(--text-primary)]">@{l.username}</p>
-                      <p className="text-xs text-[var(--text-secondary)]">{l.igUserId}</p>
+                      <p className="text-xs text-[var(--text-tertiary)]">{l.igUserId}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-5 py-4">
                   <Badge color={sourceColors[l.source] ?? 'default'}>{l.source.replace('_', ' ')}</Badge>
                 </td>
-                <td className="px-5 py-4 text-xs text-[var(--text-secondary)]">
+                <td className="px-5 py-4 text-xs text-[var(--text-tertiary)]">
                   {new Date(l.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                 </td>
               </tr>
@@ -828,9 +828,9 @@ function DMsView() {
       </div>
       <div className="space-y-3">
         {MOCK_DMS.map(dm => (
-          <div key={dm.id} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 hover:border-pink-500/20">
+          <div key={dm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 p-6 hover:border-[var(--brand)]/20">
             <div className="flex items-start gap-4">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+              <div className="w-9 h-9 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
                 {dm.receiver[1].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -841,13 +841,13 @@ function DMsView() {
                       {dm.status === 'delivered' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                       {dm.status}
                     </Badge>
-                    <span className="text-xs text-[var(--text-secondary)]">
+                    <span className="text-xs text-[var(--text-tertiary)]">
                       {new Date(dm.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 </div>
                 <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2">{dm.message}</p>
-                <p className="text-xs text-pink-500 mt-2 flex items-center gap-1"><Zap className="w-3 h-3" />{dm.automationName}</p>
+                <p className="text-xs text-[var(--brand)] mt-2 flex items-center gap-1"><Zap className="w-3 h-3" />{dm.automationName}</p>
               </div>
             </div>
           </div>
@@ -875,7 +875,7 @@ function AnalyticsView({ automations }: { automations: Automation[] }) {
         <StatCard icon={TrendingUp} label="Conversion Rate" value="12.4%" sub="leads / DMs" color="amber" />
       </div>
 
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
         <h3 className="text-sm font-bold text-[var(--text-primary)] mb-5">Per-Automation Performance</h3>
         <div className="space-y-4">
           {automations.map(a => {
@@ -884,9 +884,9 @@ function AnalyticsView({ automations }: { automations: Automation[] }) {
               <div key={a.id} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-[var(--text-primary)]">{a.name}</span>
-                  <span className="text-[var(--text-secondary)]">{a.dmCount} DMs · {dmPct}%</span>
+                  <span className="text-[var(--text-tertiary)]">{a.dmCount} DMs · {dmPct}%</span>
                 </div>
-                <div className="h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+                <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-pink-500 to-violet-500 rounded-full transition-all" style={{ width: `${dmPct}%` }} />
                 </div>
               </div>
@@ -896,9 +896,9 @@ function AnalyticsView({ automations }: { automations: Automation[] }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
           <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">Lead Sources</h3>
-          {[{ label: 'Comment', count: 2, color: 'bg-pink-500' }, { label: 'DM', count: 2, color: 'bg-violet-500' }, { label: 'Story Mention', count: 1, color: 'bg-blue-500' }].map(s => (
+          {[{ label: 'Comment', count: 2, color: 'bg-[var(--brand)]' }, { label: 'DM', count: 2, color: 'bg-[var(--brand)]' }, { label: 'Story Mention', count: 1, color: 'bg-[var(--info)]' }].map(s => (
             <div key={s.label} className="flex items-center gap-3 mb-3">
               <div className={`w-3 h-3 rounded-full shrink-0 ${s.color}`} />
               <span className="text-xs text-[var(--text-secondary)] flex-1">{s.label}</span>
@@ -906,14 +906,14 @@ function AnalyticsView({ automations }: { automations: Automation[] }) {
             </div>
           ))}
         </div>
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
           <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">DM Delivery Rate</h3>
           <div className="text-center py-4">
-            <p className="text-4xl font-extrabold text-[var(--text-primary)]">92<span className="text-xl text-pink-500">%</span></p>
+            <p className="text-4xl font-extrabold text-[var(--text-primary)]">92<span className="text-xl text-[var(--brand)]">%</span></p>
             <p className="text-xs text-[var(--text-secondary)] mt-1">of DMs delivered successfully</p>
           </div>
-          <div className="h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style={{ width: '92%' }} />
+          <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-[var(--success)] to-teal-500 rounded-full" style={{ width: '92%' }} />
           </div>
         </div>
       </div>
@@ -933,9 +933,9 @@ function SettingsView() {
       </div>
 
       {/* Connect Instagram */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden p-6 space-y-5">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-[var(--radius-md)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center">
             <Instagram className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -950,27 +950,27 @@ function SettingsView() {
             <div>
               <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Instagram Username</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] text-sm">@</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] text-sm">@</span>
                 <input
                   value={username}
                   onChange={e => setUsername(e.target.value)}
                   placeholder="your_username"
-                  className="w-full bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl py-2.5 pl-8 pr-4 text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+                  className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] py-2.5 pl-8 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
                 />
               </div>
             </div>
             <button
               onClick={() => username && setConnected(true)}
-              className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               <Instagram className="w-4 h-4" /> Connect via Instagram OAuth
             </button>
-            <p className="text-xs text-[var(--text-secondary)] text-center">Requires an Instagram Business or Creator account linked to a Facebook Page.</p>
+            <p className="text-xs text-[var(--text-tertiary)] text-center">Requires an Instagram Business or Creator account linked to a Facebook Page.</p>
           </div>
         ) : (
-          <div className="flex items-center justify-between bg-[var(--bg-tertiary)] rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between bg-[var(--surface-muted)] rounded-[var(--radius-md)] px-4 py-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
+              <div className="w-8 h-8 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold">
                 {username[0]?.toUpperCase() ?? 'I'}
               </div>
               <div>
@@ -978,33 +978,33 @@ function SettingsView() {
                 <p className="text-xs text-[var(--text-secondary)]">Business Account</p>
               </div>
             </div>
-            <button onClick={() => setConnected(false)} className="text-xs text-red-400 hover:text-red-300 font-semibold">Disconnect</button>
+            <button onClick={() => setConnected(false)} className="text-xs text-[var(--danger)] hover:opacity-80 font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded">Disconnect</button>
           </div>
         )}
       </div>
 
-      {/* Subscription */}
-      <div className="bg-gradient-to-br from-violet-500/10 to-pink-500/10 border border-pink-500/20 rounded-2xl p-6 space-y-4">
+      {/* Subscription — decorative gradient kept */}
+      <div className="bg-gradient-to-br from-violet-500/10 to-pink-500/10 border border-[var(--brand)]/20 rounded-[var(--radius-lg)] p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <Crown className="w-5 h-5 text-amber-400" />
+          <Crown className="w-5 h-5 text-[var(--warning)]" />
           <h3 className="text-sm font-bold text-[var(--text-primary)]">Upgrade to Pro</h3>
           <Badge color="yellow">FREE</Badge>
         </div>
         <div className="grid grid-cols-2 gap-3 text-xs text-[var(--text-secondary)]">
           {['Unlimited automations', 'Smart AI responses', 'Priority delivery', 'Advanced analytics', 'Webhook events', 'Bulk DM campaigns'].map(f => (
-            <div key={f} className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-pink-500 shrink-0" />{f}</div>
+            <div key={f} className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[var(--brand)] shrink-0" />{f}</div>
           ))}
         </div>
-        <button className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-pink-500/20">
+        <button className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
           Upgrade to Pro — ₹999/mo
         </button>
       </div>
 
       {/* Danger zone */}
-      <div className="bg-[var(--bg-secondary)] border border-red-500/20 rounded-2xl p-6 space-y-3">
-        <h3 className="text-sm font-bold text-red-400">Danger Zone</h3>
+      <div className="bg-[var(--surface-muted)] border border-[var(--danger)]/20 rounded-[var(--radius-lg)] p-6 space-y-3">
+        <h3 className="text-sm font-bold text-[var(--danger)]">Danger Zone</h3>
         <p className="text-xs text-[var(--text-secondary)]">These actions are irreversible. Proceed with caution.</p>
-        <button className="text-sm font-semibold text-red-400 border border-red-500/30 px-4 py-2 rounded-xl hover:bg-red-500/10 transition-colors">
+        <button className="text-sm font-semibold text-[var(--danger)] border border-[var(--danger)]/30 px-4 py-2 rounded-[var(--radius-md)] hover:bg-[var(--danger-bg)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
           Delete All Automations
         </button>
       </div>
@@ -1109,12 +1109,12 @@ function TemplatesView({ onEdit, setAutomations }: { onEdit: (id: string) => voi
           return (
             <div
               key={card.type}
-              className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden hover:border-pink-500/30 flex flex-col"
+              className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 overflow-hidden hover:border-[var(--brand)]/30 flex flex-col"
             >
-              {/* Gradient icon area */}
+              {/* Gradient icon area — decorative, kept as-is */}
               <div className={`h-28 bg-gradient-to-br ${card.gradient} flex items-center justify-center relative overflow-hidden`}>
                 <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_50%,white,transparent_60%)]" />
-                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                <div className="w-14 h-14 rounded-[var(--radius-lg)] bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
                   <Icon className="w-7 h-7 text-white" />
                 </div>
               </div>
@@ -1129,7 +1129,7 @@ function TemplatesView({ onEdit, setAutomations }: { onEdit: (id: string) => voi
                 <ul className="space-y-1.5">
                   {card.features.map(f => (
                     <li key={f} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[var(--success)] shrink-0" />
                       {f}
                     </li>
                   ))}
@@ -1137,7 +1137,7 @@ function TemplatesView({ onEdit, setAutomations }: { onEdit: (id: string) => voi
 
                 <button
                   onClick={() => useTemplate(card)}
-                  className={`mt-auto w-full bg-gradient-to-r ${card.gradient} hover:opacity-90 text-white text-sm font-bold py-2.5 rounded-xl transition-all shadow-lg`}
+                  className={`mt-auto w-full bg-gradient-to-r ${card.gradient} hover:opacity-90 text-white text-sm font-bold py-2.5 rounded-[var(--radius-md)] transition-all shadow-lg focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]`}
                 >
                   Use Template
                 </button>
@@ -1177,8 +1177,8 @@ function GuideView() {
 
       <div className="space-y-3">
         {steps.map(s => (
-          <div key={s.num} className="flex gap-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl px-5 hover:border-pink-500/30 hover:shadow-sm transition-all duration-200 py-4">
-            <div className="w-6 h-6 rounded-full bg-pink-500/10 text-pink-500 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+          <div key={s.num} className="flex gap-4 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] px-5 hover:border-[var(--brand)]/30 hover:shadow-[var(--shadow-xs)] transition-all duration-200 py-4">
+            <div className="w-6 h-6 rounded-full bg-[var(--brand)]/10 text-[var(--brand)] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
               {s.num}
             </div>
             <div>
@@ -1189,11 +1189,11 @@ function GuideView() {
         ))}
       </div>
 
-      <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl p-5 space-y-3">
+      <div className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-5 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-secondary)]">Pro Tips</p>
         {tips.map((t, i) => (
           <div key={i} className="flex gap-2.5 text-xs text-[var(--text-secondary)]">
-            <Sparkles className="w-3.5 h-3.5 text-pink-500 shrink-0 mt-0.5" />
+            <Sparkles className="w-3.5 h-3.5 text-[var(--brand)] shrink-0 mt-0.5" />
             {t}
           </div>
         ))}
@@ -1268,7 +1268,7 @@ export default function AutoDMPage() {
     <>
       {/* ── Sub-sidebar: fixed, anchored right after the main 256px sidebar ── */}
       <aside
-        className="fixed top-14 bottom-0 flex-col bg-[var(--bg-primary)] hidden md:flex"
+        className="fixed top-14 bottom-0 flex-col bg-[var(--surface)] hidden md:flex"
         style={{ left: 256, width: SUB_SIDEBAR_W, zIndex: 99998 }}
       >
         {/* Nav — all items inside a single rounded box, left-aligned, sticky */}
@@ -1281,7 +1281,7 @@ export default function AutoDMPage() {
             </p>
           </div>
 
-          <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl overflow-hidden">
+          <div className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] overflow-hidden">
             {NAV_ITEMS.map((item, i) => {
               const active = view === item.view || (view === 'builder' && item.view === 'automations');
               return (
@@ -1289,12 +1289,12 @@ export default function AutoDMPage() {
                   key={item.view}
                   onClick={() => navigate(item.view)}
                   title={item.label}
-                  className={`group relative flex flex-col items-center justify-center gap-1 w-full py-3 transition-all ${
+                  className={`group relative flex flex-col items-center justify-center gap-1 w-full py-3 transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                     i < NAV_ITEMS.length - 1 ? 'border-b border-[var(--border)]' : ''
                   } ${
                     active
-                      ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                      ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   <item.icon className={`w-4 h-4 shrink-0 transition-colors ${
@@ -1315,7 +1315,7 @@ export default function AutoDMPage() {
 
       {/* ── Main content: offset by sub-sidebar width on md+ ── */}
       <div
-        className="min-h-screen bg-[var(--bg-primary)] hidden md:block"
+        className="min-h-screen bg-[var(--surface)] hidden md:block"
         style={{ marginLeft: SUB_SIDEBAR_W }}
       >
         <div className="px-8 py-8 w-full">
@@ -1326,17 +1326,17 @@ export default function AutoDMPage() {
       {/* ── Mobile fallback: no fixed sub-sidebar, just stacked ── */}
       <div className="md:hidden">
         {/* Mobile nav pills */}
-        <div className="flex overflow-x-auto gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-primary)] no-scrollbar">
+        <div className="flex overflow-x-auto gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--surface)] no-scrollbar">
           {NAV_ITEMS.map(item => {
             const active = view === item.view || (view === 'builder' && item.view === 'automations');
             return (
               <button
                 key={item.view}
                 onClick={() => navigate(item.view)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                   active
-                    ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+                    ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
                 }`}
               >
                 <item.icon className="w-3.5 h-3.5" />

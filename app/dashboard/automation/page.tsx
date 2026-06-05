@@ -27,10 +27,10 @@ const TOOLS: {
     title: 'Instagram Auto DM',
     description: 'Auto-reply to comments and DMs, capture leads, and run story automations on Instagram.',
     icon: Instagram,
-    color: 'text-pink-600 dark:text-pink-400',
-    bg: 'bg-pink-50 dark:bg-pink-500/10',
+    color: 'text-[var(--brand)]',
+    bg: 'bg-[var(--surface-muted)]',
     badge: 'Hot',
-    badgeColor: 'bg-red-500/10 text-red-500',
+    badgeColor: 'bg-[var(--danger-bg)] text-[var(--danger)]',
     actionStatus: 'connect',
     connectionStatus: 'not_connected',
     href: '/dashboard/autodm',
@@ -40,10 +40,10 @@ const TOOLS: {
     title: 'Email Sequences',
     description: 'Send automated welcome emails, abandoned cart recovery, and newsletters.',
     icon: Mail,
-    color: 'text-blue-600 dark:text-blue-400',
-    bg: 'bg-blue-50 dark:bg-blue-500/10',
+    color: 'text-[var(--info)]',
+    bg: 'bg-[var(--info-bg)]',
     badge: 'Popular',
-    badgeColor: 'bg-orange-500/10 text-orange-500',
+    badgeColor: 'bg-[var(--warning-bg)] text-[var(--warning)]',
     actionStatus: 'active',
     connectionStatus: 'connected',
     href: '/dashboard/automation/email',
@@ -53,10 +53,10 @@ const TOOLS: {
     title: 'WhatsApp Bots',
     description: 'Engage customers on WhatsApp with automated replies and order updates.',
     icon: PhoneForwarded,
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+    color: 'text-[var(--success)]',
+    bg: 'bg-[var(--success-bg)]',
     badge: 'New',
-    badgeColor: 'bg-emerald-500/10 text-emerald-500',
+    badgeColor: 'bg-[var(--success-bg)] text-[var(--success)]',
     actionStatus: 'connect',
     connectionStatus: 'not_connected',
     href: '/dashboard/automation/whatsapp',
@@ -66,8 +66,8 @@ const TOOLS: {
     title: 'Google Sheets',
     description: 'Auto-sync orders, leads, and customer data to a Google Sheet in real time.',
     icon: Table2,
-    color: 'text-green-600 dark:text-green-400',
-    bg: 'bg-green-50 dark:bg-green-500/10',
+    color: 'text-[var(--success)]',
+    bg: 'bg-[var(--success-bg)]',
     actionStatus: 'connect',
     connectionStatus: 'not_connected',
     href: '/dashboard/automation/google-sheets',
@@ -77,8 +77,8 @@ const TOOLS: {
     title: 'Telegram Broadcasts',
     description: 'Push updates to your Telegram channel and interact with subscribers via bots.',
     icon: Send,
-    color: 'text-sky-600 dark:text-sky-400',
-    bg: 'bg-sky-50 dark:bg-sky-500/10',
+    color: 'text-[var(--info)]',
+    bg: 'bg-[var(--info-bg)]',
     actionStatus: 'connect',
     connectionStatus: 'not_connected',
     href: '/dashboard/automation/telegram',
@@ -94,7 +94,7 @@ const ACTION_LABEL: Record<string, string> = {
 function ConnectionBadge({ status }: { status: ConnectionStatus }) {
   if (status === 'connected') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-[var(--success-bg)] text-[var(--success)] border border-[var(--success)]/20">
         <CheckCircle2 className="w-3 h-3" />
         Connected
       </span>
@@ -102,7 +102,7 @@ function ConnectionBadge({ status }: { status: ConnectionStatus }) {
   }
   if (status === 'not_connected') {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-500 dark:text-[var(--text-secondary)] border border-gray-200 dark:border-[var(--border)]">
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-[var(--surface-muted)] text-[var(--text-secondary)] border border-[var(--border)]">
         <Link2 className="w-3 h-3" />
         Not connected
       </span>
@@ -132,7 +132,7 @@ export default function AutomationHubPage() {
 
           const card = (
             <div
-              className={`group bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 hover:border-[var(--accent)] hover:shadow-md transition-all duration-200 flex flex-col gap-4 relative ${
+              className={`group bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 hover:border-[var(--accent)] hover:shadow-[var(--shadow-sm)] transition-all duration-200 flex flex-col gap-4 relative ${
                 isSoon ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
               }`}
             >
@@ -159,7 +159,7 @@ export default function AutomationHubPage() {
 
               {/* Footer action */}
               <div className={`flex items-center gap-1 text-sm font-semibold ${tool.color} group-hover:gap-2 transition-all`}>
-                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />}
+                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] animate-pulse mr-1" />}
                 {ACTION_LABEL[tool.actionStatus]} <ArrowRight className="w-4 h-4" />
               </div>
             </div>
@@ -168,7 +168,7 @@ export default function AutomationHubPage() {
           return isSoon ? (
             <div key={tool.id}>{card}</div>
           ) : (
-            <Link key={tool.id} href={tool.href} className="flex flex-col h-full">
+            <Link key={tool.id} href={tool.href} className="flex flex-col h-full focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-lg)]">
               {card}
             </Link>
           );

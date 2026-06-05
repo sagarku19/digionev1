@@ -10,14 +10,14 @@ import {
   Clock, ChevronDown, ChevronUp, BarChart3,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-lg)] text-sm focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition';
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 hover:underline font-medium">
-      {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+      className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:underline font-medium focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+      {copied ? <Check className="w-3.5 h-3.5 text-[var(--success)]" /> : <Copy className="w-3.5 h-3.5" />}
       {copied ? 'Copied!' : 'Copy link'}
     </button>
   );
@@ -79,7 +79,7 @@ export default function ReferralsPage() {
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Create codes that buyers share to earn rewards</p>
           </div>
           <button onClick={() => { setShowModal(true); setNewCode(genCode()); }}
-            className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition shrink-0">
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-[var(--radius-lg)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
             <Plus className="w-4 h-4" /> New Code
           </button>
         </div>
@@ -88,18 +88,18 @@ export default function ReferralsPage() {
         {!loading && codes.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Active Codes',    value: codes.filter(c => c.is_active).length, icon: Gift,         color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-100 dark:bg-gray-800' },
-              { label: 'Total Referrals', value: referrals.length,                      icon: Users,        color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-100 dark:bg-gray-800' },
-              { label: 'Paid Out',        value: paidCount,                             icon: Check,        color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-              { label: 'Total Rewarded',  value: `₹${totalRevenue.toFixed(0)}`,         icon: IndianRupee,  color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+              { label: 'Active Codes',    value: codes.filter(c => c.is_active).length, icon: Gift,        color: 'text-[var(--text-secondary)]', bg: 'bg-[var(--surface-muted)]' },
+              { label: 'Total Referrals', value: referrals.length,                      icon: Users,       color: 'text-[var(--text-secondary)]', bg: 'bg-[var(--surface-muted)]' },
+              { label: 'Paid Out',        value: paidCount,                             icon: Check,       color: 'text-[var(--success)]',        bg: 'bg-[var(--success-bg)]' },
+              { label: 'Total Rewarded',  value: `₹${totalRevenue.toFixed(0)}`,         icon: IndianRupee, color: 'text-[var(--warning)]',        bg: 'bg-[var(--warning-bg)]' },
             ].map(s => (
-              <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.bg}`}>
+              <div key={s.label} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-[var(--radius-lg)] flex items-center justify-center shrink-0 ${s.bg}`}>
                   <s.icon className={`w-4 h-4 ${s.color}`} />
                 </div>
                 <div>
                   <p className="text-xl font-extrabold text-[var(--text-primary)] leading-none">{s.value}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+                  <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{s.label}</p>
                 </div>
               </div>
             ))}
@@ -113,11 +113,11 @@ export default function ReferralsPage() {
             { step: '2', title: 'Buyer shares it', desc: 'Buyers share their unique referral link with friends to earn rewards.' },
             { step: '3', title: 'Sale tracked', desc: 'When someone buys using the code, the referrer earns automatically.' },
           ].map(s => (
-            <div key={s.step} className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)]/50 border border-[var(--border)] rounded-2xl">
-              <div className="w-7 h-7 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-extrabold flex items-center justify-center shrink-0">{s.step}</div>
+            <div key={s.step} className="flex items-start gap-3 p-4 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-lg)]">
+              <div className="w-7 h-7 rounded-full bg-[var(--accent)] text-[var(--accent-fg)] text-xs font-extrabold flex items-center justify-center shrink-0">{s.step}</div>
               <div>
                 <p className="text-sm font-semibold text-[var(--text-primary)] mb-0.5">{s.title}</p>
-                <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
+                <p className="text-xs text-[var(--text-tertiary)] leading-relaxed">{s.desc}</p>
               </div>
             </div>
           ))}
@@ -126,20 +126,20 @@ export default function ReferralsPage() {
         {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-600 dark:text-gray-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--text-secondary)]" />
           </div>
         )}
 
         {/* Empty */}
         {!loading && codes.length === 0 && (
-          <div className="flex flex-col items-center py-24 text-center bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl">
-            <div className="w-14 h-14 bg-[var(--bg-secondary)] rounded-2xl flex items-center justify-center mb-4 border border-[var(--border)]">
-              <Gift className="w-7 h-7 text-gray-300 dark:text-gray-700" />
+          <div className="flex flex-col items-center py-24 text-center bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)]">
+            <div className="w-14 h-14 bg-[var(--surface-muted)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4 border border-[var(--border)]">
+              <Gift className="w-7 h-7 text-[var(--text-tertiary)]" />
             </div>
-            <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">No referral codes yet</p>
-            <p className="text-sm text-gray-500 max-w-xs mb-5">Create your first code and start a viral loop — buyers share, friends buy, everyone wins.</p>
+            <p className="font-semibold text-[var(--text-primary)] mb-1">No referral codes yet</p>
+            <p className="text-sm text-[var(--text-tertiary)] max-w-xs mb-5">Create your first code and start a viral loop — buyers share, friends buy, everyone wins.</p>
             <button onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-gray-900 px-5 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition">
+              className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-5 py-2.5 rounded-[var(--radius-lg)] font-semibold text-sm shadow-[var(--shadow-xs)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
               <Plus className="w-4 h-4" /> Create First Code
             </button>
           </div>
@@ -147,12 +147,12 @@ export default function ReferralsPage() {
 
         {/* Codes list with expandable per-code analytics */}
         {!loading && codes.length > 0 && (
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[var(--border)] flex items-center justify-between">
               <h2 className="text-sm font-bold text-[var(--text-primary)]">Referral Codes</h2>
-              <span className="text-xs text-gray-400">{codes.length} code{codes.length !== 1 ? 's' : ''}</span>
+              <span className="text-xs text-[var(--text-tertiary)]">{codes.length} code{codes.length !== 1 ? 's' : ''}</span>
             </div>
-            <div className="divide-y divide-[var(--border)]">
+            <div className="divide-y divide-[var(--border-subtle)]">
               {codes.map(code => {
                 const codeRefs  = refsForCode(code.id);
                 const shareUrl  = `${origin}?ref=${code.code}`;
@@ -161,9 +161,9 @@ export default function ReferralsPage() {
 
                 return (
                   <div key={code.id}>
-                    <div className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]/60 transition group">
+                    <div className="flex items-center gap-4 px-5 py-4 hover:bg-[var(--surface-hover)] transition group">
                       {/* Code badge */}
-                      <div className="shrink-0 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg font-mono text-sm font-bold text-[var(--text-primary)] tracking-widest">
+                      <div className="shrink-0 bg-[var(--surface-muted)] px-3 py-1.5 rounded-[var(--radius-sm)] font-mono text-sm font-bold text-[var(--text-primary)] tracking-widest">
                         {code.code}
                       </div>
 
@@ -171,14 +171,14 @@ export default function ReferralsPage() {
                       <div className="flex-1 min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            code.is_active ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                                           : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                            code.is_active ? 'bg-[var(--success-bg)] text-[var(--success)]'
+                                           : 'bg-[var(--surface-muted)] text-[var(--text-tertiary)]'
                           }`}>{code.is_active ? 'Active' : 'Inactive'}</span>
                           {code.metadata?.reward_percent && (
-                            <span className="text-xs text-gray-500 font-medium">{code.metadata.reward_percent}% reward</span>
+                            <span className="text-xs text-[var(--text-tertiary)] font-medium">{code.metadata.reward_percent}% reward</span>
                           )}
-                          <span className="text-xs text-gray-400">{codeRefs.length} use{codeRefs.length !== 1 ? 's' : ''}</span>
-                          {earned > 0 && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">₹{earned.toFixed(0)} rewarded</span>}
+                          <span className="text-xs text-[var(--text-tertiary)]">{codeRefs.length} use{codeRefs.length !== 1 ? 's' : ''}</span>
+                          {earned > 0 && <span className="text-xs text-[var(--success)] font-semibold">₹{earned.toFixed(0)} rewarded</span>}
                         </div>
                         <CopyButton text={shareUrl} />
                       </div>
@@ -187,17 +187,17 @@ export default function ReferralsPage() {
                       <div className="flex items-center gap-1 shrink-0">
                         {codeRefs.length > 0 && (
                           <button onClick={() => setExpandedCode(isExpanded ? null : code.id)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-1000/10 transition"
+                            className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--brand)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                             title="View referrals">
                             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </button>
                         )}
                         <button onClick={() => toggleCode(code)} title={code.is_active ? 'Pause' : 'Activate'}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
-                          {code.is_active ? <ToggleRight className="w-5 h-5 text-emerald-500" /> : <ToggleLeft className="w-5 h-5" />}
+                          className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+                          {code.is_active ? <ToggleRight className="w-5 h-5 text-[var(--success)]" /> : <ToggleLeft className="w-5 h-5" />}
                         </button>
                         <button onClick={() => setDeleteConfirm(code.id)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition">
+                          className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -205,25 +205,25 @@ export default function ReferralsPage() {
 
                     {/* Expandable referral activity */}
                     {isExpanded && codeRefs.length > 0 && (
-                      <div className="px-5 pb-4 bg-[var(--bg-secondary)]/30 border-t border-[var(--border)]">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-3 mb-2">Referral Activity</p>
+                      <div className="px-5 pb-4 bg-[var(--surface-muted)] border-t border-[var(--border)]">
+                        <p className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mt-3 mb-2">Referral Activity</p>
                         <div className="space-y-2">
                           {codeRefs.map(ref => (
                             <div key={ref.id} className="flex items-center gap-3 text-xs">
-                              <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                                <TrendingUp className="w-2.5 h-2.5 text-gray-700 dark:text-gray-300" />
+                              <div className="w-5 h-5 rounded-full bg-[var(--surface-muted)] flex items-center justify-center shrink-0">
+                                <TrendingUp className="w-2.5 h-2.5 text-[var(--text-secondary)]" />
                               </div>
-                              <span className="text-gray-600 dark:text-gray-400 flex-1">Order referral</span>
+                              <span className="text-[var(--text-secondary)] flex-1">Order referral</span>
                               {ref.commission_amount && (
-                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">₹{ref.commission_amount}</span>
+                                <span className="font-semibold text-[var(--success)]">₹{ref.commission_amount}</span>
                               )}
                               <span className={`px-2 py-0.5 rounded-full font-semibold ${
                                 ref.status === 'settled' || ref.status === 'paid'
-                                  ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                  : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                  ? 'bg-[var(--success-bg)] text-[var(--success)]'
+                                  : 'bg-[var(--warning-bg)] text-[var(--warning)]'
                               }`}>{ref.status ?? 'pending'}</span>
                               {ref.created_at && (
-                                <span className="text-gray-400 flex items-center gap-1">
+                                <span className="text-[var(--text-tertiary)] flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
                                   {new Date(ref.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                                 </span>
@@ -242,35 +242,35 @@ export default function ReferralsPage() {
 
         {/* Recent activity feed */}
         {!loading && referrals.length > 0 && (
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[var(--border)]">
               <h2 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" /> Recent Activity
+                <BarChart3 className="w-4 h-4 text-[var(--text-secondary)]" /> Recent Activity
               </h2>
             </div>
-            <div className="divide-y divide-[var(--border)]">
+            <div className="divide-y divide-[var(--border-subtle)]">
               {referrals.slice(0, 8).map(ref => {
                 const codeName = codes.find(c => c.id === ref.referral_code_id)?.code ?? '—';
                 return (
                   <div key={ref.id} className="flex items-center gap-4 px-5 py-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
-                      <Gift className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <div className="w-8 h-8 rounded-full bg-[var(--surface-muted)] flex items-center justify-center shrink-0">
+                      <Gift className="w-4 h-4 text-[var(--text-secondary)]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-800 dark:text-gray-200">
+                      <p className="text-sm text-[var(--text-primary)]">
                         Referral via <span className="font-mono font-semibold">{codeName}</span>
                       </p>
                       {ref.created_at && (
-                        <p className="text-xs text-gray-400">{new Date(ref.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        <p className="text-xs text-[var(--text-tertiary)]">{new Date(ref.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                       )}
                     </div>
                     {ref.commission_amount ? (
-                      <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">₹{ref.commission_amount}</span>
+                      <span className="text-sm font-bold text-[var(--success)]">₹{ref.commission_amount}</span>
                     ) : null}
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                       ref.status === 'settled' || ref.status === 'paid'
-                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        ? 'bg-[var(--success-bg)] text-[var(--success)]'
+                        : 'bg-[var(--warning-bg)] text-[var(--warning)]'
                     }`}>{ref.status ?? 'pending'}</span>
                   </div>
                 );
@@ -282,52 +282,52 @@ export default function ReferralsPage() {
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[var(--bg-primary)] rounded-2xl shadow-2xl w-full max-w-md border border-[var(--border)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-md border border-[var(--border)]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                  <Gift className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                <div className="w-8 h-8 bg-[var(--surface-muted)] rounded-[var(--radius-lg)] flex items-center justify-center">
+                  <Gift className="w-4 h-4 text-[var(--text-secondary)]" />
                 </div>
                 <h2 className="text-base font-bold text-[var(--text-primary)]">New Referral Code</h2>
               </div>
               <button onClick={() => { setShowModal(false); setFormError(''); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+                className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleCreate} className="p-6 space-y-4">
               {formError && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 rounded-xl text-sm text-red-700 dark:text-red-400">
+                <div className="flex items-center gap-2 p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-[var(--radius-lg)] text-sm text-[var(--danger)]">
                   <AlertCircle className="w-4 h-4 shrink-0" /> {formError}
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Referral Code</label>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Referral Code</label>
                 <div className="flex gap-2">
                   <input type="text" value={newCode} onChange={e => setNewCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
                     className={`${INPUT} font-mono tracking-widest`} placeholder="FRIEND20" maxLength={20} />
                   <button type="button" onClick={() => setNewCode(genCode())}
-                    className="p-2.5 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition text-gray-500" title="Generate random">
+                    className="p-2.5 border border-[var(--border)] rounded-[var(--radius-lg)] hover:bg-[var(--surface-hover)] transition text-[var(--text-secondary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]" title="Generate random">
                     <RefreshCw className="w-4 h-4" />
                   </button>
                 </div>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Referrer Reward</label>
-                  <span className="text-base font-extrabold text-gray-700 dark:text-gray-300">{rewardPct}%</span>
+                  <label className="text-sm font-medium text-[var(--text-secondary)]">Referrer Reward</label>
+                  <span className="text-base font-extrabold text-[var(--text-primary)]">{rewardPct}%</span>
                 </div>
                 <input type="range" min={1} max={50} value={rewardPct} onChange={e => setRewardPct(Number(e.target.value))}
-                  className="w-full h-2 rounded-full appearance-none cursor-pointer bg-gray-200 dark:bg-gray-800"
-                  style={{ accentColor: '#6366f1' }} />
-                <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[var(--border)]"
+                  style={{ accentColor: 'var(--brand)' }} />
+                <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] mt-1">
                   <span>1%</span><span>Recommended: 5–15%</span><span>50%</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5">% of sale amount credited to the referrer when their code is used.</p>
+                <p className="text-xs text-[var(--text-tertiary)] mt-1.5">% of sale amount credited to the referrer when their code is used.</p>
               </div>
               <button type="submit" disabled={saving}
-                className="w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 py-3 rounded-xl font-bold text-sm shadow-sm transition">
+                className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-[var(--radius-lg)] font-bold text-sm shadow-[var(--shadow-xs)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 {saving ? 'Creating…' : 'Create Code →'}
               </button>
             </form>
@@ -337,17 +337,17 @@ export default function ReferralsPage() {
 
       {/* Delete Confirm */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4">
-              <Trash2 className="w-5 h-5 text-red-500" />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 max-w-sm w-full shadow-[var(--shadow-lg)]">
+            <div className="w-12 h-12 rounded-full bg-[var(--danger-bg)] flex items-center justify-center mb-4">
+              <Trash2 className="w-5 h-5 text-[var(--danger)]" />
             </div>
             <h3 className="font-bold text-[var(--text-primary)] mb-1">Delete referral code?</h3>
-            <p className="text-sm text-gray-500 mb-5">All referral history for this code will also be removed.</p>
+            <p className="text-sm text-[var(--text-tertiary)] mb-5">All referral history for this code will also be removed.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">Cancel</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 border border-[var(--border)] rounded-[var(--radius-lg)] text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
               <button onClick={() => deleteCode(deleteConfirm)}
-                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2">
+                className="flex-1 py-2.5 bg-[var(--danger)] hover:opacity-90 text-white rounded-[var(--radius-lg)] text-sm font-semibold transition flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <Trash2 className="w-4 h-4" /> Delete
               </button>
             </div>

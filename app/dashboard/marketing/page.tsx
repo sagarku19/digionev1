@@ -18,7 +18,7 @@ export default function MarketingPage() {
       label: 'Discount Coupons',
       description: 'Create percentage or fixed-amount promo codes. Set expiry dates, max uses, and minimum order values.',
       href: '/dashboard/marketing/coupons',
-      color: 'indigo',
+      color: 'brand',
       stat: loading ? '—' : `${stats.activeCoupons} active`,
       statTotal: loading ? '' : `of ${stats.coupons} total`,
     },
@@ -27,7 +27,7 @@ export default function MarketingPage() {
       label: 'Leads',
       description: 'View captured leads from your link-in-bio forms. Export to CSV and broadcast emails to your list.',
       href: '/dashboard/marketing/leads',
-      color: 'violet',
+      color: 'brand',
       stat: loading ? '—' : `${stats.leads}`,
       statTotal: 'total leads',
     },
@@ -36,7 +36,7 @@ export default function MarketingPage() {
       label: 'Affiliates',
       description: 'Recruit partners to promote your products. Set custom commission rates and track performance.',
       href: '/dashboard/marketing/affiliates',
-      color: 'emerald',
+      color: 'success',
       stat: loading ? '—' : `${stats.affiliates}`,
       statTotal: 'partners',
     },
@@ -45,7 +45,7 @@ export default function MarketingPage() {
       label: 'Referral Program',
       description: 'Let buyers earn rewards by referring new customers. Grow your store through word-of-mouth.',
       href: '/dashboard/marketing/referrals',
-      color: 'amber',
+      color: 'warning',
       stat: loading ? '—' : `${stats.referrals}`,
       statTotal: `via ${stats.referralCodes} codes`,
     },
@@ -54,7 +54,7 @@ export default function MarketingPage() {
       label: 'Community',
       description: 'Build a community of creators. Share tips, milestones, and connect with your audience.',
       href: '/dashboard/marketing/community',
-      color: 'blue',
+      color: 'info',
       stat: 'Active',
       statTotal: 'feed',
     },
@@ -63,30 +63,29 @@ export default function MarketingPage() {
       label: 'Services',
       description: 'Manage 1:1 calls, consulting retainers, and custom audits. Monetize your time and expertise.',
       href: '/dashboard/marketing/services',
-      color: 'rose',
+      color: 'danger',
       stat: 'New',
       statTotal: 'feature',
     },
   ];
 
-  const colorMap: Record<string, { bg: string; text: string; border: string; glow: string; pill: string }> = {
-    indigo: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-indigo-100 dark:border-gray-900 dark:border-white/20', glow: 'group-hover:shadow-indigo-500/10', pill: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
-    violet: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-700 dark:text-gray-300', border: 'border-violet-100 dark:border-gray-200 dark:border-gray-700', glow: 'group-hover:shadow-violet-500/10', pill: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' },
-    emerald: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-100 dark:border-emerald-500/20', glow: 'group-hover:shadow-emerald-500/10', pill: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' },
-    amber: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-100 dark:border-amber-500/20', glow: 'group-hover:shadow-amber-500/10', pill: 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300' },
-    blue: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-100 dark:border-blue-500/20', glow: 'group-hover:shadow-blue-500/10', pill: 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300' },
-    rose: { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-100 dark:border-rose-500/20', glow: 'group-hover:shadow-rose-500/10', pill: 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300' },
+  const colorMap: Record<string, { bg: string; text: string; pill: string }> = {
+    brand:   { bg: 'bg-[var(--surface-muted)]', text: 'text-[var(--brand)]',   pill: 'bg-[var(--surface-muted)] text-[var(--brand)]' },
+    success: { bg: 'bg-[var(--success-bg)]',    text: 'text-[var(--success)]', pill: 'bg-[var(--success-bg)] text-[var(--success)]' },
+    warning: { bg: 'bg-[var(--warning-bg)]',    text: 'text-[var(--warning)]', pill: 'bg-[var(--warning-bg)] text-[var(--warning)]' },
+    info:    { bg: 'bg-[var(--info-bg)]',       text: 'text-[var(--info)]',    pill: 'bg-[var(--info-bg)] text-[var(--info)]' },
+    danger:  { bg: 'bg-[var(--danger-bg)]',     text: 'text-[var(--danger)]',  pill: 'bg-[var(--danger-bg)] text-[var(--danger)]' },
   };
 
   return (
     <div className="pt-6 pb-16 space-y-8 w-full">
 
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--bg-primary)] p-5 shadow-sm">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-500/10 via-violet-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-xs)]">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-[var(--brand)]/10 via-[var(--brand)]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 border border-indigo-200 dark:border-gray-900 dark:border-white/20 text-xs font-bold text-gray-700 dark:text-gray-300 mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--surface-muted)] border border-[var(--border)] text-xs font-bold text-[var(--text-secondary)] mb-4">
               <Megaphone className="w-3.5 h-3.5" /> Growth Engine
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">Marketing Tools</h1>
@@ -97,11 +96,11 @@ export default function MarketingPage() {
           {/* Live summary pills */}
           <div className="flex flex-wrap gap-2 shrink-0">
             {!loading && [
-              { label: 'Leads', value: stats.leads, color: 'bg-gray-100 dark:bg-gray-800 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-gray-200 dark:border-gray-700' },
-              { label: 'Active Coupons', value: stats.activeCoupons, color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-indigo-200 dark:border-gray-900 dark:border-white/20' },
-              { label: 'Affiliates', value: stats.affiliates, color: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' },
+              { label: 'Leads', value: stats.leads },
+              { label: 'Active Coupons', value: stats.activeCoupons },
+              { label: 'Affiliates', value: stats.affiliates },
             ].map(p => (
-              <div key={p.label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold ${p.color}`}>
+              <div key={p.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-muted)] text-xs font-bold text-[var(--text-secondary)]">
                 <TrendingUp className="w-3 h-3" />
                 <span className="font-extrabold">{p.value}</span> {p.label}
               </div>
@@ -118,13 +117,13 @@ export default function MarketingPage() {
             <Link
               key={tool.href}
               href={tool.href}
-              className={`group relative bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-xl ${c.glow} transition-all duration-300 flex flex-col overflow-hidden`}
+              className="group relative bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-5 hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 flex flex-col overflow-hidden focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-11 h-11 rounded-[var(--radius-sm)] flex items-center justify-center border ${c.bg} ${c.border}`}>
+                <div className={`w-11 h-11 rounded-[var(--radius-sm)] flex items-center justify-center border border-[var(--border)] ${c.bg}`}>
                   <tool.icon className={`w-5 h-5 ${c.text}`} />
                 </div>
-                <ArrowUpRight className="w-4 h-4 text-gray-300 dark:text-gray-700 group-hover:text-gray-500 dark:group-hover:text-gray-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                <ArrowUpRight className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
               </div>
               <h2 className="text-base font-bold text-[var(--text-primary)] mb-1">{tool.label}</h2>
               <p className="text-xs text-[var(--text-secondary)] leading-relaxed flex-1">{tool.description}</p>
@@ -139,9 +138,9 @@ export default function MarketingPage() {
       </div>
 
       {/* Quick tip */}
-      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-[var(--radius-lg)]">
-        <Zap className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-        <p className="text-sm text-amber-700 dark:text-amber-400">
+      <div className="flex items-start gap-3 p-4 bg-[var(--warning-bg)] border border-[var(--warning)]/20 rounded-[var(--radius-lg)]">
+        <Zap className="w-4 h-4 text-[var(--warning)] shrink-0 mt-0.5" />
+        <p className="text-sm text-[var(--warning)]">
           <strong>Pro tip:</strong> Combine Coupons + Referrals for a viral growth loop — buyers save money AND earn rewards for bringing new customers.
         </p>
       </div>
