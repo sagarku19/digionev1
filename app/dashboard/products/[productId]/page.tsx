@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // Product editor — edit basic info, pricing, files, marketing, settings for a single product.
 // DB tables: products (read/write via useProducts)
 
@@ -9,12 +9,12 @@ import {
   FileText, DollarSign, HardDrive, Megaphone, Settings,
   ArrowLeft, Save, UploadCloud, Image as ImageIcon,
   CheckCircle2, AlertCircle, Eye, Globe, Lock, Zap,
-  Plus, X, Package, TrendingUp, Tag, Calendar,
+  Plus, X, Package, Tag,
 } from 'lucide-react';
 
 // ─── Shared constants & sub-components ───────────────────────
 
-const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)]/40 outline-none text-[var(--text-primary)] placeholder-gray-400 transition';
+const INPUT = 'w-full px-4 py-2.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition';
 
 function formatINR(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -28,12 +28,12 @@ const TABS = [
   { id: 'settings',  label: 'Settings',      icon: Settings   },
 ];
 
-function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function EditorCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 space-y-5">
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-5 shadow-[var(--shadow-xs)]">
       <div>
         <h2 className="text-base font-bold text-[var(--text-primary)]">{title}</h2>
-        {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-[var(--text-secondary)] mt-0.5">{subtitle}</p>}
       </div>
       {children}
     </div>
@@ -43,9 +43,9 @@ function Card({ title, subtitle, children }: { title: string; subtitle?: string;
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">{label}</label>
       {children}
-      {hint && <p className="text-xs text-gray-400 mt-1.5">{hint}</p>}
+      {hint && <p className="text-xs text-[var(--text-tertiary)] mt-1.5">{hint}</p>}
     </div>
   );
 }
@@ -64,10 +64,10 @@ function WhatsIncludedEditor({ items, onChange }: { items: string[]; onChange: (
       {items.length > 0 && (
         <ul className="space-y-2">
           {items.map((item, i) => (
-            <li key={i} className="flex items-center gap-2 text-sm text-gray-700 dark:text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-3 py-2 rounded-lg">
-              <Package className="w-3.5 h-3.5 text-[var(--text-secondary)] shrink-0" />
+            <li key={i} className="flex items-center gap-2 text-sm text-[var(--text-secondary)] bg-[var(--surface-muted)] px-3 py-2 rounded-lg">
+              <Package className="w-3.5 h-3.5 text-[var(--text-tertiary)] shrink-0" />
               <span className="flex-1">{item}</span>
-              <button onClick={() => remove(i)} className="text-gray-400 hover:text-red-500 transition">
+              <button onClick={() => remove(i)} className="text-[var(--text-tertiary)] hover:text-[var(--danger)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <X className="w-3.5 h-3.5" />
               </button>
             </li>
@@ -81,7 +81,7 @@ function WhatsIncludedEditor({ items, onChange }: { items: string[]; onChange: (
           placeholder="e.g. 12 HD video lessons"
           className={INPUT}
         />
-        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-sm font-semibold transition shrink-0">
+        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-[var(--radius-md)] text-sm font-semibold transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
           <Plus className="w-4 h-4" />
           Add
         </button>
@@ -100,13 +100,13 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
   return (
     <aside className="hidden xl:flex flex-col gap-4 w-56 shrink-0 sticky top-36">
       {/* Status card */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-3">
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Status</p>
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 space-y-3 shadow-[var(--shadow-xs)]">
+        <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Status</p>
         <div
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold ${
+          className={`flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-sm font-semibold ${
             product.is_published
-              ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-              : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)]'
+              ? 'bg-[var(--success-bg)] text-[var(--success)]'
+              : 'bg-[var(--surface-muted)] text-[var(--text-secondary)]'
           }`}
         >
           {product.is_published
@@ -116,10 +116,10 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
         </div>
         <button
           onClick={onTogglePublish}
-          className={`w-full text-xs font-semibold py-1.5 rounded-lg transition ${
+          className={`w-full text-xs font-semibold py-1.5 rounded-lg transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
             product.is_published
-              ? 'border border-gray-200 dark:border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]'
-              : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-500/20'
+              ? 'border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+              : 'bg-[var(--success)] hover:bg-[var(--success)]/90 text-white shadow-[var(--shadow-xs)]'
           }`}
         >
           {product.is_published ? 'Unpublish' : 'Publish now'}
@@ -127,8 +127,8 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
       </div>
 
       {/* Product details */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-3">
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Details</p>
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 space-y-3 shadow-[var(--shadow-xs)]">
+        <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)]">Details</p>
         <div className="space-y-2.5 text-sm">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[var(--text-secondary)] text-xs">Price</span>
@@ -139,12 +139,12 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
           {product.compare_at_price && !product.is_free && (
             <div className="flex items-center justify-between gap-2">
               <span className="text-[var(--text-secondary)] text-xs">Original</span>
-              <span className="font-medium text-gray-400 line-through text-xs">{formatINR(product.compare_at_price)}</span>
+              <span className="font-medium text-[var(--text-tertiary)] line-through text-xs">{formatINR(product.compare_at_price)}</span>
             </div>
           )}
           <div className="flex items-center justify-between gap-2">
             <span className="text-[var(--text-secondary)] text-xs">Category</span>
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] capitalize">
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--surface-muted)] text-[var(--text-primary)] capitalize">
               <Tag className="w-2.5 h-2.5" />
               {product.category || 'digital'}
             </span>
@@ -157,13 +157,13 @@ function ProductStatsSidebar({ product, onTogglePublish }: { product: any; onTog
       </div>
 
       {/* Quick actions */}
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-4 space-y-2">
-        <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Quick Actions</p>
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 space-y-2 shadow-[var(--shadow-xs)]">
+        <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-3">Quick Actions</p>
         <a
           href={`/store/product/${product.id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] px-2 py-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] dark:hover:bg-[var(--bg-tertiary)] transition"
+          className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2 py-1.5 rounded-lg hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
           <Eye className="w-3.5 h-3.5" />
           Preview product page
@@ -203,7 +203,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <div className="w-10 h-10 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
-        <p className="text-sm text-gray-500">Loading editor…</p>
+        <p className="text-sm text-[var(--text-secondary)]">Loading editor…</p>
       </div>
     );
   }
@@ -237,7 +237,6 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
-      console.error('Save failed:', err);
       alert(`Failed to save: ${err?.message ?? 'Please try again.'}`);
     } finally {
       setIsSaving(false);
@@ -251,17 +250,17 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => router.push('/dashboard/products')}
-            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)] hover:text-gray-900 dark:hover:text-[var(--text-primary)] transition"
+            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Product Editor</p>
+            <p className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Product Editor</p>
             <h1 className="text-base font-bold text-[var(--text-primary)] truncate">{formData.name}</h1>
           </div>
           <span className={`hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${formData.is_published
-            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-            : 'bg-gray-100 text-gray-600 dark:bg-[var(--bg-secondary)] dark:text-[var(--text-secondary)]'
+            ? 'bg-[var(--success-bg)] text-[var(--success)]'
+            : 'bg-[var(--surface-muted)] text-[var(--text-secondary)]'
           }`}>
             {formData.is_published ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
             {formData.is_published ? 'Published' : 'Draft'}
@@ -270,7 +269,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
 
         <div className="flex items-center gap-2 shrink-0">
           {saveSuccess && (
-            <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-[var(--success)]">
               <CheckCircle2 className="w-3.5 h-3.5" /> Saved
             </span>
           )}
@@ -278,7 +277,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all"
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-60 text-[var(--accent-fg)] px-4 py-2 rounded-[var(--radius-md)] text-sm font-semibold shadow-[var(--shadow-xs)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
             <Save className="w-4 h-4" />
             {isSaving ? 'Saving…' : 'Save'}
@@ -298,12 +297,12 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${active
-                    ? 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                    : 'text-gray-600 dark:text-[var(--text-secondary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] hover:text-gray-900 dark:hover:text-[var(--text-primary)]'
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[var(--radius-md)] text-sm font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active
+                    ? 'bg-[var(--surface-muted)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
                   }`}
                 >
-                  <tab.icon className={`w-4 h-4 shrink-0 ${active ? 'text-[var(--text-primary)]' : 'text-gray-400'}`} />
+                  <tab.icon className={`w-4 h-4 shrink-0 ${active ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)]'}`} />
                   {tab.label}
                 </button>
               );
@@ -320,7 +319,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
             {/* ── TAB: BASIC INFO ── */}
             {activeTab === 'basic' && (
               <div className="space-y-5">
-                <Card title="Product Details" subtitle="Basic information shown to buyers">
+                <EditorCard title="Product Details" subtitle="Basic information shown to buyers">
                   <Field label="Product Name">
                     <input
                       type="text" value={formData.name || ''} onChange={e => patch({ name: e.target.value })}
@@ -342,53 +341,53 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                       <option value="other">Other</option>
                     </select>
                   </Field>
-                </Card>
+                </EditorCard>
 
-                <Card title="Thumbnail" subtitle="First impression matters — use a 16:9 image">
-                  <div className="border-2 border-dashed border-gray-200 dark:border-[var(--border)] rounded-xl overflow-hidden hover:border-[var(--accent)] transition cursor-pointer">
+                <EditorCard title="Thumbnail" subtitle="First impression matters — use a 16:9 image">
+                  <div className="border-2 border-dashed border-[var(--border)] rounded-[var(--radius-md)] overflow-hidden hover:border-[var(--accent)] transition cursor-pointer">
                     {formData.thumbnail_url ? (
                       <div className="relative group">
                         <img src={formData.thumbnail_url} alt="Thumbnail" className="w-full max-h-52 object-contain" />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
-                          <button className="bg-white text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold">Change</button>
-                          <button onClick={() => patch({ thumbnail_url: null })} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold">Remove</button>
+                          <button className="bg-white text-[var(--text-primary)] px-4 py-2 rounded-lg text-sm font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Change</button>
+                          <button onClick={() => patch({ thumbnail_url: null })} className="bg-[var(--danger)] text-white px-4 py-2 rounded-lg text-sm font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Remove</button>
                         </div>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12 gap-3">
-                        <div className="w-12 h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-[var(--surface-muted)] rounded-[var(--radius-md)] flex items-center justify-center">
                           <ImageIcon className="w-6 h-6 text-[var(--text-secondary)]" />
                         </div>
                         <div className="text-center">
                           <p className="text-sm font-semibold text-[var(--text-primary)]">Click to upload</p>
-                          <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · 16:9 · Max 5MB</p>
+                          <p className="text-xs text-[var(--text-tertiary)] mt-1">PNG, JPG, WEBP · 16:9 · Max 5MB</p>
                         </div>
                       </div>
                     )}
                   </div>
-                </Card>
+                </EditorCard>
 
-                <Card title="What's Included" subtitle="Bullet points shown on the product sales page to highlight value">
+                <EditorCard title="What's Included" subtitle="Bullet points shown on the product sales page to highlight value">
                   <WhatsIncludedEditor
                     items={(formData.metadata as any)?.includes ?? []}
                     onChange={(items: string[]) => patch({ metadata: { ...(formData.metadata as any), includes: items } })}
                   />
-                </Card>
+                </EditorCard>
               </div>
             )}
 
             {/* ── TAB: PRICING ── */}
             {activeTab === 'pricing' && (
               <div className="space-y-5">
-                <Card title="Pricing Strategy" subtitle="Choose how buyers pay for this product">
-                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
+                <EditorCard title="Pricing Strategy" subtitle="Choose how buyers pay for this product">
+                  <div className="flex items-center justify-between p-4 bg-[var(--surface-muted)] rounded-[var(--radius-md)] border border-[var(--border)]">
                     <div>
                       <p className="text-sm font-semibold text-[var(--text-primary)]">Make this product Free</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Buyers can download without paying. Good for lead magnets.</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-0.5">Buyers can download without paying. Good for lead magnets.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" checked={formData.is_free || false} onChange={e => patch({ is_free: e.target.checked })} />
-                      <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--bg-tertiary)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                      <div className="w-11 h-6 bg-[var(--border)] peer-checked:bg-[var(--success)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
                     </label>
                   </div>
 
@@ -396,13 +395,13 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                       <Field label="Base Price (INR)">
                         <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">₹</span>
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] font-medium text-sm">₹</span>
                           <input type="number" min="0" value={formData.price || 0} onChange={e => patch({ price: parseFloat(e.target.value) || 0 })} className={`${INPUT} pl-8 font-mono`} />
                         </div>
                       </Field>
                       <Field label="Compare-at Price (optional)" hint="Shows as strikethrough original price">
                         <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">₹</span>
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] font-medium text-sm">₹</span>
                           <input type="number" min="0" value={formData.compare_at_price || ''} onChange={e => patch({ compare_at_price: parseFloat(e.target.value) || null })} className={`${INPUT} pl-8 font-mono`} placeholder="Optional" />
                         </div>
                       </Field>
@@ -410,21 +409,21 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   )}
 
                   {!formData.is_free && (
-                    <div className="mt-4 p-3 bg-[var(--bg-tertiary)] rounded-xl flex items-center gap-3">
+                    <div className="mt-4 p-3 bg-[var(--surface-muted)] rounded-[var(--radius-md)] flex items-center gap-3">
                       <Zap className="w-4 h-4 text-[var(--text-primary)] shrink-0" />
                       <p className="text-xs text-[var(--text-primary)]">
                         <strong>Platform fee:</strong> DigiOne charges 10% on Free plan · 7% on Plus · 5% on Pro. You keep the rest.
                       </p>
                     </div>
                   )}
-                </Card>
+                </EditorCard>
               </div>
             )}
 
             {/* ── TAB: CONTENT FILES ── */}
             {activeTab === 'content' && (
               <div className="space-y-5">
-                <Card title="Product Access Link" subtitle="Where buyers go after a successful purchase">
+                <EditorCard title="Product Access Link" subtitle="Where buyers go after a successful purchase">
                   <Field label="Post-Purchase URL" hint="Redirect buyers here after payment — e.g. a Google Drive link, Notion page, Gumroad download, or your own page.">
                     <input
                       type="url"
@@ -452,60 +451,60 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                       placeholder="https://..."
                     />
                   </Field>
-                </Card>
+                </EditorCard>
 
-                <Card title="File Uploads" subtitle="Upload files buyers can download — coming soon">
-                  <button className="w-full border-2 border-dashed border-gray-200 dark:border-[var(--border)] hover:border-(--accent) bg-gray-50/50 dark:bg-[var(--bg-secondary)]/50 text-gray-400 py-10 rounded-xl flex flex-col items-center justify-center gap-2 transition cursor-not-allowed opacity-60">
+                <EditorCard title="File Uploads" subtitle="Upload files buyers can download — coming soon">
+                  <button className="w-full border-2 border-dashed border-[var(--border)] hover:border-[var(--accent)] bg-[var(--surface-muted)]/50 text-[var(--text-tertiary)] py-10 rounded-[var(--radius-md)] flex flex-col items-center justify-center gap-2 transition cursor-not-allowed opacity-60 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                     <UploadCloud className="w-7 h-7" />
                     <span className="font-semibold text-sm">Upload New Asset</span>
                     <span className="text-xs">PDF · ZIP · MP4 · MP3 · Max 2GB per file · Coming soon</span>
                   </button>
-                </Card>
+                </EditorCard>
               </div>
             )}
 
             {/* ── TAB: MARKETING ── */}
             {activeTab === 'marketing' && (
               <div className="space-y-5">
-                <Card title="SEO &amp; Discoverability" subtitle="Control how your product appears on Google and social platforms">
+                <EditorCard title="SEO &amp; Discoverability" subtitle="Control how your product appears on Google and social platforms">
                   <Field label="SEO Title">
                     <input type="text" className={INPUT} placeholder={formData.name || 'Same as product name by default'} />
-                    <p className="text-xs text-gray-400 mt-1">Recommended: 50–60 characters</p>
+                    <p className="text-xs text-[var(--text-tertiary)] mt-1">Recommended: 50–60 characters</p>
                   </Field>
                   <Field label="Meta Description">
                     <textarea rows={3} className={`${INPUT} resize-none`} placeholder="Brief summary for search engines (150–160 characters recommended)" />
                   </Field>
-                </Card>
+                </EditorCard>
               </div>
             )}
 
             {/* ── TAB: SETTINGS ── */}
             {activeTab === 'settings' && (
               <div className="space-y-5">
-                <Card title="Visibility" subtitle="Control whether buyers can see and purchase this product">
-                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
+                <EditorCard title="Visibility" subtitle="Control whether buyers can see and purchase this product">
+                  <div className="flex items-center justify-between p-4 bg-[var(--surface-muted)] rounded-[var(--radius-md)] border border-[var(--border)]">
                     <div className="flex items-center gap-3">
                       {formData.is_published
-                        ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                        : <AlertCircle className="w-5 h-5 text-amber-500" />
+                        ? <CheckCircle2 className="w-5 h-5 text-[var(--success)]" />
+                        : <AlertCircle className="w-5 h-5 text-[var(--warning)]" />
                       }
                       <div>
                         <p className="text-sm font-semibold text-[var(--text-primary)]">
                           {formData.is_published ? 'Published — live on your store' : 'Draft — hidden from buyers'}
                         </p>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                           {formData.is_published ? 'Buyers can view and purchase this product.' : 'Toggle on to make this product live.'}
                         </p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" checked={formData.is_published || false} onChange={e => patch({ is_published: e.target.checked })} />
-                      <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-emerald-500 rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                      <div className="w-11 h-6 bg-[var(--border)] peer-checked:bg-[var(--success)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
                     </label>
                   </div>
-                </Card>
+                </EditorCard>
 
-                <Card title="Discoverability" subtitle="Tags and visibility on the Discover page">
+                <EditorCard title="Discoverability" subtitle="Tags and visibility on the Discover page">
                   <Field label="Tags (comma separated)" hint="Help buyers find your product by adding relevant tags">
                     <input
                       type="text"
@@ -515,12 +514,12 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                       placeholder="figma, design, ui, template"
                     />
                   </Field>
-                  <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)]">
+                  <div className="flex items-center justify-between p-4 bg-[var(--surface-muted)] rounded-[var(--radius-md)] border border-[var(--border)]">
                     <div className="flex items-center gap-3">
                       <Globe className="w-5 h-5 text-[var(--text-secondary)]" />
                       <div>
                         <p className="text-sm font-semibold text-[var(--text-primary)]">Show on Discover Page</p>
-                        <p className="text-xs text-gray-500 mt-0.5">Make this product visible on the public Discover page</p>
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Make this product visible on the public Discover page</p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -529,17 +528,17 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                         checked={(formData as any).is_on_discover_page ?? true}
                         onChange={e => patch({ is_on_discover_page: e.target.checked } as any)}
                       />
-                      <div className="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-checked:bg-[var(--bg-tertiary)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
+                      <div className="w-11 h-6 bg-[var(--border)] peer-checked:bg-[var(--success)] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5" />
                     </label>
                   </div>
-                </Card>
+                </EditorCard>
 
-                <div className="border border-red-200 dark:border-red-900/40 rounded-2xl p-6 bg-[var(--bg-primary)]">
-                  <h3 className="text-sm font-bold text-red-600 dark:text-red-400 mb-1 uppercase tracking-wide">Danger Zone</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                <div className="border border-[var(--danger)]/30 rounded-[var(--radius-lg)] p-6 bg-[var(--surface)] shadow-[var(--shadow-xs)]">
+                  <h3 className="text-sm font-bold text-[var(--danger)] mb-1 uppercase tracking-wide">Danger Zone</h3>
+                  <p className="text-sm text-[var(--text-secondary)] mb-4">
                     Deleting this product is permanent and immediately removes buyer access. Existing orders are preserved for records.
                   </p>
-                  <button className="text-sm font-semibold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 px-4 py-2 rounded-xl transition">
+                  <button className="text-sm font-semibold text-[var(--danger)] border border-[var(--danger)]/30 bg-[var(--danger-bg)] hover:bg-[var(--danger)]/20 px-4 py-2 rounded-[var(--radius-md)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                     Delete Product
                   </button>
                 </div>

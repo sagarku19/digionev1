@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // Products list page — product grid (left) + upsell panel (right) + create modals.
 // DB tables: products (via useProducts), upsell_pages (via useUpsellPages)
 
@@ -7,6 +7,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useProducts } from '@/hooks/useProducts';
 import { useUpsellPages } from '@/hooks/useUpsellPages';
 import { getUpsellPublicPath, getUpsellDisplayUrl } from '@/lib/site-urls';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import {
   Plus, X, Package, FileText, Tag, BookOpen, Search, Edit3, Eye,
   Link2, Copy, Trash2, ExternalLink, TrendingUp, CheckCircle2,
@@ -17,7 +20,7 @@ import {
 type StatusTab = 'all' | 'published' | 'draft';
 type CategoryFilter = 'all' | 'digital' | 'course' | 'template' | 'other';
 
-const INPUT = 'w-full px-4 py-3 bg-gray-50/50 dark:bg-zinc-900/50 border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-[var(--brand)]/40 focus:border-[var(--brand)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all';
+const INPUT = 'w-full px-4 py-3 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all';
 
 const CATEGORIES = [
   { value: 'digital', label: 'Digital File', icon: FileText, desc: 'PDF, ZIP, video, audio' },
@@ -107,8 +110,8 @@ function ProductsPageInner() {
     try {
       const p = await createProduct({ name: name.trim(), category, price: parseFloat(price) || 0, is_published: false });
       if (p) { setModal(false); router.push(`/dashboard/products/${p.id}`); }
-    } catch (err) {
-      console.error('Failed to create product', err);
+    } catch {
+      // silent
     }
   };
 
@@ -142,8 +145,8 @@ function ProductsPageInner() {
       });
       setUpsellModal(false);
       if (page) router.push(`/dashboard/products/upsells/${page.id}`);
-    } catch (err) {
-      console.error('Failed to create upsell page', err);
+    } catch {
+      // silent
     }
   };
 
@@ -164,35 +167,36 @@ function ProductsPageInner() {
     p.name?.toLowerCase().includes(productSearch.toLowerCase())
   );
 
+  const addProductButton = (
+    <button
+      onClick={openModal}
+      className="inline-flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-5 py-2.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98] shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] shadow-[var(--shadow-xs)]"
+    >
+      <Plus className="w-4 h-4" />
+      Add Product
+    </button>
+  );
+
   return (
-    <div className="pt-6 sm:pt-8 pb-16 min-h-screen">
-      {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">Products</h1>
-          <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mt-1">
-            {showLoading
-              ? ' '
-              : products.length > 0
-                ? `${products.length} product${products.length !== 1 ? 's' : ''} in your catalog`
-                : 'No products yet — create your first one.'}
-          </p>
-        </div>
-        <button
-          onClick={openModal}
-          className="inline-flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-5 py-2.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98] shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          Add Product
-        </button>
-      </div>
+    <div className="space-y-6 pb-12">
+      <PageHeader
+        title="Products"
+        description={
+          showLoading
+            ? ' '
+            : products.length > 0
+              ? `${products.length} product${products.length !== 1 ? 's' : ''} in your catalog`
+              : 'No products yet — create your first one.'
+        }
+        action={addProductButton}
+      />
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* ═══ LEFT: Product Grid ═══ */}
         <div className="flex-1 min-w-0 space-y-6">
           {/* Status Tabs with count badges */}
           {!showLoading && products.length > 0 && (
-            <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] w-fit">
+            <div className="flex items-center gap-1 p-1 bg-[var(--surface-muted)] rounded-[var(--radius-lg)] w-fit">
               {([
                 { key: 'all',       label: 'All',       count: products.length },
                 { key: 'published', label: 'Published', count: publishedCount },
@@ -201,17 +205,17 @@ function ProductsPageInner() {
                 <button
                   key={tab.key}
                   onClick={() => { setStatusTab(tab.key); clearSelection(); }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-semibold transition-all ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-semibold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                     statusTab === tab.key
-                      ? 'bg-white dark:bg-zinc-900 text-[var(--text-primary)] shadow-sm'
-                      : 'text-gray-500 hover:text-[var(--text-primary)]'
+                      ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {tab.label}
                   <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
                     statusTab === tab.key
-                      ? 'bg-gray-100 dark:bg-zinc-800 text-[var(--text-primary)]'
-                      : 'bg-gray-200/70 dark:bg-zinc-800/50 text-gray-500'
+                      ? 'bg-[var(--surface-muted)] text-[var(--text-primary)]'
+                      : 'bg-[var(--surface-muted)] text-[var(--text-secondary)]'
                   }`}>{tab.count}</span>
                 </button>
               ))}
@@ -222,16 +226,16 @@ function ProductsPageInner() {
           {!showLoading && products.length > 0 && (
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <div className="relative flex-1 max-w-md group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[var(--brand)] transition-colors" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-focus-within:text-[var(--brand)] transition-colors" />
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search products by name..."
-                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-900/60 border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-lg)] text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/30 focus:border-[var(--brand)] shadow-sm transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] shadow-[var(--shadow-xs)] transition-all"
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
+                <Filter className="w-4 h-4 text-[var(--text-tertiary)] shrink-0" />
                 <div className="flex gap-1.5 flex-wrap">
                   {([
                     { key: 'all',      label: 'All Types' },
@@ -243,10 +247,10 @@ function ProductsPageInner() {
                     <button
                       key={f.key}
                       onClick={() => setCategoryFilter(f.key)}
-                      className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold transition-all ${
+                      className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                         categoryFilter === f.key
-                          ? 'bg-[var(--text-primary)] text-[var(--bg-primary)]'
-                          : 'bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-[var(--text-secondary)] hover:border-gray-400'
+                          ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
+                          : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                       }`}
                     >
                       {f.label}
@@ -262,10 +266,10 @@ function ProductsPageInner() {
             <div className="flex items-center gap-3">
               <button
                 onClick={selectedIds.size === filtered.length ? clearSelection : selectAll}
-                className="flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-[var(--text-primary)] transition-colors"
+                className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               >
                 {selectedIds.size === filtered.length && filtered.length > 0
-                  ? <CheckSquare className="w-4 h-4 text-indigo-500" />
+                  ? <CheckSquare className="w-4 h-4 text-[var(--brand)]" />
                   : <Square className="w-4 h-4" />
                 }
                 {selectedIds.size > 0 ? `${selectedIds.size} selected` : 'Select all'}
@@ -274,17 +278,17 @@ function ProductsPageInner() {
                 <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200">
                   <button
                     onClick={() => setBulkAction('archive')}
-                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--warning-bg)] text-[var(--warning)] border border-[var(--warning)]/20 hover:bg-[var(--warning)]/20 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   >
                     <Archive className="w-3.5 h-3.5" /> Archive
                   </button>
                   <button
                     onClick={() => setBulkAction('delete')}
-                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--danger-bg)] text-[var(--danger)] border border-[var(--danger)]/20 hover:bg-[var(--danger)]/20 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Delete
                   </button>
-                  <button onClick={clearSelection} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                  <button onClick={clearSelection} className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -297,10 +301,10 @@ function ProductsPageInner() {
           {showLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-[var(--radius-lg)] p-4 animate-pulse shadow-sm">
-                  <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-lg)] mb-5" />
-                  <div className="h-4 bg-gray-100 dark:bg-zinc-900 rounded-md w-3/4 mb-3" />
-                  <div className="h-3 bg-gray-100 dark:bg-zinc-900 rounded-md w-1/2" />
+                <div key={i} className="bg-[var(--surface)] border border-[var(--border-subtle)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-xs)]">
+                  <Skeleton className="w-full aspect-[4/3] mb-5" rounded="lg" />
+                  <Skeleton className="h-4 w-3/4 mb-3" />
+                  <Skeleton className="h-3 w-1/2" />
                 </div>
               ))}
             </div>
@@ -308,13 +312,13 @@ function ProductsPageInner() {
 
           {/* Empty state */}
           {!showLoading && products.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-32 text-center bg-white/50 dark:bg-zinc-950/50 border border-dashed border-gray-300 dark:border-zinc-800 rounded-[var(--radius-lg)]">
-              <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                <Package className="w-10 h-10 text-indigo-500 dark:text-indigo-400" />
+            <div className="flex flex-col items-center justify-center py-32 text-center bg-[var(--surface)] border border-dashed border-[var(--border)] rounded-[var(--radius-lg)]">
+              <div className="w-24 h-24 bg-[var(--brand)]/10 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <Package className="w-10 h-10 text-[var(--brand)]" />
               </div>
               <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">No products yet</h2>
-              <p className="text-gray-500 text-base max-w-sm mb-8">Your digital shelf is empty. Create your first product and start earning in minutes.</p>
-              <button onClick={openModal} className="flex items-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 text-[var(--bg-primary)] px-6 py-3.5 rounded-[var(--radius-lg)] font-bold text-sm shadow opacity-90 hover:opacity-100 transition-all">
+              <p className="text-[var(--text-secondary)] text-base max-w-sm mb-8">Your digital shelf is empty. Create your first product and start earning in minutes.</p>
+              <button onClick={openModal} className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-6 py-3.5 rounded-[var(--radius-lg)] font-bold text-sm shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <Plus className="w-5 h-5" />
                 Create First Product
               </button>
@@ -329,17 +333,17 @@ function ProductsPageInner() {
                 return (
                 <div
                   key={product.id}
-                  className={`group flex flex-col bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] overflow-hidden hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 border-2 ${
+                  className={`group flex flex-col bg-[var(--surface)] rounded-[var(--radius-lg)] overflow-hidden hover:shadow-[var(--shadow-sm)] transition-all duration-300 border-2 ${
                     isSelected
-                      ? 'border-indigo-500 dark:border-indigo-400'
-                      : 'border-gray-200/80 dark:border-zinc-800 hover:border-indigo-500/50 dark:hover:border-indigo-400/50'
+                      ? 'border-[var(--brand)]'
+                      : 'border-[var(--border)] hover:border-[var(--brand)]/50'
                   }`}
                 >
-                  <div className="relative w-[calc(100%-1rem)] aspect-[4/3] bg-gray-50 dark:bg-zinc-900 overflow-hidden mx-2 mt-2 rounded-[16px]">
+                  <div className="relative w-[calc(100%-1rem)] aspect-[4/3] bg-[var(--surface-muted)] overflow-hidden mx-2 mt-2 rounded-[16px]">
                     {product.thumbnail_url ? (
                       <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out" />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-300 dark:text-zinc-700 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-950 inner-shadow">
+                      <div className="w-full h-full flex flex-col items-center justify-center text-[var(--text-tertiary)] bg-[var(--surface-muted)]">
                         <ImageIcon className="w-12 h-12 mb-2 opacity-50" />
                         <span className="text-xs font-medium uppercase tracking-widest opacity-50">No Cover</span>
                       </div>
@@ -347,36 +351,36 @@ function ProductsPageInner() {
                     {/* Selection checkbox */}
                     <button
                       onClick={e => { e.stopPropagation(); toggleSelect(product.id); }}
-                      className={`absolute top-3 left-3 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
+                      className={`absolute top-3 left-3 w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                         isSelected
-                          ? 'bg-indigo-500 border-indigo-500 opacity-100'
-                          : 'bg-white/80 dark:bg-zinc-900/80 border-gray-300 dark:border-zinc-600 opacity-0 group-hover:opacity-100'
+                          ? 'bg-[var(--brand)] border-[var(--brand)] opacity-100'
+                          : 'bg-[var(--surface)]/80 border-[var(--border)] opacity-0 group-hover:opacity-100'
                       }`}
                     >
-                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--text-on-brand)]" />}
                     </button>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                    
+
                     <div className="absolute top-3 right-3">
-                      <div className={`backdrop-blur-md border text-xs font-bold px-3 py-1.5 rounded-full shadow-sm ${
+                      <div className={`border text-xs font-bold px-3 py-1.5 rounded-full shadow-[var(--shadow-xs)] ${
                         product.is_published
-                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-zinc-500/10 border-zinc-500/20 text-zinc-600 dark:text-zinc-400'
+                          ? 'bg-[var(--success-bg)] border-[var(--success)]/20 text-[var(--success)]'
+                          : 'bg-[var(--surface-muted)] border-[var(--border)] text-[var(--text-secondary)]'
                       }`}>
                         {product.is_published ? 'Live' : 'Draft'}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-5 flex flex-col flex-1">
                     <div className="flex items-start justify-between gap-3 mb-2">
-                      <h3 className="font-bold text-[var(--text-primary)] text-base leading-tight line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{product.name}</h3>
-                      <span className="text-base font-black text-[var(--text-primary)] shrink-0 bg-gray-100 dark:bg-zinc-900 px-2 py-0.5 rounded-lg border border-gray-200 dark:border-zinc-800 shadow-sm">
+                      <h3 className="font-bold text-[var(--text-primary)] text-base leading-tight line-clamp-1 group-hover:text-[var(--brand)] transition-colors">{product.name}</h3>
+                      <span className="text-base font-black text-[var(--text-primary)] shrink-0 bg-[var(--surface-muted)] px-2 py-0.5 rounded-lg border border-[var(--border)] shadow-[var(--shadow-xs)]">
                         {product.is_free ? 'Free' : formatINR(product.price || 0)}
                       </span>
                     </div>
-                    
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-3">
                       {product.category === 'digital' && <FileText className="w-3.5 h-3.5" />}
                       {product.category === 'course' && <BookOpen className="w-3.5 h-3.5" />}
                       {product.category === 'template' && <Tag className="w-3.5 h-3.5" />}
@@ -391,14 +395,14 @@ function ProductsPageInner() {
                     <div className="grid grid-cols-2 gap-2 mt-auto">
                       <button
                         onClick={() => router.push(`/dashboard/products/${product.id}`)}
-                        className="flex items-center justify-center gap-2 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-zinc-950 hover:bg-gray-800 dark:hover:bg-gray-100 py-2.5 rounded-[var(--radius-sm)] transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 text-sm font-semibold text-[var(--accent-fg)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] py-2.5 rounded-[var(--radius-sm)] transition-all shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                       >
                         <Edit3 className="w-4 h-4" />
                         Edit
                       </button>
                       <button
                         onClick={() => window.open(`/store/product/${product.id}`, '_blank')}
-                        className="flex items-center justify-center gap-2 text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)] bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 py-2.5 rounded-[var(--radius-sm)] transition-all shadow-sm"
+                        className="flex items-center justify-center gap-2 text-sm font-semibold text-[var(--text-secondary)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] py-2.5 rounded-[var(--radius-sm)] transition-all shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                         title="Preview Product"
                       >
                         <Eye className="w-4 h-4" />
@@ -412,23 +416,23 @@ function ProductsPageInner() {
               {/* Add new product skeleton card */}
               <button
                 onClick={openModal}
-                className="group flex flex-col bg-white dark:bg-zinc-950 border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-gray-400 dark:hover:border-zinc-600 rounded-[var(--radius-lg)] overflow-hidden transition-all duration-200 min-h-[320px]"
+                className="group flex flex-col bg-[var(--surface)] border-2 border-dashed border-[var(--border)] hover:border-[var(--border-strong)] rounded-[var(--radius-lg)] overflow-hidden transition-all duration-200 min-h-[320px] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               >
-                <div className="w-[calc(100%-1rem)] aspect-[4/3] mx-2 mt-2 rounded-[16px] bg-gray-50 dark:bg-zinc-900 flex flex-col items-center justify-center gap-2">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-zinc-800 group-hover:bg-gray-200 dark:group-hover:bg-zinc-700 flex items-center justify-center transition-colors">
-                    <Plus className="w-5 h-5 text-gray-400 dark:text-zinc-500 group-hover:text-gray-600 dark:group-hover:text-zinc-300 transition-colors" />
+                <div className="w-[calc(100%-1rem)] aspect-[4/3] mx-2 mt-2 rounded-[16px] bg-[var(--surface-muted)] flex flex-col items-center justify-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-[var(--surface-hover)] flex items-center justify-center transition-colors">
+                    <Plus className="w-5 h-5 text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] transition-colors" />
                   </div>
                 </div>
                 <div className="p-5 flex flex-col flex-1 justify-between">
                   <div className="space-y-2.5">
-                    <div className="h-3.5 bg-gray-100 dark:bg-zinc-900 rounded-md w-3/4" />
-                    <div className="h-3 bg-gray-100 dark:bg-zinc-900 rounded-md w-1/2" />
-                    <div className="h-3 bg-gray-100 dark:bg-zinc-900 rounded-md w-full" />
-                    <div className="h-3 bg-gray-100 dark:bg-zinc-900 rounded-md w-2/3" />
+                    <Skeleton className="h-3.5 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-2/3" />
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-5">
-                    <div className="h-9 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-sm)]" />
-                    <div className="h-9 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-sm)]" />
+                    <Skeleton className="h-9 rounded-[var(--radius-sm)]" />
+                    <Skeleton className="h-9 rounded-[var(--radius-sm)]" />
                   </div>
                 </div>
               </button>
@@ -436,39 +440,40 @@ function ProductsPageInner() {
           )}
 
           {!showLoading && products.length > 0 && filtered.length === 0 && (
-            <div className="text-center py-20 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-lg)]">
-              <Search className="w-10 h-10 text-gray-300 dark:text-zinc-700 mx-auto mb-4" />
-              <p className="text-gray-500 font-medium">No products match your filters</p>
-              <button
-                onClick={() => { setSearch(''); setStatusTab('all'); setCategoryFilter('all'); }}
-                className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm mt-3 hover:underline"
-              >
-                Clear all filters
-              </button>
-            </div>
+            <EmptyState
+              icon={Search}
+              title="No products match your filters"
+              description="Try adjusting your search or filters."
+              action={
+                <button
+                  onClick={() => { setSearch(''); setStatusTab('all'); setCategoryFilter('all'); }}
+                  className="text-[var(--brand)] font-semibold text-sm hover:underline focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                >
+                  Clear all filters
+                </button>
+              }
+            />
           )}
         </div>
 
         {/* ═══ RIGHT: Upsell Panel ═══ */}
         <aside className="lg:w-[400px] xl:w-[440px] shrink-0">
           <div className="sticky top-6 space-y-6">
-            <div className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50/50 dark:from-zinc-950 dark:to-zinc-950/80 border border-gray-200/80 dark:border-zinc-800 rounded-[var(--radius-lg)] p-1 shadow-sm">
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 dark:bg-indigo-500/20 blur-3xl rounded-full pointer-events-none" />
-              
-              <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl rounded-[var(--radius-lg)] p-6 lg:p-7 h-full relative z-10 border border-white/20 dark:border-white/5">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-1 shadow-[var(--shadow-xs)]">
+              <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] p-6 lg:p-7 h-full relative z-10">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-[var(--radius-lg)] flex items-center justify-center shadow-inner">
-                      <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <div className="w-10 h-10 bg-[var(--brand)]/10 rounded-[var(--radius-lg)] flex items-center justify-center shadow-inner">
+                      <TrendingUp className="w-5 h-5 text-[var(--brand)]" />
                     </div>
                     <div>
                       <h3 className="font-bold text-[var(--text-primary)] text-base">Upsell Pages</h3>
-                      <p className="text-xs font-medium text-gray-500 mt-0.5">Boost order value</p>
+                      <p className="text-xs font-medium text-[var(--text-tertiary)] mt-0.5">Boost order value</p>
                     </div>
                   </div>
                   <button
                     onClick={openUpsellModal}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-700 dark:text-[var(--text-secondary)] text-xs font-bold transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] text-xs font-bold transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Create Upsell Page
@@ -478,21 +483,21 @@ function ProductsPageInner() {
                 {showUpsellLoading && (
                   <div className="space-y-4">
                     {[1, 2, 3].map(i => (
-                      <div key={i} className="animate-pulse h-24 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-lg)]" />
+                      <Skeleton key={i} className="h-24 w-full" rounded="lg" />
                     ))}
                   </div>
                 )}
 
                 {!showUpsellLoading && upsellPages.length === 0 && (
-                  <div className="text-center py-12 px-4 rounded-[var(--radius-lg)] border border-dashed border-gray-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/20">
-                    <div className="w-16 h-16 bg-gradient-to-tr from-gray-100 to-white dark:from-zinc-800 dark:to-zinc-900 rounded-[20px] flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-200/50 dark:border-zinc-700/50">
-                      <Link2 className="w-7 h-7 text-gray-400 dark:text-gray-500" />
+                  <div className="text-center py-12 px-4 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface-muted)]">
+                    <div className="w-16 h-16 bg-[var(--surface-hover)] rounded-[20px] flex items-center justify-center mx-auto mb-4 shadow-[var(--shadow-xs)] border border-[var(--border)]">
+                      <Link2 className="w-7 h-7 text-[var(--text-tertiary)]" />
                     </div>
                     <h4 className="text-base font-bold text-[var(--text-primary)] mb-1">Create an Upsell</h4>
-                    <p className="text-sm text-gray-500 mb-6 leading-relaxed">Combine products into a single shareable checkout page to increase sales.</p>
+                    <p className="text-sm text-[var(--text-secondary)] mb-6 leading-relaxed">Combine products into a single shareable checkout page to increase sales.</p>
                     <button
                       onClick={openUpsellModal}
-                      className="inline-flex items-center justify-center gap-2 w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 text-white dark:text-zinc-950 py-2.5 rounded-[var(--radius-sm)] font-bold text-sm transition-colors"
+                      className="inline-flex items-center justify-center gap-2 w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] py-2.5 rounded-[var(--radius-sm)] font-bold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                     >
                       <Plus className="w-4 h-4" />
                       Create Upsell
@@ -505,64 +510,64 @@ function ProductsPageInner() {
                     {upsellPages.map(up => (
                       <div
                         key={up.id}
-                        className="group relative isolate p-5 bg-white dark:bg-zinc-900/50 border border-gray-200/80 dark:border-zinc-800 rounded-[var(--radius-lg)] hover:border-indigo-500/30 dark:hover:border-indigo-400/30 transition-all cursor-pointer overflow-hidden shadow-sm hover:shadow-md"
+                        className="group relative isolate p-5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] hover:border-[var(--brand)]/30 transition-all cursor-pointer overflow-hidden shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)]"
                         onClick={() => router.push(`/dashboard/products/upsells/${up.id}`)}
                       >
                         {/* Hover Gradient Background */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-transparent dark:from-indigo-500/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
 
                         <div className="flex items-start justify-between gap-3 mb-4">
                           <div className="flex-1 min-w-0">
-                            <p className="text-base font-bold text-[var(--text-primary)] truncate pr-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{up.title}</p>
-                            <p className="text-xs font-medium text-gray-500 truncate mt-1 bg-gray-100 dark:bg-zinc-800 inline-flex px-2 py-0.5 rounded-md">
+                            <p className="text-base font-bold text-[var(--text-primary)] truncate pr-2 group-hover:text-[var(--brand)] transition-colors">{up.title}</p>
+                            <p className="text-xs font-medium text-[var(--text-secondary)] truncate mt-1 bg-[var(--surface-muted)] inline-flex px-2 py-0.5 rounded-md">
                               {up.primary_product?.name || 'Unknown product'}
-                              {up.primary_product?.price != null && ` \u2022 ${formatINR(up.primary_product.price)}`}
+                              {up.primary_product?.price != null && ` • ${formatINR(up.primary_product.price)}`}
                             </p>
                           </div>
-                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shrink-0 shadow-sm border ${
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md shrink-0 shadow-[var(--shadow-xs)] border ${
                             up.is_published
-                              ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400'
-                              : 'bg-gray-50 border-gray-200 text-gray-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-[var(--text-secondary)]'
+                              ? 'bg-[var(--success-bg)] border-[var(--success)]/20 text-[var(--success)]'
+                              : 'bg-[var(--surface-muted)] border-[var(--border)] text-[var(--text-secondary)]'
                           }`}>
                             {up.is_published ? 'Live' : 'Draft'}
                           </span>
                         </div>
-                        
-                        <div className="flex items-center gap-1.5 p-2 bg-gray-50 dark:bg-zinc-950 rounded-[var(--radius-sm)] border border-gray-100 dark:border-zinc-800 mb-4 overflow-hidden">
-                          <Link2 className="w-3.5 h-3.5 text-gray-400 shrink-0 ml-1" />
-                          <span className="text-xs text-gray-500 font-medium truncate flex-1">{getUpsellDisplayUrl(up.slug)}</span>
+
+                        <div className="flex items-center gap-1.5 p-2 bg-[var(--surface-muted)] rounded-[var(--radius-sm)] border border-[var(--border-subtle)] mb-4 overflow-hidden">
+                          <Link2 className="w-3.5 h-3.5 text-[var(--text-tertiary)] shrink-0 ml-1" />
+                          <span className="text-xs text-[var(--text-secondary)] font-medium truncate flex-1">{getUpsellDisplayUrl(up.slug)}</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => router.push(`/dashboard/products/upsells/${up.id}`)}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-[var(--text-secondary)] transition"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                               title="Edit"
                             >
                               <Edit3 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleCopyLink(up.slug, up.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-[var(--text-secondary)] transition"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                               title="Copy Link"
                             >
-                              {copiedId === up.id ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                              {copiedId === up.id ? <CheckCircle2 className="w-4 h-4 text-[var(--success)]" /> : <Copy className="w-4 h-4" />}
                             </button>
                             <a
                               href={getUpsellPublicPath(up.slug)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-[var(--text-secondary)] transition"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                               title="View Page"
                             >
                               <ExternalLink className="w-4 h-4" />
                             </a>
                           </div>
-                          
+
                           <button
                             onClick={() => setDeleteId(up.id)}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--danger-bg)] text-[var(--text-tertiary)] hover:text-[var(--danger)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -574,22 +579,22 @@ function ProductsPageInner() {
                     {/* Add upsell skeleton card */}
                     <button
                       onClick={openUpsellModal}
-                      className="group w-full border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-gray-400 dark:hover:border-zinc-600 rounded-[var(--radius-lg)] p-4 transition-all duration-200"
+                      className="group w-full border-2 border-dashed border-[var(--border)] hover:border-[var(--border-strong)] rounded-[var(--radius-lg)] p-4 transition-all duration-200 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                     >
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 group-hover:bg-gray-200 dark:group-hover:bg-zinc-700 flex items-center justify-center transition-colors shrink-0">
-                          <Plus className="w-4 h-4 text-gray-400 dark:text-zinc-500 group-hover:text-gray-600 dark:group-hover:text-zinc-300 transition-colors" />
+                        <div className="w-8 h-8 rounded-lg bg-[var(--surface-muted)] group-hover:bg-[var(--surface-hover)] flex items-center justify-center transition-colors shrink-0">
+                          <Plus className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] transition-colors" />
                         </div>
                         <div className="flex-1 space-y-1.5">
-                          <div className="h-3 bg-gray-100 dark:bg-zinc-900 rounded w-2/3" />
-                          <div className="h-2.5 bg-gray-100 dark:bg-zinc-900 rounded w-1/2" />
+                          <Skeleton className="h-3 w-2/3" />
+                          <Skeleton className="h-2.5 w-1/2" />
                         </div>
                       </div>
-                      <div className="h-7 bg-gray-100 dark:bg-zinc-900 rounded-[var(--radius-sm)] mb-3" />
+                      <Skeleton className="h-7 w-full rounded-[var(--radius-sm)] mb-3" />
                       <div className="flex gap-2">
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-zinc-900 rounded-lg" />
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-zinc-900 rounded-lg" />
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-zinc-900 rounded-lg" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
                       </div>
                     </button>
                   </div>
@@ -602,50 +607,47 @@ function ProductsPageInner() {
 
       {/* ═══ Create Product Modal ═══ */}
       {modal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/40 dark:bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-[480px] border border-gray-200/50 dark:border-zinc-800/80 overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
-            <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-gray-100 dark:border-zinc-800/50 shrink-0">
-              <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
-                <div className="w-32 h-32 bg-[var(--brand)] rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen" />
-              </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200">
+          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-[480px] border border-[var(--border)] overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
+            <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-[var(--border-subtle)] shrink-0">
               <h2 className="text-2xl font-bold text-[var(--text-primary)] relative z-10">Create Product</h2>
-              <p className="text-sm text-gray-500 mt-1 relative z-10">Add a new offering to your catalog.</p>
-              <button onClick={() => setModal(false)} className="absolute top-8 right-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors z-20">
+              <p className="text-sm text-[var(--text-secondary)] mt-1 relative z-10">Add a new offering to your catalog.</p>
+              <button onClick={() => setModal(false)} className="absolute top-8 right-8 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] p-2 rounded-full hover:bg-[var(--surface-hover)] transition-colors z-20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
-            <form onSubmit={handleCreate} className="p-6 sm:p-8 space-y-6 bg-gray-50/30 dark:bg-zinc-900/10 overflow-y-auto custom-scrollbar">
+
+            <form onSubmit={handleCreate} className="p-6 sm:p-8 space-y-6 bg-[var(--surface-muted)]/30 overflow-y-auto custom-scrollbar">
               <div>
-                <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Product Name <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Product Name <span className="text-[var(--danger)]">*</span></label>
                 <input type="text" required autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Masterclass: Advanced UI Design" className={INPUT} />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-bold text-[var(--text-primary)] mb-3">Category Type</label>
                 <div className="grid grid-cols-2 gap-3">
                   {CATEGORIES.map(c => (
                     <button key={c.value} type="button" onClick={() => setCategory(c.value)}
-                      className={`relative flex flex-col items-start p-4 rounded-[var(--radius-lg)] text-left transition-all duration-200 border-2 overflow-hidden group ${category === c.value ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950'}`}>
-                      <c.icon className={`w-6 h-6 mb-3 ${category === c.value ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'}`} />
-                      <div className={`text-sm font-bold mb-0.5 ${category === c.value ? 'text-indigo-900 dark:text-indigo-100' : 'text-[var(--text-primary)]'}`}>{c.label}</div>
-                      <div className="text-xs text-gray-500 leading-tight">{c.desc}</div>
+                      className={`relative flex flex-col items-start p-4 rounded-[var(--radius-lg)] text-left transition-all duration-200 border-2 overflow-hidden group focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${category === c.value ? 'border-[var(--brand)] bg-[var(--brand)]/5' : 'border-[var(--border)] hover:border-[var(--brand)]/40 bg-[var(--surface)]'}`}>
+                      <c.icon className={`w-6 h-6 mb-3 ${category === c.value ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]'}`} />
+                      <div className={`text-sm font-bold mb-0.5 ${category === c.value ? 'text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}`}>{c.label}</div>
+                      <div className="text-xs text-[var(--text-secondary)] leading-tight">{c.desc}</div>
                     </button>
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Base Price (INR)</label>
                 <div className="relative group">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium group-focus-within:text-[var(--brand)] transition-colors">{'\u20B9'}</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] font-medium group-focus-within:text-[var(--brand)] transition-colors">{'₹'}</span>
                   <input type="number" min="0" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" className={`${INPUT} pl-10 font-mono text-lg tracking-wider placeholder:text-base`} />
                 </div>
-                <p className="text-xs text-gray-500 mt-2 font-medium">You can configure free products or change pricing later.</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-2 font-medium">You can configure free products or change pricing later.</p>
               </div>
-              
+
               <div className="pt-2">
-                <button type="submit" disabled={isCreating || !name.trim()} className="w-full flex items-center justify-center gap-2 bg-[var(--text-primary)] hover:bg-[var(--text-primary)]/90 disabled:opacity-50 text-[var(--bg-primary)] py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-lg transition-all active:scale-[0.98]">
+                <button type="submit" disabled={isCreating || !name.trim()} className="w-full flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                   {isCreating ? 'Creating Product...' : 'Create & Continue'}
                   {!isCreating && <ArrowRight className="w-4 h-4 ml-1" />}
                 </button>
@@ -657,33 +659,30 @@ function ProductsPageInner() {
 
       {/* ═══ Create Upsell Modal ═══ */}
       {upsellModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/40 dark:bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-[540px] border border-gray-200/50 dark:border-zinc-800/80 overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
-            <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-gray-100 dark:border-zinc-800/50 shrink-0">
-              <div className="absolute top-0 right-0 p-8 opacity-20 pointer-events-none">
-                <div className="w-32 h-32 bg-indigo-500 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen" />
-              </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200">
+          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-[540px] border border-[var(--border)] overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
+            <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-[var(--border-subtle)] shrink-0">
               <h2 className="text-2xl font-bold text-[var(--text-primary)] relative z-10">
                 {upsellStep === 'info' ? 'Create Upsell Page' : 'Configure Upsell'}
               </h2>
-              <p className="text-sm text-gray-500 mt-1 relative z-10">
+              <p className="text-sm text-[var(--text-secondary)] mt-1 relative z-10">
                 {upsellStep === 'info' ? 'Maximize revenue with smart bundle checkouts.' : 'Select products to bundle together.'}
               </p>
-              <button onClick={() => setUpsellModal(false)} className="absolute top-8 right-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors z-20">
+              <button onClick={() => setUpsellModal(false)} className="absolute top-8 right-8 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] p-2 rounded-full hover:bg-[var(--surface-hover)] transition-colors z-20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 sm:p-8 bg-gray-50/30 dark:bg-zinc-900/10 overflow-y-auto custom-scrollbar">
+            <div className="p-6 sm:p-8 bg-[var(--surface-muted)]/30 overflow-y-auto custom-scrollbar">
               {upsellStep === 'info' ? (
                 <div className="space-y-5">
                   {/* Hero */}
-                  <div className="bg-gradient-to-br from-violet-500 to-indigo-600 rounded-[var(--radius-lg)] p-5 text-white">
+                  <div className="bg-[var(--brand)] rounded-[var(--radius-lg)] p-5 text-[var(--text-on-brand)]">
                     <div className="w-10 h-10 bg-white/20 rounded-[var(--radius-sm)] flex items-center justify-center mb-4">
-                      <Sparkles className="w-5 h-5 text-white" />
+                      <Sparkles className="w-5 h-5 text-[var(--text-on-brand)]" />
                     </div>
                     <h3 className="text-base font-extrabold mb-1">One link. Multiple products.</h3>
-                    <p className="text-sm text-white/70 leading-relaxed">
+                    <p className="text-sm text-[var(--text-on-brand)]/80 leading-relaxed">
                       Bundle a main product with optional add-ons buyers can toggle at checkout — no extra clicks, no friction.
                     </p>
                   </div>
@@ -695,9 +694,9 @@ function ProductsPageInner() {
                       { n: '2', label: 'Add up to 2 optional add-ons' },
                       { n: '3', label: 'Share the link and watch revenue grow' },
                     ].map(step => (
-                      <div key={step.n} className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 rounded-[var(--radius-sm)]">
-                        <span className="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 text-xs font-extrabold flex items-center justify-center shrink-0">{step.n}</span>
-                        <span className="text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)]">{step.label}</span>
+                      <div key={step.n} className="flex items-center gap-3 px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)]">
+                        <span className="w-6 h-6 rounded-full bg-[var(--brand)]/15 text-[var(--brand)] text-xs font-extrabold flex items-center justify-center shrink-0">{step.n}</span>
+                        <span className="text-sm font-medium text-[var(--text-secondary)]">{step.label}</span>
                       </div>
                     ))}
                   </div>
@@ -705,7 +704,7 @@ function ProductsPageInner() {
                   <button
                     onClick={() => setUpsellStep('select')}
                     disabled={products.length === 0}
-                    className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-zinc-950 py-3.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98]"
+                    className="w-full flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   >
                     {products.length === 0 ? 'Create a product first' : 'Start Building →'}
                   </button>
@@ -725,42 +724,42 @@ function ProductsPageInner() {
 
                   {/* Primary Product */}
                   <div>
-                    <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Select Primary Product <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Select Primary Product <span className="text-[var(--danger)]">*</span></label>
                     <div className="relative mb-3 group">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-focus-within:text-[var(--brand)] transition-colors" />
                       <input
                         type="text" value={productSearch} onChange={e => setProductSearch(e.target.value)}
                         placeholder="Search your inventory..."
-                        className={`${INPUT} pl-11 py-2.5 rounded-lg border-gray-300 dark:border-zinc-700`}
+                        className={`${INPUT} pl-11 py-2.5`}
                       />
                     </div>
-                    <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-zinc-800 rounded-[var(--radius-sm)] divide-y divide-gray-100 dark:divide-zinc-800/50 bg-white dark:bg-zinc-950 shadow-inner custom-scrollbar">
+                    <div className="max-h-48 overflow-y-auto border border-[var(--border)] rounded-[var(--radius-sm)] divide-y divide-[var(--border-subtle)] bg-[var(--surface)] shadow-inner custom-scrollbar">
                       {filteredProducts.map((p: any) => (
                         <button
                           key={p.id} type="button"
                           onClick={() => { setPrimaryId(p.id); setSecondaryIds(ids => ids.filter(id => id !== p.id)); if (!upsellTitle) setUpsellTitle(p.name); }}
-                          className={`w-full flex items-center gap-4 px-4 py-3 text-left transition-colors ${
-                            primaryId === p.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : 'hover:bg-gray-50 dark:hover:bg-zinc-900/50'
+                          className={`w-full flex items-center gap-4 px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                            primaryId === p.id ? 'bg-[var(--brand)]/8' : 'hover:bg-[var(--surface-hover)]'
                           }`}
                         >
                           {p.thumbnail_url ? (
-                            <img src={p.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0 border border-black/5 dark:border-white/5" />
+                            <img src={p.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0 border border-[var(--border-subtle)]" />
                           ) : (
-                            <div className="w-10 h-10 bg-gray-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center shrink-0 border border-gray-200 dark:border-zinc-700">
-                              <Package className="w-4 h-4 text-gray-400" />
+                            <div className="w-10 h-10 bg-[var(--surface-muted)] rounded-lg flex items-center justify-center shrink-0 border border-[var(--border)]">
+                              <Package className="w-4 h-4 text-[var(--text-tertiary)]" />
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm font-bold truncate ${primaryId === p.id ? 'text-indigo-900 dark:text-indigo-100' : 'text-[var(--text-primary)]'}`}>{p.name}</p>
-                            <p className="text-xs font-semibold text-gray-500 mt-0.5">{formatINR(p.price || 0)}</p>
+                            <p className={`text-sm font-bold truncate ${primaryId === p.id ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{p.name}</p>
+                            <p className="text-xs font-semibold text-[var(--text-secondary)] mt-0.5">{formatINR(p.price || 0)}</p>
                           </div>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${primaryId === p.id ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 dark:border-zinc-600'}`}>
-                            {primaryId === p.id && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${primaryId === p.id ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
+                            {primaryId === p.id && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--text-on-brand)]" />}
                           </div>
                         </button>
                       ))}
                       {filteredProducts.length === 0 && (
-                        <div className="py-6 text-center text-sm text-gray-500">No products found.</div>
+                        <div className="py-6 text-center text-sm text-[var(--text-secondary)]">No products found.</div>
                       )}
                     </div>
                   </div>
@@ -769,7 +768,7 @@ function ProductsPageInner() {
                   {primaryId && (
                     <div className="animate-in slide-in-from-top-2 fade-in duration-300">
                       <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">
-                        Add Order Bumps <span className="text-gray-400 font-medium text-xs ml-1">(Optional, max 2)</span>
+                        Add Order Bumps <span className="text-[var(--text-tertiary)] font-medium text-xs ml-1">(Optional, max 2)</span>
                       </label>
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                         {products.filter((p: any) => p.id !== primaryId).map((p: any) => {
@@ -779,21 +778,21 @@ function ProductsPageInner() {
                             <button
                               key={p.id} type="button" disabled={disabled}
                               onClick={() => setSecondaryIds(ids => selected ? ids.filter(id => id !== p.id) : [...ids, p.id])}
-                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--radius-sm)] text-left transition-all ${
-                                selected 
-                                  ? 'bg-white dark:bg-zinc-950 border-2 border-indigo-500 shadow-sm'
-                                  : disabled 
-                                    ? 'opacity-40 cursor-not-allowed bg-white dark:bg-zinc-950 border-2 border-transparent'
-                                    : 'bg-white dark:bg-zinc-950 border-2 border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-600'
+                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--radius-sm)] text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                                selected
+                                  ? 'bg-[var(--surface)] border-2 border-[var(--brand)] shadow-[var(--shadow-xs)]'
+                                  : disabled
+                                    ? 'opacity-40 cursor-not-allowed bg-[var(--surface)] border-2 border-transparent'
+                                    : 'bg-[var(--surface)] border-2 border-[var(--border)] hover:border-[var(--border-strong)]'
                               }`}
                             >
-                              <div className={`w-5 h-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 dark:border-zinc-600'}`}>
-                                {selected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                              <div className={`w-5 h-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
+                                {selected && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--text-on-brand)]" />}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-bold truncate ${selected ? 'text-indigo-900 dark:text-indigo-100' : 'text-[var(--text-primary)]'}`}>{p.name}</p>
+                                <p className={`text-sm font-bold truncate ${selected ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{p.name}</p>
                               </div>
-                              <p className="text-xs font-bold text-gray-500 shrink-0 bg-gray-100 dark:bg-zinc-800 px-2 py-1 rounded-md">{formatINR(p.price || 0)}</p>
+                              <p className="text-xs font-bold text-[var(--text-secondary)] shrink-0 bg-[var(--surface-muted)] px-2 py-1 rounded-md">{formatINR(p.price || 0)}</p>
                             </button>
                           );
                         })}
@@ -805,7 +804,7 @@ function ProductsPageInner() {
                     <button
                       onClick={handleCreateUpsell}
                       disabled={!primaryId || upsellCreating}
-                      className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98]"
+                      className="w-full flex items-center justify-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 text-[var(--text-on-brand)] py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                     >
                       {upsellCreating ? 'Building Funnel...' : 'Publish Funnel Page'}
                       {!upsellCreating && <ArrowRight className="w-4 h-4 ml-1" />}
@@ -820,18 +819,18 @@ function ProductsPageInner() {
 
       {/* ═══ Delete Confirm ═══ */}
       {deleteId && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-sm border border-gray-200/50 dark:border-zinc-800/80 p-8 text-center transform transition-all scale-in-95">
-            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-inner border border-red-100 dark:border-red-500/20">
-              <Trash2 className="w-8 h-8 text-red-500 dark:text-red-400" />
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
+          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm border border-[var(--border)] p-8 text-center transform transition-all scale-in-95">
+            <div className="w-16 h-16 bg-[var(--danger-bg)] rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-inner border border-[var(--danger)]/20">
+              <Trash2 className="w-8 h-8 text-[var(--danger)]" />
             </div>
             <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">Delete Funnel?</h3>
-            <p className="text-sm text-gray-500 mb-8 leading-relaxed">This will permanently remove the upsell page. Your base products will not be affected.</p>
+            <p className="text-sm text-[var(--text-secondary)] mb-8 leading-relaxed">This will permanently remove the upsell page. Your base products will not be affected.</p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-gray-200 dark:border-zinc-800 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors">
+              <button onClick={() => setDeleteId(null)} className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-[var(--border)] text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 Cancel
               </button>
-              <button onClick={handleDeleteUpsell} className="flex-1 py-3.5 rounded-[var(--radius-sm)] bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]">
+              <button onClick={handleDeleteUpsell} className="flex-1 py-3.5 rounded-[var(--radius-sm)] bg-[var(--danger)] hover:bg-[var(--danger)]/90 text-white text-sm font-bold shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 Yes, Delete
               </button>
             </div>
@@ -840,22 +839,22 @@ function ProductsPageInner() {
       )}
       {/* ═══ Bulk Action Confirm ═══ */}
       {bulkAction && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-zinc-950 rounded-[var(--radius-lg)] shadow-2xl w-full max-w-sm border border-gray-200/50 dark:border-zinc-800/80 p-8 text-center">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
+          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm border border-[var(--border)] p-8 text-center">
             <div className={`w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-inner border ${
               bulkAction === 'delete'
-                ? 'bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/20'
-                : 'bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20'
+                ? 'bg-[var(--danger-bg)] border-[var(--danger)]/20'
+                : 'bg-[var(--warning-bg)] border-[var(--warning)]/20'
             }`}>
               {bulkAction === 'delete'
-                ? <Trash2 className="w-8 h-8 text-red-500 dark:text-red-400" />
-                : <Archive className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+                ? <Trash2 className="w-8 h-8 text-[var(--danger)]" />
+                : <Archive className="w-8 h-8 text-[var(--warning)]" />
               }
             </div>
             <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">
               {bulkAction === 'delete' ? `Delete ${selectedIds.size} product${selectedIds.size !== 1 ? 's' : ''}?` : `Archive ${selectedIds.size} product${selectedIds.size !== 1 ? 's' : ''}?`}
             </h3>
-            <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+            <p className="text-sm text-[var(--text-secondary)] mb-8 leading-relaxed">
               {bulkAction === 'delete'
                 ? 'This action cannot be undone. Products will be permanently removed.'
                 : 'Archived products will be unpublished and hidden from your store.'}
@@ -863,16 +862,16 @@ function ProductsPageInner() {
             <div className="flex gap-3">
               <button
                 onClick={() => setBulkAction(null)}
-                className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-gray-200 dark:border-zinc-800 text-sm font-bold text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors"
+                className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-[var(--border)] text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               >
                 Cancel
               </button>
               <button
                 onClick={() => { clearSelection(); setBulkAction(null); }}
-                className={`flex-1 py-3.5 rounded-[var(--radius-sm)] text-white text-sm font-bold shadow-lg transition-all active:scale-[0.98] ${
+                className={`flex-1 py-3.5 rounded-[var(--radius-sm)] text-white text-sm font-bold shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                   bulkAction === 'delete'
-                    ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20'
-                    : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'
+                    ? 'bg-[var(--danger)] hover:bg-[var(--danger)]/90'
+                    : 'bg-[var(--warning)] hover:bg-[var(--warning)]/90'
                 }`}
               >
                 {bulkAction === 'delete' ? 'Delete All' : 'Archive All'}

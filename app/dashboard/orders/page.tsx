@@ -1,8 +1,11 @@
-﻿'use client';
+'use client';
 // Orders dashboard — all orders for this creator with detail drawer.
 
 import React, { useState, useMemo } from 'react';
 import { useOrders } from '@/hooks/useOrders';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
   ShoppingBag, CheckCircle2, XCircle, Clock, Search,
   ChevronRight, X, Package, Mail, Phone, Calendar,
@@ -45,11 +48,11 @@ function timeAgo(iso: string) {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; cls: string }> = {
-  completed: { label: 'Completed', icon: CheckCircle2, cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' },
-  pending:   { label: 'Pending',   icon: Clock,         cls: 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400' },
-  failed:    { label: 'Failed',    icon: XCircle,       cls: 'bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-400' },
-  refunded:  { label: 'Refunded',  icon: RotateCcw,     cls: 'bg-gray-100 text-gray-600 dark:bg-[var(--bg-secondary)] dark:text-[var(--text-secondary)]' },
-  cancelled: { label: 'Cancelled', icon: XCircle,       cls: 'bg-gray-100 text-gray-600 dark:bg-[var(--bg-secondary)] dark:text-[var(--text-secondary)]' },
+  completed: { label: 'Completed', icon: CheckCircle2, cls: 'bg-[var(--success-bg)] text-[var(--success)]' },
+  pending:   { label: 'Pending',   icon: Clock,         cls: 'bg-[var(--warning-bg)] text-[var(--warning)]' },
+  failed:    { label: 'Failed',    icon: XCircle,       cls: 'bg-[var(--danger-bg)] text-[var(--danger)]' },
+  refunded:  { label: 'Refunded',  icon: RotateCcw,     cls: 'bg-[var(--surface-muted)] text-[var(--text-secondary)]' },
+  cancelled: { label: 'Cancelled', icon: XCircle,       cls: 'bg-[var(--surface-muted)] text-[var(--text-secondary)]' },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -69,15 +72,15 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[var(--bg-primary)] w-full max-w-md h-full overflow-y-auto shadow-2xl flex flex-col">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative bg-[var(--surface)] w-full max-w-md h-full overflow-y-auto shadow-[var(--shadow-lg)] flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-[var(--bg-primary)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-[var(--surface)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Order</p>
+            <p className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Order</p>
             <p className="font-mono text-sm text-[var(--text-primary)] font-semibold">{order.id.slice(0, 8)}…</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-[var(--radius-sm)] text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition">
+          <button onClick={onClose} className="p-2 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -90,25 +93,25 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
           </div>
 
           {/* Customer */}
-          <div className="bg-[var(--bg-secondary)]/50 rounded-[var(--radius-lg)] p-4 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Customer</p>
+          <div className="bg-[var(--surface-muted)] rounded-[var(--radius-lg)] p-4 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Customer</p>
             <div className="space-y-2">
               {order.customer_name && (
-                <div className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-[var(--text-secondary)]">
-                  <div className="w-8 h-8 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center font-bold text-sm text-[var(--text-primary)] shrink-0">
+                <div className="flex items-center gap-2.5 text-sm text-[var(--text-secondary)]">
+                  <div className="w-8 h-8 rounded-full bg-[var(--surface-hover)] flex items-center justify-center font-bold text-sm text-[var(--text-primary)] shrink-0">
                     {order.customer_name[0]?.toUpperCase()}
                   </div>
                   <span className="font-semibold">{order.customer_name}</span>
                 </div>
               )}
               {order.customer_email && (
-                <div className="flex items-center gap-2.5 text-sm text-gray-500">
+                <div className="flex items-center gap-2.5 text-sm text-[var(--text-secondary)]">
                   <Mail className="w-4 h-4 shrink-0" />
                   <span>{order.customer_email}</span>
                 </div>
               )}
               {order.customer_phone && (
-                <div className="flex items-center gap-2.5 text-sm text-gray-500">
+                <div className="flex items-center gap-2.5 text-sm text-[var(--text-secondary)]">
                   <Phone className="w-4 h-4 shrink-0" />
                   <span>{order.customer_phone}</span>
                 </div>
@@ -119,19 +122,19 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
           {/* Products */}
           {products.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Products</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Products</p>
               {products.map((item: any, i: number) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)]/50 rounded-[var(--radius-sm)]">
-                  <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
+                <div key={i} className="flex items-center gap-3 p-3 bg-[var(--surface-muted)] rounded-[var(--radius-sm)]">
+                  <div className="w-10 h-10 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center shrink-0">
                     {item.products?.thumbnail_url ? (
                       <img src={item.products.thumbnail_url} alt="" className="w-full h-full object-cover rounded-lg" />
                     ) : (
-                      <Package className="w-5 h-5 text-gray-400" />
+                      <Package className="w-5 h-5 text-[var(--text-tertiary)]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{item.products?.name ?? 'Product'}</p>
-                    <p className="text-xs text-gray-500">{formatINR(Number(item.price_at_purchase))}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">{formatINR(Number(item.price_at_purchase))}</p>
                   </div>
                 </div>
               ))}
@@ -140,8 +143,8 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
 
           {/* Order Meta */}
           <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Details</p>
-            <div className="divide-y divide-[var(--border)]">
+            <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Details</p>
+            <div className="divide-y divide-[var(--border-subtle)]">
               {[
                 { label: 'Order ID', value: order.id },
                 { label: 'Gateway ID', value: order.gateway_order_id ?? '—' },
@@ -150,7 +153,7 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
                 ...(order.payment_verified_at ? [{ label: 'Verified At', value: new Date(order.payment_verified_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }] : []),
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between py-2.5 text-sm">
-                  <span className="text-gray-500">{label}</span>
+                  <span className="text-[var(--text-secondary)]">{label}</span>
                   <span className="font-mono text-xs text-[var(--text-primary)] text-right max-w-[200px] truncate">{value}</span>
                 </div>
               ))}
@@ -160,12 +163,12 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
 
         {/* Footer actions */}
         {order.status === 'completed' && (
-          <div className="sticky bottom-0 bg-[var(--bg-primary)] border-t border-[var(--border)] p-4">
+          <div className="sticky bottom-0 bg-[var(--surface)] border-t border-[var(--border)] p-4">
             <a
               href={receiptUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] font-semibold rounded-[var(--radius-sm)] transition text-sm"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] font-semibold rounded-[var(--radius-sm)] transition text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               <Download className="w-4 h-4" />
               Download Receipt
@@ -212,49 +215,48 @@ export default function OrdersPage() {
 
   const hasDateFilter = dateFrom || dateTo;
 
+  const exportButton = orders.length > 0 ? (
+    <button
+      onClick={() => exportOrdersCSV(filtered)}
+      className="flex items-center gap-2 bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--text-secondary)] px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold transition shrink-0 shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+    >
+      <FileDown className="w-4 h-4" />
+      Export CSV
+    </button>
+  ) : undefined;
+
   return (
-    <div className="space-y-6 pt-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Orders</h1>
-          <p className="text-sm text-gray-500 mt-1">{orders.length} total orders across all your sites</p>
-        </div>
-        {orders.length > 0 && (
-          <button
-            onClick={() => exportOrdersCSV(filtered)}
-            className="flex items-center gap-2 bg-[var(--bg-primary)] border border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-[var(--text-secondary)] px-4 py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold transition shrink-0"
-          >
-            <FileDown className="w-4 h-4" />
-            Export CSV
-          </button>
-        )}
-      </div>
+    <div className="space-y-6 pb-12">
+      <PageHeader
+        title="Orders"
+        description={`${orders.length} total orders across all your sites`}
+        action={exportButton}
+      />
 
       {/* Today's summary card */}
       {!isLoading && orders.length > 0 && (
-        <div className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-500/10 dark:to-violet-500/5 border border-indigo-200/60 dark:border-indigo-500/20 rounded-[var(--radius-lg)] p-5 flex flex-wrap gap-6 items-center">
+        <div className="bg-[var(--brand)]/8 border border-[var(--brand)]/20 rounded-[var(--radius-lg)] p-5 flex flex-wrap gap-6 items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/20 rounded-[var(--radius-sm)] flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-10 h-10 bg-[var(--brand)]/15 rounded-[var(--radius-sm)] flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-[var(--brand)]" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">Today</p>
+              <p className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wide">Today</p>
               <p className="text-sm font-bold text-[var(--text-primary)]">{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}</p>
             </div>
           </div>
           <div className="flex gap-6 flex-wrap">
             <div>
-              <p className="text-xs text-gray-500 font-medium">Revenue today</p>
-              <p className="text-lg font-extrabold text-indigo-700 dark:text-indigo-300">{formatINR(todayRevenue)}</p>
+              <p className="text-xs text-[var(--text-secondary)] font-medium">Revenue today</p>
+              <p className="text-lg font-extrabold text-[var(--brand)]">{formatINR(todayRevenue)}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Orders today</p>
+              <p className="text-xs text-[var(--text-secondary)] font-medium">Orders today</p>
               <p className="text-lg font-extrabold text-[var(--text-primary)]">{todayCount}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Pending</p>
-              <p className="text-lg font-extrabold text-amber-600 dark:text-amber-400">{pendingCount}</p>
+              <p className="text-xs text-[var(--text-secondary)] font-medium">Pending</p>
+              <p className="text-lg font-extrabold text-[var(--warning)]">{pendingCount}</p>
             </div>
           </div>
         </div>
@@ -264,14 +266,14 @@ export default function OrdersPage() {
       {!isLoading && orders.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Total Revenue', value: formatINR(totalRevenue), icon: TrendingUp, cls: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Completed', value: completedCount, icon: CheckCircle2, cls: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Pending', value: pendingCount, icon: Clock, cls: 'text-amber-600 dark:text-amber-400' },
+            { label: 'Total Revenue', value: formatINR(totalRevenue), icon: TrendingUp, cls: 'text-[var(--success)]' },
+            { label: 'Completed', value: completedCount, icon: CheckCircle2, cls: 'text-[var(--success)]' },
+            { label: 'Pending', value: pendingCount, icon: Clock, cls: 'text-[var(--warning)]' },
           ].map(s => (
-            <div key={s.label} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4">
+            <div key={s.label} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-xs)]">
               <div className="flex items-center gap-2 mb-1">
                 <s.icon className={`w-4 h-4 ${s.cls}`} />
-                <p className="text-xs font-medium text-gray-500">{s.label}</p>
+                <p className="text-xs font-medium text-[var(--text-secondary)]">{s.label}</p>
               </div>
               <p className="text-xl font-bold text-[var(--text-primary)]">{s.value}</p>
             </div>
@@ -282,37 +284,37 @@ export default function OrdersPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by name, email, or order ID…"
-            className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
+            className="w-full pl-10 pr-4 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)]"
           />
         </div>
         {/* Date range */}
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+          <Calendar className="w-4 h-4 text-[var(--text-tertiary)] shrink-0" />
           <input
             type="date"
             value={dateFrom}
             onChange={e => setDateFrom(e.target.value)}
             max={dateTo || todayStr}
-            className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 cursor-pointer"
+            className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] cursor-pointer"
           />
-          <span className="text-gray-400 text-xs">to</span>
+          <span className="text-[var(--text-tertiary)] text-xs">to</span>
           <input
             type="date"
             value={dateTo}
             onChange={e => setDateTo(e.target.value)}
             min={dateFrom}
             max={todayStr}
-            className="px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 cursor-pointer"
+            className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] cursor-pointer"
           />
           {hasDateFilter && (
             <button
               onClick={() => { setDateFrom(''); setDateTo(''); }}
-              className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition"
+              className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               title="Clear date filter"
             >
               <X className="w-4 h-4" />
@@ -324,10 +326,10 @@ export default function OrdersPage() {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition capitalize ${
+              className={`px-3 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition capitalize focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                 statusFilter === s
                   ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
-                  : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-[var(--accent)]'
+                  : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
               }`}
             >
               {s === 'all' ? 'All' : STATUS_CONFIG[s]?.label ?? s}
@@ -340,27 +342,25 @@ export default function OrdersPage() {
       {isLoading && (
         <div className="space-y-2">
           {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-16 bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] animate-pulse" />
+            <Skeleton key={i} className="h-16 w-full" rounded="lg" />
           ))}
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && orders.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-[var(--bg-tertiary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-5">
-            <ShoppingBag className="w-10 h-10 text-[var(--text-secondary)]" />
-          </div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">No orders yet</h2>
-          <p className="text-gray-500 text-sm max-w-xs">Orders will appear here once buyers complete purchases from your sites.</p>
-        </div>
+        <EmptyState
+          icon={ShoppingBag}
+          title="No orders yet"
+          description="Orders will appear here once buyers complete purchases from your sites."
+        />
       )}
 
       {/* Orders list */}
       {!isLoading && filtered.length > 0 && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-xs)]">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] text-xs font-semibold uppercase tracking-wide text-gray-400">
+          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">
             <span>Customer</span>
             <span>Products</span>
             <span>Amount</span>
@@ -368,7 +368,7 @@ export default function OrdersPage() {
             <span />
           </div>
 
-          <div className="divide-y divide-[var(--border)]">
+          <div className="divide-y divide-[var(--border-subtle)]">
             {filtered.map(order => {
               const products = order.order_items ?? [];
               const productNames = products.map((i: any) => i.products?.name).filter(Boolean);
@@ -377,23 +377,23 @@ export default function OrdersPage() {
                 <button
                   key={order.id}
                   onClick={() => setSelected(order)}
-                  className="w-full grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-2 md:gap-4 items-center px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-900/50 transition"
+                  className="w-full grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-2 md:gap-4 items-center px-5 py-4 text-left hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
                   {/* Customer */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center font-bold text-sm text-[var(--text-primary)] shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-[var(--surface-muted)] flex items-center justify-center font-bold text-sm text-[var(--text-primary)] shrink-0">
                       {(order.customer_name ?? order.customer_email ?? '?')[0]?.toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{order.customer_name || '—'}</p>
-                      <p className="text-xs text-gray-500 truncate">{order.customer_email}</p>
+                      <p className="text-xs text-[var(--text-secondary)] truncate">{order.customer_email}</p>
                     </div>
                   </div>
 
                   {/* Products */}
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <Package className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                    <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)] truncate">
+                    <Package className="w-3.5 h-3.5 text-[var(--text-tertiary)] shrink-0" />
+                    <span className="text-xs text-[var(--text-secondary)] truncate">
                       {productNames.length > 0 ? productNames.join(', ') : '—'}
                     </span>
                   </div>
@@ -407,7 +407,7 @@ export default function OrdersPage() {
                   <StatusBadge status={order.status} />
 
                   {/* Chevron + time */}
-                  <div className="flex items-center gap-3 text-gray-400 shrink-0">
+                  <div className="flex items-center gap-3 text-[var(--text-tertiary)] shrink-0">
                     <span className="text-xs hidden xl:block">{timeAgo(order.created_at)}</span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
@@ -419,9 +419,9 @@ export default function OrdersPage() {
       )}
 
       {!isLoading && orders.length > 0 && filtered.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-[var(--text-secondary)]">
           No orders match your search.
-          <button onClick={() => { setSearch(''); setStatusFilter('all'); }} className="ml-2 text-[var(--text-secondary)] hover:underline">Clear filters</button>
+          <button onClick={() => { setSearch(''); setStatusFilter('all'); }} className="ml-2 text-[var(--brand)] hover:underline focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Clear filters</button>
         </div>
       )}
 
