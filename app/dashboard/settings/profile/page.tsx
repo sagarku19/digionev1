@@ -1,32 +1,24 @@
-﻿'use client';
-// Profile Settings — creator name, email, phone, avatar + email/phone verification.
-// DB tables: profiles (read/write), auth (email OTP via supabase)
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import { useProfileQuery, useProfileMutations } from '@/hooks/useProfile';
 import {
-  Save, CheckCircle2, User, AtSign, Phone, Loader2, AlertCircle,
+  Save, CheckCircle2, User, Loader2, AlertCircle,
   Twitter, Instagram, Youtube, Globe, Camera, BadgeCheck,
-  Mail, Smartphone, Linkedin, Send, RefreshCw, X, Link2,
-  MapPin, Briefcase, Hash
+  Mail, Smartphone, Linkedin, Send, RefreshCw, X,
+  MapPin, Briefcase, Hash,
 } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
 
-const INPUT = 'w-full px-4 py-2.5 bg-[var(--bg-secondary)]/60 border border-gray-200 dark:border-[var(--border)]/60 rounded-xl text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none text-[var(--text-primary)] placeholder-gray-400 dark:placeholder-gray-600 transition';
-
-type Profile = {
-  full_name: string | null;
-  email: string | null;
-  email_verified: boolean | null;
-  mobile: string | null;
-  mobile_verified: boolean | null;
-  avatar_url: string | null;
-};
+const INPUT = 'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow';
 
 function VerifiedBadge() {
   return (
-    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-full">
+    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--success)] bg-[var(--success-bg)] border border-[var(--success)]/20 px-2 py-0.5 rounded-[var(--radius-pill)]">
       <BadgeCheck size={11} /> Verified
     </span>
   );
@@ -38,7 +30,7 @@ function UnverifiedBadge({ onClick, loading }: { onClick: () => void; loading?: 
       type="button"
       onClick={onClick}
       disabled={loading}
-      className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-2 py-0.5 rounded-full hover:bg-amber-100 dark:hover:bg-amber-500/20 transition disabled:opacity-60"
+      className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--warning)] bg-[var(--warning-bg)] border border-[var(--warning)]/20 px-2 py-0.5 rounded-[var(--radius-pill)] hover:opacity-90 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition disabled:opacity-60"
     >
       {loading ? <RefreshCw size={10} className="animate-spin" /> : <Send size={10} />}
       {loading ? 'Sending…' : 'Verify now'}
@@ -104,19 +96,24 @@ function OtpModal({
   useEffect(() => { sendOtp(); }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl">
-              {type === 'email' ? <Mail size={15} className="text-gray-700 dark:text-[var(--text-secondary)]" /> : <Smartphone size={15} className="text-gray-700 dark:text-[var(--text-secondary)]" />}
+            <div className="p-2 bg-[var(--surface-muted)] rounded-[var(--radius-md)]">
+              {type === 'email'
+                ? <Mail size={15} className="text-[var(--text-secondary)]" />
+                : <Smartphone size={15} className="text-[var(--text-secondary)]" />}
             </div>
             <div>
               <p className="text-sm font-semibold text-[var(--text-primary)]">Verify {type === 'email' ? 'Email' : 'Mobile'}</p>
-              <p className="text-xs text-gray-400 truncate max-w-[180px]">{target}</p>
+              <p className="text-xs text-[var(--text-tertiary)] truncate max-w-[180px]">{target}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] rounded-lg transition">
+          <button
+            onClick={onClose}
+            className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
+          >
             <X size={15} />
           </button>
         </div>
@@ -124,7 +121,7 @@ function OtpModal({
         {sent ? (
           <div className="space-y-4">
             <p className="text-xs text-[var(--text-secondary)]">
-              A 6-digit code was sent to <span className="font-medium text-gray-700 dark:text-[var(--text-secondary)]">{target}</span>. Enter it below.
+              A 6-digit code was sent to <span className="font-medium text-[var(--text-primary)]">{target}</span>. Enter it below.
             </p>
             <input
               type="text"
@@ -133,26 +130,30 @@ function OtpModal({
               value={otp}
               onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
               placeholder="000000"
-              className="w-full text-center text-2xl font-mono tracking-[0.5em] px-4 py-3 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl focus:ring-2 focus:ring-gray-400 outline-none text-[var(--text-primary)]"
+              className="w-full text-center text-2xl font-mono tracking-[0.5em] px-4 py-3 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] text-[var(--text-primary)] transition-shadow"
               autoFocus
             />
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
             <button
               onClick={verifyOtp}
               disabled={otp.length < 6 || verifying}
-              className="w-full bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 font-semibold py-2.5 rounded-xl transition text-sm"
+              className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] font-semibold py-2.5 rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition text-sm"
             >
               {verifying ? 'Verifying…' : 'Confirm Code'}
             </button>
-            <button onClick={sendOtp} disabled={sending} className="w-full text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">
+            <button
+              onClick={sendOtp}
+              disabled={sending}
+              className="w-full text-xs text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)] transition"
+            >
               {sending ? 'Resending…' : "Didn't receive it? Resend"}
             </button>
           </div>
         ) : (
           <div className="text-center py-4">
-            <Loader2 size={20} className="animate-spin text-gray-600 dark:text-[var(--text-secondary)] mx-auto" />
-            <p className="text-xs text-gray-400 mt-2">Sending code…</p>
-            {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+            <Loader2 size={20} className="animate-spin text-[var(--text-secondary)] mx-auto" />
+            <p className="text-xs text-[var(--text-tertiary)] mt-2">Sending code…</p>
+            {error && <p className="text-xs text-[var(--danger)] mt-2">{error}</p>}
           </div>
         )}
       </div>
@@ -173,7 +174,6 @@ export default function ProfileSettingsPage() {
     email: '',
     mobile: '',
     avatar_url: '',
-    // extra profile fields stored as JSON metadata or separate cols — saved as-is
     tagline: '',
     location: '',
     category: '',
@@ -194,8 +194,6 @@ export default function ProfileSettingsPage() {
     getCreatorProfileId().then(setProfileId).catch((e) => setError(e.message));
   }, []);
 
-  // Hydrate form from server data exactly once per profileId. Without the guard,
-  // background refetches (or the post-save invalidation) would clobber unsaved edits.
   const hydratedRef = useRef<string | null>(null);
   useEffect(() => {
     if (!profile || !profileId || hydratedRef.current === profileId) return;
@@ -267,14 +265,16 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="w-full space-y-4 pb-16 pt-4">
+      <div className="space-y-4 pb-12">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl p-6 animate-pulse space-y-4">
-            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
-            {Array.from({ length: 3 }).map((_, j) => (
-              <div key={j} className="h-10 bg-gray-100 dark:bg-[var(--bg-secondary)] rounded-xl" />
-            ))}
-          </div>
+          <Card key={i}>
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </Card>
         ))}
       </div>
     );
@@ -284,78 +284,85 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <div className="w-full space-y-6 pb-16">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 pt-4">
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Profile</h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-              Your public identity — shown on your store page and creator bio.
-            </p>
-          </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all shrink-0"
-          >
-            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-            {saving ? 'Saving…' : 'Save Changes'}
-          </button>
-        </div>
+      <div className="space-y-6 pb-12">
+        <PageHeader
+          title="Profile"
+          description="Your public identity — shown on your store page and creator bio."
+          action={
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] px-3 py-2 rounded-[var(--radius-sm)] text-sm font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-all"
+            >
+              {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+              {saving ? 'Saving…' : 'Save Changes'}
+            </button>
+          }
+        />
 
         {saved && (
-          <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800/40 px-4 py-3 rounded-xl">
+          <div className="flex items-center gap-2 text-sm text-[var(--success)] bg-[var(--success-bg)] border border-[var(--success)]/20 px-4 py-3 rounded-[var(--radius-md)]">
             <CheckCircle2 size={14} className="shrink-0" /> Profile saved.
           </div>
         )}
         {error && (
-          <div className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-800/40 px-4 py-3 rounded-xl">
+          <div className="flex items-center gap-2 text-sm text-[var(--danger)] bg-[var(--danger-bg)] border border-[var(--danger)]/20 px-4 py-3 rounded-[var(--radius-md)]">
             <AlertCircle size={14} className="shrink-0" /> {error}
           </div>
         )}
 
-        {/* ── Avatar + Identity ── */}
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
-          {/* Cover strip */}
-          <div className="h-24 bg-linear-to-r from-indigo-500 via-violet-500 to-fuchsia-500 relative">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
+          <div className="h-20 bg-[var(--brand)] relative">
             <div className="absolute -bottom-8 left-6">
-              <div className="w-16 h-16 rounded-2xl border-4 border-white dark:border-[#0D0D1F] bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center overflow-hidden shadow-lg">
+              <div className="w-16 h-16 rounded-[var(--radius-lg)] border-4 border-[var(--surface)] bg-[var(--brand)] flex items-center justify-center overflow-hidden shadow-[var(--shadow-sm)]">
                 {form.avatar_url
                   ? <img src={form.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                  : <span className="text-xl font-bold text-white">{initials}</span>
+                  : <span className="text-xl font-bold text-[var(--text-on-brand)]">{initials}</span>
                 }
               </div>
             </div>
           </div>
 
           <div className="px-6 pt-12 pb-6 space-y-5">
-            {/* Avatar URL */}
             <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">
                 Profile Photo URL
               </label>
               <div className="relative">
-                <Camera size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="url" value={form.avatar_url} onChange={e => set('avatar_url', e.target.value)}
-                  placeholder="https://example.com/photo.jpg" className={`${INPUT} pl-9`} />
+                <Camera size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                <input
+                  type="url"
+                  value={form.avatar_url}
+                  onChange={e => set('avatar_url', e.target.value)}
+                  placeholder="https://example.com/photo.jpg"
+                  className={`${INPUT} pl-9`}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Full Name</label>
+                <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">Full Name</label>
                 <div className="relative">
-                  <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input type="text" value={form.full_name} onChange={e => set('full_name', e.target.value)}
-                    placeholder="Your display name" className={`${INPUT} pl-9`} />
+                  <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                  <input
+                    type="text"
+                    value={form.full_name}
+                    onChange={e => set('full_name', e.target.value)}
+                    placeholder="Your display name"
+                    className={`${INPUT} pl-9`}
+                  />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Category</label>
+                <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">Category</label>
                 <div className="relative">
-                  <Briefcase size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
-                  <select value={form.category} onChange={e => set('category', e.target.value)}
-                    className={`${INPUT} pl-9 appearance-none`}>
+                  <Briefcase size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] z-10" />
+                  <select
+                    value={form.category}
+                    onChange={e => set('category', e.target.value)}
+                    className={`${INPUT} pl-9 appearance-none`}
+                  >
                     <option value="">Select category…</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -364,37 +371,46 @@ export default function ProfileSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tagline</label>
+              <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">Tagline</label>
               <div className="relative">
-                <Hash size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" maxLength={100} value={form.tagline} onChange={e => set('tagline', e.target.value)}
-                  placeholder="One line that describes you — e.g. 'Helping 10K+ developers ship faster'" className={`${INPUT} pl-9`} />
+                <Hash size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                <input
+                  type="text"
+                  maxLength={100}
+                  value={form.tagline}
+                  onChange={e => set('tagline', e.target.value)}
+                  placeholder="One line that describes you — e.g. 'Helping 10K+ developers ship faster'"
+                  className={`${INPUT} pl-9`}
+                />
               </div>
-              <p className="text-xs text-gray-400 text-right mt-1">{form.tagline.length}/100</p>
+              <p className="text-xs text-[var(--text-tertiary)] text-right mt-1">{form.tagline.length}/100</p>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Location</label>
+              <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">Location</label>
               <div className="relative">
-                <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" value={form.location} onChange={e => set('location', e.target.value)}
-                  placeholder="Mumbai, India" className={`${INPUT} pl-9`} />
+                <MapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                <input
+                  type="text"
+                  value={form.location}
+                  onChange={e => set('location', e.target.value)}
+                  placeholder="Mumbai, India"
+                  className={`${INPUT} pl-9`}
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Contact & Verification ── */}
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-[var(--border)]">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[var(--border-subtle)]">
             <p className="text-sm font-semibold text-[var(--text-primary)]">Contact & Verification</p>
-            <p className="text-xs text-gray-400 mt-0.5">Verified contact details are required for payouts and notifications.</p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Verified contact details are required for payouts and notifications.</p>
           </div>
           <div className="px-6 py-6 space-y-5">
-            {/* Email */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Email Address</label>
+                <label className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Email Address</label>
                 {profile?.email_verified
                   ? <VerifiedBadge />
                   : form.email
@@ -403,21 +419,25 @@ export default function ProfileSettingsPage() {
                 }
               </div>
               <div className="relative">
-                <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="email" value={form.email} onChange={e => { set('email', e.target.value); }}
-                  placeholder="you@example.com" className={`${INPUT} pl-9`} />
+                <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={e => set('email', e.target.value)}
+                  placeholder="you@example.com"
+                  className={`${INPUT} pl-9`}
+                />
               </div>
               {!profile?.email_verified && form.email && (
-                <p className="text-xs text-amber-500 mt-1.5 flex items-center gap-1">
-                  <AlertCircle size={11} /> Email not verified — click "Verify now" to confirm ownership.
+                <p className="text-xs text-[var(--warning)] mt-1.5 flex items-center gap-1">
+                  <AlertCircle size={11} /> Email not verified — click &ldquo;Verify now&rdquo; to confirm ownership.
                 </p>
               )}
             </div>
 
-            {/* Mobile */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Mobile Number</label>
+                <label className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Mobile Number</label>
                 {profile?.mobile_verified
                   ? <VerifiedBadge />
                   : form.mobile
@@ -426,12 +446,17 @@ export default function ProfileSettingsPage() {
                 }
               </div>
               <div className="relative">
-                <Smartphone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="tel" value={form.mobile} onChange={e => set('mobile', e.target.value)}
-                  placeholder="+91 98765 43210" className={`${INPUT} pl-9`} />
+                <Smartphone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                <input
+                  type="tel"
+                  value={form.mobile}
+                  onChange={e => set('mobile', e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className={`${INPUT} pl-9`}
+                />
               </div>
               {!profile?.mobile_verified && form.mobile && (
-                <p className="text-xs text-amber-500 mt-1.5 flex items-center gap-1">
+                <p className="text-xs text-[var(--warning)] mt-1.5 flex items-center gap-1">
                   <AlertCircle size={11} /> Mobile not verified — required for WhatsApp notifications.
                 </p>
               )}
@@ -439,37 +464,43 @@ export default function ProfileSettingsPage() {
           </div>
         </div>
 
-        {/* ── Social & Web ── */}
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-[var(--border)]">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[var(--border-subtle)]">
             <p className="text-sm font-semibold text-[var(--text-primary)]">Links & Social</p>
-            <p className="text-xs text-gray-400 mt-0.5">Shown on your public store / bio page.</p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Shown on your public store / bio page.</p>
           </div>
           <div className="px-6 py-6 space-y-4">
             {([
-              { key: 'website',   label: 'Website',    Icon: Globe,     ph: 'https://yoursite.com',            prefix: '' },
-              { key: 'twitter',   label: 'X / Twitter', Icon: Twitter,  ph: 'https://x.com/handle',            prefix: '' },
-              { key: 'instagram', label: 'Instagram',  Icon: Instagram, ph: 'https://instagram.com/handle',    prefix: '' },
-              { key: 'youtube',   label: 'YouTube',    Icon: Youtube,   ph: 'https://youtube.com/@channel',    prefix: '' },
-              { key: 'linkedin',  label: 'LinkedIn',   Icon: Linkedin,  ph: 'https://linkedin.com/in/handle',  prefix: '' },
-              { key: 'telegram',  label: 'Telegram',   Icon: Send,      ph: 'https://t.me/username',           prefix: '' },
+              { key: 'website',   label: 'Website',    Icon: Globe,     ph: 'https://yoursite.com' },
+              { key: 'twitter',   label: 'X / Twitter', Icon: Twitter,  ph: 'https://x.com/handle' },
+              { key: 'instagram', label: 'Instagram',  Icon: Instagram, ph: 'https://instagram.com/handle' },
+              { key: 'youtube',   label: 'YouTube',    Icon: Youtube,   ph: 'https://youtube.com/@channel' },
+              { key: 'linkedin',  label: 'LinkedIn',   Icon: Linkedin,  ph: 'https://linkedin.com/in/handle' },
+              { key: 'telegram',  label: 'Telegram',   Icon: Send,      ph: 'https://t.me/username' },
             ] as const).map(({ key, label, Icon, ph }) => (
               <div key={key}>
-                <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">{label}</label>
+                <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">{label}</label>
                 <div className="relative">
-                  <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input type="url" value={(form as any)[key]} onChange={e => set(key, e.target.value)}
-                    placeholder={ph} className={`${INPUT} pl-9`} />
+                  <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                  <input
+                    type="url"
+                    value={(form as any)[key]}
+                    onChange={e => set(key, e.target.value)}
+                    placeholder={ph}
+                    className={`${INPUT} pl-9`}
+                  />
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Save CTA at bottom */}
         <div className="flex justify-end">
-          <button onClick={handleSave} disabled={saving}
-            className="flex items-center gap-2 bg-gray-900 dark:bg-white hover:bg-gray-700 dark:hover:bg-gray-100 disabled:opacity-50 text-white dark:text-gray-900 px-6 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] px-6 py-2.5 rounded-[var(--radius-md)] text-sm font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-all"
+          >
             {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
             {saving ? 'Saving…' : 'Save Changes'}
           </button>

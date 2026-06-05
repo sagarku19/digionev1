@@ -1,27 +1,27 @@
-﻿'use client';
-// Notifications & Activity Feed — creator's real-time alerts (orders, payouts, leads).
-// DB tables: notifications (read/write via useNotifications)
+'use client';
 
 import React, { useState } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useRouter } from 'next/navigation';
 import {
   Bell, BellOff, CheckCheck, ShoppingBag, DollarSign,
-  Users, AlertTriangle, Info, Megaphone, Circle,
-  ExternalLink, Sparkles, Gift,
+  Users, AlertTriangle, Info, Megaphone,
+  ExternalLink, Gift,
 } from 'lucide-react';
-
-type NotifType = 'order' | 'sale' | 'payout' | 'lead' | 'system' | 'marketing' | 'welcome' | string;
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Card } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
-  order:     { icon: ShoppingBag,  color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  sale:      { icon: ShoppingBag,  color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  payout:    { icon: DollarSign,   color: 'text-blue-600 dark:text-blue-400',       bg: 'bg-blue-50 dark:bg-blue-500/10'       },
-  lead:      { icon: Users,        color: 'text-violet-600 dark:text-violet-400',   bg: 'bg-violet-50 dark:bg-violet-500/10'   },
-  marketing: { icon: Megaphone,    color: 'text-amber-600 dark:text-amber-400',     bg: 'bg-amber-50 dark:bg-amber-500/10'     },
-  warning:   { icon: AlertTriangle,color: 'text-red-600 dark:text-red-400',         bg: 'bg-red-50 dark:bg-red-500/10'         },
-  welcome:   { icon: Gift,         color: 'text-[#E83A2E]',                         bg: 'bg-red-50 dark:bg-red-500/10'         },
-  system:    { icon: Info,         color: 'text-[var(--text-secondary)]',       bg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]'         },
+  order:     { icon: ShoppingBag,   color: 'text-[var(--success)]', bg: 'bg-[var(--success-bg)]' },
+  sale:      { icon: ShoppingBag,   color: 'text-[var(--success)]', bg: 'bg-[var(--success-bg)]' },
+  payout:    { icon: DollarSign,    color: 'text-[var(--info)]',    bg: 'bg-[var(--info-bg)]' },
+  lead:      { icon: Users,         color: 'text-[var(--brand)]',   bg: 'bg-[var(--surface-muted)]' },
+  marketing: { icon: Megaphone,     color: 'text-[var(--warning)]', bg: 'bg-[var(--warning-bg)]' },
+  warning:   { icon: AlertTriangle, color: 'text-[var(--danger)]',  bg: 'bg-[var(--danger-bg)]' },
+  welcome:   { icon: Gift,          color: 'text-[var(--brand)]',   bg: 'bg-[var(--surface-muted)]' },
+  system:    { icon: Info,          color: 'text-[var(--text-secondary)]', bg: 'bg-[var(--surface-muted)]' },
 };
 
 function getTypeMeta(type: string) {
@@ -65,44 +65,33 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="space-y-6 pt-6 w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center">
-              <Bell className="w-5 h-5 text-[var(--text-secondary)]" />
-            </div>
-            Notifications
-            {unreadCount > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-[#E83A2E] text-white text-xs font-bold">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1 ml-0.5">{notifications.length} total · {unreadCount} unread</p>
-        </div>
+    <div className="space-y-6 pb-12">
+      <PageHeader
+        title="Notifications"
+        description={`${notifications.length} total · ${unreadCount} unread`}
+        action={
+          unreadCount > 0 ? (
+            <button
+              onClick={() => markAllRead()}
+              className="flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] border border-[var(--border)] px-3 py-2 rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
+            >
+              <CheckCheck className="w-4 h-4" />
+              Mark all read
+            </button>
+          ) : undefined
+        }
+      />
 
-        {unreadCount > 0 && (
-          <button
-            onClick={() => markAllRead()}
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-[var(--text-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-4 py-2 rounded-[var(--radius-sm)] transition"
-          >
-            <CheckCheck className="w-4 h-4" />
-            Mark all read
-          </button>
-        )}
-      </div>
-
-      {/* Filters */}
       <div className="flex flex-wrap gap-2 items-center">
-        <div className="flex gap-1 bg-gray-100 dark:bg-[var(--bg-secondary)] p-1 rounded-[var(--radius-sm)]">
+        <div className="flex gap-1 bg-[var(--surface-muted)] p-1 rounded-[var(--radius-sm)]">
           {(['all', 'unread'] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-sm font-medium transition capitalize ${
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-sm font-medium capitalize focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition ${
                 filter === f
-                  ? 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               {f === 'unread' && unreadCount > 0 ? `Unread (${unreadCount})` : f === 'all' ? 'All' : 'Unread'}
@@ -113,11 +102,13 @@ export default function NotificationsPage() {
         {types.length > 2 && (
           <div className="flex gap-1.5 flex-wrap">
             {types.map(t => (
-              <button key={t} onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold transition capitalize ${
+              <button
+                key={t}
+                onClick={() => setTypeFilter(t)}
+                className={`px-3 py-1.5 rounded-[var(--radius-sm)] text-xs font-semibold capitalize focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition ${
                   typeFilter === t
-                    ? 'bg-[#E83A2E] text-white'
-                    : 'bg-[var(--bg-primary)] border border-[var(--border)] text-gray-600 dark:text-[var(--text-secondary)] hover:border-gray-400 dark:hover:border-gray-600'
+                    ? 'bg-[var(--brand)] text-[var(--text-on-brand)]'
+                    : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]'
                 }`}
               >
                 {TYPE_LABELS[t] ?? t}
@@ -127,82 +118,82 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Loading skeletons */}
       {isLoading && (
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-[76px] bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] animate-pulse" />
+            <Skeleton key={i} className="h-[76px] w-full" rounded="lg" />
           ))}
         </div>
       )}
 
-      {/* Empty state */}
       {!isLoading && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 bg-gray-50 dark:bg-[var(--bg-secondary)] rounded-[var(--radius-lg)] flex items-center justify-center mb-4">
-            <BellOff className="w-8 h-8 text-gray-300 dark:text-gray-600" />
-          </div>
-          <h2 className="text-lg font-bold text-[var(--text-primary)] mb-1">
-            {filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
-          </h2>
-          <p className="text-gray-500 text-sm max-w-xs">
-            {filter === 'unread'
-              ? 'No unread notifications right now.'
-              : 'Orders, payouts, and system alerts will show up here.'}
-          </p>
-          {filter === 'unread' && (
-            <button onClick={() => setFilter('all')} className="mt-4 text-sm text-[#E83A2E] hover:underline font-medium">
-              View all notifications
-            </button>
-          )}
-        </div>
+        <Card padded={false}>
+          <EmptyState
+            icon={BellOff}
+            title={filter === 'unread' ? 'All caught up!' : 'No notifications yet'}
+            description={
+              filter === 'unread'
+                ? 'No unread notifications right now.'
+                : 'Orders, payouts, and system alerts will show up here.'
+            }
+            action={
+              filter === 'unread' ? (
+                <button
+                  onClick={() => setFilter('all')}
+                  className="text-sm font-medium text-[var(--brand)] hover:underline focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)]"
+                >
+                  View all notifications
+                </button>
+              ) : undefined
+            }
+          />
+        </Card>
       )}
 
-      {/* Notifications list */}
       {!isLoading && filtered.length > 0 && (
-        <div className="bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden divide-y divide-[var(--border)]/60">
-          {filtered.map((notif: any) => {
-            const meta = getTypeMeta(notif.type);
-            const Icon = meta.icon;
-            return (
-              <div
-                key={notif.id}
-                onClick={() => handleClick(notif)}
-                className={`flex items-start gap-4 px-5 py-4 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.03] ${
-                  !notif.is_read ? 'bg-orange-50/40 dark:bg-white/[0.02]' : ''
-                }`}
-              >
-                {/* Icon */}
-                <div className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 mt-0.5 ${meta.bg}`}>
-                  <Icon className={`w-5 h-5 ${meta.color}`} />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className={`text-sm font-semibold leading-snug ${!notif.is_read ? 'text-[var(--text-primary)]' : 'text-gray-700 dark:text-[var(--text-secondary)]'}`}>
-                        {notif.title}
-                      </p>
-                      <p className="text-sm text-[var(--text-secondary)] mt-0.5 leading-relaxed">{notif.message}</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0 pt-0.5">
-                      <span className="text-xs text-gray-400 whitespace-nowrap">{timeAgo(notif.created_at)}</span>
-                      {!notif.is_read && (
-                        <span className="w-2 h-2 rounded-full bg-[#E83A2E] shrink-0 mt-0.5" />
-                      )}
-                    </div>
+        <Card padded={false} className="overflow-hidden">
+          <div className="divide-y divide-[var(--border-subtle)]">
+            {filtered.map((notif: any) => {
+              const meta = getTypeMeta(notif.type);
+              const Icon = meta.icon;
+              return (
+                <div
+                  key={notif.id}
+                  onClick={() => handleClick(notif)}
+                  className={`flex items-start gap-4 px-5 py-4 cursor-pointer transition-colors hover:bg-[var(--surface-hover)] ${
+                    !notif.is_read ? 'bg-[var(--surface-muted)]' : ''
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 mt-0.5 ${meta.bg}`}>
+                    <Icon className={`w-5 h-5 ${meta.color}`} />
                   </div>
-                  {notif.action_url && (
-                    <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-[#E83A2E]">
-                      View details <ExternalLink className="w-3 h-3" />
-                    </span>
-                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className={`text-sm font-semibold leading-snug ${!notif.is_read ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                          {notif.title}
+                        </p>
+                        <p className="text-sm text-[var(--text-secondary)] mt-0.5 leading-relaxed">{notif.message}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 pt-0.5">
+                        <span className="text-xs text-[var(--text-tertiary)] whitespace-nowrap">{timeAgo(notif.created_at)}</span>
+                        {!notif.is_read && (
+                          <span className="w-2 h-2 rounded-full bg-[var(--brand)] shrink-0 mt-0.5" />
+                        )}
+                      </div>
+                    </div>
+                    {notif.action_url && (
+                      <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-[var(--brand)]">
+                        View details <ExternalLink className="w-3 h-3" />
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </Card>
       )}
     </div>
   );
