@@ -1265,41 +1265,41 @@ export default function AutoDMPage() {
     <>
       {/* ── Sub-sidebar: fixed, anchored right after the main 256px sidebar ── */}
       <aside
-        className="fixed top-14 bottom-0 flex-col bg-[var(--surface)] hidden md:flex"
+        className="fixed top-14 bottom-0 flex-col bg-[var(--bg-primary)] border-r border-[var(--border)] hidden md:flex"
         style={{ left: 256, width: SUB_SIDEBAR_W, zIndex: 99998 }}
       >
-        {/* Nav — all items inside a single rounded box, left-aligned, sticky */}
-        <nav className="px-2 pt-4 flex flex-col gap-3">
+        <nav className="pt-4 flex flex-col gap-2">
           {/* Section header */}
-          <div className="flex flex-col items-center gap-1 px-1">
-            <Instagram className="w-5 h-5 text-[var(--text-secondary)]" />
-            <p className="text-[9px] font-semibold text-[var(--text-secondary)] uppercase tracking-[0.08em] text-center leading-tight">
+          <div className="px-3 pb-2 flex flex-col items-center gap-1.5">
+            <Instagram className="w-4 h-4 text-[var(--text-secondary)]" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-60 text-center leading-tight">
               Automation
             </p>
           </div>
 
-          <div className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] overflow-hidden">
-            {NAV_ITEMS.map((item, i) => {
+          <div className="flex flex-col gap-0.5 px-1">
+            {NAV_ITEMS.map((item) => {
               const active = view === item.view || (view === 'builder' && item.view === 'automations');
               return (
                 <button
                   key={item.view}
                   onClick={() => navigate(item.view)}
                   title={item.label}
-                  className={`group relative flex flex-col items-center justify-center gap-1 w-full py-3 transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                    i < NAV_ITEMS.length - 1 ? 'border-b border-[var(--border)]' : ''
-                  } ${
+                  className={`group relative flex flex-col items-center justify-center gap-1 w-full py-3 px-1 rounded-[var(--radius-sm)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                     active
-                      ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+                      ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
+                  {active && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[var(--brand)]" />
+                  )}
                   <item.icon className={`w-4 h-4 shrink-0 transition-colors ${
-                    active ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                    active ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                   }`} />
-                  <span className="text-[9px] font-medium leading-tight text-center w-full px-1">{item.label}</span>
+                  <span className="text-[10px] font-medium leading-tight text-center w-full px-1">{item.label}</span>
                   {item.badge ? (
-                    <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full bg-[var(--danger)] text-white text-[8px] font-bold leading-none">
+                    <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full bg-[var(--danger)] text-[var(--text-on-brand)] text-[8px] font-bold leading-none">
                       {Number(item.badge) > 9 ? '9+' : item.badge}
                     </span>
                   ) : null}
@@ -1323,7 +1323,7 @@ export default function AutoDMPage() {
       {/* ── Mobile fallback: no fixed sub-sidebar, just stacked ── */}
       <div className="md:hidden">
         {/* Mobile nav pills */}
-        <div className="flex overflow-x-auto gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--surface)] no-scrollbar">
+        <div className="flex overflow-x-auto gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-primary)] no-scrollbar">
           {NAV_ITEMS.map(item => {
             const active = view === item.view || (view === 'builder' && item.view === 'automations');
             return (
@@ -1332,8 +1332,8 @@ export default function AutoDMPage() {
                 onClick={() => navigate(item.view)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                   active
-                    ? 'bg-[var(--surface-hover)] text-[var(--text-primary)]'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+                    ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
                 }`}
               >
                 <item.icon className="w-3.5 h-3.5" />
