@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // Site creation hub — choose your site type, then route to the dedicated creation page.
 
 import React from 'react';
@@ -15,7 +15,6 @@ type SiteTypeOption = {
   desc: string;
   best: string;
   icon: React.ElementType;
-  gradient: string;
   iconBg: string;
   iconColor: string;
   href: string;
@@ -28,9 +27,8 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'Your full creator storefront with multiple products, navigation, and sections.',
     best: 'Courses, ebooks, digital assets',
     icon: Store,
-    gradient: 'from-indigo-50/50 to-transparent dark:from-indigo-500/5',
-    iconBg: 'bg-indigo-100 dark:bg-gray-1000/10 border-indigo-200 dark:border-gray-900 dark:border-white/20',
-    iconColor: 'text-gray-700 dark:text-[var(--text-secondary)]',
+    iconBg: 'bg-[var(--surface-muted)] border-[var(--border)]',
+    iconColor: 'text-[var(--text-secondary)]',
     href: '/dashboard/sites/new/store',
   },
   {
@@ -38,10 +36,9 @@ const SITE_TYPES: SiteTypeOption[] = [
     label: 'Product Site',
     desc: 'High-converting landing page for a single product. Countdown, FAQ, testimonials.',
     best: 'Course launches, premium products',
-    icon:Layers,
-    gradient: 'from-purple-50/50 to-transparent dark:from-purple-500/5',
-    iconBg: 'bg-purple-100 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20',
-    iconColor: 'text-purple-600 dark:text-purple-400',
+    icon: Layers,
+    iconBg: 'bg-[var(--info-subtle)] border-[var(--info-border)]',
+    iconColor: 'text-[var(--info)]',
     href: '/dashboard/sites/new/singlepage',
   },
   {
@@ -50,9 +47,8 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'Accept payments for services, consulting, or custom work. Fixed or flexible amounts.',
     best: 'Mentorship, freelance work',
     icon: CreditCard,
-    gradient: 'from-emerald-50/50 to-transparent dark:from-emerald-500/5',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    iconBg: 'bg-[var(--success-subtle)] border-[var(--success-border)]',
+    iconColor: 'text-[var(--success)]',
     href: '/dashboard/sites/new/payment',
   },
   {
@@ -61,9 +57,8 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'A single-page profile with all your links, products, and social media. Share one URL everywhere.',
     best: 'Instagram bio, Twitter bio, TikTok',
     icon: Link2,
-    gradient: 'from-pink-50/50 to-transparent dark:from-pink-500/5',
-    iconBg: 'bg-pink-100 dark:bg-pink-500/10 border-pink-200 dark:border-pink-500/20',
-    iconColor: 'text-pink-600 dark:text-pink-400',
+    iconBg: 'bg-[var(--surface-muted)] border-[var(--border)]',
+    iconColor: 'text-[var(--text-secondary)]',
     href: '/dashboard/sites/new/linkinbio',
   },
 ];
@@ -78,18 +73,12 @@ export default function NewSiteHub() {
 
   return (
     <div className="relative pt-6 pb-16 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Background Ambience tied to the container */}
-      <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden rounded-[40px]">
-        <div className="absolute top-0 left-[-10%] w-[30%] h-[30%] bg-gray-1000/10 dark:bg-gray-1000/10 blur-[120px] rounded-full" />
-        <div className="absolute top-[40%] right-[-10%] w-[30%] h-[30%] bg-purple-500/10 dark:bg-purple-500/10 blur-[120px] rounded-full" />
-      </div>
-
       <div className="w-full max-w-5xl mx-auto flex flex-col gap-6">
         {/* Back Button */}
         <div>
           <button
             onClick={() => router.push('/dashboard/sites')}
-            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-[var(--text-secondary)] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors bg-white/60 dark:bg-zinc-950/60 backdrop-blur-md px-4 py-2 rounded-xl border border-gray-200/50 dark:border-zinc-800/80 shadow-sm"
+            className="group inline-flex items-center gap-2 text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--brand)] transition-colors bg-[var(--surface)] px-4 py-2 rounded-xl border border-[var(--border)] shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Dashboard
@@ -98,9 +87,9 @@ export default function NewSiteHub() {
 
         {/* Title Section */}
         <div className="text-center mt-6 mb-12 relative flex flex-col items-center">
-          <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full mb-6 shadow-sm">
-            <Target className="w-4 h-4 text-gray-600 dark:text-[var(--text-secondary)]" />
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-700 dark:text-zinc-300">Choose Your Path</span>
+          <div className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-full mb-6 shadow-[var(--shadow-xs)]">
+            <Target className="w-4 h-4 text-[var(--text-secondary)]" />
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Choose Your Path</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-primary)] mb-4">
             What are you building?
@@ -118,48 +107,39 @@ export default function NewSiteHub() {
               <button
                 key={t.id}
                 onClick={() => router.push(t.href)}
-                className={`group relative text-left p-8 bg-white dark:bg-zinc-950 border border-gray-200/80 dark:border-zinc-800 rounded-[32px] transition-all duration-300 hover:shadow-xl hover:shadow-${t.iconColor.split('-')[1]}-500/5 hover:-translate-y-1 hover:border-transparent overflow-hidden flex flex-col`}
+                className="group relative text-left p-8 bg-[var(--surface)] border border-[var(--border)] rounded-[32px] transition-all duration-300 hover:shadow-[var(--shadow-sm)] hover:-translate-y-1 hover:border-[var(--border-strong)] overflow-hidden flex flex-col focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
-                {/* Glowing Hover Border Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br from-${t.iconColor.split('-')[1]}-500 to-${t.iconColor.split('-')[1]}-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-20`} />
-                
-                {/* Card Inner Background */}
-                <div className={`absolute inset-[2px] bg-white dark:bg-zinc-950 rounded-[30px] z-[-10]`} />
-
-                {/* Ambient Internal Gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${t.gradient} z-0 pointer-events-none rounded-[32px] opacity-100 group-hover:opacity-50 transition-opacity`} />
-                
                 <div className="relative z-10 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-8">
                     <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner transition-transform group-hover:scale-110 duration-300 ${t.iconBg} ${t.iconColor}`}>
                       <t.icon className="w-8 h-8" />
                     </div>
-                    
+
                     {count > 0 && (
-                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-gray-500 shadow-sm">
-                        <span className={`w-1.5 h-1.5 rounded-full bg-${t.iconColor.split('-')[1]}-400 animate-pulse`} />
+                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-xl text-xs font-bold text-[var(--text-secondary)] shadow-[var(--shadow-xs)]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] animate-pulse" />
                         {count} Active
                       </span>
                     )}
                   </div>
-                  
+
                   <div className="flex-1">
-                    <h3 className="font-extrabold text-2xl text-[var(--text-primary)] mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 dark:group-hover:from-white dark:group-hover:to-gray-400 transition-all">
+                    <h3 className="font-extrabold text-2xl text-[var(--text-primary)] mb-3">
                       {t.label}
                     </h3>
                     <p className="text-base font-medium text-[var(--text-secondary)] leading-relaxed mb-8">
                       {t.desc}
                     </p>
                   </div>
-                  
-                  <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-100 dark:border-zinc-800/80">
+
+                  <div className="mt-auto flex items-center justify-between pt-6 border-t border-[var(--border-subtle)]">
                     <div className="flex items-center gap-2.5">
                       <Sparkles className={`w-4 h-4 ${t.iconColor}`} />
-                      <p className="text-xs font-bold text-[var(--text-secondary)]">Best for: <span className="text-gray-700 dark:text-[var(--text-secondary)]">{t.best}</span></p>
+                      <p className="text-xs font-bold text-[var(--text-secondary)]">Best for: <span className="text-[var(--text-secondary)]">{t.best}</span></p>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-zinc-900 flex items-center justify-center group-hover:bg-gray-100 dark:group-hover:bg-zinc-800 transition-colors shadow-sm">
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors" />
+                    <div className="w-10 h-10 rounded-full bg-[var(--surface-muted)] flex items-center justify-center group-hover:bg-[var(--surface-hover)] transition-colors shadow-[var(--shadow-xs)]">
+                      <ChevronRight className="w-5 h-5 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors" />
                     </div>
                   </div>
                 </div>
