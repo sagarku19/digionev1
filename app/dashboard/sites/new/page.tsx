@@ -4,8 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSites } from '@/hooks/useSites';
 import {
-  Store, Layers, CreditCard, Link2,
-  ChevronRight, Sparkles, ArrowLeft,
+  Store, Layers, CreditCard, Link2, ArrowLeft,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
@@ -16,8 +15,6 @@ type SiteTypeOption = {
   desc: string;
   best: string;
   icon: React.ElementType;
-  iconBg: string;
-  iconColor: string;
   href: string;
 };
 
@@ -28,8 +25,6 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'Your full creator storefront with multiple products, navigation, and sections.',
     best: 'Courses, ebooks, digital assets',
     icon: Store,
-    iconBg: 'bg-[var(--surface-muted)]',
-    iconColor: 'text-[var(--text-secondary)]',
     href: '/dashboard/sites/new/store',
   },
   {
@@ -38,8 +33,6 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'High-converting landing page for a single product. Countdown, FAQ, testimonials.',
     best: 'Course launches, premium products',
     icon: Layers,
-    iconBg: 'bg-[var(--info-bg)]',
-    iconColor: 'text-[var(--info)]',
     href: '/dashboard/sites/new/singlepage',
   },
   {
@@ -48,8 +41,6 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'Accept payments for services, consulting, or custom work. Fixed or flexible amounts.',
     best: 'Mentorship, freelance work',
     icon: CreditCard,
-    iconBg: 'bg-[var(--success-bg)]',
-    iconColor: 'text-[var(--success)]',
     href: '/dashboard/sites/new/payment',
   },
   {
@@ -58,11 +49,85 @@ const SITE_TYPES: SiteTypeOption[] = [
     desc: 'A single-page profile with all your links, products, and social media. Share one URL everywhere.',
     best: 'Instagram bio, Twitter bio, TikTok',
     icon: Link2,
-    iconBg: 'bg-[var(--surface-muted)]',
-    iconColor: 'text-[var(--text-secondary)]',
     href: '/dashboard/sites/new/linkinbio',
   },
 ];
+
+// Per-type mockup preview compositions
+function StoreMockup() {
+  return (
+    <div className="flex flex-col gap-2 h-full">
+      {/* Nav bar */}
+      <div className="flex items-center justify-between px-1">
+        <div className="w-8 h-2.5 rounded-sm bg-[var(--text-primary)] opacity-80" />
+        <div className="flex items-center gap-1.5">
+          <div className="h-1.5 w-6 rounded-full bg-[var(--border)]" />
+          <div className="h-1.5 w-6 rounded-full bg-[var(--border)]" />
+          <div className="h-1.5 w-6 rounded-full bg-[var(--border)]" />
+        </div>
+      </div>
+      {/* Product grid */}
+      <div className="grid grid-cols-3 gap-1.5 flex-1">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="flex flex-col gap-1">
+            <div className="flex-1 rounded-[var(--radius-sm)] bg-[var(--surface)] border border-[var(--border-subtle)] opacity-90 group-hover/tile:opacity-100 transition-opacity aspect-square" />
+            <div className="h-1 w-full rounded-full bg-[var(--border)]" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProductSiteMockup() {
+  return (
+    <div className="flex flex-col gap-2 h-full">
+      {/* Hero block */}
+      <div className="w-full h-6 rounded-[var(--radius-sm)] bg-[var(--surface)]" />
+      <div className="w-3/4 h-1.5 rounded-full bg-[var(--border)]" />
+      {/* CTA bar */}
+      <div className="w-1/2 h-3 rounded-[var(--radius-sm)] bg-[var(--info)] opacity-90 group-hover/tile:opacity-100 transition-opacity" />
+      {/* Feature bullets */}
+      <div className="flex flex-col gap-1 mt-auto">
+        <div className="h-1 w-3/4 rounded-full bg-[var(--border)]" />
+        <div className="h-1 w-2/3 rounded-full bg-[var(--border)]" />
+        <div className="h-1 w-1/2 rounded-full bg-[var(--border)]" />
+      </div>
+    </div>
+  );
+}
+
+function PaymentMockup() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 h-full">
+      <div className="w-2/3 h-1.5 rounded-full bg-[var(--border)]" />
+      <div className="w-full h-7 rounded-[var(--radius-sm)] bg-[var(--surface)] border border-[var(--border-subtle)]" />
+      <div className="w-full h-3 rounded-[var(--radius-sm)] bg-[var(--success)] opacity-90 group-hover/tile:opacity-100 transition-opacity" />
+    </div>
+  );
+}
+
+function LinkInBioMockup() {
+  return (
+    <div className="flex flex-col items-center gap-1.5 h-full pt-1">
+      {/* Avatar */}
+      <div className="w-8 h-8 rounded-full bg-[var(--brand)] opacity-90 group-hover/tile:opacity-100 transition-opacity shrink-0" />
+      {/* Link rows */}
+      <div className="flex flex-col gap-1.5 w-full mt-1">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="h-4 w-full rounded-[var(--radius-sm)] bg-[var(--surface)] border border-[var(--border-subtle)]" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const TYPE_MOCKUPS: Record<string, React.ReactNode> = {
+  main: <StoreMockup />,
+  single: <ProductSiteMockup />,
+  payment: <PaymentMockup />,
+  linkinbio: <LinkInBioMockup />,
+};
 
 export default function NewSiteHub() {
   const router = useRouter();
@@ -90,41 +155,40 @@ export default function NewSiteHub() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {SITE_TYPES.map((t) => {
           const count = typeCounts[t.id] || 0;
+          const Icon = t.icon;
           return (
-            <button
+            <Card
               key={t.id}
+              hoverable
+              padded={false}
+              className="group/tile cursor-pointer overflow-hidden focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               onClick={() => router.push(t.href)}
-              className="group text-left bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 hover:bg-[var(--surface-hover)] hover:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-all duration-200 flex flex-col gap-4"
+              tabIndex={0}
+              role="button"
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') router.push(t.href); }}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${t.iconBg} ${t.iconColor}`}>
-                  <t.icon className="w-5 h-5" />
-                </div>
-                {count > 0 && (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[var(--success-bg)] text-[var(--success)] rounded-[var(--radius-pill)] text-[11px] font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)]" />
-                    {count} active
-                  </span>
-                )}
+              {/* Mockup region */}
+              <div className="h-32 w-full bg-[var(--surface-muted)] border-b border-[var(--border-subtle)] rounded-t-[var(--radius-lg)] overflow-hidden p-3">
+                {TYPE_MOCKUPS[t.id]}
               </div>
 
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1">
-                  {t.label}
-                </h3>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  {t.desc}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between pt-3 border-t border-[var(--border-subtle)]">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-wide">
-                  <Sparkles className="w-3 h-3" />
-                  Best for: <span className="normal-case tracking-normal text-[var(--text-secondary)]">{t.best}</span>
+              {/* Meta region */}
+              <div className="p-4 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Icon className="w-4 h-4 text-[var(--text-secondary)] shrink-0" />
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{t.label}</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] group-hover:translate-x-0.5 transition-all" />
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{t.desc}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[11px] text-[var(--text-tertiary)]">Best for: {t.best}</span>
+                  {count > 0 && (
+                    <span className="inline-flex items-center px-2 py-0.5 bg-[var(--success-bg)] text-[var(--success)] rounded-[var(--radius-pill)] text-[10px] font-medium">
+                      {count} active
+                    </span>
+                  )}
+                </div>
               </div>
-            </button>
+            </Card>
           );
         })}
       </div>
