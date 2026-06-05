@@ -1271,7 +1271,7 @@ export default function AutoDMPage() {
         <nav className="pt-4 flex flex-col gap-2">
           {/* Section header */}
           <div className="px-3 pb-2 flex flex-col items-center gap-1.5">
-            <Instagram className="w-4 h-4 text-[var(--text-secondary)]" />
+            {/* <Instagram className="w-4 h-4 text-[var(--text-secondary)]" /> */}
             <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-60 text-center leading-tight">
               Automation
             </p>
