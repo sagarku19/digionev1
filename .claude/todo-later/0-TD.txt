@@ -1,0 +1,30 @@
+LEFT
+
+## form todo-later
+
+1, - no
+2, - no
+3, - no
+4, - no
+
+
+## from Superpower/Plan
+
+tanstack - ok
+proxy
+supabase - no
+dashboard-ui - yes
+
+
+## from Supabase DB
+
+baseline - already in DB
+marketing - in db without rls
+insta-dm - not in db
+rls-policy - not in db
+create-product-bucket - 
+private-st-bukt - 
+merge-prod-to-cp - 
+drop-legacy-st-bkt - 
+add-sum-bkt-bt-f-pre-rpc - the above five run by SP Terminal
+

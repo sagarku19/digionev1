@@ -1,0 +1,159 @@
+The important part is where each client is used and what protections exist around it.
+
+Browser (createClient)
+const supabase = createClient();
+
+Used for:
+
+Viewing profile
+Viewing user's orders
+Updating own profile
+Realtime subscriptions
+
+Security comes from:
+
+User authentication
+RLS policies
+
+Even if a user opens DevTools and calls:
+
+supabase.from("profiles").select("*")
+
+they only get what RLS allows.
+
+Server (createServerClient)
+const supabase = createServerClient();
+
+Used for:
+
+Route handlers
+Server actions
+Middleware
+Server components
+
+Security comes from:
+
+Reads auth cookie
+Knows current user
+Still obeys RLS
+
+Example:
+
+const user = await supabase.auth.getUser();
+
+Then:
+
+await supabase
+  .from("orders")
+  .select("*");
+
+returns only rows allowed for that user.
+
+Admin (createServiceClient)
+const supabase = createServiceClient();
+
+Used for:
+
+Payout processing
+Reward credits
+Admin dashboards
+Scheduled jobs
+User moderation
+
+Security comes from:
+
+Never exposed to browser
+Server-only environment variable
+Additional authorization checks
+What large teams do
+
+A common structure is:
+
+Browser
+  ↓
+API Route / Server Action
+  ↓
+Authorization Check
+  ↓
+Service Client
+  ↓
+Database
+
+Example:
+
+POST /api/admin/users/ban
+const user = await getCurrentUser();
+
+if (user.role !== "admin") {
+  return 403;
+}
+
+const adminSupabase = createServiceClient();
+
+await adminSupabase.auth.admin.deleteUser(id);
+
+Notice:
+
+The service client is not the security boundary.
+
+The security boundary is:
+
+if (user.role !== "admin")
+
+before the service client runs.
+
+Biggest mistake beginners make
+
+Bad:
+
+// api/approve-payout
+
+const supabase = createServiceClient();
+
+await supabase
+  .from("payouts")
+  .update({ status: "approved" });
+
+Anyone hitting the endpoint can trigger admin actions.
+
+Good:
+
+const user = await getCurrentUser();
+
+if (user.role !== "admin") {
+  return 403;
+}
+
+const supabase = createServiceClient();
+
+await supabase
+  .from("payouts")
+  .update({ status: "approved" });
+For your rewards platform
+
+Operations such as:
+
+Wallet credits
+Referral rewards
+Payout approvals
+Task verification
+User moderation
+Admin analytics
+
+should typically go through:
+
+Route Handler
+   ↓
+Auth Check
+   ↓
+Role Check
+   ↓
+createServiceClient()
+   ↓
+Database
+
+This is a standard production architecture used by many teams building on Supabase and Next.js.
+
+The key rule is:
+
+createServiceClient() is powerful, but it should only run on the server and only after you've verified the caller has permission to perform the action. If you follow that rule, the architecture is considered secure and widely used in production.

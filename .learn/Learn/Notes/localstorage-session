@@ -1,0 +1,159 @@
+Local Storage vs Session Storage
+
+Both are browser storage mechanisms and both can be viewed and modified by the user, so neither should be trusted for security-sensitive data.
+
+Feature   	                         Local Storage	             Session Storage
+Persistence	                         Survives browser restart	 Cleared when tab/window closes
+Shared between tabs             	 ✅ Yes (same origin)	   ❌ No (per tab)
+Capacity	                         ~5-10 MB	                ~5-10 MB
+Accessible by JavaScript	         ✅ Yes                     ✅ Yes
+Sent automatically to server	     ❌ No                      ❌ No
+User can modify	                     ✅ Yes                     ✅ Yes
+Local Storage
+
+Data remains until explicitly removed.
+
+localStorage.setItem("theme", "dark");
+
+Even after:
+
+Refreshing page
+Closing browser
+Restarting computer
+
+The value still exists.
+
+Read it:
+
+localStorage.getItem("theme");
+
+Remove it:
+
+localStorage.removeItem("theme");
+Good use cases
+
+✅ Theme preference
+
+✅ Language selection
+
+✅ UI settings
+
+✅ Cached non-sensitive data
+
+Bad use cases
+
+❌ User role
+
+❌ Wallet balance
+
+❌ Premium status
+
+❌ Admin permissions
+
+❌ Authentication tokens (in most modern apps)
+
+Session Storage
+
+Data exists only for the current browser tab.
+
+sessionStorage.setItem("step", "2");
+
+Close the tab:
+
+Data is gone.
+
+Open a new tab:
+
+Data is not shared.
+Good use cases
+
+✅ Multi-step forms
+
+✅ Temporary wizard state
+
+✅ Checkout progress
+
+✅ One-tab temporary data
+
+Example
+Local Storage
+
+Tab 1:
+
+localStorage.setItem("user", "Sagar");
+
+Tab 2:
+
+localStorage.getItem("user");
+
+Output:
+
+Sagar
+
+Shared across tabs.
+
+Session Storage
+
+Tab 1:
+
+sessionStorage.setItem("user", "Sagar");
+
+Tab 2:
+
+sessionStorage.getItem("user");
+
+Output:
+
+null
+
+Not shared.
+
+In a Next.js App
+
+Typical usage:
+
+Local Storage
+localStorage.setItem("theme", "dark");
+localStorage.setItem("cart", JSON.stringify(cart));
+Session Storage
+sessionStorage.setItem("currentStep", "3");
+
+Useful for onboarding flows or forms.
+
+What do modern apps use?
+
+Examples:
+
+YouTube → Local storage for preferences and caching.
+Spotify → Local storage for UI preferences and cached data.
+Amazon → Local storage for some client-side state.
+Modern auth systems (Next.js + Supabase, Clerk, Auth.js) typically use secure cookies, often HttpOnly, for sessions rather than local storage.
+For your projects
+
+For your Next.js + Supabase apps:
+
+Store in Local Storage
+
+Theme
+Sidebar state
+Last selected city
+Search filters
+Draft form data
+
+Store on the Server / Database
+
+User role
+Wallet balance
+Credits
+Referral earnings
+Premium access
+Subscription status
+Admin permissions
+
+Store in HttpOnly Cookies
+
+Authentication session
+Refresh tokens
+Login state
+
+That's the architecture commonly used in production applications because anything in Local Storage or Session Storage should be treated as user-editable.
