@@ -1,6 +1,69 @@
 import InView from '@/src/components/marketing/InView';
 import { UserPlus, Upload, IndianRupee } from 'lucide-react';
 
+const stepGraphicCard =
+  'rounded-2xl border border-black/[0.06] bg-white shadow-[0_4px_20px_-6px_rgba(0,0,0,0.10)] p-4 text-left w-full max-w-[240px]';
+
+const DragDots = () => (
+  <div className="grid grid-cols-2 gap-[3px] shrink-0">
+    {[0, 1, 2, 3, 4, 5].map((d) => (
+      <span key={d} className="w-[3px] h-[3px] rounded-full bg-gray-300" />
+    ))}
+  </div>
+);
+
+const SignupGraphic = () => (
+  <div className={stepGraphicCard}>
+    <div className="flex items-center gap-2 mb-3">
+      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#E83A2E] to-orange-400 shrink-0" />
+      <div className="sk-shimmer h-2 w-1/2 rounded-full" />
+    </div>
+    <div className="sk-shimmer h-4 w-full rounded-lg mb-2" />
+    <div className="sk-shimmer h-4 w-full rounded-lg mb-3" />
+    <div className="h-5 rounded-lg bg-[#E83A2E] flex items-center justify-center">
+      <div className="h-1 w-1/3 rounded-full bg-white/60" />
+    </div>
+  </div>
+);
+
+const BuilderGraphic = () => (
+  <div className={stepGraphicCard}>
+    <div className="flex items-center gap-2 bg-[#E83A2E]/[0.06] border border-[#E83A2E]/20 border-l-[3px] border-l-[#E83A2E] rounded-lg px-2.5 py-2 mb-1.5">
+      <DragDots />
+      <div className="w-2 h-2 rounded-sm bg-gradient-to-br from-[#E83A2E] to-orange-400 shrink-0" />
+      <div className="h-1.5 w-2/5 rounded-full bg-gray-700/70" />
+    </div>
+    <div className="flex items-center gap-2 px-2.5 py-2 mb-1.5">
+      <DragDots />
+      <div className="w-2 h-2 rounded-sm bg-violet-300 shrink-0" />
+      <div className="sk-shimmer h-1.5 w-1/2 rounded-full" />
+    </div>
+    <div className="flex items-center gap-2 px-2.5 py-2">
+      <DragDots />
+      <div className="w-2 h-2 rounded-sm bg-emerald-300 shrink-0" />
+      <div className="sk-shimmer h-1.5 w-1/3 rounded-full" />
+    </div>
+  </div>
+);
+
+const PayoutGraphic = () => (
+  <div className={stepGraphicCard}>
+    <div className="flex items-center gap-2.5 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 mb-2.5">
+      <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+        <span className="text-white text-[10px] font-black leading-none">✓</span>
+      </div>
+      <div>
+        <p className="text-[11px] font-black text-emerald-900 leading-tight">₹12,400 credited</p>
+        <p className="text-[8px] text-emerald-600 leading-tight font-medium">Instant UPI · just now</p>
+      </div>
+    </div>
+    <div className="flex items-center gap-2 px-1">
+      <div className="sk-shimmer h-1.5 flex-1 rounded-full" />
+      <span className="text-[9px] font-black text-emerald-600 shrink-0">+₹2,100</span>
+    </div>
+  </div>
+);
+
 const steps = [
   {
     num: "01",
@@ -8,6 +71,7 @@ const steps = [
     desc: "Create your free account. No credit card, no commitment — just your email.",
     icon: UserPlus,
     color: "from-[#E83A2E] to-orange-500",
+    graphic: SignupGraphic,
   },
   {
     num: "02",
@@ -15,6 +79,7 @@ const steps = [
     desc: "Add your products and design your storefront with our drag-and-drop visual builder.",
     icon: Upload,
     color: "from-violet-500 to-indigo-500",
+    graphic: BuilderGraphic,
   },
   {
     num: "03",
@@ -22,6 +87,7 @@ const steps = [
     desc: "Share your link anywhere. Receive instant UPI payouts directly to your bank account.",
     icon: IndianRupee,
     color: "from-emerald-500 to-teal-500",
+    graphic: PayoutGraphic,
   },
 ];
 
@@ -61,6 +127,7 @@ export default function Steps() {
 
           {steps.map((step, i) => {
             const Icon = step.icon;
+            const Graphic = step.graphic;
             return (
               <InView key={i} style={{ '--delay': `${i * 120}ms` }} className="flex flex-col items-center text-center group border-b border-gray-100 pb-8 last:border-0 last:pb-0 sm:border-0 sm:pb-0">
                 <div className="iv flex flex-col items-center text-center w-full">
@@ -78,6 +145,9 @@ export default function Steps() {
                   <p className="text-gray-500 font-medium text-[14px] sm:text-[15px] leading-relaxed max-w-[240px]">
                     {step.desc}
                   </p>
+                  <div aria-hidden="true" className="mt-6 w-full flex justify-center">
+                    <Graphic />
+                  </div>
                 </div>
               </InView>
             );
