@@ -38,9 +38,6 @@ export default function Testimonials() {
   return (
     <section className="py-16 sm:py-24 lg:py-32 bg-[#fafafa] relative overflow-hidden">
 
-      <div className="absolute top-0 inset-x-0 h-12 bg-gradient-to-b from-white to-transparent pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.07] to-transparent" />
-
       <div
         className="absolute inset-0 pointer-events-none"
         style={{

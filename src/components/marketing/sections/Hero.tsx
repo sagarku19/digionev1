@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { ArrowRight, Zap, TrendingUp } from 'lucide-react';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 export default function Hero() {
+  const { isLoggedIn } = useAuthSession();
+
   return (
     <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-24 overflow-hidden bg-white selection:bg-[#E83A2E]/20">
 
@@ -205,20 +208,32 @@ export default function Hero() {
           className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto px-4 sm:px-0"
           style={{ animation: 'heroFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.26s both' }}
         >
-          <Link
-            href="/signup"
-            className="w-full sm:w-auto group px-8 py-4 rounded-2xl bg-[#E83A2E] text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_24px_-4px_rgba(232,58,46,0.35)] hover:shadow-[0_14px_32px_-4px_rgba(232,58,46,0.45)] hover:-translate-y-0.5 transition-all duration-300"
-          >
-            Start building free
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
-          </Link>
-          <Link
-            href="/invite"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-black/10 bg-white text-gray-700 font-bold text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-gray-50 transition-all duration-300"
-          >
-            Request an invite
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto group px-8 py-4 rounded-2xl bg-[#E83A2E] text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_24px_-4px_rgba(232,58,46,0.35)] hover:shadow-[0_14px_32px_-4px_rgba(232,58,46,0.45)] hover:-translate-y-0.5 transition-all duration-300"
+            >
+              Go to your dashboard
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/signup"
+                className="w-full sm:w-auto group px-8 py-4 rounded-2xl bg-[#E83A2E] text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_24px_-4px_rgba(232,58,46,0.35)] hover:shadow-[0_14px_32px_-4px_rgba(232,58,46,0.45)] hover:-translate-y-0.5 transition-all duration-300"
+              >
+                Start building free
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+              </Link>
+              <Link
+                href="/invite"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl border border-black/10 bg-white text-gray-700 font-bold text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-gray-50 transition-all duration-300"
+              >
+                Request an invite
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </>
+          )}
         </div>
 
         <div className="mt-8 sm:hidden flex items-center gap-3 justify-center">
@@ -235,7 +250,7 @@ export default function Hero() {
         {/* Dashboard product shot */}
         <div
           aria-hidden="true"
-          className="relative w-full max-w-5xl mx-auto mt-12 sm:mt-20"
+          className="relative w-full max-w-5xl mx-auto mt-12 sm:mt-20 mb-4 sm:mb-8"
           style={{ animation: 'heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.34s both' }}
         >
           {/* Floating card — purchase (left corner) */}

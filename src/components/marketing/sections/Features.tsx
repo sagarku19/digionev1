@@ -5,8 +5,6 @@ import {
   MessageCircle,
   Zap,
   Network,
-  Banknote,
-  Fingerprint,
   CheckCircle2,
   Plus,
   GripVertical,
@@ -80,8 +78,8 @@ const BuilderGraphic = () => (
         </div>
         <div className="flex-1 p-1.5 space-y-0.5">
           {/* Active layer — Hero */}
-          <div className="relative flex items-center gap-1.5 bg-white border border-[#E83A2E]/20 rounded-lg pl-2.5 pr-1.5 py-1.5 ring-2 ring-[#E83A2E]/[0.10] shadow-sm overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E83A2E] rounded-l-lg" />
+          <div className="relative flex items-center gap-1.5 bg-white border border-[#E83A2E]/20 rounded pl-2.5 pr-1.5 py-1.5 ring-2 ring-[#E83A2E]/[0.10] shadow-sm overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E83A2E] rounded-l" />
             <GripVertical className="w-2.5 h-2.5 text-gray-200 shrink-0" />
             <div className="w-2 h-2 rounded-sm bg-gradient-to-br from-[#E83A2E] to-orange-400 shrink-0" />
             <span className="text-[9px] font-bold text-gray-900 flex-1 truncate">Hero</span>
@@ -93,7 +91,7 @@ const BuilderGraphic = () => (
             { swatch: 'bg-blue-400', label: 'Testimonials' },
             { swatch: 'bg-emerald-400', label: 'CTA' },
           ].map((l) => (
-            <div key={l.label} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-white/60 transition-colors">
+            <div key={l.label} className="flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-white/60 transition-colors">
               <GripVertical className="w-2.5 h-2.5 text-gray-200 shrink-0" />
               <div className={`w-2 h-2 rounded-sm ${l.swatch} shrink-0 opacity-70`} />
               <span className="text-[9px] text-gray-500 font-medium flex-1 truncate">{l.label}</span>
@@ -289,90 +287,6 @@ const AffiliateGraphic = () => (
   </div>
 );
 
-const PayoutGraphic = () => (
-  <div className={graphicCard}>
-    <div className="relative p-4 bg-gradient-to-br from-emerald-500 via-emerald-500 to-teal-600 text-white overflow-hidden">
-      <div
-        className="absolute inset-0 opacity-30 pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 15% 50%, rgba(255,255,255,0.35) 0%, transparent 45%), radial-gradient(circle at 85% 20%, rgba(255,255,255,0.15) 0%, transparent 40%)',
-        }}
-      />
-      <div className="relative flex items-start justify-between">
-        <div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.15em] opacity-70 mb-1">
-            Available Balance
-          </p>
-          <p className="text-[26px] font-black tracking-tight leading-none">₹1,24,850</p>
-          <p className="text-[9px] opacity-70 mt-1 font-medium">Cashfree · Instant UPI</p>
-        </div>
-        <button className="bg-white/20 backdrop-blur-sm border border-white/25 text-white text-[9px] font-black rounded-full px-2.5 py-1 hover:bg-white/30 transition-colors">
-          Withdraw
-        </button>
-      </div>
-    </div>
-    <div className="divide-y divide-black/[0.04]">
-      {[
-        { name: 'Arjun Sharma', upi: 'arjun@upi', amt: '+₹4,200', time: '2m ago', paid: true },
-        { name: 'Vikram Joshi', upi: 'vikram@okicici', amt: '+₹11,500', time: '1h ago', paid: true },
-        { name: 'Neha Kapoor', upi: 'neha@paytm', amt: '+₹3,800', time: 'Processing', paid: false },
-      ].map((p, i) => (
-        <div key={i} className="flex items-center gap-3 px-3.5 py-2.5">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-[10px] font-black shrink-0 shadow-sm">
-            {p.name.charAt(0)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold text-gray-800 truncate leading-tight">{p.name}</p>
-            <p className="text-[9px] text-gray-400 leading-tight">{p.upi}</p>
-          </div>
-          <div className="text-right shrink-0">
-            <p className={`text-[11px] font-black leading-tight ${p.paid ? 'text-emerald-600' : 'text-amber-500'}`}>
-              {p.amt}
-            </p>
-            <p className="text-[9px] text-gray-400 leading-tight">{p.time}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-const LedgerGraphic = () => (
-  <div className={`${graphicCard} mx-auto`}>
-    <div className="flex items-center justify-between px-3.5 py-3 border-b border-black/[0.05] bg-gray-50/50">
-      <p className="text-[11px] font-black text-gray-800">Ledger</p>
-      <span className="flex items-center gap-1 text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-200/70 px-2 py-0.5 rounded-full">
-        <Fingerprint className="w-2.5 h-2.5" />
-        Verified
-      </span>
-    </div>
-    <div className="divide-y divide-black/[0.04]">
-      {[
-        { id: '#TXN-8821', name: 'Rahul Verma', amt: '₹1,499', tag: 'Course' },
-        { id: '#TXN-8820', name: 'Sneha Iyer', amt: '₹499', tag: 'Ebook' },
-        { id: '#TXN-8819', name: 'Karan Singh', amt: '₹2,999', tag: 'Template' },
-      ].map((t, i) => (
-        <div key={i} className="flex items-center gap-3 px-3.5 py-2.5">
-          <div className="w-7 h-7 rounded-xl bg-blue-50 border border-blue-200/70 flex items-center justify-center shrink-0">
-            <Fingerprint className="w-3 h-3 text-blue-500" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold text-gray-800 truncate leading-tight">{t.name}</p>
-            <p className="text-[9px] text-gray-400 leading-tight">
-              {t.id} · {t.tag}
-            </p>
-          </div>
-          <div className="text-right shrink-0">
-            <p className="text-[11px] font-black text-gray-900 leading-tight">{t.amt}</p>
-            <p className="text-[9px] text-green-600 font-bold leading-tight">🔒 Locked</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
 /* ==========================================================================
    FEATURES CONFIG
    ========================================================================== */
@@ -421,28 +335,6 @@ const features: Feature[] = [
     iconBg: 'bg-gradient-to-br from-violet-500 to-indigo-500',
     tagColor: 'text-violet-600 bg-violet-50 border-violet-200/60',
     graphic: AffiliateGraphic,
-  },
-  {
-    icon: Banknote,
-    title: 'Instant UPI Payouts',
-    desc: 'Funds hit your account same-day via Cashfree. Indian-first payment infra, built for real creators — no 7-day hold, no hidden cuts.',
-    tag: 'Payments',
-    layout: 'wide',
-    accent: 'from-emerald-500 to-teal-500',
-    iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-500',
-    tagColor: 'text-emerald-600 bg-emerald-50 border-emerald-200/60',
-    graphic: PayoutGraphic,
-  },
-  {
-    icon: Fingerprint,
-    title: 'Tamper-proof Ledger',
-    desc: 'Every transaction cryptographically sealed. Dispute-proof records, zero surprises.',
-    tag: 'Security',
-    layout: 'narrow',
-    accent: 'from-blue-500 to-cyan-500',
-    iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
-    tagColor: 'text-blue-600 bg-blue-50 border-blue-200/60',
-    graphic: LedgerGraphic,
   },
 ];
 

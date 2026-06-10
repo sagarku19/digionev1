@@ -3,7 +3,6 @@ import Marquee from '@/components/marketing/sections/Marquee';
 import Features from '@/components/marketing/sections/Features';
 import ProductTypes from '@/components/marketing/sections/ProductTypes';
 import Steps from '@/components/marketing/sections/Steps';
-import Showcase from '@/components/marketing/sections/Showcase';
 import Testimonials from '@/components/marketing/sections/Testimonials';
 import CtaBanner from '@/components/marketing/sections/CtaBanner';
 
@@ -20,7 +19,6 @@ export default function MarketingPage() {
       <Features />
       <ProductTypes />
       <Steps />
-      <Showcase />
       <Testimonials />
       <CtaBanner />
     </div>
