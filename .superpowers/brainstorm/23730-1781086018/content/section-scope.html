@@ -1,0 +1,57 @@
+<h2>Question 2 of 3: which sections get upgraded with the hero?</h2>
+<p class="subtitle">
+  Hero gets the Stripe-style dashboard product shot (decided). These are the remaining sections ranked
+  by how plain they currently are. <strong>Click all you want included</strong> — multiple selections allowed.
+  My recommendation: 1 + 2 (highest impact, keeps scope tight, no over-engineering).
+</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="steps" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>Steps — "How it works" (weakest section today)</h3>
+      <p>Currently just 3 gradient icons with text. Upgrade: each step gets a small flat mini-mockup —
+      ① a signup card with skeleton shimmer lines, ② a builder strip with drag handles, ③ a UPI payout
+      toast showing "₹ credited". Turns telling into showing, matches the Features bento style.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="marquee" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>Marquee — logo strip + stats band</h3>
+      <p>Currently plain gray text logos and 3 flat stat tiles. Upgrade: logos get subtle pill chips,
+      stat tiles get the card treatment used elsewhere (1px border, soft shadow, tiny sparkline or
+      count-up accent). Also fixes an inconsistency: it currently uses dashboard CSS variables on a
+      marketing page.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="producttypes" onclick="toggleSelect(this)">
+    <div class="letter">3</div>
+    <div class="content">
+      <h3>ProductTypes — "Sell anything digital"</h3>
+      <p>Already decent (icon tiles with hover accents). Optional polish: add a tiny product-card
+      mockup inside each tile (e.g. a mini ebook cover, a mini course player). More visual, but risks
+      making the page feel busy since Features bento is right above it.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="showcase" onclick="toggleSelect(this)">
+    <div class="letter">4</div>
+    <div class="content">
+      <h3>Showcase — creator cards scroller</h3>
+      <p>Already decent (horizontal snap scroller with gradient covers). Optional polish: replace the
+      flat gradient cover with a mini storefront mockup per creator (header + product grid skeleton).
+      Nice-to-have, lowest priority.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="none" onclick="toggleSelect(this)">
+    <div class="letter">0</div>
+    <div class="content">
+      <h3>Hero only — touch nothing else</h3>
+      <p>Tightest possible scope. The dashboard product shot alone is 70% of the upgrade.</p>
+    </div>
+  </div>
+</div>

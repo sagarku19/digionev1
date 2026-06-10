@@ -1,0 +1,121 @@
+<h2>Homepage upgrade — Question 1 of 3: the Hero "product shot"</h2>
+<p class="subtitle">
+  I audited all 8 sections. Your Hero, Features bento, Testimonials, and CTA are already strong.
+  The single biggest gap vs. Stripe/Linear/Vercel: the hero never <em>shows the product</em>.
+  Right now there are 3 small floating cards (desktop only) but no dashboard preview.
+  Which hero treatment do you want?
+</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafa;padding:18px;">
+      <!-- Option A mini-mockup: centered copy, full dashboard frame below -->
+      <div style="text-align:center;margin-bottom:10px;">
+        <div style="height:8px;width:55%;background:#1a1a1a;border-radius:4px;margin:0 auto 5px;"></div>
+        <div style="height:8px;width:40%;background:linear-gradient(90deg,#E83A2E,#ff7043);border-radius:4px;margin:0 auto 8px;"></div>
+        <div style="display:inline-block;height:10px;width:70px;background:#E83A2E;border-radius:5px;"></div>
+      </div>
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.10);border-radius:10px 10px 0 0;box-shadow:0 -8px 30px -12px rgba(0,0,0,0.18);overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:4px;padding:5px 8px;border-bottom:1px solid rgba(0,0,0,0.06);background:#fcfcfc;">
+          <span style="width:5px;height:5px;border-radius:50%;background:#FF5F57;display:inline-block;"></span>
+          <span style="width:5px;height:5px;border-radius:50%;background:#FEBC2E;display:inline-block;"></span>
+          <span style="width:5px;height:5px;border-radius:50%;background:#28C840;display:inline-block;"></span>
+          <span style="margin-left:auto;font-size:7px;color:#999;">digione.ai/dashboard</span>
+        </div>
+        <div style="display:flex;min-height:90px;">
+          <div style="width:22%;background:#fafafa;border-right:1px solid rgba(0,0,0,0.05);padding:6px 5px;">
+            <div style="height:5px;width:80%;background:#E83A2E;border-radius:3px;margin-bottom:6px;"></div>
+            <div style="height:4px;width:70%;background:#ddd;border-radius:2px;margin-bottom:4px;"></div>
+            <div style="height:4px;width:75%;background:#ddd;border-radius:2px;margin-bottom:4px;"></div>
+            <div style="height:4px;width:60%;background:#ddd;border-radius:2px;"></div>
+          </div>
+          <div style="flex:1;padding:7px;">
+            <div style="display:flex;gap:5px;margin-bottom:7px;">
+              <div style="flex:1;height:24px;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:5px;"></div>
+              <div style="flex:1;height:24px;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:5px;"></div>
+              <div style="flex:1;height:24px;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:5px;"></div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:3px;height:34px;">
+              <div style="flex:1;height:40%;background:#f0c4c0;border-radius:2px 2px 0 0;"></div>
+              <div style="flex:1;height:65%;background:#eda49d;border-radius:2px 2px 0 0;"></div>
+              <div style="flex:1;height:50%;background:#f0c4c0;border-radius:2px 2px 0 0;"></div>
+              <div style="flex:1;height:85%;background:#E83A2E;border-radius:2px 2px 0 0;"></div>
+              <div style="flex:1;height:70%;background:#eda49d;border-radius:2px 2px 0 0;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Classic product shot (Stripe-style)</h3>
+      <p>A full-width stylised dashboard mockup (sidebar + KPI cards + revenue chart) rises from below the hero copy, cropped by the section edge. Floating notification cards stay, repositioned to overlap its corners. The strongest "this is a real product" signal.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafa;padding:18px;">
+      <!-- Option B mini-mockup: copy left, tilted dashboard right -->
+      <div style="display:flex;gap:12px;align-items:center;min-height:140px;">
+        <div style="flex:1;">
+          <div style="height:8px;width:90%;background:#1a1a1a;border-radius:4px;margin-bottom:5px;"></div>
+          <div style="height:8px;width:65%;background:linear-gradient(90deg,#E83A2E,#ff7043);border-radius:4px;margin-bottom:8px;"></div>
+          <div style="height:5px;width:80%;background:#ccc;border-radius:3px;margin-bottom:3px;"></div>
+          <div style="height:5px;width:60%;background:#ccc;border-radius:3px;margin-bottom:9px;"></div>
+          <div style="display:flex;gap:5px;">
+            <div style="height:11px;width:55px;background:#E83A2E;border-radius:5px;"></div>
+            <div style="height:11px;width:55px;background:#fff;border:1px solid #ddd;border-radius:5px;"></div>
+          </div>
+        </div>
+        <div style="flex:1.1;transform:perspective(600px) rotateY(-8deg) rotateX(2deg);">
+          <div style="background:#fff;border:1px solid rgba(0,0,0,0.10);border-radius:8px;box-shadow:14px 14px 40px -14px rgba(0,0,0,0.25);overflow:hidden;">
+            <div style="height:8px;background:#fcfcfc;border-bottom:1px solid rgba(0,0,0,0.06);"></div>
+            <div style="display:flex;min-height:85px;">
+              <div style="width:24%;background:#fafafa;border-right:1px solid rgba(0,0,0,0.05);padding:5px 4px;">
+                <div style="height:4px;width:80%;background:#E83A2E;border-radius:2px;margin-bottom:5px;"></div>
+                <div style="height:3px;width:70%;background:#ddd;border-radius:2px;margin-bottom:3px;"></div>
+                <div style="height:3px;width:60%;background:#ddd;border-radius:2px;"></div>
+              </div>
+              <div style="flex:1;padding:6px;">
+                <div style="display:flex;gap:4px;margin-bottom:5px;">
+                  <div style="flex:1;height:18px;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:4px;"></div>
+                  <div style="flex:1;height:18px;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:4px;"></div>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:2px;height:28px;">
+                  <div style="flex:1;height:45%;background:#f0c4c0;"></div>
+                  <div style="flex:1;height:70%;background:#eda49d;"></div>
+                  <div style="flex:1;height:55%;background:#f0c4c0;"></div>
+                  <div style="flex:1;height:90%;background:#E83A2E;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Split hero with angled panel (Linear-style)</h3>
+      <p>Headline moves left-aligned; a perspective-tilted dashboard panel sits on the right. More dynamic, but it means re-laying-out your existing centered hero (bigger change to what already works).</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fafafa;padding:18px;">
+      <!-- Option C mini-mockup: current hero kept, effort elsewhere -->
+      <div style="text-align:center;opacity:0.95;">
+        <div style="height:8px;width:55%;background:#1a1a1a;border-radius:4px;margin:0 auto 5px;"></div>
+        <div style="height:8px;width:40%;background:linear-gradient(90deg,#E83A2E,#ff7043);border-radius:4px;margin:0 auto 8px;"></div>
+        <div style="display:inline-block;height:10px;width:70px;background:#E83A2E;border-radius:5px;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:6px;justify-content:center;">
+          <div style="width:30%;height:46px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:7px;box-shadow:0 4px 12px -4px rgba(0,0,0,0.12);"></div>
+          <div style="width:30%;height:46px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:7px;box-shadow:0 4px 12px -4px rgba(0,0,0,0.12);"></div>
+          <div style="width:30%;height:46px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:7px;box-shadow:0 4px 12px -4px rgba(0,0,0,0.12);"></div>
+        </div>
+        <div style="font-size:9px;color:#999;margin-top:8px;">hero stays as-is → effort goes to Steps / Marquee / ProductTypes</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Keep hero, upgrade the weak sections instead</h3>
+      <p>Your hero typography + blobs are already good. Skip the product shot and spend the budget on the plainest sections: Steps (icons only today), Marquee (plain text logos), ProductTypes. Lowest risk, but the page keeps telling instead of showing.</p>
+    </div>
+  </div>
+</div>

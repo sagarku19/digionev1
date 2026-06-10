@@ -1,0 +1,442 @@
+<h2>Complete homepage preview — after the upgrade</h2>
+<p class="subtitle">Scrollable mockup, top to bottom. Sections tagged <b style="color:#E83A2E">NEW</b> are being upgraded; gray "unchanged" sections stay exactly as they are today. Tell me in the terminal what to adjust.</p>
+
+<style>
+  .pg { max-width: 880px; margin: 0 auto; background:#fff; border:1px solid rgba(0,0,0,0.10); border-radius:14px; overflow:hidden; font-family: Inter, system-ui, sans-serif; color:#111; }
+  .sec-tag { position:absolute; top:10px; right:12px; font-size:9px; font-weight:900; letter-spacing:1px; padding:3px 8px; border-radius:99px; z-index:5; }
+  .tag-new { background:#E83A2E; color:#fff; }
+  .tag-same { background:#f0f0f0; color:#999; }
+  .sk { background:linear-gradient(90deg,#e9e9e9 25%,#f7f7f7 50%,#e9e9e9 75%); background-size:200% 100%; animation:shm 1.8s linear infinite; border-radius:3px; }
+  @keyframes shm { from{background-position:200% 0} to{background-position:-200% 0} }
+  @keyframes flt { 0%,100%{transform:translateY(0) rotate(var(--r,0deg))} 50%{transform:translateY(-7px) rotate(var(--r,0deg))} }
+  .pulse { animation:pls 1.6s ease-in-out infinite; }
+  @keyframes pls { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .chip { display:inline-flex; align-items:center; padding:5px 12px; background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:99px; font-size:10px; font-weight:700; color:#9a9a9a; letter-spacing:0.08em; text-transform:uppercase; }
+  .badge-red { display:inline-block; font-size:8px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase; color:#E83A2E; background:rgba(232,58,46,0.07); border:1px solid rgba(232,58,46,0.15); padding:4px 11px; border-radius:99px; }
+</style>
+
+<div class="pg">
+
+  <!-- ============ NAV (unchanged) ============ -->
+  <div style="position:relative; display:flex; align-items:center; gap:14px; padding:12px 22px; border-bottom:1px solid rgba(0,0,0,0.06);">
+    <span class="sec-tag tag-same" style="top:8px;">unchanged</span>
+    <div style="display:flex; align-items:center; gap:5px;">
+      <div style="width:16px;height:16px;border-radius:5px;background:#E83A2E;"></div>
+      <b style="font-size:12px;">DigiOne</b>
+    </div>
+    <div style="display:flex; gap:12px; font-size:10px; color:#777; margin-left:14px;">
+      <span>Features</span><span>Pricing</span><span>Discover</span><span>Blog</span>
+    </div>
+    <div style="margin-left:auto; display:flex; gap:7px; align-items:center;">
+      <span style="font-size:10px; color:#555; font-weight:600;">Sign in</span>
+      <span style="font-size:10px; color:#fff; font-weight:700; background:#E83A2E; padding:5px 11px; border-radius:8px;">Start free</span>
+    </div>
+  </div>
+
+  <!-- ============ HERO (NEW product shot) ============ -->
+  <div style="position:relative; padding:44px 26px 0; text-align:center; overflow:hidden; background:
+      radial-gradient(ellipse 60% 38% at 50% -5%, rgba(232,58,46,0.16) 0%, transparent 65%),
+      radial-gradient(ellipse 32% 28% at 88% 2%, rgba(251,146,60,0.12) 0%, transparent 65%),
+      radial-gradient(ellipse 32% 28% at 10% 5%, rgba(139,92,246,0.10) 0%, transparent 65%),
+      radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px) 0 0 / 22px 22px,
+      #fff;">
+    <span class="sec-tag tag-new">NEW — product shot added</span>
+
+    <div style="display:inline-flex; align-items:center; gap:7px; padding:6px 13px; border-radius:99px; background:#fff; border:1px solid rgba(0,0,0,0.08); box-shadow:0 2px 12px -4px rgba(0,0,0,0.1); font-size:9px; font-weight:600; color:#666; margin-bottom:16px;">
+      Trusted by <b style="color:#111">10,000+</b> Indian creators
+      <span style="width:1px;height:9px;background:rgba(0,0,0,0.1);"></span>
+      <span style="color:#E83A2E; font-weight:800;">⚡ Live</span>
+    </div>
+
+    <div style="font-size:9px; font-weight:800; letter-spacing:0.12em; color:#333; margin-bottom:14px;">
+      DIGITAL PRODUCT &nbsp;|&nbsp; AUTOMATION FLOW &nbsp;|&nbsp; AI TOOLS &nbsp;|&nbsp; NO-CODE WEBSITE
+    </div>
+
+    <div style="font-size:40px; font-weight:900; letter-spacing:-0.04em; line-height:1.04;">
+      <span style="color:#8a8a8a;">Setup in minutes.</span><br>
+      <span style="background:linear-gradient(135deg,#E83A2E,#ff7043,#E83A2E); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">Sell on autopilot.</span>
+    </div>
+
+    <p style="font-size:12px; color:#777; max-width:380px; margin:14px auto 18px; line-height:1.55; font-weight:500;">
+      The only platform that turns your audience into automated income. No coding, no complicated setups — just results.
+    </p>
+
+    <div style="display:flex; gap:9px; justify-content:center; margin-bottom:34px;">
+      <span style="font-size:11px; color:#fff; font-weight:800; background:#E83A2E; padding:9px 18px; border-radius:11px; box-shadow:0 8px 22px -6px rgba(232,58,46,0.4);">Start building free →</span>
+      <span style="font-size:11px; color:#444; font-weight:700; background:#fff; border:1px solid rgba(0,0,0,0.1); padding:9px 18px; border-radius:11px;">Request an invite →</span>
+    </div>
+
+    <!-- ===== THE NEW DASHBOARD PRODUCT SHOT ===== -->
+    <div style="position:relative; max-width:660px; margin:0 auto;">
+
+      <!-- floating card: purchase (left corner overlap) -->
+      <div style="--r:-5deg; position:absolute; left:-34px; top:34px; z-index:6; animation:flt 7s ease-in-out infinite; background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:12px; padding:8px 10px; box-shadow:0 12px 32px -8px rgba(0,0,0,0.16); width:140px; text-align:left;">
+        <div style="display:flex; align-items:center; gap:5px; margin-bottom:5px;">
+          <div style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#E83A2E,#fb923c);"></div>
+          <div>
+            <div style="font-size:7px;font-weight:900;">Arjun Sharma</div>
+            <div style="font-size:6px;color:#999;">just purchased</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;background:#fafafa;border:1px solid #f0f0f0;border-radius:7px;padding:4px 7px;">
+          <span style="font-size:7px;font-weight:700;color:#555;">Masterclass</span>
+          <span style="font-size:7px;font-weight:900;color:#059669;">₹999</span>
+        </div>
+      </div>
+
+      <!-- floating card: auto DM (right corner overlap) -->
+      <div style="--r:4deg; position:absolute; right:-30px; top:-16px; z-index:6; animation:flt 9s ease-in-out infinite; background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:12px; padding:8px 10px; box-shadow:0 12px 32px -8px rgba(0,0,0,0.16); width:130px; text-align:left;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <div style="width:22px;height:22px;border-radius:8px;background:linear-gradient(135deg,#E83A2E,#fb923c); display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;">⚡</div>
+          <div style="flex:1;">
+            <div style="font-size:6.5px;font-weight:700;color:#999;">Auto DMs sent</div>
+            <div style="font-size:11px;font-weight:900;">3,821</div>
+          </div>
+          <span style="display:flex;align-items:center;gap:2px;font-size:6px;font-weight:900;color:#16a34a;"><span class="pulse" style="width:4px;height:4px;border-radius:50%;background:#22c55e;display:inline-block;"></span>LIVE</span>
+        </div>
+      </div>
+
+      <!-- browser frame -->
+      <div style="background:#fff; border:1px solid rgba(0,0,0,0.10); border-radius:12px 12px 0 0; box-shadow:0 -16px 60px -20px rgba(0,0,0,0.22), 0 24px 60px -24px rgba(0,0,0,0.20); overflow:hidden; text-align:left;">
+        <div style="display:flex; align-items:center; gap:5px; padding:8px 12px; background:#fcfcfc; border-bottom:1px solid rgba(0,0,0,0.06);">
+          <span style="width:7px;height:7px;border-radius:50%;background:#FF5F57;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#FEBC2E;"></span>
+          <span style="width:7px;height:7px;border-radius:50%;background:#28C840;"></span>
+          <span style="margin:0 auto; display:inline-flex; align-items:center; gap:4px; font-size:8px; color:#888; background:#fff; border:1px solid rgba(0,0,0,0.07); padding:2px 14px; border-radius:6px;">
+            <span style="width:4px;height:4px;border-radius:50%;background:#22c55e;"></span> digione.ai/dashboard
+          </span>
+        </div>
+
+        <div style="display:flex; min-height:240px;">
+          <!-- sidebar -->
+          <div style="width:128px; background:#fafafa; border-right:1px solid rgba(0,0,0,0.05); padding:12px 10px;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:14px;">
+              <div style="width:14px;height:14px;border-radius:5px;background:#E83A2E;"></div>
+              <div class="sk" style="height:6px;width:52px;"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;background:rgba(232,58,46,0.08);border-left:2.5px solid #E83A2E;border-radius:6px;padding:6px 7px;margin-bottom:5px;">
+              <div style="width:8px;height:8px;border-radius:3px;background:#E83A2E;"></div>
+              <div style="height:5px;width:48px;background:rgba(232,58,46,0.35);border-radius:3px;"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px;padding:7px;">
+              <div style="display:flex;gap:6px;align-items:center;"><div style="width:8px;height:8px;border-radius:3px;background:#ddd;"></div><div class="sk" style="height:5px;width:55px;"></div></div>
+              <div style="display:flex;gap:6px;align-items:center;"><div style="width:8px;height:8px;border-radius:3px;background:#ddd;"></div><div class="sk" style="height:5px;width:42px;"></div></div>
+              <div style="display:flex;gap:6px;align-items:center;"><div style="width:8px;height:8px;border-radius:3px;background:#ddd;"></div><div class="sk" style="height:5px;width:60px;"></div></div>
+              <div style="display:flex;gap:6px;align-items:center;"><div style="width:8px;height:8px;border-radius:3px;background:#ddd;"></div><div class="sk" style="height:5px;width:38px;"></div></div>
+              <div style="display:flex;gap:6px;align-items:center;"><div style="width:8px;height:8px;border-radius:3px;background:#ddd;"></div><div class="sk" style="height:5px;width:50px;"></div></div>
+            </div>
+          </div>
+
+          <!-- main area -->
+          <div style="flex:1; padding:13px;">
+            <!-- balance card -->
+            <div style="position:relative; background:linear-gradient(135deg,#10b981,#0d9488); border-radius:11px; padding:13px 15px; color:#fff; margin-bottom:11px; overflow:hidden;">
+              <div style="position:absolute; inset:0; background:radial-gradient(circle at 12% 60%, rgba(255,255,255,0.28) 0%, transparent 45%);"></div>
+              <div style="position:relative; display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <div style="font-size:7px; font-weight:800; letter-spacing:1.5px; opacity:0.75; margin-bottom:4px;">AVAILABLE BALANCE</div>
+                  <div style="font-size:22px; font-weight:900; letter-spacing:-0.02em;">₹1,24,850</div>
+                  <div style="font-size:7px; opacity:0.75; margin-top:3px; font-weight:600;">Cashfree · Instant UPI</div>
+                </div>
+                <span style="font-size:8px; font-weight:900; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); padding:4px 10px; border-radius:99px;">Withdraw</span>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:11px;">
+              <!-- payment rows -->
+              <div style="flex:1.25; display:flex; flex-direction:column; gap:6px;">
+                <div style="font-size:7px; font-weight:900; letter-spacing:1.2px; color:#aaa;">INCOMING PAYMENTS</div>
+                <div style="display:flex; align-items:center; gap:7px; background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:8px; padding:7px 9px;">
+                  <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#34d399,#14b8a6);"></div>
+                  <div style="flex:1;"><div class="sk" style="height:5px;width:70%;margin-bottom:3px;"></div><div class="sk" style="height:4px;width:45%;"></div></div>
+                  <div style="text-align:right;"><div style="font-size:9px;font-weight:900;color:#059669;">+₹4,200</div><div style="font-size:6px;color:#bbb;">2m ago</div></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:7px; background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:8px; padding:7px 9px;">
+                  <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#34d399,#14b8a6);"></div>
+                  <div style="flex:1;"><div class="sk" style="height:5px;width:60%;margin-bottom:3px;"></div><div class="sk" style="height:4px;width:50%;"></div></div>
+                  <div style="text-align:right;"><div style="font-size:9px;font-weight:900;color:#059669;">+₹11,500</div><div style="font-size:6px;color:#bbb;">1h ago</div></div>
+                </div>
+                <div style="display:flex; align-items:center; gap:7px; background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:8px; padding:7px 9px;">
+                  <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);"></div>
+                  <div style="flex:1;"><div class="sk" style="height:5px;width:65%;margin-bottom:3px;"></div><div class="sk" style="height:4px;width:40%;"></div></div>
+                  <div style="text-align:right;"><div style="font-size:9px;font-weight:900;color:#d97706;">+₹3,800</div><div style="font-size:6px;color:#d97706;">Processing</div></div>
+                </div>
+              </div>
+
+              <!-- revenue chart -->
+              <div style="flex:1; background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:8px; padding:9px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                  <div style="font-size:7px; font-weight:900; letter-spacing:1.2px; color:#aaa;">REVENUE · 7D</div>
+                  <div style="font-size:7px; font-weight:900; color:#059669; background:#ecfdf5; border:1px solid #d1fae5; padding:1px 6px; border-radius:99px;">+24%</div>
+                </div>
+                <div style="display:flex; align-items:flex-end; gap:4px; height:64px;">
+                  <div style="flex:1;height:34%;background:#f5d3d0;border-radius:3px 3px 0 0;"></div>
+                  <div style="flex:1;height:52%;background:#efb0a9;border-radius:3px 3px 0 0;"></div>
+                  <div style="flex:1;height:42%;background:#f5d3d0;border-radius:3px 3px 0 0;"></div>
+                  <div style="flex:1;height:68%;background:#efb0a9;border-radius:3px 3px 0 0;"></div>
+                  <div style="flex:1;height:55%;background:#f5d3d0;border-radius:3px 3px 0 0;"></div>
+                  <div style="flex:1;height:92%;background:#E83A2E;border-radius:3px 3px 0 0;"></div>
+                  <div style="flex:1;height:74%;background:#efb0a9;border-radius:3px 3px 0 0;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- bottom fade -->
+      <div style="position:absolute; bottom:0; left:0; right:0; height:54px; background:linear-gradient(to bottom, transparent, #fff); pointer-events:none;"></div>
+    </div>
+  </div>
+
+  <!-- ============ MARQUEE (NEW chips + stat cards) ============ -->
+  <div style="position:relative; padding:30px 26px 34px; border-top:1px solid rgba(0,0,0,0.04); text-align:center;">
+    <span class="sec-tag tag-new">NEW — chips + stat cards</span>
+    <div style="font-size:8px; font-weight:800; letter-spacing:2px; color:#999; text-transform:uppercase; margin-bottom:14px;">Creators from these platforms use DigiOne</div>
+    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
+      <span class="chip">YouTube</span><span class="chip">Instagram</span><span class="chip">Spotify</span><span class="chip">Substack</span><span class="chip">Notion</span><span class="chip">Patreon</span><span class="chip">WhatsApp</span>
+    </div>
+    <div style="display:flex; gap:10px; max-width:620px; margin:0 auto;">
+      <div style="flex:1; background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:13px; padding:14px; box-shadow:0 4px 18px -8px rgba(0,0,0,0.08); text-align:center;">
+        <div style="font-size:18px; font-weight:900;">₹4.2 Cr+</div>
+        <div style="font-size:8.5px; color:#888; margin:3px 0 8px;">earned by creators</div>
+        <div style="display:flex; gap:2px; align-items:flex-end; height:14px; justify-content:center;">
+          <div style="width:7px;height:40%;background:#f5d3d0;border-radius:2px;"></div><div style="width:7px;height:60%;background:#efb0a9;border-radius:2px;"></div><div style="width:7px;height:50%;background:#f5d3d0;border-radius:2px;"></div><div style="width:7px;height:100%;background:#E83A2E;border-radius:2px;"></div>
+        </div>
+      </div>
+      <div style="flex:1; background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:13px; padding:14px; box-shadow:0 4px 18px -8px rgba(0,0,0,0.08); text-align:center;">
+        <div style="font-size:18px; font-weight:900;">12,400+</div>
+        <div style="font-size:8.5px; color:#888; margin:3px 0 8px;">products sold securely</div>
+        <div style="display:flex; gap:2px; align-items:flex-end; height:14px; justify-content:center;">
+          <div style="width:7px;height:35%;background:#ddd6fe;border-radius:2px;"></div><div style="width:7px;height:55%;background:#c4b5fd;border-radius:2px;"></div><div style="width:7px;height:75%;background:#a78bfa;border-radius:2px;"></div><div style="width:7px;height:100%;background:#8b5cf6;border-radius:2px;"></div>
+        </div>
+      </div>
+      <div style="flex:1; background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:13px; padding:14px; box-shadow:0 4px 18px -8px rgba(0,0,0,0.08); text-align:center;">
+        <div style="font-size:18px; font-weight:900;">99.9%</div>
+        <div style="font-size:8.5px; color:#888; margin:3px 0 8px;">uptime SLA</div>
+        <div style="display:flex; gap:2px; align-items:flex-end; height:14px; justify-content:center;">
+          <div style="width:7px;height:90%;background:#a7f3d0;border-radius:2px;"></div><div style="width:7px;height:95%;background:#6ee7b7;border-radius:2px;"></div><div style="width:7px;height:92%;background:#6ee7b7;border-radius:2px;"></div><div style="width:7px;height:100%;background:#10b981;border-radius:2px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FEATURES (unchanged) ============ -->
+  <div style="position:relative; padding:30px 26px; background:#fafafa; border-top:1px solid rgba(0,0,0,0.05); text-align:center;">
+    <span class="sec-tag tag-same">unchanged</span>
+    <span class="badge-red">Unfair Advantage</span>
+    <div style="font-size:24px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 4px;">Everything wired together.</div>
+    <div style="font-size:10px; color:#888; margin-bottom:18px;">Landing pages, AI bots, automation logic, and payment rails — one unified stack.</div>
+    <div style="display:grid; grid-template-columns:2fr 1fr; gap:9px; opacity:0.55;">
+      <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:14px; height:74px; display:flex; align-items:center; justify-content:center; font-size:9px; color:#aaa; font-weight:700;">Visual Builder bento (existing)</div>
+      <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:14px; height:74px; display:flex; align-items:center; justify-content:center; font-size:9px; color:#aaa; font-weight:700;">AI DMs (existing)</div>
+      <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:14px; height:54px; display:flex; align-items:center; justify-content:center; font-size:9px; color:#aaa; font-weight:700;">Workflows · Affiliates · Payouts · Ledger (existing)</div>
+      <div style="background:#fff; border:1px solid rgba(0,0,0,0.07); border-radius:14px; height:54px; display:flex; align-items:center; justify-content:center; font-size:9px; color:#aaa; font-weight:700;">…</div>
+    </div>
+  </div>
+
+  <!-- ============ PRODUCT TYPES (NEW mini visuals) ============ -->
+  <div style="position:relative; padding:30px 26px; border-top:1px solid rgba(0,0,0,0.05); text-align:center;">
+    <span class="sec-tag tag-new">NEW — mini product visuals</span>
+    <span class="badge-red">What you can sell</span>
+    <div style="font-size:24px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 18px;">Sell anything digital.</div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:9px;">
+
+      <div style="background:#fafafa; border:1px solid rgba(0,0,0,0.06); border-radius:13px; padding:13px; text-align:left; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:9px; right:9px; width:44px;">
+          <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:5px;padding:3px;box-shadow:0 2px 8px -2px rgba(0,0,0,0.1);">
+            <div style="height:14px;background:linear-gradient(135deg,#fb923c,#E83A2E);border-radius:3px;margin-bottom:2px;display:flex;align-items:center;justify-content:center;"><div style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent;margin-left:1px;"></div></div>
+            <div style="height:2.5px;background:#eee;border-radius:2px;margin-bottom:2px;"></div>
+            <div style="height:2.5px;width:60%;background:#E83A2E;border-radius:2px;"></div>
+          </div>
+        </div>
+        <div style="width:26px;height:26px;border-radius:9px;background:linear-gradient(135deg,#fb923c,#E83A2E);margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">🎓</div>
+        <div style="font-size:11px;font-weight:900;">Courses</div>
+        <div style="font-size:8.5px;color:#888;margin-top:2px;">Drip video lessons with access control</div>
+      </div>
+
+      <div style="background:#fafafa; border:1px solid rgba(0,0,0,0.06); border-radius:13px; padding:13px; text-align:left; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:9px; right:9px;">
+          <div style="position:relative;width:34px;">
+            <div style="position:absolute;top:3px;left:3px;width:30px;height:38px;background:#fbcfe8;border-radius:4px;"></div>
+            <div style="position:relative;width:30px;height:38px;background:linear-gradient(160deg,#f43f5e,#ec4899);border-radius:4px;padding:4px;box-shadow:0 3px 8px -2px rgba(0,0,0,0.2);">
+              <div style="height:2.5px;width:80%;background:rgba(255,255,255,0.7);border-radius:2px;margin-bottom:2px;"></div>
+              <div style="height:2.5px;width:55%;background:rgba(255,255,255,0.45);border-radius:2px;"></div>
+            </div>
+          </div>
+        </div>
+        <div style="width:26px;height:26px;border-radius:9px;background:linear-gradient(135deg,#f43f5e,#ec4899);margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">📖</div>
+        <div style="font-size:11px;font-weight:900;">Ebooks</div>
+        <div style="font-size:8.5px;color:#888;margin-top:2px;">PDFs with smart buyer watermarks</div>
+      </div>
+
+      <div style="background:#fafafa; border:1px solid rgba(0,0,0,0.06); border-radius:13px; padding:13px; text-align:left; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:9px; right:9px; display:grid; grid-template-columns:1fr 1fr; gap:2px; width:40px;">
+          <div style="height:16px;background:#ddd6fe;border-radius:3px;"></div>
+          <div style="height:16px;background:#c4b5fd;border-radius:3px;"></div>
+          <div style="height:16px;background:#a78bfa;border-radius:3px;"></div>
+          <div style="height:16px;background:#8b5cf6;border-radius:3px;"></div>
+        </div>
+        <div style="width:26px;height:26px;border-radius:9px;background:linear-gradient(135deg,#8b5cf6,#6366f1);margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;">🎨</div>
+        <div style="font-size:11px;font-weight:900;">Design Assets</div>
+        <div style="font-size:8.5px;color:#888;margin-top:2px;">Figma, Sketch &amp; premium UI kits</div>
+      </div>
+    </div>
+    <div style="font-size:8px;color:#bbb;margin-top:8px;">+ Templates, Photography, Services — same treatment</div>
+  </div>
+
+  <!-- ============ STEPS (NEW mini-mockups) ============ -->
+  <div style="position:relative; padding:30px 26px; background:#fafafa; border-top:1px solid rgba(0,0,0,0.05); text-align:center;">
+    <span class="sec-tag tag-new">NEW — mini-mockup per step</span>
+    <span class="badge-red">How it works</span>
+    <div style="font-size:24px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 18px;">Up and running <span style="color:#aaa;">in minutes.</span></div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+
+      <div>
+        <div style="width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#E83A2E,#fb923c);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;box-shadow:0 8px 18px -6px rgba(232,58,46,0.4);">👤</div>
+        <div style="font-size:11px;font-weight:900;margin-bottom:2px;">Sign up in 30 seconds</div>
+        <div style="font-size:8px;color:#888;margin-bottom:9px;">No credit card — just your email.</div>
+        <div style="background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:10px;padding:9px;box-shadow:0 4px 14px -6px rgba(0,0,0,0.1);text-align:left;">
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:7px;">
+            <div style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#E83A2E,#fb923c);"></div>
+            <div class="sk" style="height:5px;width:50%;"></div>
+          </div>
+          <div class="sk" style="height:9px;width:100%;margin-bottom:5px;border-radius:5px;"></div>
+          <div class="sk" style="height:9px;width:100%;margin-bottom:7px;border-radius:5px;"></div>
+          <div style="height:10px;background:#E83A2E;border-radius:6px;display:flex;align-items:center;justify-content:center;"><div style="height:3px;width:34%;background:rgba(255,255,255,0.6);border-radius:2px;"></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#8b5cf6,#6366f1);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;box-shadow:0 8px 18px -6px rgba(139,92,246,0.4);">⬆</div>
+        <div style="font-size:11px;font-weight:900;margin-bottom:2px;">Upload &amp; style your store</div>
+        <div style="font-size:8px;color:#888;margin-bottom:9px;">Drag-and-drop visual builder.</div>
+        <div style="background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:10px;padding:9px;box-shadow:0 4px 14px -6px rgba(0,0,0,0.1);text-align:left;">
+          <div style="display:flex;align-items:center;gap:5px;background:rgba(232,58,46,0.06);border:1px solid rgba(232,58,46,0.18);border-left:3px solid #E83A2E;border-radius:6px;padding:5px 7px;margin-bottom:4px;">
+            <span style="color:#ccc;font-size:8px;">⠿</span>
+            <div style="width:7px;height:7px;border-radius:2px;background:linear-gradient(135deg,#E83A2E,#fb923c);"></div>
+            <div style="height:5px;width:36%;background:#333;border-radius:3px;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;padding:5px 7px;margin-bottom:4px;">
+            <span style="color:#ddd;font-size:8px;">⠿</span>
+            <div style="width:7px;height:7px;border-radius:2px;background:#c4b5fd;"></div>
+            <div class="sk" style="height:5px;width:46%;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;padding:5px 7px;">
+            <span style="color:#ddd;font-size:8px;">⠿</span>
+            <div style="width:7px;height:7px;border-radius:2px;background:#6ee7b7;"></div>
+            <div class="sk" style="height:5px;width:30%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,#10b981,#14b8a6);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;box-shadow:0 8px 18px -6px rgba(16,185,129,0.4);">₹</div>
+        <div style="font-size:11px;font-weight:900;margin-bottom:2px;">Share &amp; get paid</div>
+        <div style="font-size:8px;color:#888;margin-bottom:9px;">Instant UPI payouts to your bank.</div>
+        <div style="background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:10px;padding:9px;box-shadow:0 4px 14px -6px rgba(0,0,0,0.1);text-align:left;">
+          <div style="display:flex;align-items:center;gap:7px;background:#ecfdf5;border:1px solid #d1fae5;border-radius:8px;padding:7px 9px;margin-bottom:6px;">
+            <div style="width:18px;height:18px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;">✓</div>
+            <div>
+              <div style="font-size:9px;font-weight:900;color:#065f46;">₹12,400 credited</div>
+              <div style="font-size:6.5px;color:#059669;">Instant UPI · just now</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;padding:0 2px;">
+            <div class="sk" style="height:5px;flex:1;"></div>
+            <div style="font-size:7px;font-weight:800;color:#059669;">+₹2,100</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SHOWCASE (NEW storefront covers) ============ -->
+  <div style="position:relative; padding:30px 26px; border-top:1px solid rgba(0,0,0,0.05); text-align:center;">
+    <span class="sec-tag tag-new">NEW — storefront covers</span>
+    <span class="badge-red">Creator stores</span>
+    <div style="font-size:24px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 18px;">See what creators <span style="color:#aaa;">are building.</span></div>
+    <div style="display:flex; gap:10px; overflow:hidden;">
+
+      <div style="min-width:31%; background:#fafafa; border:1px solid rgba(0,0,0,0.06); border-radius:14px; overflow:hidden; text-align:center;">
+        <div style="position:relative; height:74px; background:linear-gradient(135deg,#E83A2E,#fb923c); padding:8px 10px 0;">
+          <span style="position:absolute;top:6px;right:6px;font-size:6.5px;font-weight:900;color:#fff;background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.3);padding:2px 6px;border-radius:99px;">₹1.2L / mo</span>
+          <div style="height:4px;width:36%;background:rgba(255,255,255,0.65);border-radius:2px;margin-bottom:6px;"></div>
+          <div style="display:flex;gap:4px;">
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:75%;"></div></div>
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:60%;"></div></div>
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:70%;"></div></div>
+          </div>
+          <div style="position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;border-radius:9px;background:#fff;border:2px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;">A</div>
+        </div>
+        <div style="padding:17px 10px 12px;">
+          <div style="font-size:10px;font-weight:900;">Arjun Sharma</div>
+          <div style="font-size:8px;color:#888;margin-bottom:7px;">Figma Courses</div>
+          <span style="font-size:7px;font-weight:800;color:#666;background:#f0f0f0;border:1px solid #e5e5e5;padding:3px 9px;border-radius:99px;">digione.ai/arjun ↗</span>
+        </div>
+      </div>
+
+      <div style="min-width:31%; background:#fafafa; border:1px solid rgba(0,0,0,0.06); border-radius:14px; overflow:hidden; text-align:center;">
+        <div style="position:relative; height:74px; background:linear-gradient(135deg,#8b5cf6,#a855f7); padding:8px 10px 0;">
+          <span style="position:absolute;top:6px;right:6px;font-size:6.5px;font-weight:900;color:#fff;background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.3);padding:2px 6px;border-radius:99px;">₹84K / mo</span>
+          <div style="height:4px;width:30%;background:rgba(255,255,255,0.65);border-radius:2px;margin-bottom:6px;"></div>
+          <div style="display:flex;gap:4px;">
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:70%;"></div></div>
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:55%;"></div></div>
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:65%;"></div></div>
+          </div>
+          <div style="position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;border-radius:9px;background:#fff;border:2px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;">R</div>
+        </div>
+        <div style="padding:17px 10px 12px;">
+          <div style="font-size:10px;font-weight:900;">Riya Mehta</div>
+          <div style="font-size:8px;color:#888;margin-bottom:7px;">Design Assets</div>
+          <span style="font-size:7px;font-weight:800;color:#666;background:#f0f0f0;border:1px solid #e5e5e5;padding:3px 9px;border-radius:99px;">digione.ai/riya ↗</span>
+        </div>
+      </div>
+
+      <div style="min-width:31%; background:#fafafa; border:1px solid rgba(0,0,0,0.06); border-radius:14px; overflow:hidden; text-align:center;">
+        <div style="position:relative; height:74px; background:linear-gradient(135deg,#fb923c,#f59e0b); padding:8px 10px 0;">
+          <span style="position:absolute;top:6px;right:6px;font-size:6.5px;font-weight:900;color:#fff;background:rgba(255,255,255,0.22);border:1px solid rgba(255,255,255,0.3);padding:2px 6px;border-radius:99px;">₹60K / mo</span>
+          <div style="height:4px;width:33%;background:rgba(255,255,255,0.65);border-radius:2px;margin-bottom:6px;"></div>
+          <div style="display:flex;gap:4px;">
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:65%;"></div></div>
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:75%;"></div></div>
+            <div style="flex:1;background:#fff;border-radius:5px 5px 0 0;padding:4px;box-shadow:0 -2px 8px rgba(0,0,0,0.08);"><div style="height:13px;background:#eee;border-radius:3px;margin-bottom:3px;"></div><div class="sk" style="height:3px;width:55%;"></div></div>
+          </div>
+          <div style="position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);width:24px;height:24px;border-radius:9px;background:#fff;border:2px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;">R</div>
+        </div>
+        <div style="padding:17px 10px 12px;">
+          <div style="font-size:10px;font-weight:900;">Rahul Verma</div>
+          <div style="font-size:8px;color:#888;margin-bottom:7px;">Photography</div>
+          <span style="font-size:7px;font-weight:800;color:#666;background:#f0f0f0;border:1px solid #e5e5e5;padding:3px 9px;border-radius:99px;">digione.ai/rahul ↗</span>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:8px;color:#bbb;margin-top:8px;">→ horizontal scroller, 8 creators, same as today</div>
+  </div>
+
+  <!-- ============ TESTIMONIALS (unchanged) ============ -->
+  <div style="position:relative; padding:26px; background:#fafafa; border-top:1px solid rgba(0,0,0,0.05); text-align:center;">
+    <span class="sec-tag tag-same">unchanged</span>
+    <span class="badge-red">Testimonials</span>
+    <div style="font-size:24px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 14px;">Creators earning <span style="color:#aaa;">with DigiOne.</span></div>
+    <div style="display:flex; gap:9px; opacity:0.55;">
+      <div style="flex:1;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:13px;height:64px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#aaa;font-weight:700;">★★★★★ quote cards (existing)</div>
+      <div style="flex:1;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:13px;height:64px;"></div>
+      <div style="flex:1;background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:13px;height:64px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ CTA (unchanged) ============ -->
+  <div style="position:relative; padding:30px 26px 22px; border-top:1px solid rgba(0,0,0,0.05); text-align:center; background:radial-gradient(ellipse 60% 50% at 50% 0%, rgba(232,58,46,0.07), transparent 70%), #fff;">
+    <span class="sec-tag tag-same">unchanged</span>
+    <div style="font-size:26px; font-weight:900; letter-spacing:-0.04em;">Start selling<br><span style="background:linear-gradient(135deg,#E83A2E,#ff7043); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">in 30 minutes.</span></div>
+    <div style="margin:12px 0 16px;"><span style="font-size:11px;color:#fff;font-weight:800;background:#E83A2E;padding:9px 18px;border-radius:11px;box-shadow:0 8px 22px -6px rgba(232,58,46,0.4);">Create your free store →</span></div>
+    <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap; opacity:0.6;">
+      <span class="chip" style="text-transform:none;letter-spacing:0;">✨ Link in Bio</span>
+      <span class="chip" style="text-transform:none;letter-spacing:0;">✨ Sales Funnels</span>
+      <span class="chip" style="text-transform:none;letter-spacing:0;">✨ Auto DMs</span>
+      <span class="chip" style="text-transform:none;letter-spacing:0;">✨ Email Marketing</span>
+    </div>
+  </div>
+
+</div>
