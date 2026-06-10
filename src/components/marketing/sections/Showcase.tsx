@@ -16,7 +16,7 @@ export default function Showcase() {
   return (
     <section id="creators" className="py-16 sm:py-36 bg-white overflow-hidden relative">
 
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.07] to-transparent" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8 mb-8 sm:mb-14 text-center relative z-10">
         <InView>

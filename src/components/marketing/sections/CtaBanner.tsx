@@ -20,7 +20,7 @@ export default function CtaBanner() {
   return (
     <section className="py-12 sm:py-20 lg:py-28 bg-white relative overflow-hidden pb-0">
 
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/8 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.07] to-transparent" />
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
