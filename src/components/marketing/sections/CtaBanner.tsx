@@ -1,6 +1,9 @@
+"use client";
+
 import Link from 'next/link';
 import InView from '@/src/components/marketing/InView';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { useAuthSession } from '@/hooks/useAuthSession';
 
 const lineOneFeatures = [
   'Link in Bio', 'Landing Pages', 'Sales Funnels', 'Digital Products',
@@ -17,6 +20,8 @@ const lineTwoFeatures = [
 ];
 
 export default function CtaBanner() {
+  const { isLoggedIn } = useAuthSession();
+
   return (
     <section className="py-12 sm:py-20 lg:py-28 bg-white relative overflow-hidden pb-0">
 
@@ -123,19 +128,31 @@ export default function CtaBanner() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto px-4 sm:px-0">
-              <Link
-                href="/signup"
-                className="group w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl bg-[#E83A2E] text-white font-black text-[14px] sm:text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_28px_-4px_rgba(232,58,46,0.38)] hover:shadow-[0_14px_36px_-4px_rgba(232,58,46,0.48)] hover:-translate-y-0.5 transition-all duration-300 ring-1 ring-white/10"
-              >
-                Create your free store
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
-              </Link>
-              <Link
-                href="/login"
-                className="w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl border border-black/10 bg-white/70 backdrop-blur-md text-gray-700 font-bold text-[14px] sm:text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-white transition-all duration-300 shadow-sm"
-              >
-                Sign in
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/dashboard"
+                  className="group w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl bg-[#E83A2E] text-white font-black text-[14px] sm:text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_28px_-4px_rgba(232,58,46,0.38)] hover:shadow-[0_14px_36px_-4px_rgba(232,58,46,0.48)] hover:-translate-y-0.5 transition-all duration-300 ring-1 ring-white/10"
+                >
+                  Go to your dashboard
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/signup"
+                    className="group w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl bg-[#E83A2E] text-white font-black text-[14px] sm:text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_28px_-4px_rgba(232,58,46,0.38)] hover:shadow-[0_14px_36px_-4px_rgba(232,58,46,0.48)] hover:-translate-y-0.5 transition-all duration-300 ring-1 ring-white/10"
+                  >
+                    Create your free store
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="w-full sm:w-auto px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl border border-black/10 bg-white/70 backdrop-blur-md text-gray-700 font-bold text-[14px] sm:text-[15px] flex items-center justify-center gap-2 hover:border-black/20 hover:bg-white transition-all duration-300 shadow-sm"
+                  >
+                    Sign in
+                  </Link>
+                </>
+              )}
             </div>
 
             <p className="mt-5 sm:mt-7 text-[10px] sm:text-[12px] font-semibold text-gray-400 tracking-widest uppercase text-center">

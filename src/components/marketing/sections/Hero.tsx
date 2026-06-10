@@ -253,6 +253,8 @@ export default function Hero() {
           className="relative w-full max-w-5xl mx-auto mt-12 sm:mt-20 mb-4 sm:mb-8"
           style={{ animation: 'heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.34s both' }}
         >
+          {/* Floating cards disabled for now — flip `false` to re-enable */}
+          {false && (<>
           {/* Floating card — purchase (left corner) */}
           <div
             className="hidden xl:block absolute -left-28 top-1/3 z-20"
@@ -313,6 +315,7 @@ export default function Hero() {
               </div>
             </div>
           </div>
+          </>)}
 
           {/* Browser frame */}
           <div className="relative rounded-t-2xl border border-black/[0.08] border-b-0 bg-white shadow-[0_-20px_80px_-24px_rgba(0,0,0,0.16),0_30px_80px_-30px_rgba(0,0,0,0.20)] overflow-hidden text-left">
