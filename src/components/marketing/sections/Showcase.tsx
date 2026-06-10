@@ -43,12 +43,25 @@ export default function Showcase() {
               key={i}
               className="min-w-[260px] sm:min-w-[290px] lg:min-w-[320px] rounded-[24px] bg-[#fafafa] border border-black/[0.055] overflow-hidden shrink-0 snap-center hover:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.10)] hover:-translate-y-1 transition-all duration-400 group cursor-default"
             >
-              <div className={`h-36 sm:h-40 bg-gradient-to-br ${c.color} relative`}>
+              <div className={`h-36 sm:h-40 bg-gradient-to-br ${c.color} relative px-4 pt-3 overflow-hidden`}>
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:22px_22px]" />
-                <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-2.5 py-1 text-[10px] font-black text-white">
+                <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-2.5 py-1 text-[10px] font-black text-white z-10">
                   {c.revenue}
                 </div>
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-14 h-14 rounded-2xl bg-white border-2 border-white shadow-lg flex items-center justify-center">
+                {/* mini storefront */}
+                <div aria-hidden="true" className="relative">
+                  <div className="h-1.5 w-1/3 rounded-full bg-white/60 mb-2.5" />
+                  <div className="flex gap-2">
+                    {[0, 1, 2].map((n) => (
+                      <div key={n} className="flex-1 bg-white rounded-t-lg p-1.5 shadow-[0_-2px_10px_rgba(0,0,0,0.10)]">
+                        <div className="h-9 sm:h-11 rounded-md bg-gray-100 mb-1.5" />
+                        <div className="sk-shimmer h-1 w-3/4 rounded-full mb-1" />
+                        <div className="h-1 w-1/2 rounded-full bg-[#E83A2E]/30" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-14 h-14 rounded-2xl bg-white border-2 border-white shadow-lg flex items-center justify-center z-10">
                   <span className="text-lg font-black text-gray-800">{c.name.charAt(0)}</span>
                 </div>
               </div>
