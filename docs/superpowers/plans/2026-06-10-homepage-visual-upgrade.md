@@ -1,4 +1,4 @@
----
+﻿---
 noteId: "3a0d1e4064c111f1a2458925ff71e28e"
 tags: []
 
@@ -46,7 +46,7 @@ Not touched: `app/(marketing)/page.tsx`, `Features.tsx`, `Testimonials.tsx`, `Ct
 **Files:**
 - Modify: `app/globals.css` (insert after the `marqueescroll` keyframe, line 18)
 
-- [ ] **Step 1: Add the `.sk-shimmer` utility class**
+- [x] **Step 1: Add the `.sk-shimmer` utility class**
 
 Insert after line 18 (`}` closing `@keyframes marqueescroll`):
 
@@ -59,7 +59,7 @@ Insert after line 18 (`}` closing `@keyframes marqueescroll`):
 }
 ```
 
-- [ ] **Step 2: Verify build health**
+- [x] **Step 2: Verify build health**
 
 Run: `npx tsc --noEmit`
 Expected: exit 0, no output.
@@ -67,7 +67,7 @@ Expected: exit 0, no output.
 Run: `npm run lint`
 Expected: no new errors (CSS isn't linted by ESLint; this confirms nothing else broke).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app/globals.css
@@ -83,7 +83,7 @@ git commit -m "feat(marketing): add sk-shimmer skeleton utility for homepage moc
   - Floating cards: lines 146–203 (three `hidden xl:block absolute …` wrappers)
   - Insertion point: after the mobile social-proof block (closes at line 293), still inside the `relative mx-auto max-w-6xl` content container
 
-- [ ] **Step 1: Move the three floating cards inside a new product-shot wrapper and add the dashboard mockup**
+- [x] **Step 1: Move the three floating cards inside a new product-shot wrapper and add the dashboard mockup**
 
 Delete the three floating-card blocks at lines 146–203 (keep their inner card markup — only the outer positioning wrappers change). Then insert the following block immediately after the mobile social-proof `div` (after line 293), as the last child of the content container:
 
@@ -267,7 +267,7 @@ Notes for the implementer:
 - The `floatCard4` keyframe becomes unused; leave it (it's inert CSS) or delete it — either is fine.
 - Headline, sub-copy, badge, CTAs, blobs, dot grid, grain: untouched.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: exit 0.
@@ -275,7 +275,7 @@ Expected: exit 0.
 Run: `npm run lint`
 Expected: no new errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/marketing/sections/Hero.tsx
@@ -289,7 +289,7 @@ git commit -m "feat(marketing): hero dashboard product shot — earnings mockup 
 **Files:**
 - Modify: `src/components/marketing/sections/Marquee.tsx` (whole file — it's 43 lines)
 
-- [ ] **Step 1: Replace the file body**
+- [x] **Step 1: Replace the file body**
 
 Replace the full contents of `Marquee.tsx` with:
 
@@ -365,12 +365,12 @@ export default function Marquee() {
 
 This keeps all copy and the marquee animation, converts logos to chips, converts stat tiles to bordered white cards with a 4-bar sparkline, and removes both `var(--text-primary)` / `var(--text-secondary)` usages.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit` → exit 0.
 Run: `npm run lint` → no new errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/marketing/sections/Marquee.tsx
@@ -384,7 +384,7 @@ git commit -m "feat(marketing): marquee logo chips + stat cards with sparklines,
 **Files:**
 - Modify: `src/components/marketing/sections/Steps.tsx`
 
-- [ ] **Step 1: Add graphic components and render them under each step**
+- [x] **Step 1: Add graphic components and render them under each step**
 
 (a) Directly after the imports (NOT at the bottom of the file — the `steps` array initializer reads these bindings at module load, so they must be defined above it), add:
 
@@ -498,12 +498,12 @@ and at the top of the map callback (next to `const Icon = step.icon;`) add:
             const Graphic = step.graphic;
 ```
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit` → exit 0.
 Run: `npm run lint` → no new errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/marketing/sections/Steps.tsx
@@ -517,7 +517,7 @@ git commit -m "feat(marketing): steps section mini-mockups — signup, builder, 
 **Files:**
 - Modify: `src/components/marketing/sections/ProductTypes.tsx`
 
-- [ ] **Step 1: Add a `visual` renderer per type and slot it into the tile**
+- [x] **Step 1: Add a `visual` renderer per type and slot it into the tile**
 
 (a) Directly after the imports, add six small visual components (they must be defined before the `types` array that references them):
 
@@ -616,12 +616,12 @@ So titles never run under the visual, change the `<h3>` line (line 53 in the cur
                   <h3 className="text-[16px] sm:text-[18px] font-black text-gray-900 mb-1.5 tracking-tight pr-14">{t.title}</h3>
 ```
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit` → exit 0.
 Run: `npm run lint` → no new errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/marketing/sections/ProductTypes.tsx
@@ -635,7 +635,7 @@ git commit -m "feat(marketing): product-type tiles gain mini product visuals"
 **Files:**
 - Modify: `src/components/marketing/sections/Showcase.tsx:46-54` (the cover `div` inside the `creators.map`)
 
-- [ ] **Step 1: Replace the cover block**
+- [x] **Step 1: Replace the cover block**
 
 Replace lines 46–54 (the `div` with `h-36 sm:h-40 bg-gradient-to-br ...` and its children) with:
 
@@ -666,12 +666,12 @@ Replace lines 46–54 (the `div` with `h-36 sm:h-40 bg-gradient-to-br ...` and i
 
 Everything below the cover (name, niche, link pill) is unchanged.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit` → exit 0.
 Run: `npm run lint` → no new errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/marketing/sections/Showcase.tsx
@@ -684,12 +684,12 @@ git commit -m "feat(marketing): showcase creator covers become mini storefronts"
 
 **Files:** none (verification only)
 
-- [ ] **Step 1: Full type + lint pass**
+- [x] **Step 1: Full type + lint pass**
 
 Run: `npx tsc --noEmit` → exit 0.
 Run: `npm run lint` → no errors.
 
-- [ ] **Step 2: Dashboard-token leak grep**
+- [x] **Step 2: Dashboard-token leak grep**
 
 Run:
 ```bash
@@ -697,7 +697,7 @@ grep -rn "var(--" src/components/marketing/sections/
 ```
 Expected: **zero hits** (Marquee was the only offender; Task 3 removed it).
 
-- [ ] **Step 3: Manual responsive check**
+- [x] **Step 3: Manual responsive check**
 
 Run: `npm run dev` (kill any stale node process first) and open `http://localhost:3000` in Chrome. Check with devtools at these widths:
 
@@ -707,7 +707,7 @@ Run: `npm run dev` (kill any stale node process first) and open `http://localhos
 | 768px | Hero mockup gains the sidebar. Stats row is 3-up. Steps are 3 columns with connector line. |
 | 1440px | Floating cards overlap the mockup corners (left, top-right, bottom-right) without covering the balance amount. Bottom fade blends into Marquee. Shimmer animation visible on skeleton bars. |
 
-- [ ] **Step 4: Mark plan complete and commit any checkbox updates**
+- [x] **Step 4: Mark plan complete and commit any checkbox updates**
 
 ```bash
 git add docs/superpowers/plans/2026-06-10-homepage-visual-upgrade.md
