@@ -10,17 +10,17 @@ const TRUST_STATS = [
   {
     value: "₹4.2 Cr+",
     label: "earned by creators",
-    bars: ["bg-[#E83A2E]/20", "bg-[#E83A2E]/40", "bg-[#E83A2E]/25", "bg-[#E83A2E]"],
+    bars: ["bg-[#E83A2E]/15", "bg-[#E83A2E]/30", "bg-[#E83A2E]/50", "bg-[#E83A2E]"],
   },
   {
     value: "12,400+",
     label: "products sold securely",
-    bars: ["bg-violet-200", "bg-violet-300", "bg-violet-400", "bg-violet-500"],
+    bars: ["bg-gray-200", "bg-gray-300", "bg-gray-400", "bg-gray-900"],
   },
   {
     value: "99.9%",
     label: "uptime SLA",
-    bars: ["bg-emerald-200", "bg-emerald-300", "bg-emerald-300", "bg-emerald-500"],
+    bars: ["bg-gray-200", "bg-gray-300", "bg-[#E83A2E]/40", "bg-[#E83A2E]"],
   },
 ];
 
@@ -45,54 +45,40 @@ export default function Hero() {
             willChange: 'transform',
           }}
         />
-        {/* Blob 2 — orange, top-right */}
+        {/* Blob 2 — warm ember, top-right */}
         <div
           className="absolute rounded-full"
           style={{
             top: '-5%', right: '-5%',
             width: '600px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(251,146,60,0.40) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse at center, rgba(255,138,76,0.28) 0%, transparent 65%)',
             filter: 'blur(40px)',
             animation: 'blobB 17s ease-in-out infinite',
             willChange: 'transform',
           }}
         />
-        {/* Blob 3 — violet, top-left */}
+        {/* Blob 3 — soft peach, top-left */}
         <div
           className="absolute rounded-full"
           style={{
             top: '0%', left: '-5%',
             width: '550px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.34) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse at center, rgba(255,176,133,0.26) 0%, transparent 65%)',
             filter: 'blur(45px)',
             animation: 'blobC 20s ease-in-out infinite',
             willChange: 'transform',
           }}
         />
-        {/* Blob 4 — indigo, bottom-right */}
+        {/* Blob 4 — faint vermilion echo, bottom-right */}
         <div className="hidden sm:block">
           <div
             className="absolute rounded-full"
             style={{
               bottom: '0%', right: '10%',
               width: '500px', height: '400px',
-              background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.30) 0%, transparent 65%)',
+              background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.10) 0%, transparent 65%)',
               filter: 'blur(50px)',
               animation: 'blobD 14s ease-in-out infinite',
-              willChange: 'transform',
-            }}
-          />
-        </div>
-        {/* Blob 5 — amber, bottom-left */}
-        <div className="hidden sm:block">
-          <div
-            className="absolute rounded-full"
-            style={{
-              bottom: '0%', left: '10%',
-              width: '480px', height: '380px',
-              background: 'radial-gradient(ellipse at center, rgba(251,191,36,0.30) 0%, transparent 65%)',
-              filter: 'blur(45px)',
-              animation: 'blobE 22s ease-in-out infinite',
               willChange: 'transform',
             }}
           />
@@ -136,11 +122,6 @@ export default function Hero() {
         @keyframes blobD {
           0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
           50%  { transform: translateY(-30px) translateX(-20px) scale(1.10); }
-        }
-        @keyframes blobE {
-          0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
-          45%  { transform: translateY(-20px) translateX(25px) scale(1.06); }
-          80%  { transform: translateY(10px) translateX(-10px) scale(0.97); }
         }
         @keyframes floatCard1 {
           0%, 100% { transform: rotate(-6deg) translateY(0px); }
@@ -195,8 +176,8 @@ export default function Hero() {
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 sm:gap-x-0">
             {['Digital Product', 'Automation Flow', 'AI Tools', 'No-Code Website'].map((tag, i) => (
               <span key={i} className="flex items-center">
-                {i > 0 && <span className="hidden sm:inline mx-4 text-gray-300 text-[22px] font-light select-none">|</span>}
-                <span className="text-[11px] sm:text-[17px] font-bold tracking-wide text-gray-900 uppercase">{tag}</span>
+                {i > 0 && <span aria-hidden="true" className="hidden sm:inline-block mx-5 w-1.5 h-1.5 rotate-45 bg-[#E83A2E]/50 select-none" />}
+                <span className="text-[11px] sm:text-[15px] font-bold tracking-[0.18em] text-gray-900 uppercase">{tag}</span>
               </span>
             ))}
           </div>
@@ -206,7 +187,7 @@ export default function Hero() {
           className="text-[32px] min-[480px]:text-[42px] sm:text-[68px] md:text-[82px] lg:text-[96px] font-black tracking-[-0.04em] leading-[1.05] max-w-4xl"
           style={{ animation: 'heroFadeUp 0.65s cubic-bezier(0.16,1,0.3,1) 0.12s both' }}
         >
-          <span className="text-gray-500">Setup in minutes.</span>
+          <span className="text-[#131110]">Setup in minutes.</span>
           <br />
           <span
             style={{
@@ -272,7 +253,7 @@ export default function Hero() {
 
         <div className="mt-8 sm:hidden flex items-center gap-3 justify-center">
           <div className="flex -space-x-2">
-            {['#E83A2E', '#8b5cf6', '#10b981', '#f59e0b'].map((c, i) => (
+            {['#E83A2E', '#FF7043', '#FFB085', '#131110'].map((c, i) => (
               <div key={i} className="w-7 h-7 rounded-full border-2 border-white shadow-sm" style={{ background: `linear-gradient(135deg, ${c}, ${c}99)` }} />
             ))}
           </div>
@@ -676,11 +657,11 @@ export default function Hero() {
               style={{ animation: 'marqueescroll 25s linear infinite', minWidth: '200%' }}
             >
               {[...PLATFORM_LOGOS, ...PLATFORM_LOGOS, ...PLATFORM_LOGOS].map((logo, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center px-5 py-2 bg-white border border-black/[0.07] rounded-full text-[13px] font-bold text-gray-400 tracking-wider uppercase shadow-[0_2px_10px_-4px_rgba(0,0,0,0.06)]"
-                >
-                  {logo}
+                <span key={i} className="inline-flex items-center gap-4">
+                  <span className="text-[15px] sm:text-[17px] font-black text-gray-300 tracking-[0.18em] uppercase hover:text-gray-500 transition-colors duration-300">
+                    {logo}
+                  </span>
+                  <span aria-hidden="true" className="w-1 h-1 rotate-45 bg-[#E83A2E]/35" />
                 </span>
               ))}
             </div>

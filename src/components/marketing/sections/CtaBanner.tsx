@@ -25,8 +25,6 @@ export default function CtaBanner() {
   return (
     <section className="py-12 sm:py-20 lg:py-28 bg-white relative overflow-hidden pb-0">
 
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.07] to-transparent" />
-
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute rounded-full"
@@ -43,7 +41,7 @@ export default function CtaBanner() {
           style={{
             top: '0%', right: '-15%',
             width: '500px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.06) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse at center, rgba(255,138,76,0.07) 0%, transparent 65%)',
             filter: 'blur(80px)',
             animation: 'ctaBloomB 14s ease-in-out infinite',
           }}
@@ -171,9 +169,9 @@ export default function CtaBanner() {
               {lineOneFeatures.map((feature, i) => (
                 <div
                   key={`l1-${i}`}
-                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-xl text-[12px] sm:text-[14px] font-bold text-gray-700 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:bg-white/80 hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)] ring-1 ring-inset ring-white/30"
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white border border-black/[0.07] rounded-xl text-[12px] sm:text-[14px] font-bold text-gray-600 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)]"
                 >
-                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 opacity-40" />
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 text-[#E83A2E]/40" />
                   {feature}
                 </div>
               ))}
@@ -186,9 +184,9 @@ export default function CtaBanner() {
               {lineTwoFeatures.map((feature, i) => (
                 <div
                   key={`l2-${i}`}
-                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white/50 backdrop-blur-md border border-white/80 rounded-xl text-[12px] sm:text-[14px] font-bold text-gray-700 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:bg-white/80 hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)] ring-1 ring-inset ring-white/30"
+                  className="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-white border border-black/[0.07] rounded-xl text-[12px] sm:text-[14px] font-bold text-gray-600 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] whitespace-nowrap flex items-center justify-center transition-all duration-300 hover:scale-[1.03] hover:border-[#E83A2E]/40 hover:text-[#E83A2E] hover:shadow-[0_8px_25px_-4px_rgba(232,58,46,0.15)]"
                 >
-                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 opacity-40" />
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1.5 sm:mr-2 text-[#E83A2E]/40" />
                   {feature}
                 </div>
               ))}

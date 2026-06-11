@@ -298,9 +298,9 @@ const features: Feature[] = [
     desc: 'Build high-converting stores, Link-in-Bio pages, and funnels with a real-time editor. Zero code, zero friction.',
     tag: 'Builder',
     layout: 'wide',
-    accent: 'from-orange-500 to-[#E83A2E]',
-    iconBg: 'bg-gradient-to-br from-orange-500 to-[#E83A2E]',
-    tagColor: 'text-orange-500 bg-orange-50 border-orange-200/60',
+    accent: 'from-[#E83A2E] to-[#FF7043]',
+    iconBg: 'bg-[#131110]',
+    tagColor: 'text-[#E83A2E] bg-[#E83A2E]/[0.06] border-[#E83A2E]/15',
     graphic: BuilderGraphic,
   },
   {
@@ -309,9 +309,9 @@ const features: Feature[] = [
     desc: 'Turn comments into cash. Auto-reply with custom links the moment a follower drops a keyword.',
     tag: 'AI',
     layout: 'narrow',
-    accent: 'from-[#E83A2E] to-rose-500',
-    iconBg: 'bg-gradient-to-br from-[#E83A2E] to-rose-500',
-    tagColor: 'text-rose-500 bg-rose-50 border-rose-200/60',
+    accent: 'from-[#E83A2E] to-[#FF7043]',
+    iconBg: 'bg-[#131110]',
+    tagColor: 'text-[#E83A2E] bg-[#E83A2E]/[0.06] border-[#E83A2E]/15',
     graphic: DMGraphic,
   },
   {
@@ -320,9 +320,9 @@ const features: Feature[] = [
     desc: 'Chain WhatsApp, Mailchimp, and Telegram. Platform handles the grind while you sleep.',
     tag: 'Automation',
     layout: 'narrow',
-    accent: 'from-amber-500 to-orange-500',
-    iconBg: 'bg-gradient-to-br from-amber-500 to-orange-500',
-    tagColor: 'text-amber-600 bg-amber-50 border-amber-200/60',
+    accent: 'from-[#E83A2E] to-[#FF7043]',
+    iconBg: 'bg-[#131110]',
+    tagColor: 'text-[#E83A2E] bg-[#E83A2E]/[0.06] border-[#E83A2E]/15',
     graphic: WorkflowGraphic,
   },
   {
@@ -331,9 +331,9 @@ const features: Feature[] = [
     desc: 'Launch scalable affiliate programs instantly. Let your biggest fans become your salesforce — commissions, tracking, leaderboards all included.',
     tag: 'Growth',
     layout: 'wide',
-    accent: 'from-violet-500 to-indigo-500',
-    iconBg: 'bg-gradient-to-br from-violet-500 to-indigo-500',
-    tagColor: 'text-violet-600 bg-violet-50 border-violet-200/60',
+    accent: 'from-[#E83A2E] to-[#FF7043]',
+    iconBg: 'bg-[#131110]',
+    tagColor: 'text-[#E83A2E] bg-[#E83A2E]/[0.06] border-[#E83A2E]/15',
     graphic: AffiliateGraphic,
   },
 ];
@@ -356,7 +356,7 @@ const CardHeader = ({ feat }: { feat: Feature }) => {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <div
-          className={`w-10 h-10 rounded-2xl ${feat.iconBg} flex items-center justify-center shadow-[0_4px_14px_-3px_rgba(0,0,0,0.25)] group-hover:scale-[1.08] group-hover:-rotate-3 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shrink-0`}
+          className={`w-10 h-10 rounded-xl ${feat.iconBg} flex items-center justify-center shadow-[0_4px_14px_-3px_rgba(0,0,0,0.25)] group-hover:scale-[1.08] group-hover:-rotate-3 group-hover:bg-[#E83A2E] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shrink-0`}
         >
           <Icon className="w-5 h-5 text-white" strokeWidth={2.1} />
         </div>
@@ -402,7 +402,7 @@ const GraphicSurface = ({ feat, className = '' }: { feat: Feature; className?: s
 
 export default function Features() {
   return (
-    <section id="features" className="py-16 sm:py-24 bg-[#fafafa] relative overflow-hidden">
+    <section id="features" className="py-16 sm:py-24 bg-[#FAF8F6] relative overflow-hidden">
       {/* top hairline */}
       <div className="absolute top-0 inset-x-0 h-12 bg-gradient-to-b from-white to-transparent pointer-events-none" />
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.07] to-transparent" />
@@ -431,18 +431,24 @@ export default function Features() {
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8">
 
         {/* ============ HEADER ============ */}
-        <InView className="text-center mb-10 sm:mb-20">
+        <InView className="mb-10 sm:mb-16">
           <div className="iv">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 text-[11px] font-black uppercase tracking-[0.2em] text-[#E83A2E] mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E] animate-pulse" />
-              Unfair Advantage
+            <div className="flex items-center gap-4 mb-6 sm:mb-9">
+              <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.25em] text-[#E83A2E]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E] animate-pulse" />
+                Unfair Advantage
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-gradient-to-r from-black/[0.12] to-transparent" />
+              <span aria-hidden="true" className="text-[11px] font-bold tabular-nums tracking-[0.2em] text-gray-300 select-none">01</span>
             </div>
-            <h2 className="text-[2rem] sm:text-[3.25rem] md:text-[4rem] font-black text-gray-900 mb-5 tracking-[-0.035em] leading-[1.05]">
-              Everything wired together.
-            </h2>
-            <p className="text-[15px] sm:text-[17px] font-medium text-gray-500 max-w-lg mx-auto leading-relaxed">
-              Landing pages, AI bots, automation logic, and payment rails — one unified stack.
-            </p>
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 sm:gap-10">
+              <h2 className="text-[2rem] sm:text-[3.25rem] md:text-[3.75rem] font-black text-[#131110] tracking-[-0.035em] leading-[1.02] max-w-2xl">
+                Everything wired together.
+              </h2>
+              <p className="text-[15px] sm:text-[16px] font-medium text-gray-500 max-w-sm leading-relaxed md:text-right md:pb-2.5">
+                Landing pages, AI bots, automation logic, and payment rails — one unified stack.
+              </p>
+            </div>
           </div>
         </InView>
 

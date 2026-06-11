@@ -35,12 +35,12 @@ const BuilderGraphic = () => (
     </div>
     <div className="flex items-center gap-2 px-2.5 py-2 mb-1.5">
       <DragDots />
-      <div className="w-2 h-2 rounded-sm bg-violet-300 shrink-0" />
+      <div className="w-2 h-2 rounded-sm bg-gray-300 shrink-0" />
       <div className="sk-shimmer h-1.5 w-1/2 rounded-full" />
     </div>
     <div className="flex items-center gap-2 px-2.5 py-2">
       <DragDots />
-      <div className="w-2 h-2 rounded-sm bg-emerald-300 shrink-0" />
+      <div className="w-2 h-2 rounded-sm bg-gray-400 shrink-0" />
       <div className="sk-shimmer h-1.5 w-1/3 rounded-full" />
     </div>
   </div>
@@ -48,12 +48,12 @@ const BuilderGraphic = () => (
 
 const PayoutGraphic = () => (
   <div className={stepGraphicCard}>
-    <div className="flex items-center gap-4.5 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 mb-2.5">
+    <div className="flex items-center gap-2.5 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 mb-2.5">
       <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
         <span className="text-white text-[10px] font-black leading-none">✓</span>
       </div>
       <div>
-        <p className="text-[11px] font-black text-emerald-900 leading-tight mb-3.5">₹12,400 credited</p>
+        <p className="text-[11px] font-black text-emerald-900 leading-tight mb-0.5">₹12,400 credited</p>
         <p className="text-[8px] text-emerald-600 leading-tight font-medium">Instant UPI · just now</p>
       </div>
     </div>
@@ -61,7 +61,7 @@ const PayoutGraphic = () => (
       <div className="sk-shimmer h-1.5 flex-1 rounded-full" />
       <span className="text-[9px] font-black text-emerald-600 shrink-0">+₹2,100</span>
     </div>
-        <div className="flex items-center gap-2 px-1">
+    <div className="flex items-center gap-2 px-1">
       <div className="sk-shimmer h-1.5 flex-1 rounded-full" />
       <span className="text-[9px] font-black text-emerald-600 shrink-0">+₹1,500</span>
     </div>
@@ -74,7 +74,6 @@ const steps = [
     title: "Sign up in 30 seconds",
     desc: "Create your free account. No credit card, no commitment — just your email.",
     icon: UserPlus,
-    color: "from-[#E83A2E] to-orange-500",
     graphic: SignupGraphic,
   },
   {
@@ -82,7 +81,6 @@ const steps = [
     title: "Upload & style your store",
     desc: "Add your products and design your storefront with our drag-and-drop visual builder.",
     icon: Upload,
-    color: "from-violet-500 to-indigo-500",
     graphic: BuilderGraphic,
   },
   {
@@ -90,14 +88,13 @@ const steps = [
     title: "Share & get paid",
     desc: "Share your link anywhere. Receive instant UPI payouts directly to your bank account.",
     icon: IndianRupee,
-    color: "from-emerald-500 to-teal-500",
     graphic: PayoutGraphic,
   },
 ];
 
 export default function Steps() {
   return (
-    <section className="py-16 sm:py-24 lg:py-32 bg-[#fafafa] relative overflow-hidden">
+    <section className="py-16 sm:py-24 lg:py-32 bg-[#FAF8F6] relative overflow-hidden">
 
       <div className="absolute top-0 inset-x-0 h-12 bg-gradient-to-b from-white to-transparent pointer-events-none" />
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-black/[0.07] to-transparent" />
@@ -112,39 +109,60 @@ export default function Steps() {
         }}
       />
 
+      <style>{`
+        .step-ghost-num {
+          -webkit-text-stroke: 1.5px rgba(19, 17, 16, 0.22);
+          color: transparent;
+          transition: -webkit-text-stroke-color 0.4s ease;
+        }
+        .group:hover .step-ghost-num {
+          -webkit-text-stroke-color: rgba(232, 58, 46, 0.6);
+        }
+      `}</style>
+
       <div className="max-w-6xl mx-auto px-5 sm:px-8 relative z-10">
 
         <InView className="text-center mb-12 sm:mb-20">
           <div className="iv">
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
-              How it works
-            </p>
-            <h2 className="text-[2rem] sm:text-[2.75rem] md:text-[3.5rem] lg:text-[4rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.1]">
+            <div className="flex items-center justify-center gap-4 mb-5 sm:mb-6">
+              <span aria-hidden="true" className="h-px w-8 sm:w-12 bg-black/[0.12]" />
+              <p className="text-[11px] font-black uppercase tracking-[0.25em] text-[#E83A2E]">
+                <span aria-hidden="true" className="text-gray-300 mr-3 select-none">03</span>
+                How it works
+              </p>
+              <span aria-hidden="true" className="h-px w-8 sm:w-12 bg-black/[0.12]" />
+            </div>
+            <h2 className="text-[2rem] sm:text-[2.75rem] md:text-[3.5rem] lg:text-[4rem] font-black text-[#131110] tracking-[-0.035em] leading-[1.1]">
               Up and running
               <br />
-              <span className="text-gray-400">in minutes.</span>
+              <span
+                className="font-display"
+                style={{ WebkitTextStroke: '1.5px rgba(19,17,16,0.35)', color: 'transparent' }}
+              >
+                in minutes.
+              </span>
             </h2>
           </div>
         </InView>
 
         <div className="relative grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-          <div className="hidden sm:block absolute top-10 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-[1.5px] rounded-full bg-gradient-to-r from-[#E83A2E]/25 via-violet-300/35 to-emerald-300/25" />
+          <div className="hidden sm:block absolute top-9 left-[calc(16.67%+2.5rem)] right-[calc(16.67%+2.5rem)] h-px border-t border-dashed border-[#E83A2E]/30" />
 
           {steps.map((step, i) => {
             const Icon = step.icon;
             const Graphic = step.graphic;
             return (
-              <InView key={i} style={{ '--delay': `${i * 120}ms` }} className="flex flex-col items-center text-center group border-b border-gray-100 pb-8 last:border-0 last:pb-0 sm:border-0 sm:pb-0">
+              <InView key={i} style={{ '--delay': `${i * 120}ms` }} className="flex flex-col items-center text-center group border-b border-black/[0.06] pb-8 last:border-0 last:pb-0 sm:border-0 sm:pb-0">
                 <div className="iv flex flex-col items-center text-center w-full">
-                  <div className="relative mb-5 sm:mb-8 z-10">
-                    <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-[28px] sm:rounded-[32px] bg-gradient-to-br ${step.color} flex items-center justify-center shadow-[0_12px_28px_-8px_rgba(0,0,0,0.22)] group-hover:scale-105 group-hover:-rotate-3 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]`}>
-                      <Icon className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-white border-2 border-gray-100 shadow-sm flex items-center justify-center">
-                      <span className="text-[10px] font-black text-gray-400">{step.num}</span>
+                  <div className="relative mb-5 sm:mb-8 z-10 px-6 bg-[#FAF8F6]">
+                    <span className="step-ghost-num font-display block font-black text-[64px] sm:text-[76px] leading-[0.95] tracking-[-0.04em] select-none">
+                      {step.num}
+                    </span>
+                    <div className="absolute -bottom-1.5 -right-0.5 w-9 h-9 rounded-xl bg-[#131110] group-hover:bg-[#E83A2E] flex items-center justify-center shadow-[0_8px_20px_-6px_rgba(0,0,0,0.3)] group-hover:-rotate-6 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                      <Icon className="w-4 h-4 text-white" strokeWidth={2.2} />
                     </div>
                   </div>
-                  <h3 className="text-[19px] sm:text-[20px] lg:text-[22px] font-black text-gray-900 mb-3 tracking-tight leading-snug">
+                  <h3 className="text-[19px] sm:text-[20px] lg:text-[22px] font-black text-[#131110] mb-3 tracking-tight leading-snug">
                     {step.title}
                   </h3>
                   <p className="text-gray-500 font-medium text-[14px] sm:text-[15px] leading-relaxed max-w-[240px]">
