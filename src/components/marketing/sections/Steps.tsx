@@ -48,18 +48,22 @@ const BuilderGraphic = () => (
 
 const PayoutGraphic = () => (
   <div className={stepGraphicCard}>
-    <div className="flex items-center gap-2.5 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 mb-2.5">
+    <div className="flex items-center gap-4.5 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 mb-2.5">
       <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
         <span className="text-white text-[10px] font-black leading-none">✓</span>
       </div>
       <div>
-        <p className="text-[11px] font-black text-emerald-900 leading-tight">₹12,400 credited</p>
+        <p className="text-[11px] font-black text-emerald-900 leading-tight mb-3.5">₹12,400 credited</p>
         <p className="text-[8px] text-emerald-600 leading-tight font-medium">Instant UPI · just now</p>
       </div>
     </div>
-    <div className="flex items-center gap-2 px-1">
+    <div className="flex items-center gap-2 px-1 mb-2.5">
       <div className="sk-shimmer h-1.5 flex-1 rounded-full" />
       <span className="text-[9px] font-black text-emerald-600 shrink-0">+₹2,100</span>
+    </div>
+        <div className="flex items-center gap-2 px-1">
+      <div className="sk-shimmer h-1.5 flex-1 rounded-full" />
+      <span className="text-[9px] font-black text-emerald-600 shrink-0">+₹1,500</span>
     </div>
   </div>
 );

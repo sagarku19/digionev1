@@ -13,12 +13,22 @@ export interface AuthSessionData {
   profile: { full_name: string | null; avatar_url: string | null } | null;
 }
 
+// getUser() serializes on the origin-wide Supabase auth lock and its fetch has
+// no timeout — a stalled holder (multi-tab dev steal thrash, see the note on
+// useLoginMutation) would otherwise pin every consumer in a loading state
+// forever. Degrade to logged-out after 10s; the next auth-state invalidation
+// corrects the UI once the lock clears.
+const AUTH_CHECK_TIMEOUT_MS = 10_000;
+
 export function useAuthSession() {
   const query = useQuery({
     queryKey: ['auth', 'session'] as const,
     queryFn: async (): Promise<AuthSessionData> => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await Promise.race([
+          supabase.auth.getUser().then(({ data }) => data.user),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_CHECK_TIMEOUT_MS)),
+        ]);
         if (!user) return { isLoggedIn: false, userEmail: null, profile: null };
 
         const { data } = await supabase
@@ -38,7 +48,13 @@ export function useAuthSession() {
         throw err;
       }
     },
-    staleTime: 30_000,
+    // Auth changes are propagated by the onAuthStateChange subscription in
+    // MarketingNav (cross-tab via BroadcastChannel), so focus refetches add
+    // nothing except contention on the origin-wide Supabase auth lock —
+    // getUser() holds it across a network round-trip, and auth-js recovers
+    // from acquire timeouts by stealing the lock, aborting the other caller.
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
 
   return {

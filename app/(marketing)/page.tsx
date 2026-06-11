@@ -1,5 +1,4 @@
 import Hero from '@/components/marketing/sections/Hero';
-import Marquee from '@/components/marketing/sections/Marquee';
 import Features from '@/components/marketing/sections/Features';
 import ProductTypes from '@/components/marketing/sections/ProductTypes';
 import Steps from '@/components/marketing/sections/Steps';
@@ -15,7 +14,6 @@ export default function MarketingPage() {
   return (
     <div className="flex flex-col w-full overflow-hidden bg-white">
       <Hero />
-      <Marquee />
       <Features />
       <ProductTypes />
       <Steps />

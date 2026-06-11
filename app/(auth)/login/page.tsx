@@ -134,7 +134,14 @@ function LoginContent() {
   };
 
   if (sessionLoading || isLoggedIn) {
-    return <div />;
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <span className="w-7 h-7 rounded-full border-2 border-gray-200 border-t-[#E83A2E] animate-spin" />
+        <span className="text-[13px] font-medium text-gray-400">
+          {isLoggedIn ? 'Taking you to your account…' : 'Checking your session…'}
+        </span>
+      </div>
+    );
   }
 
   return (
