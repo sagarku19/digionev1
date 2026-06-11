@@ -114,7 +114,7 @@ export default function Automation() {
           <div className="iv lg:sticky lg:top-28">
             <DMmock />
             <p className="font-ledger text-[10px] text-black/35 mt-3 text-center tracking-[0.06em]">
-              fig. 04-A — comment-to-DM flow, Instagram
+              Comment-to-DM flow, Instagram
             </p>
           </div>
         </InView>

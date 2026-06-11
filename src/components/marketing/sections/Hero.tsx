@@ -184,7 +184,7 @@ export default function Hero() {
             style={{ animation: 'heroFadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both' }}
           >
             <span className="text-[#E83A2E] font-semibold">{'>>'}</span>
-            &nbsp;&nbsp;Built for Indian creators · UPI-native · No code
+            &nbsp;&nbsp;Built for Indian creators · No code
           </p>
 
           {/* Headline */}

@@ -21,6 +21,28 @@ export default function CtaBanner() {
             <div className="iv">
               <Kicker index="06" route="/signup" />
 
+              {/* Platform highlights — ledger strip, four equal rectangles */}
+              <div className="mt-7 sm:mt-9 border border-black/[0.08] grid grid-cols-2 lg:grid-cols-4">
+                {[
+                  { label: 'Digital Product', sub: 'Sell anything you can make' },
+                  { label: 'AI Tools', sub: 'Built into your workflow' },                  
+                  { label: 'Automation Flow', sub: 'DMs, emails & Automation' },
+                  { label: 'No-Code Website', sub: 'Launch without writing code' },
+                ].map((item, i) => (
+                  <div
+                    key={item.label}
+                    className={`px-5 sm:px-7 py-5 sm:py-7 border-black/[0.08] ${i > 0 ? 'border-l' : ''} ${
+                      i >= 2 ? 'border-t lg:border-t-0' : ''
+                    } ${i === 2 ? 'border-l-0 lg:border-l' : ''}`}
+                  >
+                    <p className="text-[15px] sm:text-[17px] font-bold tracking-[-0.02em] text-[#16130F] leading-none">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-[12px] sm:text-[13px] font-medium text-black/40">{item.sub}</p>
+                  </div>
+                ))}
+              </div>
+
               <div className="mt-7 sm:mt-9 relative rounded-2xl bg-[#E83A2E] overflow-hidden">
                 {/* Stamp texture */}
                 <svg aria-hidden="true" className="absolute inset-0 w-full h-full opacity-[0.07] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
