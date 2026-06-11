@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Check, Zap, ArrowRight, Sparkles } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
+import { Rails, Cross, Kicker } from '@/src/components/marketing/Ledger';
 import CtaBanner from '@/src/components/marketing/sections/CtaBanner';
 
 export const metadata = {
@@ -13,13 +14,7 @@ const plans = [
     price: '₹0',
     period: 'Free forever',
     desc: 'Perfect to get started and make your first sale.',
-    accent: 'from-gray-300 via-gray-400 to-gray-500',
-    iconColor: 'text-gray-500',
-    iconBg: 'bg-gray-100',
-    border: 'border-black/[0.08]',
-    hoverBorder: 'hover:border-gray-300',
     cta: 'Get started free',
-    ctaStyle: 'bg-white border border-gray-200 text-gray-800 hover:bg-gray-50 hover:border-gray-300 shadow-sm',
     features: ['1 store', 'Up to 5 products', 'UPI payments', 'Basic analytics', 'DigiOne subdomain', '8% transaction fee'],
     popular: false,
   },
@@ -28,13 +23,7 @@ const plans = [
     price: '₹799',
     period: 'per month',
     desc: 'For serious creators ready to scale their income.',
-    accent: 'from-[#E83A2E] via-[#ff5f54] to-orange-500',
-    iconColor: 'text-[#E83A2E]',
-    iconBg: 'bg-[#E83A2E]/10',
-    border: 'border-[#E83A2E]/30',
-    hoverBorder: 'hover:border-[#E83A2E]/60',
     cta: 'Start 14-day free trial',
-    ctaStyle: 'bg-[#E83A2E] text-white hover:bg-[#d4352b] shadow-[0_8px_24px_-4px_rgba(232,58,46,0.35)] hover:shadow-[0_12px_32px_-4px_rgba(232,58,46,0.45)]',
     features: ['Unlimited products', '3 stores', 'Custom domain', 'AI Instagram DMs', 'Automated workflows', 'Affiliate engine', 'Advanced analytics', '3% transaction fee'],
     popular: true,
   },
@@ -43,13 +32,7 @@ const plans = [
     price: '₹1,999',
     period: 'per month',
     desc: 'For power sellers and agencies managing multiple brands.',
-    accent: 'from-violet-500 via-purple-500 to-indigo-600',
-    iconColor: 'text-violet-500',
-    iconBg: 'bg-violet-100',
-    border: 'border-violet-200',
-    hoverBorder: 'hover:border-violet-400',
     cta: 'Start 14-day free trial',
-    ctaStyle: 'bg-gray-900 text-white hover:bg-gray-800 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.25)] hover:shadow-[0_12px_32px_-4px_rgba(0,0,0,0.35)]',
     features: ['Everything in Creator', 'Unlimited stores', 'White-label branding', 'Priority support', 'Team members (5)', 'API access', 'Custom integrations', '0% transaction fee'],
     popular: false,
   },
@@ -66,153 +49,162 @@ const faqs = [
 
 export default function PricingPage() {
   return (
-    <main className="bg-white min-h-screen">
+    <main className="flex flex-col w-full overflow-hidden bg-white">
 
       {/* Hero */}
-      <section className="pt-28 sm:pt-36 pb-20 sm:pb-28 px-5 text-center relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div
-            style={{
-              position: 'absolute', top: '-15%', left: '50%', transform: 'translateX(-50%)',
-              width: '800px', height: '500px',
-              background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.07) 0%, rgba(255,120,60,0.04) 45%, transparent 70%)',
-              filter: 'blur(60px)',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute', inset: 0,
-              backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)',
-              backgroundSize: '28px 28px',
-              WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 65%)',
-              maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 65%)',
-            }}
-          />
-        </div>
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-6">
-            <Zap className="w-3 h-3" />
-            Pricing
-          </div>
-          <h1 className="text-[32px] sm:text-[48px] lg:text-[60px] font-black tracking-[-0.035em] text-gray-900 leading-[1.05] mb-5 max-w-2xl mx-auto">
-            Simple pricing,{' '}
-            <span className="text-gray-400">serious results.</span>
-          </h1>
-          <p className="text-[15px] sm:text-[18px] text-gray-500 font-medium max-w-lg mx-auto leading-relaxed">
-            Start free. Upgrade when you&apos;re ready. No surprise fees.
-          </p>
-        </div>
-      </section>
-
-      <style>{`
-        @keyframes planFloat {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-      `}</style>
-
-      {/* Plans */}
-      <section className="pb-16 sm:pb-24 px-5 sm:px-8 relative z-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-5 lg:gap-7 items-stretch">
-          {plans.map((plan, i) => (
-            <div key={i} className={`relative ${plan.popular ? 'mt-4 md:mt-0 md:-mt-6' : ''}`}>
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20" style={{ animation: 'planFloat 4s ease-in-out infinite' }}>
-                  <span className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#E83A2E] to-orange-500 text-white text-[11px] font-black uppercase tracking-widest shadow-[0_8px_16px_-4px_rgba(232,58,46,0.4)] border border-white/20">
-                    <Zap className="w-3.5 h-3.5 fill-white" /> Most popular
-                  </span>
-                </div>
-              )}
-              <div
-                className={`group relative overflow-hidden rounded-[20px] sm:rounded-[28px] bg-white border ${plan.border} ${plan.hoverBorder} transition-all duration-500 hover:-translate-y-1.5 p-6 sm:p-8 flex flex-col ${plan.popular ? 'shadow-[0_24px_64px_-16px_rgba(232,58,46,0.18)] ring-1 ring-inset ring-[#E83A2E]/10 z-10' : 'shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)]'}`}
-              >
-
-              <div className={`absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r ${plan.accent} opacity-80 group-hover:opacity-100 transition-opacity duration-300`} />
-
-              <div className="mb-6 relative">
-                <div className="flex justify-between items-center mb-5">
-                  <p className="text-[12px] font-black uppercase tracking-[0.18em] text-gray-500">{plan.name}</p>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${plan.iconBg} ${plan.iconColor}`}>
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </div>
-                </div>
-                <div className="flex items-end gap-2 mb-2">
-                  <span className="text-[40px] sm:text-[46px] font-black text-gray-900 leading-[0.9] tracking-tight">{plan.price}</span>
-                  <span className="text-[13px] font-semibold text-gray-400 mb-1.5 leading-snug">{plan.period}</span>
-                </div>
-                <p className="text-[14px] text-gray-500 font-medium leading-relaxed mt-3">{plan.desc}</p>
-              </div>
-
-              <Link
-                href="/signup"
-                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-[14px] font-black text-[14px] transition-all duration-300 hover:-translate-y-0.5 mb-6 ${plan.ctaStyle}`}
-              >
-                {plan.cta} <ArrowRight className="w-4 h-4" />
-              </Link>
-
-              <div className="h-px bg-black/[0.05] mb-6" />
-
-              <div className="flex-1">
-                <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.18em] mb-4">What&apos;s included</p>
-                <ul className="space-y-3">
-                  {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-2.5">
-                      <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${plan.iconBg}`}>
-                        <Check className={`w-2.5 h-2.5 ${plan.iconColor} stroke-[3.5]`} />
-                      </div>
-                      <span className="text-[13.5px] font-medium text-gray-600 leading-snug">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden bg-[#fafafa] border-t border-black/[0.04]">
+      <section className="relative bg-white">
         <div
+          aria-hidden="true"
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.045) 1px, transparent 1px)',
-            backgroundSize: '30px 30px',
-            WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, #000 20%, transparent 100%)',
-            maskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, #000 20%, transparent 100%)',
+            backgroundImage:
+              'linear-gradient(rgba(22,19,15,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(22,19,15,0.035) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+            WebkitMaskImage: 'radial-gradient(ellipse 90% 70% at 50% 0%, #000 0%, transparent 100%)',
+            maskImage: 'radial-gradient(ellipse 90% 70% at 50% 0%, #000 0%, transparent 100%)',
           }}
         />
-        <div className="max-w-4xl mx-auto px-5 relative z-10">
-          <div className="text-center mb-12 sm:mb-16">
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.22em] text-[#E83A2E] mb-5 bg-[#E83A2E]/[0.07] px-4 py-1.5 rounded-full border border-[#E83A2E]/15">
-              <Sparkles className="w-3 h-3" />
-              FAQ
-            </p>
-            <h2 className="text-[2rem] sm:text-[2.75rem] md:text-[3.25rem] font-black text-gray-900 tracking-[-0.035em] leading-[1.05] mb-4">
-              Frequently asked questions
-            </h2>
-            <p className="text-gray-500 font-medium text-[15px] sm:text-[17px] max-w-md mx-auto leading-relaxed">
-              Everything you need to know about the product and billing.
+        <Rails className="pt-28 sm:pt-36">
+          <div className="px-5 sm:px-10 lg:px-14 pb-14 sm:pb-20">
+            <Kicker index="00" route="/pricing" />
+            <h1 className="mt-7 sm:mt-9 text-[36px] sm:text-[52px] lg:text-[60px] font-bold tracking-[-0.04em] leading-[1.05] text-[#16130F] max-w-2xl">
+              Simple pricing,
+              <br />
+              <span className="text-[#E83A2E]">serious results.</span>
+            </h1>
+            <p className="mt-6 text-[15px] sm:text-[17px] font-medium text-black/50 max-w-xl leading-relaxed">
+              Start free. Upgrade when you&apos;re ready. No surprise fees.
             </p>
           </div>
+        </Rails>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-            {faqs.map((faq, i) => (
+      {/* Plans — ledger columns */}
+      <section className="relative bg-white">
+        <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
+        <Rails>
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {plans.map((plan, i) => (
               <div
-                key={i}
-                className="bg-white border border-black/[0.06] rounded-[18px] p-6 sm:p-7 hover:border-black/[0.12] hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.08)] transition-all duration-300 group"
+                key={plan.name}
+                className={`relative flex flex-col px-5 sm:px-8 py-8 sm:py-10 border-black/[0.07] ${
+                  i > 0 ? 'border-t md:border-t-0 md:border-l' : ''
+                } ${plan.popular ? 'bg-[#16130F] text-white' : 'bg-white'}`}
               >
-                <p className="text-[15px] font-bold text-gray-900 mb-2.5 leading-snug group-hover:text-[#E83A2E] transition-colors duration-200">{faq.q}</p>
-                <p className="text-[13.5px] text-gray-500 font-medium leading-relaxed">{faq.a}</p>
+                {/* Plan header */}
+                <div className="flex items-center justify-between mb-6">
+                  <p
+                    className={`font-ledger text-[10px] font-medium uppercase tracking-[0.18em] ${
+                      plan.popular ? 'text-white/45' : 'text-black/35'
+                    }`}
+                  >
+                    {plan.name}
+                  </p>
+                  {plan.popular ? (
+                    <span className="font-ledger text-[9px] font-semibold uppercase tracking-[0.14em] bg-[#E83A2E] text-white rounded-md px-2.5 py-1">
+                      Most popular
+                    </span>
+                  ) : (
+                    <span className="font-ledger text-[11px] font-semibold text-[#E83A2E]">
+                      {'>>'}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-end gap-2 mb-2">
+                  <span
+                    className={`font-ledger text-[40px] sm:text-[44px] font-semibold leading-[0.9] tracking-tight ${
+                      plan.popular ? 'text-white' : 'text-[#16130F]'
+                    }`}
+                  >
+                    {plan.price}
+                  </span>
+                  <span className={`font-ledger text-[12px] mb-1 ${plan.popular ? 'text-white/40' : 'text-black/35'}`}>
+                    {plan.period}
+                  </span>
+                </div>
+                <p className={`text-[13.5px] font-medium leading-relaxed mt-2 mb-7 ${plan.popular ? 'text-white/55' : 'text-black/50'}`}>
+                  {plan.desc}
+                </p>
+
+                <Link
+                  href="/signup"
+                  className={`group w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-[14px] transition-colors duration-200 mb-7 ${
+                    plan.popular
+                      ? 'bg-[#E83A2E] hover:bg-[#C92F24] text-white'
+                      : 'border border-black/[0.12] hover:border-black/[0.25] text-[#16130F]'
+                  }`}
+                >
+                  {plan.cta}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                </Link>
+
+                <div className={`h-px mb-6 ${plan.popular ? 'bg-white/[0.09]' : 'bg-black/[0.06]'}`} />
+
+                <div className="flex-1">
+                  <p
+                    className={`font-ledger text-[9px] font-medium uppercase tracking-[0.18em] mb-4 ${
+                      plan.popular ? 'text-white/35' : 'text-black/35'
+                    }`}
+                  >
+                    What&apos;s included
+                  </p>
+                  <ul className="space-y-2.5">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5">
+                        <Check
+                          className={`mt-0.5 w-3.5 h-3.5 shrink-0 ${plan.popular ? 'text-[#FF6B5C]' : 'text-[#E83A2E]'}`}
+                          strokeWidth={2.5}
+                        />
+                        <span className={`text-[13.5px] font-medium leading-snug ${plan.popular ? 'text-white/70' : 'text-black/60'}`}>
+                          {f}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </Rails>
       </section>
 
-      {/* Replaced old CTA with the new CtaBanner component */}
-      <CtaBanner />
+      {/* FAQ — ledger grid */}
+      <section className="relative bg-[#FAF8F6]">
+        <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
+        <Rails>
+          <Cross className="-bottom-[5px] -left-[5px]" />
+          <Cross className="-bottom-[5px] -right-[5px]" />
+          <div className="px-5 sm:px-10 lg:px-14 py-14 sm:py-20">
+            <Kicker index="01" route="/pricing#faq" />
+            <div className="mt-7 sm:mt-9 max-w-2xl">
+              <h2 className="text-[28px] sm:text-[38px] font-bold tracking-[-0.03em] leading-[1.08] text-[#16130F]">
+                Frequently asked questions
+              </h2>
+              <p className="mt-4 text-[15px] leading-relaxed font-medium text-black/50">
+                Everything you need to know about the product and billing.
+              </p>
+            </div>
 
+            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {faqs.map((faq) => (
+                <div
+                  key={faq.q}
+                  className="bg-white border border-black/[0.07] rounded-xl p-6 hover:border-black/[0.15] transition-colors duration-200"
+                >
+                  <p className="font-ledger text-[10px] font-semibold text-[#E83A2E] mb-3">
+                    {'>>'}
+                  </p>
+                  <p className="text-[15px] font-bold text-[#16130F] mb-2 leading-snug">{faq.q}</p>
+                  <p className="text-[13.5px] text-black/50 font-medium leading-relaxed">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Rails>
+      </section>
+
+      <CtaBanner />
     </main>
   );
 }

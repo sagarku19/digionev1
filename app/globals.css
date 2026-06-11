@@ -12,16 +12,10 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes marqueescroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* Skeleton shimmer bars — marketing mockups (reuses @keyframes shimmer above) */
-.sk-shimmer {
-  background: linear-gradient(90deg, #ececec 25%, #f7f7f7 50%, #ececec 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s linear infinite;
+/* Ledger mono — marketing pages: indices, routes, metrics, microcopy */
+.font-ledger {
+  font-family: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-feature-settings: "tnum" 1;
 }
 
 [data-inview-root] .iv {

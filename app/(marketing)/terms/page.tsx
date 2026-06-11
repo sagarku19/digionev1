@@ -1,3 +1,5 @@
+import LegalLedger from '@/src/components/marketing/LegalLedger';
+
 export const metadata = {
   title: 'Terms of Service · DigiOne.ai',
   description: 'The terms and conditions governing use of the DigiOne.ai platform.',
@@ -48,84 +50,25 @@ const SECTIONS = [
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero */}
-      <section className="relative pt-32 pb-16 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div style={{
-            position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
-            width: '700px', height: '500px',
-            backgroundImage: 'radial-gradient(ellipse, rgba(232,58,46,0.07) 0%, transparent 65%)',
-            filter: 'blur(70px)',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 55%)',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 55%)',
-          }} />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/8 shadow-[0_2px_10px_rgba(0,0,0,0.05)] text-[12px] font-semibold text-gray-500 mb-7">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E]" />
-            Last updated April 2025
-          </div>
-          <h1 className="text-[48px] sm:text-[58px] font-black tracking-[-0.04em] leading-[1.04] text-gray-900 mb-5">
-            Terms of{' '}
-            <span style={{
-              backgroundImage: 'linear-gradient(135deg, #E83A2E 0%, #ff7040 100%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent', color: 'transparent',
-            }}>Service</span>
-          </h1>
-          <p className="text-[16px] text-gray-500 font-medium leading-relaxed max-w-md mx-auto">
-            Please read these terms carefully. They govern your use of DigiOne.ai.
-          </p>
-        </div>
-      </section>
-
-      {/* Table of contents */}
-      <section className="max-w-3xl mx-auto px-5 sm:px-8 mb-10">
-        <div className="p-5 rounded-2xl bg-[#fafafa] border border-black/[0.06]">
-          <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mb-3">Sections</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {SECTIONS.map(({ title }, i) => (
-              <div key={title} className="flex items-center gap-2 text-[13px] text-gray-500">
-                <span className="text-[#E83A2E] font-bold tabular-nums text-[11px]">{String(i + 1).padStart(2, '0')}</span>
-                {title}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="max-w-3xl mx-auto px-5 sm:px-8 pb-28">
-        <div className="space-y-10">
-          {SECTIONS.map(({ title, content }, i) => (
-            <div key={title} className="flex gap-6">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-[#E83A2E]/10 border border-[#E83A2E]/20 flex items-center justify-center mt-0.5">
-                <span className="text-[11px] font-black text-[#E83A2E]">{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <div>
-                <h2 className="text-[18px] font-black tracking-[-0.02em] text-gray-900 mb-3">{title}</h2>
-                <p className="text-[14px] text-gray-600 leading-[1.85] whitespace-pre-line">{content}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-14 p-6 rounded-2xl bg-[#fef3f1] border border-[#E83A2E]/15">
-          <p className="text-[14px] font-bold text-gray-900 mb-1">Legal questions?</p>
-          <p className="text-[13px] text-gray-500">
+    <LegalLedger
+      route="/terms"
+      title="Terms of"
+      accent="service."
+      sub="Please read these terms carefully. They govern your use of DigiOne.ai."
+      updated="April 2025"
+      sections={SECTIONS}
+      toc
+      footer={
+        <div className="mt-14 p-6 rounded-xl bg-[#E83A2E]/[0.05] border border-[#E83A2E]/15">
+          <p className="text-[14px] font-bold text-[#16130F] mb-1">Legal questions?</p>
+          <p className="text-[13px] font-medium text-black/50">
             Contact us at{' '}
             <a href="mailto:legal@digione.ai" className="text-[#E83A2E] font-semibold hover:underline">
               legal@digione.ai
             </a>
           </p>
         </div>
-      </section>
-    </div>
+      }
+    />
   );
 }

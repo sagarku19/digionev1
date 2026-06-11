@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, Clock, ArrowRight } from 'lucide-react';
+import { Rails, Cross } from '@/src/components/marketing/Ledger';
 
 export const metadata = {
   title: 'How to Sell Digital Products in India: The Complete 2025 Guide | DigiOne Blog',
@@ -44,87 +45,107 @@ function renderBody(body: string) {
       return (
         <ul key={j} className="space-y-2 my-2">
           {lines.map((line, k) => {
-            const text = line.replace(/^- /, '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-black">$1</strong>');
+            const text = line.replace(/^- /, '').replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#16130F] font-semibold">$1</strong>');
             return line.startsWith('- ') ? (
               <li key={k} className="flex items-start gap-2.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E] mt-2.5 shrink-0" />
                 <span dangerouslySetInnerHTML={{ __html: text }} />
               </li>
             ) : (
-              <p key={k} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-black">$1</strong>') }} />
+              <p key={k} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#16130F] font-semibold">$1</strong>') }} />
             );
           })}
         </ul>
       );
     }
     return (
-      <p key={j} dangerouslySetInnerHTML={{ __html: para.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-black">$1</strong>') }} />
+      <p key={j} dangerouslySetInnerHTML={{ __html: para.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#16130F] font-semibold">$1</strong>') }} />
     );
   });
 }
 
 export default function BlogPostPage() {
   return (
-    <main className="bg-white min-h-screen">
+    <main className="flex flex-col w-full overflow-hidden bg-white">
+      <Rails className="pt-28 sm:pt-32 pb-14 sm:pb-20">
+        <Cross className="-bottom-[5px] -left-[5px]" />
+        <Cross className="-bottom-[5px] -right-[5px]" />
 
-      <div className="pt-28 pb-0 px-5 max-w-3xl mx-auto">
-        <Link href="/blog" className="inline-flex items-center gap-2 text-[13px] font-bold text-gray-400 hover:text-gray-900 transition-colors duration-200 group">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Blog
-        </Link>
-      </div>
+        <div className="px-5 sm:px-10 lg:px-14">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-[13px] font-semibold text-black/45 hover:text-[#16130F] transition-colors duration-200"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Blog
+          </Link>
 
-      <article className="max-w-3xl mx-auto px-5 pb-24">
+          <article className="max-w-3xl mt-8 pb-4">
 
-        {/* Meta */}
-        <div className="flex items-center gap-3 mt-8 mb-6">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#E83A2E] bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 px-3 py-1 rounded-full">Guide</span>
-          <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400">
-            <Clock className="w-3.5 h-3.5" /> 8 min read
-          </span>
-          <span className="text-[12px] font-semibold text-gray-400">Apr 15, 2025</span>
-        </div>
+            {/* Meta — ledger kicker */}
+            <div className="flex items-center gap-4 font-ledger text-[11px] mb-6">
+              <span className="text-[#E83A2E] font-semibold">{'>>'}</span>
+              <span className="text-black/35 uppercase tracking-[0.18em]">Guide</span>
+              <span className="flex items-center gap-1.5 text-black/35">
+                <Clock className="w-3.5 h-3.5" /> 8 min read
+              </span>
+              <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
+              <span className="text-black/35">Apr 15, 2025</span>
+            </div>
 
-        {/* Title */}
-        <h1 className="text-[32px] sm:text-[42px] font-black text-gray-900 tracking-[-0.03em] leading-[1.1] mb-6">
-          How to Sell Digital Products in India: The Complete 2025 Guide
-        </h1>
+            {/* Title */}
+            <h1 className="text-[30px] sm:text-[40px] font-bold text-[#16130F] tracking-[-0.03em] leading-[1.1] mb-6">
+              How to Sell Digital Products in India: The Complete 2025 Guide
+            </h1>
 
-        <p className="text-[17px] sm:text-[19px] text-gray-500 font-medium leading-relaxed mb-10 pb-10 border-b border-gray-100">
-          From picking your niche to getting your first UPI payment — everything an Indian creator needs to know to start selling digital products online.
-        </p>
+            <p className="text-[16px] sm:text-[18px] text-black/50 font-medium leading-relaxed mb-10 pb-10 border-b border-black/[0.07]">
+              From picking your niche to getting your first UPI payment — everything an Indian creator needs to know to start selling digital products online.
+            </p>
 
-        {/* Sections */}
-        <div className="space-y-12">
-          {sections.map((section, i) => (
-            <div key={i}>
-              <h2 className="text-[22px] sm:text-[26px] font-black text-gray-900 tracking-tight mb-4">
-                {section.heading}
-              </h2>
-              <div className="text-[15px] sm:text-[16px] text-gray-600 font-medium leading-[1.8] space-y-4">
-                {renderBody(section.body)}
+            {/* Sections */}
+            <div className="space-y-12">
+              {sections.map((section, i) => (
+                <div key={i}>
+                  <p className="font-ledger text-[11px] font-semibold text-[#E83A2E] mb-3">
+                    {'>>'}
+                  </p>
+                  <h2 className="text-[21px] sm:text-[24px] font-bold text-[#16130F] tracking-[-0.02em] mb-4">
+                    {section.heading}
+                  </h2>
+                  <div className="text-[15px] text-black/60 font-medium leading-[1.8] space-y-4">
+                    {renderBody(section.body)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA — vermilion stamp */}
+            <div className="mt-16 relative rounded-2xl bg-[#E83A2E] overflow-hidden">
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse 60% 90% at 85% 10%, rgba(255,255,255,0.14) 0%, transparent 60%)' }}
+              />
+              <div className="relative p-8 sm:p-10 text-center">
+                <p className="font-ledger text-[10px] uppercase tracking-[0.18em] text-white/55 mb-3">Ready to start?</p>
+                <h3 className="text-[24px] sm:text-[28px] font-bold text-white tracking-[-0.03em] mb-3">
+                  Build your store in 30 minutes.
+                </h3>
+                <p className="text-[14px] text-white/75 font-medium mb-6">
+                  Free forever plan. No credit card. Instant UPI payouts.
+                </p>
+                <Link
+                  href="/signup"
+                  className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-[#16130F] hover:bg-black text-white font-semibold text-[14px] transition-colors duration-200"
+                >
+                  Start for free
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+                </Link>
               </div>
             </div>
-          ))}
+          </article>
         </div>
-
-        {/* CTA */}
-        <div className="mt-16 p-8 rounded-[28px] bg-gradient-to-br from-[#E83A2E]/[0.06] to-orange-50 border border-[#E83A2E]/15 text-center">
-          <p className="text-[11px] font-black uppercase tracking-widest text-[#E83A2E] mb-3">Ready to start?</p>
-          <h3 className="text-[24px] font-black text-gray-900 tracking-tight mb-3">
-            Build your store in 30 minutes.
-          </h3>
-          <p className="text-[14px] text-gray-500 font-medium mb-6">
-            Free forever plan. No credit card. Instant UPI payouts.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#E83A2E] text-white font-bold text-[14px] shadow-[0_8px_24px_-4px_rgba(232,58,46,0.35)] hover:shadow-[0_14px_32px_-4px_rgba(232,58,46,0.45)] hover:-translate-y-0.5 transition-all duration-300"
-          >
-            Start for free <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </article>
+      </Rails>
     </main>
   );
 }

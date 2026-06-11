@@ -1,3 +1,5 @@
+import LegalLedger from '@/src/components/marketing/LegalLedger';
+
 export const metadata = {
   title: 'Refund Policy · DigiOne.ai',
   description: 'DigiOne\'s refund and dispute policy for creators and buyers.',
@@ -32,76 +34,25 @@ const SECTIONS = [
 
 export default function RefundsPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero */}
-      <section className="relative pt-32 pb-16 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div style={{
-            position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
-            width: '700px', height: '500px',
-            backgroundImage: 'radial-gradient(ellipse, rgba(232,58,46,0.07) 0%, transparent 65%)',
-            filter: 'blur(70px)',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 55%)',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 55%)',
-          }} />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/8 shadow-[0_2px_10px_rgba(0,0,0,0.05)] text-[12px] font-semibold text-gray-500 mb-7">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E]" />
-            Last updated April 2025
-          </div>
-          <h1 className="text-[48px] sm:text-[58px] font-black tracking-[-0.04em] leading-[1.04] text-gray-900 mb-5">
-            Refund{' '}
-            <span style={{
-              backgroundImage: 'linear-gradient(135deg, #E83A2E 0%, #ff7040 100%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent', color: 'transparent',
-            }}>Policy</span>
-          </h1>
-          <p className="text-[16px] text-gray-500 font-medium leading-relaxed max-w-md mx-auto">
-            Clear, fair, and straightforward — because trust matters more than transactions.
+    <LegalLedger
+      route="/refunds"
+      title="Refund"
+      accent="policy."
+      sub="Clear, fair, and straightforward — because trust matters more than transactions."
+      updated="April 2025"
+      sections={SECTIONS}
+      footer={
+        <div className="mt-14 p-6 rounded-xl bg-[#E83A2E]/[0.05] border border-[#E83A2E]/15">
+          <p className="text-[14px] font-bold text-[#16130F] mb-1">Still have questions?</p>
+          <p className="text-[13px] font-medium text-black/50 leading-relaxed">
+            Contact us at{' '}
+            <a href="mailto:support@digione.ai" className="text-[#E83A2E] font-semibold hover:underline">
+              support@digione.ai
+            </a>{' '}
+            and we&apos;ll help you sort it out.
           </p>
         </div>
-      </section>
-
-      {/* Content */}
-      <section className="max-w-3xl mx-auto px-5 sm:px-8 pb-28">
-        <div className="space-y-10">
-          {SECTIONS.map(({ title, content }, i) => (
-            <div key={title} className="flex gap-6">
-              {/* Number */}
-              <div className="shrink-0 w-8 h-8 rounded-full bg-[#E83A2E]/10 border border-[#E83A2E]/20 flex items-center justify-center mt-0.5">
-                <span className="text-[11px] font-black text-[#E83A2E]">{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <div>
-                <h2 className="text-[18px] font-black tracking-[-0.02em] text-gray-900 mb-3">{title}</h2>
-                <div className="text-[14px] text-gray-600 leading-[1.8] whitespace-pre-line">{content}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-14 p-6 rounded-2xl bg-[#fef3f1] border border-[#E83A2E]/15 flex items-start gap-4">
-          <div className="w-9 h-9 rounded-xl bg-[#E83A2E]/15 flex items-center justify-center shrink-0">
-            <span className="text-[16px]">💬</span>
-          </div>
-          <div>
-            <p className="text-[14px] font-bold text-gray-900 mb-1">Still have questions?</p>
-            <p className="text-[13px] text-gray-500 leading-relaxed">
-              Contact us at{' '}
-              <a href="mailto:support@digione.ai" className="text-[#E83A2E] font-semibold hover:underline">
-                support@digione.ai
-              </a>{' '}
-              and we&apos;ll help you sort it out.
-            </p>
-          </div>
-        </div>
-      </section>
-    </div>
+      }
+    />
   );
 }

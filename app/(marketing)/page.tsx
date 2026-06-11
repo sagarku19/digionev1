@@ -1,8 +1,10 @@
 import Hero from '@/components/marketing/sections/Hero';
-import Features from '@/components/marketing/sections/Features';
-import ProductTypes from '@/components/marketing/sections/ProductTypes';
+import ProductShowcase from '@/components/marketing/sections/ProductShowcase';
+import Storefronts from '@/components/marketing/sections/Storefronts';
+import ProductIndex from '@/components/marketing/sections/ProductIndex';
+import MoneyRail from '@/components/marketing/sections/MoneyRail';
+import Automation from '@/components/marketing/sections/Automation';
 import Steps from '@/components/marketing/sections/Steps';
-import Testimonials from '@/components/marketing/sections/Testimonials';
 import CtaBanner from '@/components/marketing/sections/CtaBanner';
 
 export const metadata = {
@@ -14,10 +16,12 @@ export default function MarketingPage() {
   return (
     <div className="flex flex-col w-full overflow-hidden bg-white">
       <Hero />
-      <Features />
-      <ProductTypes />
+      <ProductShowcase />
+      <Storefronts />
+      <ProductIndex />
+      <MoneyRail />
+      <Automation />
       <Steps />
-      <Testimonials />
       <CtaBanner />
     </div>
   );

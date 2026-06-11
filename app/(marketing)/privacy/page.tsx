@@ -1,3 +1,5 @@
+import LegalLedger from '@/src/components/marketing/LegalLedger';
+
 export const metadata = {
   title: 'Privacy Policy · DigiOne.ai',
   description: 'How DigiOne.ai collects, uses, and protects your personal information.',
@@ -40,83 +42,24 @@ const SECTIONS = [
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero */}
-      <section className="relative pt-32 pb-16 overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div style={{
-            position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
-            width: '700px', height: '500px',
-            backgroundImage: 'radial-gradient(ellipse, rgba(232,58,46,0.07) 0%, transparent 65%)',
-            filter: 'blur(70px)',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.055) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 55%)',
-            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 55%)',
-          }} />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto px-5 sm:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-black/8 shadow-[0_2px_10px_rgba(0,0,0,0.05)] text-[12px] font-semibold text-gray-500 mb-7">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#E83A2E]" />
-            Last updated April 2025
-          </div>
-          <h1 className="text-[48px] sm:text-[58px] font-black tracking-[-0.04em] leading-[1.04] text-gray-900 mb-5">
-            Privacy{' '}
-            <span style={{
-              backgroundImage: 'linear-gradient(135deg, #E83A2E 0%, #ff7040 100%)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent', color: 'transparent',
-            }}>Policy</span>
-          </h1>
-          <p className="text-[16px] text-gray-500 font-medium leading-relaxed max-w-md mx-auto">
-            We care about your privacy. Here&apos;s exactly what we collect and why.
-          </p>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="max-w-3xl mx-auto px-5 sm:px-8 pb-28">
-        {/* Quick summary bar */}
-        <div className="grid grid-cols-3 gap-3 mb-12 p-5 rounded-2xl bg-[#fafafa] border border-black/[0.06]">
-          {[
-            { emoji: '🔒', text: 'We never sell your data' },
-            { emoji: '📧', text: 'Unsubscribe anytime' },
-            { emoji: '🗑️', text: 'Delete your data anytime' },
-          ].map(({ emoji, text }) => (
-            <div key={text} className="flex flex-col items-center gap-1.5 text-center">
-              <span className="text-2xl">{emoji}</span>
-              <span className="text-[12px] font-semibold text-gray-600 leading-tight">{text}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="space-y-10">
-          {SECTIONS.map(({ title, content }, i) => (
-            <div key={title} className="flex gap-6">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-[#E83A2E]/10 border border-[#E83A2E]/20 flex items-center justify-center mt-0.5">
-                <span className="text-[11px] font-black text-[#E83A2E]">{String(i + 1).padStart(2, '0')}</span>
-              </div>
-              <div>
-                <h2 className="text-[18px] font-black tracking-[-0.02em] text-gray-900 mb-3">{title}</h2>
-                <p className="text-[14px] text-gray-600 leading-[1.85] whitespace-pre-line">{content}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-14 p-6 rounded-2xl bg-[#fef3f1] border border-[#E83A2E]/15">
-          <p className="text-[14px] font-bold text-gray-900 mb-1">Questions about your data?</p>
-          <p className="text-[13px] text-gray-500 leading-relaxed">
+    <LegalLedger
+      route="/privacy"
+      title="Privacy"
+      accent="policy."
+      sub="We care about your privacy. Here's exactly what we collect and why."
+      updated="April 2025"
+      sections={SECTIONS}
+      footer={
+        <div className="mt-14 p-6 rounded-xl bg-[#E83A2E]/[0.05] border border-[#E83A2E]/15">
+          <p className="text-[14px] font-bold text-[#16130F] mb-1">Questions about your data?</p>
+          <p className="text-[13px] font-medium text-black/50 leading-relaxed">
             Email our privacy team at{' '}
             <a href="mailto:privacy@digione.ai" className="text-[#E83A2E] font-semibold hover:underline">
               privacy@digione.ai
             </a>
           </p>
         </div>
-      </section>
-    </div>
+      }
+    />
   );
 }

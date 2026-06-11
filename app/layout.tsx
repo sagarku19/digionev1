@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Bricolage_Grotesque } from "next/font/google";
+import { Inter, Bricolage_Grotesque, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -12,6 +12,13 @@ const inter = Inter({
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 
@@ -61,7 +68,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${bricolage.variable}`}
+      className={`${inter.variable} ${bricolage.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased font-sans">

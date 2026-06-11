@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
@@ -28,16 +29,49 @@ export default function MarketingNav() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  // Sliding hover highlight for desktop links
+  const linksRef = useRef<HTMLDivElement>(null);
+  const [hoverPill, setHoverPill] = useState({ left: 0, width: 0, opacity: 0 });
+
+  const moveHoverPill = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rail = linksRef.current;
+    if (!rail) return;
+    const link = e.currentTarget.getBoundingClientRect();
+    const parent = rail.getBoundingClientRect();
+    setHoverPill({ left: link.left - parent.left, width: link.width, opacity: 1 });
+  };
 
   const queryClient = useQueryClient();
   const { isLoggedIn, userEmail, profile } = useAuthSession();
   const userProfile: UserProfile | null = profile ? { full_name: profile.full_name, avatar_url: profile.avatar_url, email: userEmail } : null;
 
+  // Hide on scroll down, reveal on scroll up (modern auto-hiding nav)
+  const [navHidden, setNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
   useEffect(() => {
-    setIsScrolled(window.scrollY > 20);
-    const onScroll = () => setIsScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setIsScrolled(y > 20);
+
+      const delta = y - lastScrollY.current;
+      if (y < 80) {
+        setNavHidden(false);
+      } else if (delta > 6) {
+        setNavHidden(true);
+      } else if (delta < -6) {
+        setNavHidden(false);
+      }
+      lastScrollY.current = y;
+    };
+    const raf = requestAnimationFrame(onScroll);
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -71,109 +105,158 @@ export default function MarketingNav() {
     // onAuthStateChange will invalidate the session query automatically.
   };
 
+  // Hover-open with a close delay so the cursor can cross the gap into the panel.
+  const dropdownCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openProfileDropdown = () => {
+    if (dropdownCloseTimer.current) clearTimeout(dropdownCloseTimer.current);
+    setProfileDropdownOpen(true);
+  };
+  const scheduleProfileDropdownClose = () => {
+    if (dropdownCloseTimer.current) clearTimeout(dropdownCloseTimer.current);
+    dropdownCloseTimer.current = setTimeout(() => setProfileDropdownOpen(false), 180);
+  };
+  useEffect(() => () => {
+    if (dropdownCloseTimer.current) clearTimeout(dropdownCloseTimer.current);
+  }, []);
+
   const initials = userProfile?.full_name ? userProfile.full_name.charAt(0).toUpperCase() : 'C';
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'pt-1 sm:pt-4 px-3 sm:px-4' : 'pt-2 sm:pt-6 px-3 sm:px-4'}`}>
-        <div className={`mx-auto max-w-7xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          isScrolled 
-            ? 'bg-white/80 backdrop-blur-xl border border-black/[0.04] shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl py-1.5 px-3 md:px-5' 
-            : 'bg-transparent border-transparent py-2 px-2 sm:px-0'
-        }`}>
-          <div className="flex h-12 md:h-14 items-center justify-between">
-            
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          navHidden && !profileDropdownOpen ? '-translate-y-full' : 'translate-y-0'
+        }`}
+      >
+        {/* Bar + section-separator hairline below */}
+        <div
+          className={`border-b border-black/[0.07] transition-colors duration-300 ${
+            isScrolled ? 'bg-white/85 backdrop-blur-xl' : 'bg-transparent'
+          }`}
+        >
+          <div className="mx-auto max-w-6xl px-5 sm:px-10 lg:px-14">
+            <div
+              className={`relative flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                isScrolled ? 'h-12 md:h-14' : 'h-14 md:h-16'
+              }`}
+            >
+
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0 group">
-              <DigiOneLogo width={24} height={24} className="transform group-hover:scale-105 transition-all duration-300" />
-              <span className="text-[17px] md:text-[19px] font-bold tracking-tight text-gray-900">
-                DigiOne<sup className="text-[9px] md:text-[10px] text-gray-400 font-semibold ml-0.5 -top-2 relative">.ai</sup>
+              <DigiOneLogo width={22} height={22} className="transform group-hover:scale-105 transition-all duration-300" />
+              <span className="text-[16px] md:text-[17px] font-bold tracking-tight text-[#16130F]">
+                DigiOne<span className="font-ledger text-[9px] text-[#E83A2E] font-semibold ml-0.5 align-super">.ai</span>
               </span>
             </Link>
 
             {/* Desktop Links */}
-            <div className="hidden lg:flex items-center gap-1.5 absolute left-1/2 -translate-x-1/2">
-              {navLinks.map(({ label, href, icon: Icon }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  className="flex items-center gap-1.5 text-[14px] text-gray-500 hover:text-black font-semibold px-4 py-2 rounded-full hover:bg-black/[0.03] transition-all"
-                >
-                  {Icon && <Icon className="w-3.5 h-3.5 mb-0.5 opacity-70" />}
-                  {label}
-                </Link>
-              ))}
+            <div
+              ref={linksRef}
+              onMouseLeave={() => setHoverPill(p => ({ ...p, opacity: 0 }))}
+              className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2"
+            >
+              {/* Sliding hover highlight */}
+              <span
+                aria-hidden="true"
+                className="absolute top-1/2 -translate-y-1/2 h-8 rounded-lg bg-black/[0.05] pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                style={{ left: hoverPill.left, width: hoverPill.width, opacity: hoverPill.opacity }}
+              />
+              {navLinks.map(({ label, href }) => {
+                const isActive = pathname === href || pathname?.startsWith(`${href}/`);
+                return (
+                  <Link
+                    key={label}
+                    href={href}
+                    onMouseEnter={moveHoverPill}
+                    className={`relative px-3 py-2 text-[13.5px] font-medium transition-colors duration-200 ${
+                      isActive ? 'text-[#16130F]' : 'text-black/55 hover:text-[#16130F]'
+                    }`}
+                  >
+                    {label}
+                    {/* Active route tick */}
+                    <span
+                      aria-hidden="true"
+                      className={`absolute -bottom-px left-1/2 -translate-x-1/2 h-[2px] rounded-full bg-[#E83A2E] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                        isActive ? 'w-4 opacity-100' : 'w-0 opacity-0'
+                      }`}
+                    />
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Desktop Auth */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-4">
               {isLoggedIn ? (
-                <div ref={dropdownRef} className="relative">
+                <div
+                  ref={dropdownRef}
+                  className="relative"
+                  onMouseEnter={openProfileDropdown}
+                  onMouseLeave={scheduleProfileDropdownClose}
+                >
                   <button
                     onClick={() => setProfileDropdownOpen(o => !o)}
-                    className="flex items-center gap-2.5 pl-1.5 pr-4 py-1.5 rounded-full hover:bg-black/[0.03] transition-all border border-transparent focus:bg-black/[0.03]"
+                    className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-lg hover:bg-black/[0.04] transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#E83A2E] flex items-center justify-center text-white font-bold text-xs ring-4 ring-white shadow-sm overflow-hidden shrink-0">
+                    <div className="w-7 h-7 rounded-md bg-[#E83A2E] flex items-center justify-center text-white font-bold text-[11px] overflow-hidden shrink-0">
                       {userProfile?.avatar_url ? (
                         <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                       ) : initials}
                     </div>
-                    <span className="text-[14px] font-semibold text-gray-800 max-w-[120px] truncate capitalize">
+                    <span className="text-[13.5px] font-semibold text-[#16130F] max-w-[120px] truncate capitalize">
                       {userProfile?.full_name || 'Creator'}
                     </span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${profileDropdownOpen ? 'rotate-180' : ''} shrink-0`} />
+                    <ChevronDown className={`w-3.5 h-3.5 text-black/35 transition-transform duration-300 ${profileDropdownOpen ? 'rotate-180' : ''} shrink-0`} />
                   </button>
 
                   {profileDropdownOpen && (
-                    <div className="absolute right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl border border-black/5 rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] py-2 z-50 transform origin-top-right transition-all">
-                      <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm shadow-sm overflow-hidden shrink-0">
+                    <div className="absolute right-0 mt-2 w-64 bg-white border border-black/[0.1] rounded-xl shadow-[0_16px_50px_-20px_rgba(22,19,15,0.25)] py-1 z-50">
+                      <div className="px-4 py-3.5 border-b border-black/[0.06] flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-md bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
                           {userProfile?.avatar_url ? (
                             <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                           ) : initials}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-gray-900 truncate uppercase tracking-widest">{userProfile?.full_name || 'Creator'}</p>
-                          <p className="text-[13px] text-gray-500 truncate" title={userProfile?.email || 'Connected Account'}>
+                          <p className="text-[13px] font-bold text-[#16130F] truncate capitalize">{userProfile?.full_name || 'Creator'}</p>
+                          <p className="font-ledger text-[11px] text-black/40 truncate" title={userProfile?.email || 'Connected Account'}>
                             {userProfile?.email || 'Connected Account'}
                           </p>
                         </div>
                       </div>
-                      <div className="p-2">
-                        <p className="px-3 mb-1 mt-1 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Account</p>
+                      <div className="p-1.5">
+                        <p className="font-ledger px-2.5 mb-1 mt-1 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Account</p>
                         <Link
                           href="/account/profile"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 text-[14px] font-medium text-gray-700 hover:text-black hover:bg-gray-100/80 transition-colors rounded-xl"
+                          className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
                         >
-                          <User className="w-4 h-4 text-gray-400" />
+                          <User className="w-4 h-4 text-black/35" />
                           Profile
                         </Link>
                         <Link
                           href="/account/library"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 text-[14px] font-medium text-gray-700 hover:text-black hover:bg-gray-100/80 transition-colors rounded-xl"
+                          className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
                         >
-                          <BookOpen className="w-4 h-4 text-gray-400" />
+                          <BookOpen className="w-4 h-4 text-black/35" />
                           Library
                         </Link>
-                      </div>
-                      <div className="p-2 border-t border-gray-100">
                         <Link
                           href="/dashboard"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 text-[14px] font-medium text-gray-700 hover:text-black hover:bg-gray-100/80 transition-colors rounded-xl"
+                          className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
                         >
-                          <LayoutDashboard className="w-4 h-4 text-gray-400" />
+                          <LayoutDashboard className="w-4 h-4 text-black/35" />
                           Dashboard
                         </Link>
                       </div>
-                      <div className="p-2 border-t border-gray-100">
+                      <div className="p-1.5 border-t border-black/[0.06]">
                         <button
                           onClick={() => { setProfileDropdownOpen(false); setShowSignOutConfirm(true); }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 text-[14px] font-semibold text-red-500 hover:bg-red-50 transition-colors rounded-xl"
+                          className="w-full flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-semibold text-[#E83A2E] hover:bg-[#E83A2E]/[0.06] transition-colors rounded-lg"
                         >
-                          <LogOut className="w-4 h-4 text-red-500" />
+                          <LogOut className="w-4 h-4" />
                           Sign out
                         </button>
                       </div>
@@ -182,10 +265,13 @@ export default function MarketingNav() {
                 </div>
               ) : (
                 <>
-                  <Link href="/login" className="text-[14px] font-semibold text-gray-500 hover:text-black px-4 py-2 rounded-full hover:bg-black/[0.03] transition-all">
+                  <Link href="/login" className="text-[13.5px] font-medium text-black/55 hover:text-[#16130F] transition-colors duration-200">
                     Log in
                   </Link>
-                  <Link href="/signup" className="text-[14px] font-bold bg-black hover:bg-gray-900 text-white px-5 py-2.5 rounded-full transition-all flex items-center gap-1.5 shadow-[0_4px_14px_0_rgba(0,0,0,0.15)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.2)] hover:-translate-y-0.5">
+                  <Link
+                    href="/signup"
+                    className="text-[13.5px] font-semibold bg-[#E83A2E] hover:bg-[#C92F24] text-white px-4.5 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-1.5"
+                  >
                     Start free <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </>
@@ -196,11 +282,12 @@ export default function MarketingNav() {
             <div className="lg:hidden flex items-center">
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="text-gray-900 p-2 -mr-2 rounded-full hover:bg-black/[0.04] transition-all"
+                className="text-[#16130F] p-2 -mr-2 rounded-lg hover:bg-black/[0.04] transition-colors"
                 aria-label="Open menu"
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5.5 w-5.5" />
               </button>
+            </div>
             </div>
           </div>
         </div>
@@ -210,86 +297,88 @@ export default function MarketingNav() {
       <div className={`fixed inset-0 z-[100] transition-all duration-300 ${mobileMenuOpen ? 'visible' : 'invisible pointer-events-none'}`}>
         {/* Backdrop */}
         <div
-          className={`absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 bg-[#16130F]/40 backdrop-blur-sm transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
           onClick={() => setMobileMenuOpen(false)}
         />
 
         {/* Sheet — slides up from bottom */}
-        <div className={`absolute inset-x-0 bottom-0 bg-white rounded-t-4xl shadow-2xl flex flex-col transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-[92dvh] ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+        <div className={`absolute inset-x-0 bottom-0 bg-white rounded-t-2xl border-t border-black/[0.08] shadow-2xl flex flex-col transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-[92dvh] ${mobileMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
 
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-1 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-gray-200" />
+            <div className="w-10 h-1 rounded-full bg-black/[0.12]" />
           </div>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-6 pt-3 pb-4 shrink-0">
+          <div className="flex items-center justify-between px-6 pt-3 pb-4 shrink-0 border-b border-black/[0.06]">
             <div className="flex items-center gap-2">
-              <DigiOneLogo width={22} height={22} />
-              <span className="text-[17px] font-bold text-gray-900 tracking-tight">
-                DigiOne<sup className="text-[9px] text-gray-400 font-semibold ml-0.5 -top-2 relative">.ai</sup>
+              <DigiOneLogo width={20} height={20} />
+              <span className="text-[16px] font-bold text-[#16130F] tracking-tight">
+                DigiOne<span className="font-ledger text-[9px] text-[#E83A2E] font-semibold ml-0.5 align-super">.ai</span>
               </span>
             </div>
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+              className="w-8 h-8 flex items-center justify-center border border-black/[0.08] hover:bg-black/[0.04] rounded-lg transition-colors"
             >
-              <X className="h-4 w-4 text-gray-500" />
+              <X className="h-4 w-4 text-black/45" />
             </button>
           </div>
 
           {/* Scrollable content */}
-          <div className="flex flex-col flex-1 overflow-y-auto px-5 pb-8">
+          <div className="flex flex-col flex-1 overflow-y-auto px-5 pb-8 pt-4">
 
             {/* Logged-in user info */}
             {isLoggedIn && userProfile && (
-              <div className="flex items-center gap-3 p-4 mb-4 bg-gray-50 rounded-2xl border border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0 shadow-sm">
+              <div className="flex items-center gap-3 p-4 mb-4 bg-[#FAF8F6] rounded-xl border border-black/[0.06]">
+                <div className="w-10 h-10 rounded-md bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
                   {userProfile.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : initials}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[14px] font-bold text-gray-900 truncate">{userProfile.full_name || 'Creator'}</p>
-                  <p className="text-[12px] text-gray-400 truncate">{userProfile.email || 'Verified Account'}</p>
+                  <p className="text-[14px] font-bold text-[#16130F] truncate capitalize">{userProfile.full_name || 'Creator'}</p>
+                  <p className="font-ledger text-[11px] text-black/40 truncate">{userProfile.email || 'Verified Account'}</p>
                 </div>
               </div>
             )}
 
             {/* Nav links */}
+            <p className="font-ledger px-3 mb-1.5 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Explore</p>
             <div className="space-y-0.5 mb-4">
               {navLinks.map(({ label, href, icon: Icon }, i) => (
                 <Link
                   key={label}
                   href={href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[16px] font-semibold text-gray-800 hover:bg-gray-50 active:bg-gray-100 transition-all duration-300"
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-[15px] font-semibold text-[#16130F] hover:bg-black/[0.03] active:bg-black/[0.05] transition-all duration-300"
                   style={{
                     opacity: mobileMenuOpen ? 1 : 0,
                     transform: mobileMenuOpen ? 'translateY(0)' : 'translateY(12px)',
                     transition: `opacity 0.35s ease ${120 + i * 55}ms, transform 0.35s cubic-bezier(0.16,1,0.3,1) ${120 + i * 55}ms`,
                   }}
                 >
-                  {Icon && <Icon className="w-5 h-5 text-gray-400 shrink-0" />}
+                  {Icon && <Icon className="w-4.5 h-4.5 text-black/35 shrink-0" strokeWidth={1.8} />}
                   {label}
+                  <span className="font-ledger ml-auto text-[10px] text-black/25">{String(i + 1).padStart(2, '0')}</span>
                 </Link>
               ))}
             </div>
 
             {/* Account links (logged in) */}
             {isLoggedIn && (
-              <div className="space-y-0.5 mb-4 pt-4 border-t border-gray-100">
-                <p className="px-3 mb-1 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Account</p>
-                <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[15px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                  <User className="w-4 h-4 text-gray-400 shrink-0" /> Profile
+              <div className="space-y-0.5 mb-4 pt-4 border-t border-black/[0.06]">
+                <p className="font-ledger px-3 mb-1.5 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Account</p>
+                <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold text-black/65 hover:bg-black/[0.03] transition-colors">
+                  <User className="w-4 h-4 text-black/35 shrink-0" /> Profile
                 </Link>
-                <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3.5 rounded-xl text-[15px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                  <BookOpen className="w-4 h-4 text-gray-400 shrink-0" /> Library
+                <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold text-black/65 hover:bg-black/[0.03] transition-colors">
+                  <BookOpen className="w-4 h-4 text-black/35 shrink-0" /> Library
                 </Link>
               </div>
             )}
 
             {/* CTA buttons */}
             <div
-              className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2.5"
+              className="mt-auto pt-4 border-t border-black/[0.06] flex flex-col gap-2.5"
               style={{
                 opacity: mobileMenuOpen ? 1 : 0,
                 transform: mobileMenuOpen ? 'translateY(0)' : 'translateY(12px)',
@@ -298,19 +387,19 @@ export default function MarketingNav() {
             >
               {isLoggedIn ? (
                 <>
-                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[15px] font-bold bg-black text-white rounded-2xl py-3.5 active:scale-[0.98] transition-all">
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#16130F] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
                     <LayoutDashboard className="w-4 h-4" /> Dashboard
                   </Link>
-                  <button onClick={() => setShowSignOutConfirm(true)} className="w-full flex items-center justify-center gap-2 text-[14px] font-semibold text-red-500 py-3 active:scale-[0.98] transition-all">
+                  <button onClick={() => setShowSignOutConfirm(true)} className="w-full flex items-center justify-center gap-2 text-[14px] font-semibold text-[#E83A2E] py-3 active:scale-[0.98] transition-all">
                     <LogOut className="w-4 h-4" /> Sign out
                   </button>
                 </>
               ) : (
                 <>
-                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[15px] font-bold bg-black text-white rounded-2xl py-3.5 active:scale-[0.98] transition-all">
+                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#E83A2E] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
                     Start for free <ArrowRight className="w-4 h-4" />
                   </Link>
-                  <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center text-[14px] font-semibold text-gray-500 bg-gray-100 rounded-2xl py-3.5 active:scale-[0.98] transition-all">
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center text-[14px] font-semibold text-[#16130F] border border-black/[0.1] rounded-lg py-3.5 active:scale-[0.98] transition-all">
                     Sign in
                   </Link>
                 </>
@@ -324,25 +413,25 @@ export default function MarketingNav() {
       {showSignOutConfirm && (
         <div className="fixed inset-0 z-200 flex items-center justify-center px-5">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-[#16130F]/50 backdrop-blur-sm"
             onClick={() => setShowSignOutConfirm(false)}
           />
-          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 flex flex-col items-center text-center animate-[fadeScaleIn_0.2s_cubic-bezier(0.16,1,0.3,1)_both]">
-            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-4">
-              <LogOut className="w-6 h-6 text-red-500" />
+          <div className="relative bg-white border border-black/[0.08] rounded-xl shadow-2xl w-full max-w-sm p-7 flex flex-col items-center text-center animate-[fadeScaleIn_0.2s_cubic-bezier(0.16,1,0.3,1)_both]">
+            <div className="w-12 h-12 rounded-lg bg-[#E83A2E]/[0.07] border border-[#E83A2E]/15 flex items-center justify-center mb-4">
+              <LogOut className="w-5 h-5 text-[#E83A2E]" />
             </div>
-            <h3 className="text-[18px] font-black text-gray-900 mb-1.5">Sign out?</h3>
-            <p className="text-[14px] text-gray-500 font-medium mb-7">You'll need to sign in again to access your account.</p>
+            <h3 className="text-[17px] font-bold text-[#16130F] mb-1.5">Sign out?</h3>
+            <p className="text-[13.5px] text-black/50 font-medium mb-7">You&apos;ll need to sign in again to access your account.</p>
             <div className="flex flex-col gap-2.5 w-full">
               <button
                 onClick={handleSignOut}
-                className="w-full py-3.5 rounded-2xl bg-red-500 hover:bg-red-600 text-white text-[15px] font-bold transition-colors"
+                className="w-full py-3 rounded-lg bg-[#E83A2E] hover:bg-[#C92F24] text-white text-[14px] font-semibold transition-colors"
               >
                 Yes, sign out
               </button>
               <button
                 onClick={() => setShowSignOutConfirm(false)}
-                className="w-full py-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[15px] font-semibold transition-colors"
+                className="w-full py-3 rounded-lg border border-black/[0.1] hover:bg-black/[0.03] text-[#16130F] text-[14px] font-semibold transition-colors"
               >
                 Cancel
               </button>

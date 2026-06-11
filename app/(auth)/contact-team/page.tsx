@@ -7,8 +7,8 @@ import { ArrowRight, CheckCircle2, Lock } from 'lucide-react';
 import { useAuthSession } from '@/hooks/useAuthSession';
 
 const INPUT =
-  'w-full px-4 py-3 rounded-xl border border-black/10 bg-white text-[14px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E83A2E]/25 focus:border-[#E83A2E] transition-all shadow-[0_1px_4px_rgba(0,0,0,0.04)]';
-const LABEL = 'block text-[13px] font-semibold text-gray-700 mb-1.5';
+  'w-full px-4 py-3 rounded-lg border border-black/[0.1] bg-white text-[14px] text-[#16130F] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#E83A2E]/15 focus:border-[#E83A2E] transition-all';
+const LABEL = 'block text-[13px] font-semibold text-[#16130F] mb-1.5';
 
 const TOPICS = ['Question', 'Feedback', 'Billing', 'Partnership', 'Something else'];
 
@@ -39,12 +39,12 @@ export default function ContactTeamPage() {
   if (isLoading || !isLoggedIn) {
     return (
       <div className="space-y-4 animate-pulse" aria-hidden="true">
-        <div className="h-7 w-2/3 rounded-lg bg-gray-100" />
-        <div className="h-4 w-1/2 rounded-lg bg-gray-100" />
-        <div className="h-11 w-full rounded-xl bg-gray-100" />
-        <div className="h-11 w-full rounded-xl bg-gray-100" />
-        <div className="h-24 w-full rounded-xl bg-gray-100" />
-        <div className="h-11 w-full rounded-xl bg-gray-100" />
+        <div className="h-7 w-2/3 rounded-lg bg-black/[0.05]" />
+        <div className="h-4 w-1/2 rounded-lg bg-black/[0.05]" />
+        <div className="h-11 w-full rounded-lg bg-black/[0.05]" />
+        <div className="h-11 w-full rounded-lg bg-black/[0.05]" />
+        <div className="h-24 w-full rounded-lg bg-black/[0.05]" />
+        <div className="h-11 w-full rounded-lg bg-black/[0.05]" />
       </div>
     );
   }
@@ -52,19 +52,19 @@ export default function ContactTeamPage() {
   if (sent) {
     return (
       <div className="flex flex-col items-center text-center py-4">
-        <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-5">
-          <CheckCircle2 className="w-7 h-7 text-emerald-500" strokeWidth={2.2} />
+        <div className="w-14 h-14 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-5">
+          <CheckCircle2 className="w-7 h-7 text-emerald-600" strokeWidth={2.2} />
         </div>
-        <h2 className="text-[24px] font-black tracking-[-0.02em] text-gray-900 mb-1.5">
+        <h2 className="text-[24px] font-bold tracking-[-0.03em] text-[#16130F] mb-1.5">
           Message sent
         </h2>
-        <p className="text-[14px] text-gray-500 font-medium mb-7 max-w-[280px]">
+        <p className="text-[14px] text-black/50 font-medium mb-7 max-w-[280px]">
           We&apos;ll get back to you at{' '}
-          <span className="font-semibold text-gray-700">{userEmail}</span>.
+          <span className="font-semibold text-[#16130F]">{userEmail}</span>.
         </p>
         <Link
           href="/"
-          className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#E83A2E] text-white font-bold text-[14px] rounded-xl hover:bg-[#cc2e23] transition-all shadow-[0_4px_14px_-2px_rgba(232,58,46,0.35)] hover:shadow-[0_8px_20px_-2px_rgba(232,58,46,0.42)] hover:-translate-y-px active:translate-y-0"
+          className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[14px] rounded-lg transition-colors duration-200"
         >
           Back to home
           <ArrowRight className="w-4 h-4" />
@@ -76,10 +76,13 @@ export default function ContactTeamPage() {
   return (
     <>
       <div className="mb-7">
-        <h2 className="text-[28px] font-black tracking-[-0.02em] text-gray-900 mb-1.5">
+        <p className="font-ledger text-[10px] font-medium tracking-[0.18em] text-black/35 uppercase mb-3">
+          <span className="text-[#E83A2E]">{'>>'}</span>&nbsp;&nbsp;/contact-team
+        </p>
+        <h2 className="text-[26px] font-bold tracking-[-0.03em] text-[#16130F] mb-1.5">
           Contact the team
         </h2>
-        <p className="text-[14px] text-gray-500 font-medium">
+        <p className="text-[14px] text-black/50 font-medium">
           We usually reply within a day.
         </p>
       </div>
@@ -102,12 +105,12 @@ export default function ContactTeamPage() {
             <input
               type="email"
               readOnly
-              className={`${INPUT} bg-gray-50 text-gray-500 pr-11 cursor-default focus:ring-0 focus:border-black/10`}
+              className={`${INPUT} bg-[#FAF8F6] text-black/50 pr-11 cursor-default focus:ring-0 focus:border-black/[0.1]`}
               value={userEmail ?? ''}
             />
-            <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+            <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-black/25" />
           </div>
-          <p className="mt-1.5 text-[11px] text-gray-400">
+          <p className="font-ledger mt-1.5 text-[10px] text-black/35">
             Replies go to your account email.
           </p>
         </div>
@@ -141,7 +144,7 @@ export default function ContactTeamPage() {
 
         <button
           type="submit"
-          className="w-full py-3 px-4 bg-[#E83A2E] text-white font-bold text-[14px] rounded-xl hover:bg-[#cc2e23] transition-all shadow-[0_4px_14px_-2px_rgba(232,58,46,0.35)] hover:shadow-[0_8px_20px_-2px_rgba(232,58,46,0.42)] hover:-translate-y-px active:translate-y-0 flex items-center justify-center gap-2 mt-2"
+          className="w-full py-3 px-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[14px] rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 mt-2"
         >
           Send message
           <ArrowRight className="w-4 h-4" />
