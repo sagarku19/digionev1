@@ -87,9 +87,15 @@ export function useReferrals() {
     onSuccess: invalidate,
   });
 
+  const totalCommission = (query.data?.redemptions ?? []).reduce(
+    (sum, r) => sum + (Number(r.commission_amount) || 0),
+    0
+  );
+
   return {
     codes: query.data?.codes ?? [],
     redemptions: query.data?.redemptions ?? [],
+    totalCommission,
     isLoading: query.isLoading,
     createCode: createCode.mutateAsync,
     toggleActive: toggleActive.mutateAsync,
