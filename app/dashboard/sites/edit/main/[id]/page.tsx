@@ -46,11 +46,11 @@ const TABS: {
   { id: 'header',     label: 'Header',     icon: NavIcon,    activeBg: 'bg-emerald-50 dark:bg-emerald-500/10',  activeColor: 'text-emerald-600 dark:text-emerald-300',  activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
   { id: 'main',       label: 'Main',       icon: Layout,     activeBg: 'bg-sky-50 dark:bg-sky-500/10',          activeColor: 'text-sky-600 dark:text-sky-300',          activeBorder: 'border border-sky-200 dark:border-sky-500/30' },
   { id: 'content',    label: 'Content',    icon: Package,    activeBg: 'bg-blue-50 dark:bg-blue-500/10',        activeColor: 'text-blue-600 dark:text-blue-300',        activeBorder: 'border border-blue-200 dark:border-blue-500/30' },
-  { id: 'sections',   label: 'Sections',   icon: Layers,     activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',    activeColor: 'text-gray-700 dark:text-[var(--text-secondary)]',    activeBorder: 'border border-gray-300 dark:border-gray-600' },
+  { id: 'sections',   label: 'Sections',   icon: Layers,     activeBg: 'bg-[var(--surface-muted)]',    activeColor: 'text-[var(--text-secondary)]',    activeBorder: 'border border-[var(--border)] dark:border-gray-600' },
   { id: 'footer',     label: 'Footer',     icon: Footprints, activeBg: 'bg-amber-50 dark:bg-amber-500/10',      activeColor: 'text-amber-600 dark:text-amber-300',      activeBorder: 'border border-amber-200 dark:border-amber-500/30' },
   { id: 'template',   label: 'Template',   icon: Sparkles,   activeBg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10',  activeColor: 'text-fuchsia-600 dark:text-fuchsia-300',  activeBorder: 'border border-fuchsia-200 dark:border-fuchsia-500/30' },
   { id: 'appearance', label: 'Appearance', icon: Paintbrush, activeBg: 'bg-rose-50 dark:bg-rose-500/10',        activeColor: 'text-rose-600 dark:text-rose-300',        activeBorder: 'border border-rose-200 dark:border-rose-500/30' },
-  { id: 'settings',   label: 'Settings',   icon: Settings,   activeBg: 'bg-gray-100 dark:bg-[var(--bg-secondary)]',          activeColor: 'text-[var(--text-primary)]',            activeBorder: 'border border-gray-300 dark:border-gray-600' },
+  { id: 'settings',   label: 'Settings',   icon: Settings,   activeBg: 'bg-[var(--surface-muted)]',          activeColor: 'text-[var(--text-primary)]',            activeBorder: 'border border-[var(--border)] dark:border-gray-600' },
   { id: 'advanced',   label: 'Advanced',   icon: Code2,      activeBg: 'bg-orange-50 dark:bg-orange-500/10',    activeColor: 'text-orange-600 dark:text-orange-300',    activeBorder: 'border border-orange-200 dark:border-orange-500/30' },
 ];
 
@@ -136,20 +136,20 @@ function SectionCard({ icon: Icon, title, desc, color = 'pink', children }: {
   icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
       <div>
         <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Icon className={`w-4 h-4 text-${color}-500`} /> {title}
         </h3>
-        {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
+        {desc && <p className="text-[13px] text-[var(--text-secondary)] mt-1">{desc}</p>}
       </div>
       {children}
     </div>
   );
 }
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-gray-500 focus:ring-4 focus:ring-gray-400/20 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all';
-const LABEL = 'block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5';
+const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-gray-500 focus:ring-4 focus:ring-gray-400/20 outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all';
+const LABEL = 'block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5';
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -561,7 +561,7 @@ export default function EditMainStorePage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push('/dashboard/sites')}
-                className="p-2 -ml-2 rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition"
+                className="p-2 -ml-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -584,7 +584,7 @@ export default function EditMainStorePage() {
                 className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all ${
                   isPublished
                     ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30'
-                    : 'bg-gray-50 dark:bg-[var(--bg-secondary)] text-gray-400 border-gray-200 dark:border-[var(--border)]'
+                    : 'bg-[var(--surface-muted)] text-[var(--text-tertiary)] border-[var(--border)]'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${isPublished ? 'bg-emerald-500' : 'bg-gray-400'}`} />
@@ -597,18 +597,18 @@ export default function EditMainStorePage() {
                 title="Toggle Theme"
                 className="p-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/50 hover:bg-white dark:hover:bg-[var(--bg-secondary)] transition-all shadow-sm"
               >
-                {theme === 'dark' ? <Sun className="w-4 h-4 text-gray-500" /> : <Moon className="w-4 h-4 text-gray-500" />}
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-[var(--text-secondary)]" /> : <Moon className="w-4 h-4 text-[var(--text-secondary)]" />}
               </button>
 
               {/* Undo / Redo */}
               <div className="flex items-center gap-1 border border-[var(--border)] rounded-xl bg-[var(--bg-secondary)]/50 p-1">
                 <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)"
-                  className={`p-1.5 rounded-lg transition-all ${canUndo ? 'text-gray-700 dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-gray-300 dark:text-gray-700 opacity-50'}`}>
+                  className={`p-1.5 rounded-lg transition-all ${canUndo ? 'text-[var(--text-secondary)] dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-[var(--text-tertiary)] dark:text-gray-700 opacity-50'}`}>
                   <Undo2 className="w-4 h-4" />
                 </button>
                 <div className="w-[1px] h-4 bg-gray-200 dark:bg-[var(--bg-secondary)]" />
                 <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Y)"
-                  className={`p-1.5 rounded-lg transition-all ${canRedo ? 'text-gray-700 dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-gray-300 dark:text-gray-700 opacity-50'}`}>
+                  className={`p-1.5 rounded-lg transition-all ${canRedo ? 'text-[var(--text-secondary)] dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-[var(--text-tertiary)] dark:text-gray-700 opacity-50'}`}>
                   <Redo2 className="w-4 h-4" />
                 </button>
               </div>
@@ -646,7 +646,7 @@ export default function EditMainStorePage() {
                       className={`flex items-center gap-2 md:gap-3 px-3 md:px-2.5 py-2 md:py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 shrink-0 ${
                         active
                           ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm`
-                          : 'text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50'
+                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50'
                       } justify-center md:justify-start`}
                     >
                       <tab.icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.5 : 2} />
@@ -682,7 +682,7 @@ export default function EditMainStorePage() {
 
                   <SectionCard icon={ToggleLeft} title="Hero Banner" desc="Show a full-width banner at the top" color="sky">
                     <label className="flex items-center justify-between cursor-pointer">
-                      <span className="text-sm text-gray-700 dark:text-[var(--text-secondary)]">Enable Hero Banner</span>
+                      <span className="text-sm text-[var(--text-secondary)]">Enable Hero Banner</span>
                       <button
                         onClick={() => setHeroData(h => ({ ...h, enabled: !h.enabled }))}
                         className={`relative w-10 h-5 rounded-full transition ${heroData.enabled ? 'bg-sky-500' : 'bg-gray-300 dark:bg-gray-600'}`}
@@ -696,7 +696,7 @@ export default function EditMainStorePage() {
                     <>
                       <SectionCard icon={ImageIcon} title="Banner Image" desc="Full-width background image" color="sky">
                         {heroData.imageUrl ? (
-                          <div className="relative rounded-xl overflow-hidden h-32 bg-gray-100 dark:bg-[var(--bg-secondary)]">
+                          <div className="relative rounded-xl overflow-hidden h-32 bg-[var(--surface-muted)]">
                             <img src={heroData.imageUrl} alt="Hero" className="w-full h-full object-cover" />
                             <button
                               onClick={() => setHeroData(h => ({ ...h, imageUrl: '' }))}
@@ -708,7 +708,7 @@ export default function EditMainStorePage() {
                         ) : (
                           <button
                             onClick={() => setHeroBgPicker(true)}
-                            className="w-full flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-gray-200 dark:border-[var(--border)] rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-[var(--text-primary)] hover:border-sky-400 transition"
+                            className="w-full flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-[var(--border)] rounded-xl text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:border-sky-400 transition"
                           >
                             <ImageIcon className="w-5 h-5" />
                             <span className="text-xs font-medium">Click to upload image</span>
@@ -736,7 +736,7 @@ export default function EditMainStorePage() {
                           <div className="flex gap-2">
                             {(['left', 'center', 'right'] as const).map(a => (
                               <button key={a} onClick={() => setHeroData(h => ({ ...h, textAlign: a }))}
-                                className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition capitalize ${heroData.textAlign === a ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-200 dark:border-sky-500/30' : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'}`}>
+                                className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition capitalize ${heroData.textAlign === a ? 'bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-200 dark:border-sky-500/30' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border)]'}`}>
                                 {a}
                               </button>
                             ))}
@@ -764,8 +764,8 @@ export default function EditMainStorePage() {
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)]">Description</label>
-                        <span className={`text-[11px] tabular-nums ${description.length > 200 ? 'text-red-500' : 'text-gray-400'}`}>{description.length}/200</span>
+                        <label className="text-[13px] font-medium text-[var(--text-secondary)]">Description</label>
+                        <span className={`text-[11px] tabular-nums ${description.length > 200 ? 'text-red-500' : 'text-[var(--text-tertiary)]'}`}>{description.length}/200</span>
                       </div>
                       <textarea rows={3} value={description} onChange={e => setDescription(e.target.value)} className={`${INPUT} resize-none`} placeholder="What your store is about…" />
                     </div>
@@ -787,7 +787,7 @@ export default function EditMainStorePage() {
               {/* ── Sections ── */}
               {activeTab === 'sections' && (
                 <div className="space-y-4">
-                  <div className="p-3 bg-gray-100 dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl text-xs text-gray-700 dark:text-[var(--text-secondary)] flex items-start gap-2">
+                  <div className="p-3 bg-[var(--surface-muted)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-secondary)] flex items-start gap-2">
                     <Layers className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                     Add, reorder, and configure sections for your store homepage.
                   </div>
@@ -808,7 +808,7 @@ export default function EditMainStorePage() {
                   <div className="grid grid-cols-1 gap-3">
                     {STORE_TEMPLATES.map(tpl => (
                       <button key={tpl.id} onClick={() => setPalette(tpl.palette)}
-                        className="flex items-center gap-4 p-4 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-2xl hover:border-fuchsia-300 dark:hover:border-fuchsia-500/40 transition-all group text-left">
+                        className="flex items-center gap-4 p-4 bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-2xl hover:border-fuchsia-300 dark:hover:border-fuchsia-500/40 transition-all group text-left">
                         <div className="flex gap-1.5 shrink-0">
                           {Object.values(tpl.palette).slice(0, 3).map((c, i) => (
                             <span key={i} className="w-6 h-6 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: c }} />
@@ -816,13 +816,13 @@ export default function EditMainStorePage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-fuchsia-600 dark:group-hover:text-fuchsia-300 transition">{tpl.name}</p>
-                          <p className="text-xs text-gray-500 mt-0.5 truncate">{tpl.desc}</p>
+                          <p className="text-xs text-[var(--text-secondary)] mt-0.5 truncate">{tpl.desc}</p>
                         </div>
-                        <span className="text-xs font-medium text-gray-400 group-hover:text-fuchsia-500 shrink-0 transition">Apply →</span>
+                        <span className="text-xs font-medium text-[var(--text-tertiary)] group-hover:text-fuchsia-500 shrink-0 transition">Apply →</span>
                       </button>
                     ))}
                   </div>
-                  <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-4 shadow-sm">
+                  <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-4 shadow-sm">
                     <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                       <Paintbrush className="w-4 h-4 text-fuchsia-500" /> Custom Colors
                     </h3>
@@ -844,21 +844,21 @@ export default function EditMainStorePage() {
               {/* ── Settings ── */}
               {activeTab === 'settings' && (
                 <div className="space-y-5">
-                  <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                  <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
                     <div>
                       <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                         <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
                       </h3>
-                      <p className="text-[13px] text-gray-500 mt-1">Your store's public address</p>
+                      <p className="text-[13px] text-[var(--text-secondary)] mt-1">Your store's public address</p>
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5 px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all">
-                        <span className="text-[13px] font-medium text-gray-400 shrink-0 select-none">digione.ai/store/</span>
+                      <div className="flex items-center gap-1.5 px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all">
+                        <span className="text-[13px] font-medium text-[var(--text-tertiary)] shrink-0 select-none">digione.ai/store/</span>
                         <input type="text" value={slug}
                           onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                          className="flex-1 bg-transparent outline-none text-[13px] font-semibold text-[var(--text-primary)] placeholder-gray-400 min-w-0"
+                          className="flex-1 bg-transparent outline-none text-[13px] font-semibold text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-w-0"
                           placeholder="my-store" />
-                        {slugStatus === 'checking'  && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400 shrink-0" />}
+                        {slugStatus === 'checking'  && <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--text-tertiary)] shrink-0" />}
                         {slugStatus === 'available' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
                         {(slugStatus === 'taken' || slugStatus === 'invalid') && <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />}
                       </div>
@@ -871,13 +871,13 @@ export default function EditMainStorePage() {
                         {slugStatus === 'invalid'   && <span className="text-xs text-red-500">3+ chars, letters, numbers, hyphens only</span>}
                       </div>
                     </div>
-                    <button onClick={copyUrl} className="flex items-center gap-2 text-xs font-medium text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] transition">
+                    <button onClick={copyUrl} className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] transition">
                       {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                       {copied ? 'Copied!' : 'Copy URL'}
                     </button>
                   </div>
 
-                  <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
+                  <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
                     <h3 className="text-sm font-semibold text-[var(--text-primary)]">SEO &amp; Meta</h3>
                     <div>
                       <label className={LABEL}>Meta Title</label>
@@ -901,11 +901,11 @@ export default function EditMainStorePage() {
                     )}
                   </div>
 
-                  <div className="bg-white dark:bg-[var(--bg-secondary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 shadow-sm">
+                  <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 shadow-sm">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-semibold text-[var(--text-primary)]">Visibility</p>
-                        <p className="text-[13px] text-gray-500 mt-0.5">Control whether your store is publicly accessible</p>
+                        <p className="text-[13px] text-[var(--text-secondary)] mt-0.5">Control whether your store is publicly accessible</p>
                       </div>
                       <button onClick={() => setIsPublished(p => !p)} role="switch" aria-checked={isPublished}
                         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${isPublished ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'}`}>
@@ -925,12 +925,12 @@ export default function EditMainStorePage() {
                   </div>
                   <SectionCard icon={Code2} title="Custom CSS" desc="Injected into your store's &lt;head&gt;" color="orange">
                     <textarea rows={10} value={customCss} onChange={e => setCustomCss(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-900 text-green-400 border border-gray-700 rounded-xl text-[12px] font-mono focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none placeholder-gray-600 resize-none transition-all"
+                      className="w-full px-4 py-3 bg-gray-900 text-green-400 border border-gray-700 rounded-xl text-[12px] font-mono focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none placeholder:text-[var(--text-tertiary)] resize-none transition-all"
                       placeholder={`/* Custom styles */\n.my-element {\n  color: red;\n}`} spellCheck={false} />
                   </SectionCard>
                   <SectionCard icon={Code2} title="Custom JavaScript" desc="Injected before &lt;/body&gt; — use with care" color="orange">
                     <textarea rows={10} value={customJs} onChange={e => setCustomJs(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-900 text-yellow-300 border border-gray-700 rounded-xl text-[12px] font-mono focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none placeholder-gray-600 resize-none transition-all"
+                      className="w-full px-4 py-3 bg-gray-900 text-yellow-300 border border-gray-700 rounded-xl text-[12px] font-mono focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none placeholder:text-[var(--text-tertiary)] resize-none transition-all"
                       placeholder={`// Custom scripts\nconsole.log('hello');`} spellCheck={false} />
                   </SectionCard>
                 </div>
@@ -942,21 +942,21 @@ export default function EditMainStorePage() {
         </div>{/* end LEFT PANEL */}
 
         {/* ═══ RIGHT PANEL — full-height preview ═══ */}
-        <div className="flex-1 flex flex-col bg-gray-100 dark:bg-[var(--bg-secondary)]">
+        <div className="flex-1 flex flex-col bg-[var(--surface-muted)]">
 
           {/* Preview Header */}
           <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-4 gap-3 relative">
             <a
               href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
               target="_blank" rel="noopener noreferrer"
-              className={`flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
+              className={`flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
               title="Open in browser"
             >
               <ExternalLink className="w-3.5 h-3.5" /> Open
             </a>
             <button
               onClick={copyUrl} disabled={!site}
-              className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-gray-800 dark:hover:text-[var(--text-primary)] bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] hover:border-gray-400 dark:hover:border-gray-500 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
               title="Copy page link"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -965,7 +965,7 @@ export default function EditMainStorePage() {
 
             {/* Centered label */}
             <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none">
-              <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+              <span className="text-xs font-semibold text-[var(--text-tertiary)] dark:text-gray-500 uppercase tracking-widest">
                 Website Preview
               </span>
             </div>
@@ -973,14 +973,14 @@ export default function EditMainStorePage() {
             <div className="flex-1" />
 
             {/* Device toggles */}
-            <div className="flex items-center gap-1 bg-white dark:bg-[var(--bg-secondary)] p-1 rounded-lg border border-gray-200 dark:border-[var(--border)] shrink-0">
+            <div className="flex items-center gap-1 bg-[var(--surface)] p-1 rounded-lg border border-[var(--border)] shrink-0">
               {[
                 { id: 'desktop', icon: Monitor,    label: 'Desktop' },
                 { id: 'tablet',  icon: Tablet,     label: 'Tablet'  },
                 { id: 'mobile',  icon: Smartphone, label: 'Mobile'  },
               ].map(dev => (
                 <button key={dev.id} onClick={() => setDevice(dev.id)}
-                  className={`p-1.5 rounded-md transition ${device === dev.id ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-md transition ${device === dev.id ? 'bg-[var(--surface-muted)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-tertiary)]'}`}
                   title={dev.label}>
                   <dev.icon className="w-4 h-4" />
                 </button>
@@ -1000,19 +1000,19 @@ export default function EditMainStorePage() {
             const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
 
             const BrowserChrome = () => (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-[var(--bg-secondary)] border-b border-gray-200 dark:border-[var(--border)] shrink-0">
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface-muted)] border-b border-[var(--border)] shrink-0">
                 <div className="flex gap-1.5">
                   <span className="w-3 h-3 rounded-full bg-red-400" />
                   <span className="w-3 h-3 rounded-full bg-amber-400" />
                   <span className="w-3 h-3 rounded-full bg-emerald-400" />
                 </div>
-                <div className="flex-1 px-3 py-1 bg-white dark:bg-[var(--bg-secondary)] rounded-md border border-gray-200 dark:border-[var(--border)]">
-                  <p className="text-[10px] text-gray-400 font-mono truncate">
+                <div className="flex-1 px-3 py-1 bg-[var(--surface)] rounded-md border border-[var(--border)]">
+                  <p className="text-[10px] text-[var(--text-tertiary)] font-mono truncate">
                     {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading…'}
                   </p>
                 </div>
                 <button onClick={() => setPreviewKey(Date.now())}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition" title="Refresh">
+                  className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-tertiary)] transition" title="Refresh">
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1024,7 +1024,7 @@ export default function EditMainStorePage() {
                 className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-10' : 'pt-6'}`}
               >
                 <div
-                  className="bg-white dark:bg-[var(--bg-secondary)] rounded-xl shadow-2xl border border-gray-200 dark:border-[var(--border)] overflow-hidden flex flex-col"
+                  className="bg-[var(--surface)] rounded-xl shadow-2xl border border-[var(--border)] overflow-hidden flex flex-col"
                   style={{
                     width: devicePx,
                     maxWidth: '100%',
@@ -1038,7 +1038,7 @@ export default function EditMainStorePage() {
                     <iframe ref={iframeRef} key={previewKey} src={previewUrl}
                       className="w-full flex-1 border-0" title="Store Preview" />
                   ) : (
-                    <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+                    <div className="flex-1 flex items-center justify-center text-sm text-[var(--text-tertiary)]">
                       No preview available
                     </div>
                   )}
