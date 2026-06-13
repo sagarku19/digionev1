@@ -70,8 +70,8 @@ export default function AffiliatesPage() {
       setShowModal(false);
       setAffiliateUserId('');
       setCommission(20);
-    } catch (err: any) {
-      setFormError(err.message ?? 'Failed to add affiliate.');
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : 'Failed to add affiliate.');
     }
   };
 
@@ -83,14 +83,14 @@ export default function AffiliatesPage() {
     setEditCommission(null);
   };
 
-  const toggleActive = (aff: any) => updateAffiliate({ id: aff.id, updates: { is_active: !aff.is_active } });
+  const toggleActive = (aff: typeof affiliates[number]) => updateAffiliate({ id: aff.id, updates: { is_active: !aff.is_active } });
 
-  const filtered = affiliates.filter((a: any) =>
+  const filtered = affiliates.filter((a) =>
     !search || a.affiliate_user_id?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const activeCount = affiliates.filter((a: any) => a.is_active).length;
-  const avgCommission = affiliates.length ? Math.round(affiliates.reduce((s: number, a: any) => s + (a.commission_percent || 0), 0) / affiliates.length) : 0;
+  const activeCount = affiliates.filter((a) => a.is_active).length;
+  const avgCommission = affiliates.length ? Math.round(affiliates.reduce((s, a) => s + (a.commission_percent || 0), 0) / affiliates.length) : 0;
 
   return (
     <>
@@ -169,7 +169,7 @@ export default function AffiliatesPage() {
             </div>
           ) : (
             <div className="divide-y divide-[var(--border-subtle)]">
-              {filtered.map((aff: any) => {
+              {filtered.map((aff) => {
                 const link = `${origin}/ref/${aff.affiliate_user_id}`;
                 const isEditing = editCommission?.id === aff.id;
                 return (
@@ -218,7 +218,7 @@ export default function AffiliatesPage() {
 
                     {/* Joined */}
                     <span className="hidden md:inline text-xs text-[var(--text-tertiary)] shrink-0">
-                      {new Date(aff.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(aff.created_at!).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
 
                     {/* Actions */}

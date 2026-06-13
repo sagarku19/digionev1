@@ -119,8 +119,8 @@ function SiteRow({ site, onRequestDelete, onToggle }: {
   const [copied, setCopied] = useState(false);
 
   const sm = Array.isArray(site.site_main) ? site.site_main[0] : site.site_main;
-  const sp = (site as any).site_singlepage;
-  const sl = (site as any).linkinbio_pages;
+  const sp = (site as { site_singlepage?: { title?: string } | { title?: string }[] }).site_singlepage;
+  const sl = (site as { linkinbio_pages?: { display_name?: string } | { display_name?: string }[] }).linkinbio_pages;
   const singleTitle = Array.isArray(sp) ? sp[0]?.title : sp?.title;
   const bioName = Array.isArray(sl) ? sl[0]?.display_name : sl?.display_name;
 

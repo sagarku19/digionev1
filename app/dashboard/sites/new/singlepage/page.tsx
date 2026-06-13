@@ -246,7 +246,7 @@ export default function CreateSinglePagePage() {
                         />
                       </div>
                       <div className="border border-[var(--border)] rounded-[var(--radius-md)] overflow-hidden max-h-48 overflow-y-auto bg-[var(--surface)]">
-                        {products.filter((p: any) => p.name?.toLowerCase().includes(productSearch.toLowerCase())).map((p: any) => (
+                        {products.filter((p) => p.name?.toLowerCase().includes(productSearch.toLowerCase())).map((p) => (
                           <button
                             key={p.id}
                             onClick={() => setProductId(productId === p.id ? null : p.id)}
@@ -294,7 +294,7 @@ export default function CreateSinglePagePage() {
                       {productId && (
                         <div className="flex items-center gap-2 text-xs font-medium text-[var(--info)] bg-[var(--info-bg)] rounded-[var(--radius-sm)] px-3 py-2 border border-[var(--info)]/20 w-fit">
                           <Tag className="w-3.5 h-3.5 shrink-0" />
-                          <span>Selling: {products.find((p: any) => p.id === productId)?.name ?? 'Product'}</span>
+                          <span>Selling: {products.find((p) => p.id === productId)?.name ?? 'Product'}</span>
                         </div>
                       )}
                     </div>

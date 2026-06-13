@@ -10,7 +10,7 @@ import {
   Globe, FileText, Phone, Clock, TrendingUp, UserCheck, RefreshCw,
 } from 'lucide-react';
 
-function exportCSV(leads: any[]) {
+function exportCSV(leads: ReturnType<typeof useGuestLeads>['leads']) {
   const header = ['Full Name', 'Email', 'Mobile', 'Other', 'Form', 'Site', 'Captured On'];
   const rows = leads.map(l => [
     l.full_name ?? '', l.email ?? '', l.mobile ?? '',
@@ -53,21 +53,21 @@ export default function LeadsPage() {
 
   const sites = useMemo(() => {
     const s = new Map<string, string>();
-    allLeads.forEach((l: any) => { if (l.sites?.slug) s.set(l.site_id, l.sites.slug); });
+    allLeads.forEach((l) => { if (l.sites?.slug) s.set(l.site_id, l.sites.slug); });
     return [{ id: 'all', slug: 'All Sites' }, ...Array.from(s, ([id, slug]) => ({ id, slug }))];
   }, [allLeads]);
 
-  const filtered = leads.filter((l: any) => {
+  const filtered = leads.filter((l) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return l.email?.toLowerCase().includes(q) || l.full_name?.toLowerCase().includes(q) || l.mobile?.includes(q);
   });
 
   // Stats
-  const withEmail  = leads.filter((l: any) => l.email).length;
-  const withMobile = leads.filter((l: any) => l.mobile).length;
+  const withEmail  = leads.filter((l) => l.email).length;
+  const withMobile = leads.filter((l) => l.mobile).length;
   const now = new Date();
-  const thisMonth  = leads.filter((l: any) => l.created_at && new Date(l.created_at).getMonth() === now.getMonth() && new Date(l.created_at).getFullYear() === now.getFullYear()).length;
+  const thisMonth  = leads.filter((l) => l.created_at && new Date(l.created_at).getMonth() === now.getMonth() && new Date(l.created_at).getFullYear() === now.getFullYear()).length;
 
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +82,7 @@ export default function LeadsPage() {
 
   // Group by date for timeline
   const byDate = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+    const groups: Record<string, typeof filtered> = {};
     filtered.forEach(l => {
       const d = l.created_at ? new Date(l.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Unknown';
       (groups[d] = groups[d] || []).push(l);
@@ -190,7 +190,7 @@ export default function LeadsPage() {
               <span className="text-xs text-[var(--text-tertiary)]">{filtered.length} leads</span>
             </div>
             <div className="divide-y divide-[var(--border-subtle)]">
-              {filtered.map((lead: any) => (
+              {filtered.map((lead) => (
                 <div key={lead.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--surface-hover)] transition group">
                   <Avatar name={lead.full_name} email={lead.email} />
                   <div className="flex-1 min-w-0">
@@ -238,7 +238,7 @@ export default function LeadsPage() {
                   <span className="text-xs text-[var(--text-tertiary)]">{items.length} lead{items.length !== 1 ? 's' : ''}</span>
                 </div>
                 <div className="space-y-2">
-                  {items.map((lead: any) => (
+                  {items.map((lead) => (
                     <div key={lead.id} className="flex items-center gap-4 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] px-5 py-3.5 hover:border-[var(--border-strong)] transition">
                       <div className="relative">
                         <Avatar name={lead.full_name} email={lead.email} />
@@ -285,7 +285,7 @@ export default function LeadsPage() {
             <form onSubmit={handleBroadcast} className="p-6 space-y-4">
               <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-secondary)]">
                 <Mail className="w-4 h-4 shrink-0" />
-                Sending to <strong className="ml-1">{filtered.filter((l: any) => l.email).length} leads</strong>
+                Sending to <strong className="ml-1">{filtered.filter((l) => l.email).length} leads</strong>
                 {filterSite !== 'all' && <span className="ml-1 opacity-70">(filtered)</span>}
               </div>
 
@@ -320,7 +320,7 @@ export default function LeadsPage() {
               <button type="submit" disabled={sending || sent}
                 className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3 rounded-[var(--radius-sm)] font-bold text-sm shadow-[var(--shadow-xs)] transition flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <Send className="w-4 h-4" />
-                {sending ? 'Sending…' : sent ? 'Sent!' : `Send to ${filtered.filter((l: any) => l.email).length} leads`}
+                {sending ? 'Sending…' : sent ? 'Sent!' : `Send to ${filtered.filter((l) => l.email).length} leads`}
               </button>
             </form>
           </div>

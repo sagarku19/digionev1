@@ -164,8 +164,8 @@ export default function MediaPage() {
 
       all.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setFiles(all);
-    } catch (e: any) {
-      setLoadError(e.message ?? 'Failed to load files');
+    } catch (e: unknown) {
+      setLoadError(e instanceof Error ? e.message : 'Failed to load files');
     } finally {
       setLoading(false);
     }

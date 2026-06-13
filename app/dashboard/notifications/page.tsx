@@ -51,15 +51,15 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [typeFilter, setTypeFilter] = useState('all');
 
-  const types = ['all', ...Array.from(new Set(notifications.map((n: any) => n.type)))];
+  const types = ['all', ...Array.from(new Set(notifications.map((n) => n.type)))];
 
-  const filtered = notifications.filter((n: any) => {
+  const filtered = notifications.filter((n) => {
     if (filter === 'unread' && n.is_read) return false;
     if (typeFilter !== 'all' && n.type !== typeFilter) return false;
     return true;
   });
 
-  const handleClick = async (notif: any) => {
+  const handleClick = async (notif: typeof notifications[number]) => {
     if (!notif.is_read) await markAsRead(notif.id);
     if (notif.action_url) router.push(notif.action_url);
   };
@@ -153,7 +153,7 @@ export default function NotificationsPage() {
       {!isLoading && filtered.length > 0 && (
         <Card padded={false} className="overflow-hidden">
           <div className="divide-y divide-[var(--border-subtle)]">
-            {filtered.map((notif: any) => {
+            {filtered.map((notif) => {
               const meta = getTypeMeta(notif.type);
               const Icon = meta.icon;
               return (
@@ -177,7 +177,7 @@ export default function NotificationsPage() {
                         <p className="text-sm text-[var(--text-secondary)] mt-0.5 leading-relaxed">{notif.message}</p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 pt-0.5">
-                        <span className="text-xs text-[var(--text-tertiary)] whitespace-nowrap">{timeAgo(notif.created_at)}</span>
+                        <span className="text-xs text-[var(--text-tertiary)] whitespace-nowrap">{timeAgo(notif.created_at!)}</span>
                         {!notif.is_read && (
                           <span className="w-2 h-2 rounded-full bg-[var(--brand)] shrink-0 mt-0.5" />
                         )}

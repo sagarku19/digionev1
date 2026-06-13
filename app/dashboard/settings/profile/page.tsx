@@ -68,8 +68,8 @@ function OtpModal({
         if (error) throw error;
       }
       setSent(true);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
       setSending(false);
     }
@@ -86,8 +86,8 @@ function OtpModal({
       );
       if (error) throw error;
       onSuccess();
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
       setVerifying(false);
     }
@@ -243,8 +243,8 @@ export default function ProfileSettingsPage() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
       setSaving(false);
     }
@@ -484,7 +484,7 @@ export default function ProfileSettingsPage() {
                   <Icon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
                   <input
                     type="url"
-                    value={(form as any)[key]}
+                    value={form[key]}
                     onChange={e => set(key, e.target.value)}
                     placeholder={ph}
                     className={`${INPUT} pl-9`}

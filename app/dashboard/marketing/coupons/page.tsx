@@ -72,7 +72,7 @@ export default function CouponsPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const handleToggle = async (coupon: any) => {
+  const handleToggle = async (coupon: typeof coupons[number]) => {
     setToggling(coupon.id);
     await supabase.from('coupons').update({ is_active: !coupon.is_active }).eq('id', coupon.id);
     queryClient.invalidateQueries({ queryKey: ['coupons'] });
@@ -127,18 +127,18 @@ export default function CouponsPage() {
       setIsModalOpen(false);
       setFormData({ code: '', discount_type: 'percentage', discount_value: 20, max_uses: '', valid_until: '', min_order_value: '' });
       setBulkMode(false);
-    } catch (err: any) {
-      setErrorMsg(err.message ?? 'Failed to create coupon.');
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to create coupon.');
     }
   };
 
   // Stats
   const totalCoupons  = coupons.length;
-  const activeCoupons = coupons.filter((c: any) => c.is_active).length;
-  const totalUses     = coupons.reduce((a: number, c: any) => a + (c.current_uses ?? 0), 0);
-  const expiredCount  = coupons.filter((c: any) => isExpired(c.valid_until)).length;
+  const activeCoupons = coupons.filter((c) => c.is_active).length;
+  const totalUses     = coupons.reduce((a, c) => a + (c.current_uses ?? 0), 0);
+  const expiredCount  = coupons.filter((c) => isExpired(c.valid_until)).length;
 
-  const filtered = coupons.filter((c: any) => {
+  const filtered = coupons.filter((c) => {
     const matchSearch = !search || c.code.toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'all' ? true
       : filterStatus === 'active' ? c.is_active && !isExpired(c.valid_until)
@@ -226,7 +226,7 @@ export default function CouponsPage() {
             </div>
           ) : (
             <div className="divide-y divide-[var(--border-subtle)]">
-              {filtered.map((coupon: any) => {
+              {filtered.map((coupon) => {
                 const expired = isExpired(coupon.valid_until);
                 return (
                   <div key={coupon.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--surface-hover)] transition group">
@@ -265,8 +265,8 @@ export default function CouponsPage() {
                     </div>
 
                     {/* Min order */}
-                    {coupon.metadata?.min_order_value && (
-                      <span className="hidden xl:inline text-xs text-[var(--text-tertiary)]">Min ₹{coupon.metadata.min_order_value}</span>
+                    {(coupon.metadata as { min_order_value?: number } | null)?.min_order_value && (
+                      <span className="hidden xl:inline text-xs text-[var(--text-tertiary)]">Min ₹{(coupon.metadata as { min_order_value?: number }).min_order_value}</span>
                     )}
 
                     {/* Status pill */}
