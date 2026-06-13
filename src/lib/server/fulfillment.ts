@@ -6,6 +6,7 @@
 import crypto from 'crypto';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getPlatformFeeRate } from './platform-fee';
+import { computeReferralCommission } from './referrals';
 
 export interface FulfillResult {
   fulfilled: boolean;
@@ -133,6 +134,51 @@ export async function fulfillOrder(
     });
     if (notifyErr) {
       console.error('[fulfillment] notification insert failed for order', orderId, notifyErr.message);
+    }
+  }
+
+  // 7. Referral commission — platform-fee-funded, idempotent via status claim
+  if (creatorId && total > 0) {
+    const { data: settled } = await db
+      .from('order_referrals')
+      .update({ status: 'settled' })
+      .eq('order_id', orderId)
+      .eq('status', 'pending')
+      .select('referrer_creator_id, metadata')
+      .maybeSingle();
+
+    if (settled?.referrer_creator_id) {
+      const rewardPercent = Number((settled.metadata as { reward_percent?: number } | null)?.reward_percent ?? 0);
+      const commission = computeReferralCommission(total, rewardPercent, platformFee);
+      if (commission > 0) {
+        await db.from('order_referrals').update({ commission_amount: commission }).eq('order_id', orderId);
+        const { error: refCreditErr } = await db.rpc('credit_creator_balance', {
+          p_creator_id: settled.referrer_creator_id,
+          p_earnings_delta: commission,
+          p_fees_delta: 0,
+        });
+        if (refCreditErr) console.error('[fulfillment] referral credit failed for order', orderId, refCreditErr.message);
+
+        const refHash = crypto.createHash('sha256').update(`${orderId}:ref:${opts?.gatewayPaymentId ?? 'free'}`).digest('hex');
+        const { error: refLedgerErr } = await db.from('transaction_ledger').insert({
+          creator_id: settled.referrer_creator_id,
+          order_id: orderId,
+          amount: commission,
+          direction: 'credit',
+          tx_type: 'referral_commission',
+          currency: 'INR',
+          record_hash: refHash,
+          meta: { source_order: orderId, reward_percent: rewardPercent },
+        });
+        if (refLedgerErr) console.error('[fulfillment] referral ledger failed for order', orderId, refLedgerErr.message);
+
+        await db.from('notifications').insert({
+          recipient_creator_id: settled.referrer_creator_id,
+          title: 'Referral commission earned!',
+          message: `You earned ₹${commission.toFixed(0)} from a referral`,
+          type: 'sale',
+        });
+      }
     }
   }
 
