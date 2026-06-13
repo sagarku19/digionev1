@@ -9,8 +9,9 @@ import {
   Type, Zap, Space, ImagePlus,
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
-const INPUT = 'w-full px-4 py-2 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
+const INPUT = editorInput(EDITOR_ACCENTS.pink);
 
 export type BioAppearanceData = {
   layoutStyle: string;

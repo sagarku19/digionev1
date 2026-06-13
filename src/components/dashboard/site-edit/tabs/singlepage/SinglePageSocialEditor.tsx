@@ -3,8 +3,9 @@
 import React from 'react';
 import { Share2, Plus, X, Globe, Instagram, Twitter, Youtube, Linkedin, Github, Music, MessageCircle, Send, Phone, AtSign } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
+import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-gray-500 focus:ring-4 focus:ring-gray-400/20 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
+const INPUT = editorInput(EDITOR_ACCENTS.gray);
 
 const PLATFORMS = [
   { id: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/you' },

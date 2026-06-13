@@ -10,7 +10,9 @@ import {
   Trash2, EyeOff, Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 
-const INPUT = 'w-full px-3.5 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
+import { panelInput } from '../_shared/editorStyles';
+
+const INPUT = panelInput;
 
 export type SettingsData = {
   metaTitle: string;

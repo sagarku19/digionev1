@@ -3,14 +3,11 @@
 import React from 'react';
 import { ImageIcon } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
+import { editorInput, EDITOR_ACCENTS, FieldLabel } from '../../_shared/editorStyles';
 
 export type { SinglePageContentData };
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
-}
+const INPUT = editorInput(EDITOR_ACCENTS.indigo);
 
 interface Props {
   data: SinglePageContentData;

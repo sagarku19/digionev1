@@ -2,8 +2,9 @@
 // FooterEditor — edit footer social links, legal toggles, contact info, copyright.
 
 import React from 'react';
+import { panelInput } from '../_shared/editorStyles';
 
-const INPUT = 'w-full px-3 py-2.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-sm focus:ring-2 focus:ring-[var(--accent)] outline-none text-[var(--text-primary)] placeholder-gray-400 transition shadow-sm';
+const INPUT = panelInput;
 
 export type FooterData = {
   social: Record<string, string>;

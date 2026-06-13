@@ -8,8 +8,9 @@ import {
   Plus, Trash2, Eye, EyeOff, ImagePlus, Check, ChevronDown
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
-const INPUT = 'w-full px-4 py-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-sm focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400/80 transition-all duration-300';
+const INPUT = editorInput(EDITOR_ACCENTS.pink);
 const CARD = 'bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-6 shadow-sm';
 
 export type SocialLink = { platform: string; url: string; is_visible: boolean };

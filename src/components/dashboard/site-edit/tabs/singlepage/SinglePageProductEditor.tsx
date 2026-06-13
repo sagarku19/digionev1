@@ -3,12 +3,9 @@
 import React, { useState } from 'react';
 import { Package, Search, Plus, X, ArrowUpDown, Star, Zap, Rocket, Shield, Heart, Gift, BookOpen, Code, Globe, Layers, Lightbulb, TrendingUp, Users, CheckCircle2 } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
+import { editorInput, EDITOR_ACCENTS, FieldLabel } from '../../_shared/editorStyles';
 
-const INPUT = 'w-full px-4 py-2.5 bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none text-[var(--text-primary)] placeholder-gray-400 transition-all duration-300';
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">{children}</label>;
-}
+const INPUT = editorInput(EDITOR_ACCENTS.blue);
 
 function SectionCard({ icon: Icon, title, desc, color = 'blue', children }: { icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode }) {
   const colors: Record<string, string> = { blue: 'text-blue-500', amber: 'text-amber-500', emerald: 'text-emerald-500', violet: 'text-gray-500' };
