@@ -119,6 +119,7 @@ digionev1/
 - **Never mutate `orders`, `creator_balances`, or `transaction_ledger` from client-side code.** These must only be written via `/api/*` server route handlers.
 - **Never use `any` for database rows.** Use types from `types/database.types.ts`.
 - **Never bypass RLS.** Every query must go through Row Level Security.
+- **Keep the schema in sync with the code.** When you edit code, add a feature, or change behavior and it needs a new table/column/constraint/index/RLS policy — make that DB change too, in the same change-set. Do not work around a missing column with `as any`, JSON `metadata` stuffing, or a client-side hack. The correct order: (1) write the migration (idempotent SQL → `supabase/migrations/`, apply via the Supabase MCP since the Windows CLI is broken), (2) regenerate types (`npm run update-types`, or the MCP fallback in `.claude/rules/supabase-reference.md`), (3) then write the code against the new types. New tables in the `public` schema MUST get RLS enabled + a policy before they ship. See `docs/db/schema-reference.md` for the current schema and `docs/db/money-path.md` for the money tables.
 
 ### TypeScript
 - Strict mode always. Zero `any` without a documented reason.
