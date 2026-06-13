@@ -59,16 +59,19 @@ export async function POST(req: Request) {
     // Decrease available_balance natively by increasing pending_payout.
     const newPending = balanceData.pending_payout + amount;
 
-    const { error: deductionError } = await supabaseAdmin
+    const { data: updatedRows, error: deductionError } = await supabaseAdmin
       .from('creator_balances')
       .update({
         pending_payout: newPending,
       })
       .eq('creator_id', profileId)
-      // Optimistic concurrency check -> only update if pending_payout matches our reading
-      .eq('pending_payout', balanceData.pending_payout);
+      // Optimistic concurrency check -> only update if pending_payout still matches our reading.
+      // supabase-js returns no error on a 0-row update, so a lost update is only detectable by
+      // checking the affected rows. Exactly one row must change; otherwise it's a collision.
+      .eq('pending_payout', balanceData.pending_payout)
+      .select('id');
 
-    if (deductionError) {
+    if (deductionError || !updatedRows || updatedRows.length !== 1) {
       return NextResponse.json({ error: 'Transaction collision. Please try again.' }, { status: 409 });
     }
 
