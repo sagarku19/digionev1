@@ -14,20 +14,7 @@ import {
   IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert
 } from 'lucide-react';
 import Link from 'next/link';
-
-function formatINR(amount: number) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function formatINRCompact(amount: number) {
-  if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
-  if (amount >= 1000) return `₹${(amount / 1000).toFixed(1)}K`;
-  return formatINR(amount);
-}
+import { formatINR, formatINRCompact } from '@/lib/format';
 
 type Tab = 'history' | 'overview';
 

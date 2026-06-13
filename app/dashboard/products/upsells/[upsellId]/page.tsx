@@ -11,6 +11,7 @@ import {
   ArrowLeft, Settings, Package, Mail, Palette, Globe, Shield,
   Loader2, CheckCircle2, X, ExternalLink, Copy, Eye,
 } from 'lucide-react';
+import { formatINR } from '@/lib/format';
 
 const INPUT = 'w-full px-4 py-2.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition';
 
@@ -22,10 +23,6 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'theme', label: 'Theme', icon: Palette },
   { id: 'seo', label: 'SEO', icon: Globe },
 ];
-
-function formatINR(n: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
-}
 
 export default function UpsellEditPage() {
   const router = useRouter();

@@ -23,6 +23,7 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { formatINR } from '@/lib/format';
 
 // ─── Helpers ─────────────────────────────────────────────────
 function getGreeting() {
@@ -31,9 +32,6 @@ function getGreeting() {
   if (h < 17) return 'Good afternoon';
   return 'Good evening';
 }
-
-const formatINR = (n: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();

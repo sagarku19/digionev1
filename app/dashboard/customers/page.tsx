@@ -12,10 +12,7 @@ import {
   Users, TrendingUp, ShoppingBag,
   Download, UserCircle2, Package, Store, ArrowRight,
 } from 'lucide-react';
-
-function formatINR(n: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
-}
+import { formatINR } from '@/lib/format';
 
 function exportCSV(customers: Customer[]) {
   const header = ['Email', 'Name', 'Phone', 'Orders', 'Total Spent', 'First Order', 'Last Order'];

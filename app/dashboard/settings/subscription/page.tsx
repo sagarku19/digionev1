@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
+import { formatINR } from '@/lib/format';
 
 const PLANS = [
   {
@@ -105,10 +106,6 @@ const ACCENT_MAP: Record<Accent, {
     checkColor: 'text-[var(--text-primary)]',
   },
 };
-
-function formatINR(n: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
-}
 
 export default function SubscriptionPage() {
   const router = useRouter();

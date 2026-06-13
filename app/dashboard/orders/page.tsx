@@ -11,6 +11,7 @@ import {
   ChevronRight, X, Package, Mail, Phone, Calendar,
   Download, TrendingUp, RotateCcw, FileDown,
 } from 'lucide-react';
+import { formatINR } from '@/lib/format';
 
 function exportOrdersCSV(orders: ReturnType<typeof useOrders>['orders']) {
   const header = ['Order ID', 'Customer Name', 'Customer Email', 'Customer Phone', 'Amount', 'Status', 'Products', 'Date'];
@@ -32,10 +33,6 @@ function exportOrdersCSV(orders: ReturnType<typeof useOrders>['orders']) {
   a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-function formatINR(n: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 }
 
 function timeAgo(iso: string) {

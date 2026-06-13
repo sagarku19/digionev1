@@ -11,14 +11,11 @@ import {
   CheckCircle2, AlertCircle, Eye, Globe, Lock, Zap,
   Plus, X, Package, Tag,
 } from 'lucide-react';
+import { formatINR } from '@/lib/format';
 
 // ─── Shared constants & sub-components ───────────────────────
 
 const INPUT = 'w-full px-4 py-2.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition';
-
-function formatINR(n: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
-}
 
 const TABS = [
   { id: 'basic',     label: 'Basic Info',    icon: FileText   },

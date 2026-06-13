@@ -16,22 +16,13 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer
 } from 'recharts';
+import { formatINR, formatINRCompact } from '@/lib/format';
 
 const PERIODS = [
   { label: '7D', value: 7 },
   { label: '30D', value: 30 },
   { label: '90D', value: 90 },
 ];
-
-function formatINR(amount: number) {
-  if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
-  if (amount >= 1000) return `₹${(amount / 1000).toFixed(1)}K`;
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
-}
-
-function formatINRFull(amount: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
-}
 
 function pctChange(current: number, prev: number) {
   if (prev === 0) return current > 0 ? 100 : 0;
@@ -170,7 +161,7 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
-                {formatINR(stats.totalRevenue)}
+                {formatINRCompact(stats.totalRevenue)}
               </p>
               <div className="flex items-center gap-2">
                 <DeltaBadge current={stats.totalRevenue} prev={stats.prevRevenue} />
@@ -204,7 +195,7 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
-                {formatINR(aov)}
+                {formatINRCompact(aov)}
               </p>
               <div className="flex items-center gap-2">
                 <DeltaBadge current={aov} prev={prevAov} />
@@ -221,7 +212,7 @@ export default function AnalyticsPage() {
                 </span>
               </div>
               <p className="text-2xl font-bold text-[var(--text-primary)] mb-1">
-                {peakDay ? formatINR(peakDay.revenue) : '₹0'}
+                {peakDay ? formatINRCompact(peakDay.revenue) : '₹0'}
               </p>
               <p className="text-xs text-[var(--text-tertiary)]">{peakDay?.name ?? '—'}</p>
             </div>
@@ -268,13 +259,13 @@ export default function AnalyticsPage() {
                     />
                     <YAxis
                       tick={{ fontSize: 11, fill: 'var(--text-tertiary)', fontWeight: 500 }}
-                      tickFormatter={(v) => formatINR(v)}
+                      tickFormatter={(v) => formatINRCompact(v)}
                       axisLine={false}
                       tickLine={false}
                       width={56}
                     />
                     <RechartsTooltip
-                      content={<CustomTooltip formatter={(v: number) => formatINRFull(v)} />}
+                      content={<CustomTooltip formatter={(v: number) => formatINR(v)} />}
                     />
                     <Area
                       type="monotone"
@@ -398,7 +389,7 @@ export default function AnalyticsPage() {
                   </div>
                   {/* Revenue */}
                   <p className="text-sm font-semibold text-[var(--text-primary)] shrink-0 min-w-16 text-right">
-                    {formatINR(p.revenue)}
+                    {formatINRCompact(p.revenue)}
                   </p>
                 </div>
               );

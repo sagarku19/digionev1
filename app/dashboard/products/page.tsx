@@ -10,6 +10,7 @@ import { getUpsellPublicPath, getUpsellDisplayUrl } from '@/lib/site-urls';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { formatINR } from '@/lib/format';
 import {
   Plus, X, Package, FileText, Tag, BookOpen, Search, Edit3, Eye,
   Link2, Copy, Trash2, ExternalLink, TrendingUp, CheckCircle2,
@@ -28,10 +29,6 @@ const CATEGORIES = [
   { value: 'template', label: 'Template', icon: Tag, desc: 'Design or code templates' },
   { value: 'other', label: 'Other', icon: Package, desc: 'Custom digital product' },
 ];
-
-function formatINR(n: number) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
-}
 
 // ─── Page ────────────────────────────────────────────────────
 export default function ProductsPage() {
