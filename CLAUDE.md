@@ -58,7 +58,7 @@ Files in `.claude/rules/` are **auto-loaded by Claude Code** on every session.
 
 ## Deferred Work — `.claude/todo-later/`
 
-Items consciously punted from earlier sessions live here as `N-YYYY-MM-DD-<topic>.md`, where `N` is the order added (1 = oldest). **Not** auto-loaded — read them only when picking up that topic again or when the user asks "what's left on X."
+Items consciously punted from earlier sessions live here as `N(status)-YYYY-MM-DD-<topic>.md`, where `N` is the order added (1 = oldest) and `status` is the file's current state: **`(left)`** = open/not started, **`(half)`** = partially done, **`(done)`** = complete. Keep the status tag current — when work on a file finishes or progresses, `git mv` it to the new tag and fix references (they're inline-code paths, so a scoped find/replace works). **Not** auto-loaded — read them only when picking up that topic again or when the user asks "what's left on X."
 
 | File | What |
 |---|---|
