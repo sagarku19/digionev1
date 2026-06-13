@@ -20,6 +20,40 @@ tags: []
 | A4 | **Observability** — Sentry (client+server errors) + a real log backend (the `/api/upload` etc. `console.error` logs go nowhere). | Catch prod failures. | M |
 | A5 | **Balance reconciliation job** (`pg_cron` is installed) — periodically check `creator_balances` against `transaction_ledger` + `creator_payouts` for drift. | Balances are maintained imperatively in fulfillment; a checker catches bugs. | M |
 
+### A2 expanded — test strategy (run before go-live)
+
+Test pyramid: a wide base of fast unit tests (Vitest) + a thin top of E2E (Playwright). **Run these as the pre-production gate** — the user will execute them when the app is otherwise ready to ship.
+
+**Sequencing (dependencies matter):**
+1. **Now / no infra:** Vitest for all *pure* functions + wire `tsc`+`lint`+`vitest` into GitHub Actions CI.
+2. **After A1 (test DB / staging branch):** DB-helper integration tests + Playwright E2E. Do NOT run E2E against the live prod project — it creates junk orders/users.
+
+**Vitest (unit)** — already installed; `src/lib/server/referrals.test.ts` exists (5 tests on `computeReferralCommission`).
+
+| Bucket | Maps to | Kind |
+|---|---|---|
+| Reward calculations | `computeReferralCommission` (`src/lib/server/referrals.ts`) ✅ done | pure — easy |
+| Validation functions | `isSafeInternalPath` (`src/lib/safe-redirect.ts`) [pure], `validateCoupon` (`src/lib/server/coupons.ts`), `validateReferral` [DB] | mixed |
+| Referral logic | `validateReferral` self-referral rules | DB-touching → mock client or test DB |
+| Database helper functions | `getPlatformFeeRate`, `resolveProfileId`, `rateLimit` | DB-touching → needs test DB (A1) |
+| Utility functions | currency/price formatters, slug helpers, anything pure in `src/lib/` | pure — easy |
+
+> Rule of thumb: pure functions (no I/O) get exhaustive unit tests now. DB-touching helpers are better as integration tests once a test DB exists — mocks don't catch schema drift.
+
+**Playwright (E2E)** — needs: new dep `@playwright/test` (ask first), a running app (`npm run dev`) against a **seeded test DB**, and deterministic external services.
+
+| Flow | Verifies | Hard part |
+|---|---|---|
+| Login | email/password → session cookie → dashboard | OAuth consent screen is awkward in Playwright → test email/password, stub OAuth |
+| Signup | form → `app_metadata.role` promotion → role-gated redirect | needs email-confirmation disabled in test env |
+| Purchase flow | storefront → checkout → Cashfree → webhook → fulfillment → access granted | Cashfree is external → anchor on the **free-order path** (total=0, no Cashfree) for a deterministic test; use sandbox + webhook simulation for the paid path |
+| Withdraw flow | KYC-verified creator → payout → `status:'pending'` row + balance decrement | seed a creator with verified KYC + balance (tests the bug fixed 2026-06-14) |
+| Admin actions | `super_admin` reads across creators via `is_super_admin()` RLS | seed a `super_admin` user (`app_metadata.role`) |
+
+**CI gate:** `tsc` + `lint` + `vitest` first (fast, free). Add Playwright to CI later (slower; needs test-DB + secrets).
+
+---
+
 ## B. Schema cleanup (audit #5 item 10 / Stage 1)
 
 | # | Item | Detail |
