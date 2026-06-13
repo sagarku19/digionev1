@@ -137,23 +137,35 @@ export async function fulfillOrder(
     }
   }
 
-  // 7. Referral commission — platform-fee-funded, idempotent via status claim
-  if (creatorId && total > 0) {
-    const { data: settled } = await db
+  // 7. Referral commission — platform-fee-funded, idempotent.
+  // Funding note: the commission is drawn from the platform's fee share, so the seller's
+  // proceeds (credited in step 2) are unchanged. We intentionally do NOT decrement the
+  // seller's total_platform_fees; the platform's net = Σ(sale fees) − Σ(referral commissions),
+  // reconcilable from the two transaction_ledger rows (tx_type 'sale' vs 'referral_commission').
+  {
+    // Read the pending attribution, compute the commission, then claim+write it in ONE
+    // update so a crash can't leave a 'settled' row with a null commission_amount.
+    const { data: pendingRef } = await db
       .from('order_referrals')
-      .update({ status: 'settled' })
+      .select('referrer_creator_id, metadata')
       .eq('order_id', orderId)
       .eq('status', 'pending')
-      .select('referrer_creator_id, metadata')
       .maybeSingle();
 
-    if (settled?.referrer_creator_id) {
-      const rewardPercent = Number((settled.metadata as { reward_percent?: number } | null)?.reward_percent ?? 0);
-      const commission = computeReferralCommission(total, rewardPercent, platformFee);
-      if (commission > 0) {
-        await db.from('order_referrals').update({ commission_amount: commission }).eq('order_id', orderId);
+    if (pendingRef) {
+      const rewardPercent = Number((pendingRef.metadata as { reward_percent?: number } | null)?.reward_percent ?? 0);
+      const commission = computeReferralCommission(total, rewardPercent, platformFee); // 0 for free orders
+      const { data: claimed } = await db
+        .from('order_referrals')
+        .update({ status: 'settled', commission_amount: commission })
+        .eq('order_id', orderId)
+        .eq('status', 'pending')
+        .select('referrer_creator_id')
+        .maybeSingle();
+
+      if (claimed?.referrer_creator_id && commission > 0) {
         const { error: refCreditErr } = await db.rpc('credit_creator_balance', {
-          p_creator_id: settled.referrer_creator_id,
+          p_creator_id: claimed.referrer_creator_id,
           p_earnings_delta: commission,
           p_fees_delta: 0,
         });
@@ -161,7 +173,7 @@ export async function fulfillOrder(
 
         const refHash = crypto.createHash('sha256').update(`${orderId}:ref:${opts?.gatewayPaymentId ?? 'free'}`).digest('hex');
         const { error: refLedgerErr } = await db.from('transaction_ledger').insert({
-          creator_id: settled.referrer_creator_id,
+          creator_id: claimed.referrer_creator_id,
           order_id: orderId,
           amount: commission,
           direction: 'credit',
@@ -173,7 +185,7 @@ export async function fulfillOrder(
         if (refLedgerErr) console.error('[fulfillment] referral ledger failed for order', orderId, refLedgerErr.message);
 
         await db.from('notifications').insert({
-          recipient_creator_id: settled.referrer_creator_id,
+          recipient_creator_id: claimed.referrer_creator_id,
           title: 'Referral commission earned!',
           message: `You earned ₹${commission.toFixed(0)} from a referral`,
           type: 'sale',

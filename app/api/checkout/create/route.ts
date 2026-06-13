@@ -117,14 +117,15 @@ export async function POST(req: Request) {
     await supabase.from('order_items').insert(orderItems);
 
     if (referral) {
-      await supabase.from('order_referrals').insert({
+      // upsert on order_id (UNIQUE) so a client retry can't create two pending rows
+      await supabase.from('order_referrals').upsert({
         order_id: orderId,
         referral_code_id: referral.referralCodeId,
         referrer_creator_id: referral.referrerCreatorId,
         referred_user_id: buyerId ?? null,
         status: 'pending',
         metadata: { reward_percent: referral.rewardPercent },
-      });
+      }, { onConflict: 'order_id', ignoreDuplicates: true });
     }
 
     // ── Free product — grant access + redeem coupon via shared fulfillment ──

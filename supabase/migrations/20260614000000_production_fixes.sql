@@ -57,6 +57,9 @@ alter table creator_balances add constraint chk_creator_balances_nonneg check (t
 alter table creator_payouts drop constraint if exists chk_creator_payouts_amount_pos;
 alter table creator_payouts add constraint chk_creator_payouts_amount_pos check (amount > 0);
 create unique index if not exists uq_orders_gateway_order_id on orders(gateway_order_id) where gateway_order_id is not null;
+-- one referral attribution per order (prevents duplicate pending rows → silent skipped credit)
+alter table order_referrals drop constraint if exists uq_order_referrals_order_id;
+alter table order_referrals add constraint uq_order_referrals_order_id unique (order_id);
 
 -- ── Layer B: function search_path + drop dead function ─────────────────────
 alter function public.update_updated_at_column() set search_path = pg_catalog, public;
