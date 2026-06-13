@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createServiceClient } from '@/lib/supabase/service';
 import { validateCoupon } from '@/lib/server/coupons';
+import { validateReferral } from '@/lib/server/referrals';
 import { fulfillOrder } from '@/lib/server/fulfillment';
 import { rateLimit } from '@/lib/server/rate-limit';
 
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     }
 
     const supabase = createServiceClient();
-    const { items, buyerId, couponCode, contact, upsellPageId } = await req.json();
+    const { items, buyerId, couponCode, contact, upsellPageId, referralCode } = await req.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Empty cart' }, { status: 400 });
@@ -62,6 +63,15 @@ export async function POST(req: Request) {
       couponId = couponResult.coupon.id;
     }
 
+    // ── Referral attribution (pending; settled at fulfillment) ──
+    let referral: Awaited<ReturnType<typeof validateReferral>> = null;
+    if (referralCode && creatorProfileId) {
+      referral = await validateReferral(supabase, String(referralCode), {
+        buyerUserId: buyerId ?? null,
+        sellingCreatorId: creatorProfileId,
+      });
+    }
+
     const total = Math.max(0, subtotal - discount);
 
     // ── Resolve origin site (first product's site) ──
@@ -105,6 +115,17 @@ export async function POST(req: Request) {
       origin_site_id: originSiteId,
     }));
     await supabase.from('order_items').insert(orderItems);
+
+    if (referral) {
+      await supabase.from('order_referrals').insert({
+        order_id: orderId,
+        referral_code_id: referral.referralCodeId,
+        referrer_creator_id: referral.referrerCreatorId,
+        referred_user_id: buyerId ?? null,
+        status: 'pending',
+        metadata: { reward_percent: referral.rewardPercent },
+      });
+    }
 
     // ── Free product — grant access + redeem coupon via shared fulfillment ──
     if (total === 0) {
