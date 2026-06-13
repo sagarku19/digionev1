@@ -3,6 +3,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import PreviewBridge from '@/components/storefront/PreviewBridge';
+import { safeCssColor } from '@/lib/safe-css';
 
 export default async function LinkInBioLayout({
   children,
@@ -39,18 +40,18 @@ export default async function LinkInBioLayout({
 
   const themeCSS = `
     :root {
-      --creator-primary: ${palette.primary};
-      --creator-secondary: ${palette.secondary};
-      --creator-accent: ${palette.accent};
-      --creator-surface: ${palette.surface};
-      --creator-text: ${palette.text};
-      --creator-text-muted: ${palette.muted};
-      --creator-bg: ${palette.background || '#FFFFFF'};
+      --creator-primary: ${safeCssColor(palette.primary, '#EC4899')};
+      --creator-secondary: ${safeCssColor(palette.secondary, '#8B5CF6')};
+      --creator-accent: ${safeCssColor(palette.accent, '#F59E0B')};
+      --creator-surface: ${safeCssColor(palette.surface, '#FFFFFF')};
+      --creator-text: ${safeCssColor(palette.text, '#0F172A')};
+      --creator-text-muted: ${safeCssColor(palette.muted, '#64748B')};
+      --creator-bg: ${safeCssColor(palette.background, '#FFFFFF')};
     }
   `;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: palette.background || '#FFFFFF' }}>
+    <div className="min-h-screen" style={{ backgroundColor: safeCssColor(palette.background, '#FFFFFF') }}>
       <style dangerouslySetInnerHTML={{ __html: themeCSS }} />
       <PreviewBridge />
       {children}

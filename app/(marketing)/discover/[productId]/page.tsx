@@ -8,13 +8,14 @@ import {
   ShoppingCart, Share2, Heart, Star, User,
   Clock, Shield, ChevronRight,
 } from 'lucide-react';
-import { useDiscoverProduct } from '@/hooks/useDiscoverProduct';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase/client';
 
 interface Creator {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
-  email: string | null;
+  email?: string | null;
 }
 
 interface RelatedProduct {
@@ -47,7 +48,55 @@ function formatPrice(price: number) {
 
 export default function DiscoverProductPage() {
   const { productId } = useParams<{ productId: string }>();
-  const { data, isLoading: loading, isError } = useDiscoverProduct(productId);
+  const { data, isLoading: loading, isError } = useQuery({
+    queryKey: ['discover', 'product', productId ?? null],
+    enabled: !!productId,
+    queryFn: async () => {
+      const { data: product, error } = await supabase
+        .from('products')
+        .select(`
+          id, name, description, price, category, thumbnail_url, images,
+          content, creator_id, is_published, is_on_discover_page,
+          post_purchase_instructions, product_link, created_at,
+          profiles!fk_products_creator ( id, full_name, avatar_url, email )
+        `)
+        .eq('id', productId!)
+        .eq('is_published', true)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!product) throw new Error('Product not found');
+
+      const { data: related } = await supabase
+        .from('products')
+        .select(`
+          id, name, price, category, thumbnail_url, creator_id,
+          profiles!fk_products_creator ( id, full_name, avatar_url )
+        `)
+        .eq('is_published', true)
+        .eq('is_on_discover_page', true)
+        .is('deleted_at', null)
+        .neq('id', productId!)
+        .or(`category.eq.${product.category},creator_id.eq.${product.creator_id}`)
+        .limit(8);
+
+      const { data: creatorProducts } = await supabase
+        .from('products')
+        .select('id, name, price, category, thumbnail_url, creator_id')
+        .eq('creator_id', product.creator_id)
+        .eq('is_published', true)
+        .is('deleted_at', null)
+        .neq('id', productId!)
+        .limit(4);
+
+      return {
+        product,
+        related: related ?? [],
+        creatorProducts: creatorProducts ?? [],
+      };
+    },
+  });
   const product = data?.product ?? null;
   const related = data?.related ?? [];
   const creatorProducts = data?.creatorProducts ?? [];

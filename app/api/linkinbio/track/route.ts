@@ -6,9 +6,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { createHash } from 'crypto';
+import { rateLimit } from '@/lib/server/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await rateLimit(req, 'linkinbio-track', { max: 60, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await req.json() as {
       site_id?: string;
       link_id?: string;
@@ -41,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (link_id) {
       const thirtySecondsAgo = new Date(Date.now() - 30_000).toISOString();
       const { data: recent } = await db
-        .from('linkinbio_analytics' as any)
+        .from('linkinbio_analytics')
         .select('id')
         .eq('site_id', site_id)
         .eq('link_id', link_id)
@@ -55,21 +60,18 @@ export async function POST(req: NextRequest) {
     }
 
     // Insert analytics event
-    await db.from('linkinbio_analytics' as any).insert({
+    await db.from('linkinbio_analytics').insert({
       site_id,
       link_id: link_id || null,
       event_type,
       referrer_url: referrer,
       user_agent: userAgent,
       ip_hash: ipHash,
-    } as any);
+    });
 
     // Increment click_count on link if applicable
     if (link_id && (event_type === 'link_click' || event_type === 'product_click')) {
-      await (db as any).rpc('increment_link_click_count', { p_link_id: link_id }).maybeSingle();
-
-      // Fallback if RPC doesn't exist: direct update
-      // await db.from('linkinbio_items').update({ click_count: db.raw('click_count + 1') }).eq('id', link_id);
+      await db.rpc('increment_link_click_count', { p_link_id: link_id });
     }
 
     return NextResponse.json({ ok: true });

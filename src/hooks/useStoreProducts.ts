@@ -6,7 +6,7 @@ export function useStoreProducts(creatorId: string) {
   const supabase = createClient();
 
   return useQuery({
-    queryKey: ['store-products', creatorId],
+    queryKey: ['products', 'store', creatorId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')

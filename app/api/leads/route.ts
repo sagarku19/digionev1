@@ -3,9 +3,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { rateLimit } from '@/lib/server/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await rateLimit(req, 'leads', { max: 5, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const supabase = createServiceClient();
     const body = await req.json() as {
       formId?: string;

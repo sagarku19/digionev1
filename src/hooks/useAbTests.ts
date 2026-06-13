@@ -2,21 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export function useAbTests() {
   const { data: tests = [], isLoading, error } = useQuery({
-    queryKey: ['ab-tests'],
+    queryKey: ['ab-tests', 'list'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
+      const creatorId = await getCreatorProfileId();
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('ab_tests')
-        .select(`
-          *,
-          products(title)
-        `)
-        .eq('creator_id', user.id)
+        .select('*, products(name)')
+        .eq('creator_id', creatorId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

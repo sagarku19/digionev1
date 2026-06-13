@@ -3,6 +3,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import PreviewBridge from '@/components/storefront/PreviewBridge';
+import { safeCssColor } from '@/lib/safe-css';
 
 export default async function SinglePageLayout({
   children,
@@ -48,18 +49,18 @@ export default async function SinglePageLayout({
 
   const themeCSS = `
     :root {
-      --creator-primary: ${palette.primary};
-      --creator-secondary: ${palette.secondary || palette.primary};
-      --creator-accent: ${palette.accent || palette.primary};
-      --creator-surface: ${palette.surface || '#FFFFFF'};
-      --creator-text: ${palette.text || '#0F172A'};
-      --creator-text-muted: ${palette.muted || '#64748B'};
-      --creator-bg: ${palette.background || '#FFFFFF'};
+      --creator-primary: ${safeCssColor(palette.primary, '#EC4899')};
+      --creator-secondary: ${safeCssColor(palette.secondary, '#8B5CF6')};
+      --creator-accent: ${safeCssColor(palette.accent, '#F59E0B')};
+      --creator-surface: ${safeCssColor(palette.surface, '#FFFFFF')};
+      --creator-text: ${safeCssColor(palette.text, '#0F172A')};
+      --creator-text-muted: ${safeCssColor(palette.muted, '#64748B')};
+      --creator-bg: ${safeCssColor(palette.background, '#FFFFFF')};
     }
   `;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: palette.background || '#FFFFFF' }}>
+    <div className="min-h-screen" style={{ backgroundColor: safeCssColor(palette.background, '#FFFFFF') }}>
       <style dangerouslySetInnerHTML={{ __html: themeCSS }} />
       <PreviewBridge />
       {children}

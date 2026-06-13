@@ -4,7 +4,7 @@
 //   Note: `file_url` is selected for backwards compatibility with the existing page UI
 //   but the generated `products` row type doesn't list it; treat the joined product as
 //   loose to avoid forcing a `(supabase as any)` cast at the query builder level.
-// Query keys: ['library']
+// Query keys: ['library','list']
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
@@ -37,7 +37,7 @@ type RawItem = {
 
 export function useLibrary() {
   return useQuery({
-    queryKey: ['library'] as const,
+    queryKey: ['library', 'list'] as const,
     queryFn: async (): Promise<PurchasedProduct[]> => {
       try {
         const { data: { user } } = await supabase.auth.getUser();

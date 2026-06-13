@@ -14,7 +14,7 @@ export function useAffiliates() {
   const queryClient = useQueryClient();
 
   const { data: affiliates = [], isLoading, error } = useQuery({
-    queryKey: ['affiliates'],
+    queryKey: ['affiliates', 'list'],
     queryFn: async () => {
       const profileId = await getCreatorProfileId();
       const { data, error } = await supabase

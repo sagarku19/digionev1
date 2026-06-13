@@ -20,7 +20,7 @@ const EMPTY = { totalRevenue: 0, totalSales: 0, orders: [] as any[], topProducts
 
 export function useAnalytics(dateRange: { start: string, end: string }) {
   const { data: stats, isLoading, error } = useQuery({
-    queryKey: ['analytics', dateRange.start, dateRange.end],
+    queryKey: ['analytics', 'range', dateRange.start, dateRange.end],
     staleTime: 5 * 60 * 1000, // 5 min — don't refetch on every navigation
     queryFn: async () => {
       const profileId = await getCreatorProfileId();

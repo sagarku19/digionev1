@@ -8,6 +8,8 @@ import {
   GraduationCap, Music, Code2, Camera, Briefcase,
 } from 'lucide-react';
 import { Rails, Kicker } from '@/src/components/marketing/Ledger';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase/client';
 
 interface Creator {
   id: string;
@@ -52,33 +54,42 @@ function formatPrice(price: number) {
 }
 
 export default function DiscoverPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'price_low' | 'price_high'>('latest');
   const [showFilters, setShowFilters] = useState(false);
 
+  // debounce the search input (UI logic, not data fetching)
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (search) params.set('q', search);
-        if (activeCategory !== 'all') params.set('category', activeCategory);
-        params.set('limit', '100');
-        const res = await fetch(`/api/discover?${params}`);
-        const data = await res.json();
-        setProducts(data.products || []);
-      } catch {
-        setProducts([]);
-      }
-      setLoading(false);
-    };
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
-    const debounce = setTimeout(fetchProducts, search ? 300 : 0);
-    return () => clearTimeout(debounce);
-  }, [search, activeCategory]);
+  const { data: products = [], isLoading: loading } = useQuery({
+    queryKey: ['discover', 'list', debouncedSearch, activeCategory],
+    queryFn: async (): Promise<Product[]> => {
+      let query = supabase
+        .from('products')
+        .select(`
+          id, name, description, price, category, thumbnail_url, images, created_at,
+          creator_id,
+          profiles!fk_products_creator ( id, full_name, avatar_url )
+        `)
+        .eq('is_published', true)
+        .eq('is_on_discover_page', true)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (debouncedSearch) query = query.ilike('name', `%${debouncedSearch}%`);
+      if (activeCategory !== 'all') query = query.eq('category', activeCategory);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []) as Product[];
+    },
+  });
 
   const sortedProducts = useMemo(() => {
     const sorted = [...products];

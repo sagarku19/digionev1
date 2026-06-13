@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import StorefrontHeader from '@/components/storefront/StorefrontHeader';
 import StorefrontFooter from '@/components/storefront/StorefrontFooter';
 import PreviewBridge from '@/components/storefront/PreviewBridge';
+import { safeCssColor } from '@/lib/safe-css';
 
 export default async function MainSiteLayout({
   children,
@@ -38,13 +39,13 @@ export default async function MainSiteLayout({
 
   const themeCSS = `
     :root {
-      --creator-primary: ${palette.primary};
-      --creator-secondary: ${palette.secondary};
-      --creator-accent: ${palette.accent};
-      --creator-surface: ${palette.surface};
-      --creator-text: ${palette.text};
-      --creator-text-muted: ${palette.muted};
-      --creator-bg: ${palette.background || '#FFFFFF'};
+      --creator-primary: ${safeCssColor(palette.primary, '#6366F1')};
+      --creator-secondary: ${safeCssColor(palette.secondary, '#8B5CF6')};
+      --creator-accent: ${safeCssColor(palette.accent, '#EC4899')};
+      --creator-surface: ${safeCssColor(palette.surface, '#FFFFFF')};
+      --creator-text: ${safeCssColor(palette.text, '#0F172A')};
+      --creator-text-muted: ${safeCssColor(palette.muted, '#64748B')};
+      --creator-bg: ${safeCssColor(palette.background, '#FFFFFF')};
     }
   `;
 

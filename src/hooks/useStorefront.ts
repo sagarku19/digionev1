@@ -6,16 +6,15 @@ export function useStorefront(slug: string) {
   const supabase = createClient();
 
   return useQuery({
-    queryKey: ['storefront', slug],
+    queryKey: ['storefront', 'detail', slug],
     queryFn: async () => {
-      // Find the site by slug
-      const { data: site, error: siteErr } = await (supabase as any)
+      const { data: site, error: siteErr } = await supabase
         .from('sites')
         .select('creator_id')
         .eq('slug', slug)
         .single();
-        
-      if (siteErr || !site) throw new Error("Storefront not found");
+
+      if (siteErr || !site) throw new Error('Storefront not found');
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -23,14 +22,8 @@ export function useStorefront(slug: string) {
         .eq('id', site.creator_id)
         .single();
 
-      const { data: config } = await (supabase as any)
-        .from('site_config')
-        .select('*')
-        .eq('creator_id', site.creator_id)
-        .single();
-
-      return { profile, config };
+      return { profile };
     },
-    staleTime: 1000 * 60 * 5 // Cache public store config for 5 mins
+    staleTime: 1000 * 60 * 5, // public store data — 5 min is fine
   });
 }

@@ -1,14 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/service';
 import { notFound } from 'next/navigation';
 import { Receipt } from 'lucide-react';
 import { PrintButton } from './PrintButton';
 
 export const revalidate = 0;
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY! // Bypass RLS to fetch secure order details
-);
 
 export default async function ReceiptPage({
   searchParams,
@@ -18,6 +13,8 @@ export default async function ReceiptPage({
   const { order_id, sub } = await searchParams;
 
   if (!order_id) return notFound();
+
+  const supabase = createServiceClient();
 
   let details = {
     date: '',
@@ -55,7 +52,7 @@ export default async function ReceiptPage({
     }
 
     details = {
-      date: new Date(submission.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+      date: new Date(submission.created_at ?? Date.now()).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
       amount: submission.amount,
       customerName: submission.customer_name || 'Customer',
       customerEmail: submission.customer_email || '',

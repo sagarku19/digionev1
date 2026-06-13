@@ -4,6 +4,8 @@ tags: []
 
 ---
 
+> **2026-06-13 — Production-readiness change-set landed.** Stages completed from this roadmap: Stage 1 (schema structure — missing tables `linkinbio_analytics`, `ab_tests`, `rate_limits`; money integrity constraints; UNIQUE `record_hash`); Stage 2 (code ↔ schema reconciliation — payout identity fix, dead-table hooks removed/repointed, `useSiteConfig`/`usePayoutRequests`/`useDiscoverProduct` deleted); Stage 3 (RLS rollout — RLS applied live to all public tables); Stage 4 (security hardening — `credit_creator_balance`/`check_rate_limit` RPCs, function hardening, rate limiting on all public routes, constant-time HMAC, safe-redirect + safe-css guards, role promotion to `app_metadata`); Stage 5 (performance — index pass completed); Stage 6 (migration history backfill). Stage 7 (nice-to-have) remains open. See individual task entries (Tasks 1–24) for specifics.
+
 # DigiOne DB Audit — Consolidated Roadmap
 
 **Captured:** 2026-06-03

@@ -10,7 +10,7 @@ export function useEarnings() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['creator-earnings'],
+    queryKey: ['earnings', 'summary'],
     queryFn: async () => {
       try {
         const profileId = await getCreatorProfileId();
@@ -53,7 +53,7 @@ export function useEarnings() {
         throw err;
       }
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['creator-earnings'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['earnings', 'summary'] }),
   });
 
   return {

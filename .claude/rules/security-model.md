@@ -30,27 +30,31 @@ How auth, authorization, and money integrity work in DigiOne. Read this before t
 
 ## Auth flow
 
-1. User signs up → Supabase Auth sends confirm email.
-2. User clicks the email link → `GET /api/auth/callback?code=...` exchanges code for session, sets the cookie, redirects to `/dashboard` (or `/login` on failure).
+1. User signs up → Supabase Auth sends confirm email. Signup form submits `user_metadata.role` (either `'creator'` or `'buyer'`) as the requested role.
+2. User clicks the email link → `GET /api/auth/callback?code=...` exchanges code for session, promotes the signup-requested `user_metadata.role` into `app_metadata.role` via `auth.admin.updateUserById` + `refreshSession()`, then redirects to `?next=` (safe-redirect validated by `src/lib/safe-redirect.ts`) or `/dashboard` by default. On failure → `/login?error=...`.
 3. Every request hits `proxy.ts` (Next.js middleware), which:
+   - Uses exact host matching (not substring) for custom-domain detection.
    - Refreshes the session cookie.
-   - Reads `user.user_metadata.role` from the encrypted JWT (no DB hit).
-   - Redirects unauthenticated `/dashboard/*` to `/login?returnUrl=...`.
+   - Reads `user.app_metadata.role` from the encrypted JWT (no DB hit).
+   - Redirects unauthenticated `/dashboard/*` to `/login?returnUrl=...` (`returnUrl` is also safe-redirect validated).
    - Redirects non-creator roles trying to access `/dashboard/*` to `/account/library`.
    - Redirects unauthenticated `/account/*` to `/login`.
-4. Inside Route Handlers, use `createClient()` from `lib/supabase/server.ts` and call `supabase.auth.getUser()` (not `getSession()` — see `.claude/rules/anti-patterns.md` and recent commit `329b528`).
+4. Inside Route Handlers, use `createClient()` from `lib/supabase/server.ts` and call `supabase.auth.getUser()` (not `getSession()` — see `.claude/rules/anti-patterns.md`).
 
-The middleware in `proxy.ts` short-circuits on three branches before calling `getUser()`:
+The middleware in `proxy.ts` runs a four-step fast-path before calling `getUser()`:
 
-1. Custom-domain rewrite happens first — no Supabase client created.
-2. Unguarded paths (`/`, `/discover`, storefronts, marketing) return `NextResponse.next()` without touching Supabase.
-3. Even on guarded paths (`/dashboard`, `/account`), `getUser()` only runs when an `sb-*` auth cookie is present. Anonymous hits to `/dashboard` skip the network call and fall through to the redirect.
+1. **Exact host match** for custom-domain rewrite — no Supabase client created.
+2. **Unguarded paths** (`/`, `/discover`, storefronts, marketing) return `NextResponse.next()` without touching Supabase.
+3. **Guarded paths** (`/dashboard`, `/account`) check for an `sb-` cookie first — no cookie → redirect immediately, no network call.
+4. **`getUser()`** runs only when an `sb-` cookie is present on a guarded path.
 
 `/api/*` routes are excluded from the middleware matcher entirely — they do their own `getUser()` and return 401 inline.
 
+**Dev-only edge case:** with email confirmations disabled locally, a fresh signup has no `app_metadata.role` until the first confirmed or OAuth login (the callback promotion step doesn't run). Users may be redirected to `/account/library` on first `/dashboard` access until they confirm or re-login.
+
 ## Roles
 
-Stored in `auth.users.user_metadata.role`. Three values:
+Stored in **`auth.users.app_metadata.role`** (server-controlled — cannot be spoofed by the client). Three values:
 
 | Role | Access |
 |---|---|
@@ -58,7 +62,7 @@ Stored in `auth.users.user_metadata.role`. Three values:
 | `creator` | All of buyer + `/dashboard/*` |
 | `super_admin` | All of creator + admin-gated tables (RLS) |
 
-Role is read from the JWT in `proxy.ts` for the route guard, and from the DB for anything sensitive.
+`proxy.ts` reads **only** `app_metadata.role` from the verified JWT — it no longer reads `user_metadata.role`. The signup form no longer uses `'user'` as the buyer value; it sends `'buyer'`. `/api/auth/callback` promotes the signup-requested `user_metadata.role` into `app_metadata` so it is server-controlled from that point on. For anything sensitive, re-read from the DB rather than trusting the JWT metadata.
 
 ## RLS — what's protected
 
@@ -86,32 +90,34 @@ Tables you should not touch without understanding their RLS:
 
 These exist because money tables cannot be rebuilt from logs.
 
-1. **Server-side price verification.** Never trust `price`, `quantity`, or `total` from the client. `/api/checkout/create` re-fetches every product's `price` from the DB before calling Cashfree. Reference: `app/api/checkout/create/route.ts:24-49`.
-2. **Cashfree webhook is the single source of truth for "paid".** No code path other than `/api/webhook/cashfree` may flip an order to `completed` or credit a creator balance, except: a free order (`total === 0`) which is completed inline at create time. Reference: `app/api/checkout/create/route.ts:114-122`.
-3. **Webhook signature verification.** `/api/webhook/cashfree` MUST compute `HMAC-SHA256(rawBody, CASHFREE_CLIENT_SECRET)` and compare base64 against the `x-webhook-signature` header before parsing the body. Reject with 401 on mismatch. Reference: `app/api/webhook/cashfree/route.ts:12-29`.
-4. **Idempotency.** Webhook handler must skip orders already in `completed` or `refunded`. Cashfree retries on non-2xx, so any failure path must still return 2xx if processing has already happened. Reference: `app/api/webhook/cashfree/route.ts:52-55`.
-5. **Optimistic concurrency on balance writes.** Payout request decrements available balance via a conditional update keyed on the read value of `pending_payout`. Collisions return 409. Reference: `app/api/payouts/request/route.ts:58-69`.
-6. **KYC gate before payout.** No payout request is recorded until `creator_kyc.status === 'verified'`. Reference: `app/api/payouts/request/route.ts:27-35`.
-7. **Platform fee is 10%** — currently hardcoded in `app/api/webhook/cashfree/route.ts:75`. Lift to config before adding a second tier.
-8. **Ledger record hash.** Every `transaction_ledger` row carries a `record_hash = sha256(order_id + timestamp)` for tamper-evidence. Don't skip this column.
+1. **Server-side price verification.** Never trust `price`, `quantity`, or `total` from the client. `/api/checkout/create` re-fetches every product's `price` from the DB before calling Cashfree. Reference: `app/api/checkout/create/route.ts`.
+2. **Single fulfillment path.** All order-completion side effects (balance credit, ledger, notifications, access grants, coupon redemption) run through `src/lib/server/fulfillment.ts` (`fulfillOrder` for product orders, `fulfillPaymentLinkSubmission` for `pl_` orders). The webhook and `/payment/status` both call into this module — no other code path may flip an order to `completed` or credit a creator balance, except free orders (`total === 0`) which call `fulfillOrder` directly from `/api/checkout/create`.
+3. **Webhook signature verification.** `/api/webhook/cashfree` MUST compute `HMAC-SHA256(rawBody, CASHFREE_CLIENT_SECRET)`, base64-encode, and compare with `crypto.timingSafeEqual` against the `x-webhook-signature` header before parsing the body. Reject with 401 on mismatch. Reference: `app/api/webhook/cashfree/route.ts`.
+4. **Idempotency via atomic claim.** `fulfillOrder` uses `UPDATE orders SET status='completed' WHERE id=? AND status='pending'`. Zero rows updated = already processed. Cashfree retries on non-2xx, so any failure path must still return 2xx if processing has already happened.
+5. **Balance writes via RPC.** `creator_balances` is updated via the `credit_creator_balance` Postgres RPC (no read-modify-write race). Platform fee rate comes from `getPlatformFeeRate()` in `src/lib/server/platform-fee.ts` (returns 0.10 today; single extension point for future tiers — no longer hardcoded in the webhook).
+6. **Optimistic concurrency on payout.** Payout request decrements available balance via a conditional update keyed on the read value of `pending_payout`. Collisions return 409. Reference: `app/api/payouts/request/route.ts`.
+7. **KYC gate before payout.** No payout request is recorded until `creator_kyc.status === 'verified'`. Reference: `app/api/payouts/request/route.ts`.
+8. **Deterministic UNIQUE ledger record hash.** Every `transaction_ledger` row carries `record_hash = sha256(orderId + ':' + cf_payment_id)` (`:free` for free orders; `pl:submissionId:...` for payment-link orders). The column has a UNIQUE constraint — a duplicate hash is rejected by the DB, making replays replay-safe. Don't skip this column.
+9. **`user_product_access` grants.** On fulfillment, logged-in buyers receive `user_product_access` rows (one per product in the order). UNIQUE on `(order_id, product_id)` — idempotent.
 
 ## Public endpoints — abuse surface
 
-Endpoints with no auth that write to the DB. These need rate limits in front of them (currently none at the platform level — only `/api/linkinbio/track` self-limits).
+Endpoints with no auth that write to the DB. Rate limits are backed by the Postgres `rate_limits` table + `check_rate_limit` RPC via `src/lib/server/rate-limit.ts` (fail-open — a DB error does not block the request).
 
-| Endpoint | Writes | Current mitigation | Gap |
+| Endpoint | Writes | Rate limit | Remaining gap |
 |---|---|---|---|
-| `POST /api/checkout/create` | `orders`, `order_items` | Server-side price verification, Cashfree as money gate | Order rows accumulate on abandoned carts. No per-IP rate limit. |
-| `POST /api/checkout/payment-link` | `payment_requests`, `payment_submissions` | Site must exist, fixed-amount enforced | Auto-creates `payment_requests` for unknown sites — wide. |
-| `POST /api/leads` | `lead_form` | Form must belong to site, email format check | No rate limit. Form-fill spam → DB growth. |
-| `POST /api/linkinbio/track` | `linkinbio_analytics` | 30s per-IP+link dedupe via hashed IP | Dedupe only at insert time. No global cap. |
-| `POST /api/upload` | Supabase Storage (signed URL) | None | Anyone can request signed upload URLs for the `products` bucket. Should require an authenticated session. |
-| `POST /api/coupons/validate` | (read only) | No auth, anyone can probe codes | Enumeration risk for creator coupon codes. |
+| `POST /api/checkout/create` | `orders`, `order_items` | 10/min/IP | Order rows still accumulate on abandoned carts; no reconciliation job yet. |
+| `POST /api/checkout/payment-link` | `payment_submissions` | 10/min/IP | Auto-create hole closed — 404 unless site exists, active, and `site_type='payment'`. |
+| `POST /api/leads` | `lead_form` | 5/min/IP | Form must belong to site, email format checked. |
+| `POST /api/linkinbio/track` | `linkinbio_analytics` | 60/min/IP (fail-open) + 30s per-IP+link dedupe | Tracking must never block UX — 429 is never returned. |
+| `POST /api/upload` | Supabase Storage (signed URL) | Requires cookie session (auth check) | Still outstanding: per-creator upload rate limit; resumable uploads. |
+| `POST /api/coupons/validate` | (read only) | 10/min/IP | Enumeration risk reduced but not eliminated. |
 
 ## Things that look risky but aren't
 
-- **`SUPABASE_SERVICE_KEY` in `app/payment/{status,receipt}/page.tsx`** — these are server components (no `'use client'`), so the key never reaches the browser. Cleanup is consistency (use `createServiceClient()`), not security.
-- **`session.user.user_metadata.role` in `proxy.ts`** — Supabase signs the JWT with its server secret. The metadata is read from the verified JWT, not from the cookie value directly. Spoofing requires forging the JWT.
+- **`app_metadata.role` in `proxy.ts`** — Supabase signs the JWT with its server secret. The metadata is read from the verified JWT. `app_metadata` is server-controlled (unlike `user_metadata` which the client can write). Spoofing requires forging the JWT.
+- **`/payment/status` calling Cashfree** — it checks DB status first and only calls Cashfree when the order is still `pending`. When Cashfree confirms, it calls `fulfillOrder` (same path as the webhook). This is intentional: handles the race where the user lands on the status page before the webhook arrives.
+- **`app/payment/{status,receipt}/page.tsx` now use `createServiceClient()`** — these are server components. The service key never reaches the browser.
 
 ## Reporting a vulnerability
 

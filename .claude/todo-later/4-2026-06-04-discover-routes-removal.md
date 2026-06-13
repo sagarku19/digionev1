@@ -8,6 +8,8 @@ tags:
 
 ---
 
+> **DONE 2026-06-13.** Both `/api/discover` and `/api/discover/[productId]` routes deleted. `useDiscoverProduct` hook deleted. The `/discover` pages stayed as Client Components querying Supabase directly via the browser client (not Server Components) — same security and cost outcome since public RLS allows anon reads.
+
 # `/api/discover*` Removal / Inlining
 
 Captured 2026-06-04 after auditing whether the public discover routes earn their keep. **Verdict: they don't.** Deferred — not blocking, no security bug, but every `/discover` page view pays an unnecessary HTTP hop and an over-privileged service-role query.

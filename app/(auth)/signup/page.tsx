@@ -34,7 +34,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [role, setRole] = useState<'creator' | 'user'>('creator');
+  const [role, setRole] = useState<'creator' | 'buyer'>('creator');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -120,7 +120,7 @@ export default function SignupPage() {
 
       {/* Role toggle */}
       <div className="grid grid-cols-2 gap-2 mb-3">
-        {([['creator', 'Creator', Store, 'Sell / Buy products'], ['user', 'Buyer', ShoppingBag, 'Buy products']] as const).map(([val, label, Icon, sub]) => (
+        {([['creator', 'Creator', Store, 'Sell / Buy products'], ['buyer', 'Buyer', ShoppingBag, 'Buy products']] as const).map(([val, label, Icon, sub]) => (
           <button
             key={val}
             type="button"

@@ -2,6 +2,7 @@
 // for any site by its ID. Used by all storefront layouts.
 
 import { createClient } from '@/lib/supabase/server';
+import { safeCssColor } from '@/lib/safe-css';
 
 export async function getStorefrontTheme(siteId: string) {
   const supabase = await createClient();
@@ -12,20 +13,18 @@ export async function getStorefrontTheme(siteId: string) {
     supabase.from('site_main').select('*').eq('site_id', siteId).single(),
   ]);
 
-  const palette = (tokens?.color_palette as any) || {
-    primary: '#6366F1', secondary: '#8B5CF6', accent: '#EC4899',
-    surface: '#FFFFFF', text: '#0F172A', muted: '#64748B', background: '#FFFFFF',
-  };
+  const palette: Record<string, unknown> =
+    (tokens?.color_palette as Record<string, unknown> | null) ?? {};
 
   const themeCSS = `
     :root {
-      --creator-primary: ${palette.primary};
-      --creator-secondary: ${palette.secondary};
-      --creator-accent: ${palette.accent};
-      --creator-surface: ${palette.surface};
-      --creator-text: ${palette.text};
-      --creator-text-muted: ${palette.muted};
-      --creator-bg: ${palette.background || '#FFFFFF'};
+      --creator-primary: ${safeCssColor(palette.primary, '#6366F1')};
+      --creator-secondary: ${safeCssColor(palette.secondary, '#8B5CF6')};
+      --creator-accent: ${safeCssColor(palette.accent, '#EC4899')};
+      --creator-surface: ${safeCssColor(palette.surface, '#FFFFFF')};
+      --creator-text: ${safeCssColor(palette.text, '#0F172A')};
+      --creator-text-muted: ${safeCssColor(palette.muted, '#64748B')};
+      --creator-bg: ${safeCssColor(palette.background, '#FFFFFF')};
     }
   `;
 

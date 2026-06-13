@@ -4,7 +4,8 @@
 //   ?order_id=<uuid|gateway_id>         → product checkout
 //   ?order_id=<gateway_id>&sub=<uuid>   → payment link submission
 
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/service';
+import { fulfillOrder, fulfillPaymentLinkSubmission } from '@/lib/server/fulfillment';
 import {
   CheckCircle2, XCircle, Clock, Download, RotateCcw,
   Home, ExternalLink, Package, ArrowRight, ShieldCheck,
@@ -12,11 +13,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { CartClearer } from './CartClearer';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -81,6 +77,8 @@ export default async function PaymentStatusPage({
     );
   }
 
+  const supabase = createServiceClient();
+
   let status: 'completed' | 'failed' | 'pending' = 'pending';
   let amount = 0;
   let customerName = 'Customer';
@@ -99,13 +97,18 @@ export default async function PaymentStatusPage({
       .single();
 
     if (submission) {
-      const cfStatus = await getCashfreeStatus(submission.gateway_order_id || order_id);
-      status = cfToDbStatus(cfStatus);
-
-      if (status !== 'pending') {
-        await supabase.from('payment_submissions')
-          .update({ payment_status: status })
-          .eq('id', sub);
+      if (submission.payment_status === 'completed') {
+        status = 'completed';
+      } else if (submission.payment_status === 'failed' || submission.payment_status === 'refunded') {
+        status = 'failed';
+      } else {
+        // Still pending in our DB — reconcile against Cashfree (finding #27)
+        const cfStatus = await getCashfreeStatus(submission.gateway_order_id || order_id);
+        status = cfToDbStatus(cfStatus);
+        if (status === 'completed') {
+          await fulfillPaymentLinkSubmission(submission.id);
+        }
+        // 'failed' is display-only here; the webhook owns failure transitions
       }
 
       amount = submission.amount ?? 0;
@@ -122,7 +125,7 @@ export default async function PaymentStatusPage({
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(order_id);
     const col = isUUID ? 'id' : 'gateway_order_id';
 
-    const { data: order } = await (supabase
+    const { data: order } = await supabase
       .from('orders')
       .select(`
         *,
@@ -130,27 +133,25 @@ export default async function PaymentStatusPage({
           price_at_purchase,
           products(name, thumbnail_url, product_link, post_purchase_url, post_purchase_instructions)
         )
-      `) as any)
+      `)
       .eq(col, order_id)
       .single();
 
     if (order) {
       internalOrderId = order.id;
-      const cfOrderId = order.gateway_order_id || order_id;
-      const cfStatus = await getCashfreeStatus(cfOrderId);
-      status = cfToDbStatus(cfStatus);
 
-      if (status !== 'pending' && order.status === 'pending') {
-        const syncUpdate: Record<string, any> = { status };
-        if (status === 'completed') syncUpdate.payment_verified_at = new Date().toISOString();
-        let { error: syncErr } = await (supabase.from('orders') as any).update(syncUpdate).eq('id', order.id);
-        if (syncErr?.message?.includes('payment_verified_at')) {
-          await (supabase.from('orders') as any).update({ status }).eq('id', order.id);
-        }
-      } else if (order.status === 'completed') {
+      if (order.status === 'completed') {
         status = 'completed';
-      } else if (order.status === 'failed') {
+      } else if (order.status === 'failed' || order.status === 'refunded') {
         status = 'failed';
+      } else {
+        // Still pending in our DB — reconcile against Cashfree (finding #27)
+        const cfStatus = await getCashfreeStatus(order.gateway_order_id || order_id);
+        status = cfToDbStatus(cfStatus);
+        if (status === 'completed') {
+          await fulfillOrder(order.id); // shared claim — no raw writes here (finding #1)
+        }
+        // 'failed' is display-only here; the webhook owns failure transitions
       }
 
       amount = order.total_amount ?? 0;
@@ -160,17 +161,22 @@ export default async function PaymentStatusPage({
 
       // Build product access list
       products = (order.order_items ?? [])
-        .map((item: any) => item.products ? {
-          name: item.products.name,
-          thumbnail_url: item.products.thumbnail_url,
-          product_link: item.products.product_link,
-          post_purchase_url: item.products.post_purchase_url,
-          post_purchase_instructions: item.products.post_purchase_instructions,
-          price: Number(item.price_at_purchase) || 0,
-        } : null)
-        .filter(Boolean) as ProductAccess[];
+        .map((item) => {
+          const p = Array.isArray(item.products) ? item.products[0] : item.products;
+          return p
+            ? {
+                name: p.name,
+                thumbnail_url: p.thumbnail_url,
+                product_link: p.product_link,
+                post_purchase_url: p.post_purchase_url,
+                post_purchase_instructions: p.post_purchase_instructions,
+                price: Number(item.price_at_purchase) || 0,
+              }
+            : null;
+        })
+        .filter((p): p is ProductAccess => p !== null);
 
-      const names = products.map(p => p.name);
+      const names = products.map((p) => p.name);
       itemName = names.length ? names.join(', ') : 'Digital Products';
     }
   }

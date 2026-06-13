@@ -16,7 +16,7 @@ export function useProducts() {
   const queryClient = useQueryClient();
 
   const { data: products = [], isLoading, error } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', 'list'],
     queryFn: async () => {
       try {
         const profileId = await getCreatorProfileId();
@@ -74,7 +74,7 @@ export function useProducts() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       if (data) {
-        queryClient.invalidateQueries({ queryKey: ['product', data.id] });
+        queryClient.invalidateQueries({ queryKey: ['products', 'detail', data.id] });
         revalidateStorefrontPaths(['/', '/dashboard/products']);
       }
     }

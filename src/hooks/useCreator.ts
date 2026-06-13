@@ -11,7 +11,7 @@ export function useCreator() {
   const queryClient = useQueryClient();
 
   const { data: profile, isLoading, error } = useQuery({
-    queryKey: ['creator-profile'],
+    queryKey: ['creator', 'profile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not logged in");
@@ -50,7 +50,7 @@ export function useCreator() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['creator-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['creator', 'profile'] });
     }
   });
 

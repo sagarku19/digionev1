@@ -25,7 +25,7 @@ export type Order = {
 
 export function useOrders(limit = 100) {
   const { data: orders = [], isLoading, error } = useQuery<Order[]>({
-    queryKey: ['creator-orders'],
+    queryKey: ['orders', 'list'],
     queryFn: async () => {
       const profileId = await getCreatorProfileId();
 

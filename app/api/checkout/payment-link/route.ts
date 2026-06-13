@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { rateLimit } from '@/lib/server/rate-limit';
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -27,6 +28,10 @@ interface CashfreeOrderBody {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!(await rateLimit(req, 'checkout-payment-link', { max: 10, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const supabase = createServiceClient();
     const body = await req.json() as {
       siteId?: string;
@@ -45,6 +50,18 @@ export async function POST(req: NextRequest) {
 
     if (amount < 1) {
       return NextResponse.json({ error: 'Amount must be at least ₹1' }, { status: 400 });
+    }
+
+    // Auto-creating payment_requests for arbitrary siteIds was an abuse hole —
+    // the site must exist, be active, and actually be a payment site.
+    const { data: site } = await supabase
+      .from('sites')
+      .select('id, is_active, site_type')
+      .eq('id', siteId)
+      .maybeSingle();
+
+    if (!site || !site.is_active || site.site_type !== 'payment') {
+      return NextResponse.json({ error: 'Payment page not found' }, { status: 404 });
     }
 
     // 1. Fetch the payment_request row for this site to validate it exists & is active

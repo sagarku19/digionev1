@@ -7,7 +7,7 @@ export function useProductPage(creatorId: string, slug: string) {
   const supabase = createClient();
 
   return useQuery({
-    queryKey: ['product', creatorId, slug],
+    queryKey: ['products', 'page', creatorId, slug],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')

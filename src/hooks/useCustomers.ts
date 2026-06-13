@@ -18,7 +18,7 @@ export type Customer = {
 
 export function useCustomers() {
   return useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', 'list'],
     queryFn: async (): Promise<Customer[]> => {
       const profileId = await getCreatorProfileId();
 

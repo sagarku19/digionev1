@@ -10,7 +10,7 @@ export function useNotifications() {
   const queryClient = useQueryClient();
 
   const { data: notifications = [], isLoading, error } = useQuery({
-    queryKey: ['notifications'],
+    queryKey: ['notifications', 'list'],
     queryFn: async () => {
       const profileId = await getCreatorProfileId();
 
@@ -24,7 +24,7 @@ export function useNotifications() {
       if (error) throw error;
       return data ?? [];
     },
-    refetchInterval: 30_000, // poll every 30s for new notifications
+    refetchInterval: 120_000, // poll every 2 min — notifications are not chat
   });
 
   const markReadMutation = useMutation({
@@ -51,7 +51,7 @@ export function useNotifications() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
   });
 
-  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return {
     notifications,

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/service';
 import crypto from 'crypto';
+import { createServiceClient } from '@/lib/supabase/service';
+import { validateCoupon } from '@/lib/server/coupons';
+import { fulfillOrder } from '@/lib/server/fulfillment';
+import { rateLimit } from '@/lib/server/rate-limit';
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -8,6 +11,10 @@ const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
 
 export async function POST(req: Request) {
   try {
+    if (!(await rateLimit(req, 'checkout-create', { max: 10, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const supabase = createServiceClient();
     const { items, buyerId, couponCode, contact, upsellPageId } = await req.json();
 
@@ -16,7 +23,7 @@ export async function POST(req: Request) {
     }
 
     // ── Verify products & prices server-side (prevents price tampering) ──
-    const productIds = items.map((i: any) => i.id);
+    const productIds = items.map((i: { id: string }) => i.id);
     const { data: dbProducts } = await supabase
       .from('products')
       .select('id, price, creator_id, is_published')
@@ -43,22 +50,22 @@ export async function POST(req: Request) {
     let subtotal = 0;
     dbProducts.forEach(p => { subtotal += Number(p.price) || 0; });
 
+    // ── Coupon validation (shared with /api/coupons/validate) ──
     let discount = 0;
-    if (couponCode) {
-      const { data: coupon } = await (supabase as any)
-        .from('coupons')
-        .select('*')
-        .eq('code', couponCode)
-        .eq('is_active', true)
-        .single();
-      if (coupon?.discount_type === 'percentage') discount = (subtotal * coupon.discount_value) / 100;
-      else if (coupon?.discount_type === 'fixed') discount = Math.min(coupon.discount_value, subtotal);
+    let couponId: string | null = null;
+    if (couponCode && creatorProfileId) {
+      const couponResult = await validateCoupon(supabase, String(couponCode), creatorProfileId, subtotal);
+      if (!couponResult.valid) {
+        return NextResponse.json({ error: couponResult.reason }, { status: couponResult.status });
+      }
+      discount = couponResult.discountAmount;
+      couponId = couponResult.coupon.id;
     }
 
     const total = Math.max(0, subtotal - discount);
 
     // ── Resolve origin site (first product's site) ──
-    const { data: siteRow } = await (supabase as any)
+    const { data: siteRow } = await supabase
       .from('site_singlepage')
       .select('site_id')
       .eq('product_id', dbProducts[0].id)
@@ -69,13 +76,17 @@ export async function POST(req: Request) {
     const orderId = crypto.randomUUID();
     const gatewayOrderId = `ord_${orderId.replace(/-/g, '')}`;
 
-    // Store creator_profile_id in metadata as fallback (always available)
-    const orderMeta = { creator_profile_id: creatorProfileId, ...(upsellPageId ? { upsell_page_id: upsellPageId } : {}) };
+    const orderMeta = {
+      creator_profile_id: creatorProfileId,
+      ...(couponId ? { coupon_id: couponId, discount_amount: discount } : {}),
+      ...(upsellPageId ? { upsell_page_id: upsellPageId } : {}),
+    };
 
-    const baseInsert: Record<string, any> = {
+    const { error: orderError } = await supabase.from('orders').insert({
       id: orderId,
       gateway_order_id: gatewayOrderId,
       user_id: buyerId ?? null,
+      creator_id: creatorProfileId,
       origin_site_id: originSiteId,
       total_amount: total,
       status: 'pending',
@@ -83,18 +94,7 @@ export async function POST(req: Request) {
       customer_email: contact?.email ?? null,
       customer_phone: contact?.phone ?? null,
       metadata: orderMeta,
-    };
-
-    // Try with creator_id (requires migration); fall back without it
-    let { error: orderError } = await (supabase.from('orders') as any).insert({
-      ...baseInsert,
-      creator_id: creatorProfileId,
     });
-    if (orderError?.message?.includes('creator_id')) {
-      const fallback = await (supabase.from('orders') as any).insert(baseInsert);
-      orderError = fallback.error;
-    }
-
     if (orderError) throw orderError;
 
     // ── Order items ──
@@ -104,15 +104,11 @@ export async function POST(req: Request) {
       price_at_purchase: Number(p.price) || 0,
       origin_site_id: originSiteId,
     }));
-    await (supabase as any).from('order_items').insert(orderItems);
+    await supabase.from('order_items').insert(orderItems);
 
-    // ── Free product — mark completed immediately ──
+    // ── Free product — grant access + redeem coupon via shared fulfillment ──
     if (total === 0) {
-      const freeUpdate: Record<string, any> = { status: 'completed', payment_verified_at: new Date().toISOString() };
-      let { error: freeErr } = await (supabase.from('orders') as any).update(freeUpdate).eq('id', orderId);
-      if (freeErr?.message?.includes('payment_verified_at')) {
-        await (supabase.from('orders') as any).update({ status: 'completed' }).eq('id', orderId);
-      }
+      await fulfillOrder(orderId);
       return NextResponse.json({ orderId, amount: 0, status: 'completed' });
     }
 
@@ -148,7 +144,7 @@ export async function POST(req: Request) {
     if (!cfRes.ok || !cfData.payment_session_id) {
       console.error('[checkout/create] Cashfree error:', cfData);
       // Clean up pending order on gateway failure
-      await (supabase.from('orders') as any).update({ status: 'failed' }).eq('id', orderId);
+      await supabase.from('orders').update({ status: 'failed' }).eq('id', orderId);
       return NextResponse.json(
         { error: cfData.message ?? 'Payment gateway unavailable' },
         { status: 502 }
@@ -162,8 +158,9 @@ export async function POST(req: Request) {
       payment_session_id: cfData.payment_session_id,
       environment: process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION' ? 'production' : 'sandbox',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[checkout/create]', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error instanceof Error ? error.message : 'Internal error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

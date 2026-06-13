@@ -1,134 +1,102 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/service';
 import crypto from 'crypto';
+import { createServiceClient } from '@/lib/supabase/service';
+import { fulfillOrder, fulfillPaymentLinkSubmission } from '@/lib/server/fulfillment';
 
 export async function POST(req: Request) {
   try {
     const signature = req.headers.get('x-webhook-signature');
     const rawBody = await req.text();
 
-    // ── Verify Cashfree webhook signature ──
     const secret = process.env.CASHFREE_CLIENT_SECRET;
     if (!secret) {
       console.error('[webhook/cashfree] CASHFREE_CLIENT_SECRET is not configured');
       return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
     }
-    const expectedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(rawBody)
-      .digest('base64');
 
-    if (signature !== expectedSignature) {
+    // HMAC over the exact raw bytes, compared in constant time (finding #13)
+    const expectedSignature = crypto.createHmac('sha256', secret).update(rawBody).digest('base64');
+    const sigBuf = Buffer.from(signature ?? '', 'utf8');
+    const expBuf = Buffer.from(expectedSignature, 'utf8');
+    const signatureValid = sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf);
+
+    if (!signatureValid) {
       console.warn('[webhook/cashfree] Invalid signature');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
-
     const payload = JSON.parse(rawBody);
-    const gatewayOrderId = payload.data?.order?.order_id;
-    const cfStatus = payload.data?.payment?.payment_status;
-    const gatewayPaymentId = payload.data?.payment?.cf_payment_id ?? null;
+    const gatewayOrderId: string | undefined = payload.data?.order?.order_id;
+    const cfStatus: string | undefined = payload.data?.payment?.payment_status;
+    const gatewayPaymentId: string | undefined =
+      payload.data?.payment?.cf_payment_id != null
+        ? String(payload.data.payment.cf_payment_id)
+        : undefined;
 
     if (!gatewayOrderId) {
       return NextResponse.json({ error: 'Missing order ID' }, { status: 400 });
     }
 
-    // ── Fetch our order by gateway_order_id ──
-    const { data: order } = await supabase
+    const db = createServiceClient();
+
+    // ── Payment-link submissions (gateway ids are prefixed pl_) ── (finding #10)
+    if (gatewayOrderId.startsWith('pl_')) {
+      const { data: submission } = await db
+        .from('payment_submissions')
+        .select('id, payment_status')
+        .eq('gateway_order_id', gatewayOrderId)
+        .maybeSingle();
+
+      if (!submission) {
+        console.warn('[webhook/cashfree] Submission not found for gateway_order_id:', gatewayOrderId);
+        return NextResponse.json({ received: true }); // acknowledge to avoid retry storms
+      }
+      if (submission.payment_status === 'completed' || submission.payment_status === 'refunded') {
+        return NextResponse.json({ received: true });
+      }
+
+      if (cfStatus === 'SUCCESS') {
+        await fulfillPaymentLinkSubmission(submission.id, gatewayPaymentId);
+      } else if (cfStatus === 'FAILED' || cfStatus === 'USER_DROPPED') {
+        await db
+          .from('payment_submissions')
+          .update({ payment_status: 'failed' })
+          .eq('id', submission.id)
+          .eq('payment_status', 'pending');
+      }
+      return NextResponse.json({ received: true });
+    }
+
+    // ── Product orders ──
+    const { data: order } = await db
       .from('orders')
-      .select('*')
+      .select('id, status')
       .eq('gateway_order_id', gatewayOrderId)
-      .single();
+      .maybeSingle();
 
     if (!order) {
       console.warn('[webhook/cashfree] Order not found for gateway_order_id:', gatewayOrderId);
-      return NextResponse.json({ received: true }); // Acknowledge to avoid retries
+      return NextResponse.json({ received: true });
     }
-
-    // ── Idempotency: skip if already processed ──
+    // Fast-path early exit; correctness no longer depends on it (the claim does)
     if (order.status === 'completed' || order.status === 'refunded') {
       return NextResponse.json({ received: true });
     }
 
     if (cfStatus === 'SUCCESS') {
-      // ── Mark order completed + record gateway payment id ──
-      // Try with payment_verified_at (requires migration); fall back without it
-      const completedUpdate: Record<string, any> = {
-        status: 'completed',
-        gateway_payment_id: gatewayPaymentId,
-        payment_verified_at: new Date().toISOString(),
-      };
-      let { error: updateErr } = await (supabase.from('orders') as any).update(completedUpdate).eq('id', order.id);
-      if (updateErr?.message?.includes('payment_verified_at')) {
-        const { payment_verified_at: _, ...withoutVerified } = completedUpdate;
-        await (supabase.from('orders') as any).update(withoutVerified).eq('id', order.id);
-      }
-
-      // ── Credit creator balance ──
-      // creator_id is stored in order metadata (orders table has no creator_id column)
-      const creatorProfileId = (order.metadata as any)?.creator_profile_id ?? null;
-      if (creatorProfileId) {
-        const platformFee = Number(order.total_amount) * 0.10;
-        const creatorProceeds = Number(order.total_amount) - platformFee;
-
-        const { data: balance } = await supabase
-          .from('creator_balances')
-          .select('*')
-          .eq('creator_id', creatorProfileId)
-          .single();
-
-        if (balance) {
-          await supabase.from('creator_balances').update({
-            total_earnings: (balance.total_earnings ?? 0) + creatorProceeds,
-            total_platform_fees: (balance.total_platform_fees ?? 0) + platformFee,
-          }).eq('creator_id', creatorProfileId);
-        } else {
-          await supabase.from('creator_balances').insert({
-            creator_id: creatorProfileId,
-            total_earnings: creatorProceeds,
-            total_platform_fees: platformFee,
-            total_paid_out: 0,
-            pending_payout: 0,
-          });
-        }
-
-        // ── Transaction ledger ──
-        const recordHash = crypto
-          .createHash('sha256')
-          .update(`${order.id}-${Date.now()}`)
-          .digest('hex');
-        await (supabase as any).from('transaction_ledger').insert({
-          creator_id: creatorProfileId,
-          order_id: order.id,
-          amount: order.total_amount,
-          direction: 'credit',
-          tx_type: 'sale',
-          currency: 'INR',
-          record_hash: recordHash,
-          meta: {
-            platform_fee: platformFee,
-            net_amount: creatorProceeds,
-          },
-        });
-
-        // ── Notify creator ──
-        await supabase.from('notifications').insert({
-          recipient_creator_id: creatorProfileId,
-          title: 'New Sale!',
-          message: `You earned ₹${creatorProceeds.toFixed(0)} from a new order`,
-          type: 'sale',
-        } as any);
-      }
+      await fulfillOrder(order.id, { gatewayPaymentId });
     } else if (cfStatus === 'FAILED' || cfStatus === 'USER_DROPPED') {
-      await supabase.from('orders')
-        .update({ status: 'failed' } as any)
-        .eq('id', order.id);
+      await db
+        .from('orders')
+        .update({ status: 'failed' })
+        .eq('id', order.id)
+        .eq('status', 'pending');
     }
 
     return NextResponse.json({ received: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[webhook/cashfree]', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error instanceof Error ? error.message : 'Internal error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

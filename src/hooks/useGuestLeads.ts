@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase/client';
 
 export function useGuestLeads(filterSiteId?: string) {
   const { data: leads = [], isLoading, error } = useQuery({
-    queryKey: ['guest-leads', filterSiteId],
+    queryKey: ['leads', 'list', filterSiteId],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not logged in");

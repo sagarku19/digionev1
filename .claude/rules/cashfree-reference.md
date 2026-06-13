@@ -46,10 +46,11 @@ Don't change `x-api-version` without reviewing every call site — request and r
    ↓
 POST /api/checkout/create                            (our server)
    ├─ Re-fetch product prices from DB (never trust client)
-   ├─ INSERT orders (status: 'pending')
+   ├─ Validate coupon via src/lib/server/coupons.ts (if provided)
+   ├─ INSERT orders (status: 'pending', metadata: { coupon_id, discount_amount })
    ├─ INSERT order_items
-   └─ POST {CASHFREE_ENV}/orders                    (to Cashfree)
-        → { payment_session_id }
+   ├─ If total === 0: fulfillOrder() immediately → { status: 'completed' }
+   └─ Else: POST {CASHFREE_ENV}/orders → { payment_session_id }
    ↓
 [client receives payment_session_id]
    ↓
@@ -58,16 +59,16 @@ POST /api/checkout/create                            (our server)
 [user pays on Cashfree]
    ↓
 [parallel]
- ├─ Browser → /payment/status?order_id=...           (returns status page)
+ ├─ Browser → /payment/status?order_id=...           (checks DB first; calls Cashfree only if still pending)
+ │             └─ If PAID: fulfillOrder()             (same function as webhook)
  └─ Cashfree → POST /api/webhook/cashfree            (THE source of truth)
                 ↓
-                ├─ Verify HMAC signature
-                ├─ UPDATE orders SET status='completed'
-                ├─ UPDATE creator_balances (+ ledger row)
-                └─ INSERT notifications
+                ├─ Verify HMAC (crypto.timingSafeEqual)
+                ├─ Route: ord_* → fulfillOrder(); pl_* → fulfillPaymentLinkSubmission()
+                └─ fulfillOrder: atomic claim → credit RPC → ledger → notify → access grants → coupon
 ```
 
-Reference: `app/api/checkout/create/route.ts`, `app/api/webhook/cashfree/route.ts`.
+Reference: `app/api/checkout/create/route.ts`, `app/api/webhook/cashfree/route.ts`, `src/lib/server/fulfillment.ts`.
 
 ## Flow 2 — Payment link (custom-amount)
 
@@ -126,15 +127,21 @@ The **only** path that flips an order to `completed` and credits a creator. Read
 
 ```typescript
 const rawBody = await req.text();                                    // exact bytes, no JSON parse
-const expected = crypto.createHmac('sha256', CASHFREE_CLIENT_SECRET) // HMAC-SHA256
-  .update(rawBody)
-  .digest('base64');                                                 // base64, not hex
-if (signature !== expected) return 401;
+const expected = Buffer.from(
+  crypto.createHmac('sha256', CASHFREE_CLIENT_SECRET)               // HMAC-SHA256
+    .update(rawBody)
+    .digest('base64')                                               // base64, not hex
+);
+const received = Buffer.from(signature);
+if (expected.length !== received.length ||
+    !crypto.timingSafeEqual(expected, received)) return 401;        // constant-time compare
 ```
 
-The HMAC key is the **same** `CASHFREE_CLIENT_SECRET` you use for API calls. Signature header is `x-webhook-signature`. Reference: `app/api/webhook/cashfree/route.ts:12-29`.
+The HMAC key is the **same** `CASHFREE_CLIENT_SECRET` you use for API calls. Signature header is `x-webhook-signature`. Reference: `app/api/webhook/cashfree/route.ts`.
 
 Compute the HMAC **before** `JSON.parse`. If you parse and re-stringify you'll get a different byte sequence and every webhook will fail.
+
+Use `crypto.timingSafeEqual` — not `===` — to prevent timing-based signature oracle attacks.
 
 ### 2. Payload shape (v2023-08-01)
 
@@ -163,7 +170,7 @@ Per Cashfree's own docs, when reconciling: **dedupe by `cf_payment_id`**, not by
 
 Cashfree retries non-2xx responses. The handler must:
 
-- Return `200 { received: true }` for orders already in `completed` or `refunded` (skip work). Reference: `app/api/webhook/cashfree/route.ts:52-55`.
+- Use the atomic claim in `fulfillOrder` (`UPDATE orders SET status='completed' WHERE id=? AND status='pending'`). Zero rows updated = already processed → return `200 { received: true }` without re-processing.
 - Return `200` even when the order isn't found in our DB (avoids permanent retry storms from stray test events).
 - Only return non-2xx for actual processing failures we want Cashfree to retry.
 
@@ -178,18 +185,20 @@ Cashfree retries non-2xx responses. The handler must:
 
 ### 5. Side effects on `SUCCESS`
 
-In order:
+All side effects are executed by `src/lib/server/fulfillment.ts` (`fulfillOrder` for product orders, `fulfillPaymentLinkSubmission` for `pl_` orders), in order:
 
-1. `orders.status = 'completed'`, set `gateway_payment_id`, `payment_verified_at`.
-2. Credit `creator_balances`: `+ (total_amount × 0.9)` to `total_earnings`, `+ 10%` to `total_platform_fees`. **Platform fee is hardcoded at `route.ts:75`** — lift to config before adding tiers.
-3. Insert `transaction_ledger` row with `record_hash = sha256(order_id + timestamp)`.
+1. Atomic claim: `UPDATE orders SET status='completed' WHERE id=? AND status='pending'`. Zero rows = already done, return early.
+2. Credit `creator_balances` via `credit_creator_balance` RPC. Platform fee rate from `getPlatformFeeRate()` in `src/lib/server/platform-fee.ts` (currently 0.10 — a single place to change for future tiers).
+3. Insert `transaction_ledger` row with `record_hash = sha256(orderId + ':' + cf_payment_id)` (UNIQUE — replays are rejected by the DB).
 4. Insert `notifications` row for the creator.
+5. Grant `user_product_access` rows for logged-in buyers (UNIQUE on `(order_id, product_id)` — idempotent).
+6. Redeem coupon via `increment_coupon_uses` RPC if `orders.metadata.coupon_id` is set.
 
-All four use the service-role client. RLS does not apply.
+All use the service-role client. RLS does not apply.
 
 ## Checking order status (server-side)
 
-Used by `/payment/status` to verify before showing success:
+`/payment/status` checks DB status **first**. Only when the order is still `pending` does it call Cashfree:
 
 ```typescript
 const res = await fetch(`${CASHFREE_ENV}/orders/${gatewayOrderId}`, {
@@ -204,11 +213,11 @@ const data = await res.json();
 data.order_status; // "ACTIVE" | "PAID" | "EXPIRED" | "TERMINATED" | ...
 ```
 
-Reference: `app/payment/status/page.tsx:31-47`. Status string mapping in `cfToDbStatus()` at `:49`.
+`PAID` → calls `fulfillOrder` (same function as the webhook). `EXPIRED | USER_DROPPED | DROPPED | FAILED` → sets `orders.status = 'failed'`. Anything else → still pending.
 
-`PAID` → completed. `EXPIRED | USER_DROPPED | DROPPED | FAILED` → failed. Anything else → pending.
+`/payment/status` and `/payment/receipt` use `createServiceClient()` — no more module-scope raw `createClient(URL, SERVICE_KEY)`.
 
-**This is a read-side reconciliation path only.** Treat the webhook as authoritative for state transitions; this status check exists to handle the case where the user lands on the success page before the webhook arrives.
+**This is a reconciliation path for the user-facing race**, not the authoritative path. Treat the webhook as authoritative; this exists to handle the case where the user lands on the status page before the webhook arrives. The shared `fulfillOrder` function ensures both paths produce the same result.
 
 ## Browser SDK — `@cashfreepayments/cashfree-js`
 
@@ -310,11 +319,11 @@ Cashfree dashboard → Developers → Webhooks → "Test event". Pick `PAYMENT_S
 
 - **Never call Cashfree from the browser.** All API calls go through `/api/checkout/*`. The `x-client-secret` is a server secret.
 - **Don't parse-and-restringify the webhook body** before HMAC. The signature is over the raw bytes. Use `await req.text()` and pass that exact string to `createHmac`.
-- **Base64, not hex.** `crypto.createHmac(...).digest('base64')` — getting hex out and comparing fails silently.
+- **Base64, not hex.** `crypto.createHmac(...).digest('base64')` — hex comparison fails silently. Also use `crypto.timingSafeEqual` (not `===`) to prevent timing oracle attacks.
 - **Idempotency is on us.** Cashfree will retry. The handler must produce the same result on the second call as on the first (and not double-credit balances).
 - **Phone number format.** Cashfree expects 10 digits, no country code. The current code passes `'0000000000'` as a fallback (`/api/checkout/create/route.ts:142`). This is enough for the gateway to accept but Cashfree may bounce the order if it fails their internal validation in some regions — pass a real phone where you can.
 - **Currency is hardcoded `INR`.** Multi-currency is out of scope.
-- **Free orders skip Cashfree entirely.** `total === 0` is completed inline. Reference: `app/api/checkout/create/route.ts:114-122`. Don't add Cashfree calls in that path.
+- **Free orders skip Cashfree entirely.** `total === 0` calls `fulfillOrder` directly from `/api/checkout/create`. Reference: `app/api/checkout/create/route.ts`, `src/lib/server/fulfillment.ts`. Don't add Cashfree calls in that path.
 - **Single-creator cart constraint.** All items must share `creator_id`. Reference: `app/api/checkout/create/route.ts:40-43`. If you ever lift this, payouts and platform-fee math must split per creator.
 - **No retry on Cashfree 5xx in `/api/checkout/create`.** A 502 leaves a `pending` `orders` row and a `failed` Cashfree session. A reconciliation job would clean these up; we don't have one yet.
 

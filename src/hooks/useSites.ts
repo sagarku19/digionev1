@@ -31,7 +31,7 @@ export function useSites() {
   const queryClient = useQueryClient();
 
   const { data: sites = [], isLoading, error } = useQuery<SiteWithMain[]>({
-    queryKey: ['creator-sites'],
+    queryKey: ['sites', 'list'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -79,7 +79,7 @@ export function useSites() {
         .eq('id', siteId);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['creator-sites'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sites', 'list'] }),
   });
 
   const toggleActiveMutation = useMutation({
@@ -90,7 +90,7 @@ export function useSites() {
         .eq('id', siteId);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['creator-sites'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sites', 'list'] }),
   });
 
   return {

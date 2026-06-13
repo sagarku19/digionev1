@@ -31,7 +31,7 @@ export function useUpsellPages() {
   const queryClient = useQueryClient();
 
   const { data: upsellPages = [], isLoading, error } = useQuery({
-    queryKey: ['upsell-pages'],
+    queryKey: ['upsells', 'list'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [] as UpsellPageRow[];
@@ -82,7 +82,7 @@ export function useUpsellPages() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['upsell-pages'] });
+      queryClient.invalidateQueries({ queryKey: ['upsells', 'list'] });
     },
   });
 
@@ -102,8 +102,8 @@ export function useUpsellPages() {
       }
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['upsell-pages'] });
-      if (data) queryClient.invalidateQueries({ queryKey: ['upsell-page', data.id] });
+      queryClient.invalidateQueries({ queryKey: ['upsells', 'list'] });
+      if (data) queryClient.invalidateQueries({ queryKey: ['upsells', 'detail', data.id] });
     },
   });
 
@@ -120,7 +120,7 @@ export function useUpsellPages() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['upsell-pages'] });
+      queryClient.invalidateQueries({ queryKey: ['upsells', 'list'] });
     },
   });
 
@@ -139,7 +139,7 @@ export function useUpsellPages() {
 
 export function useUpsellPage(id: string | null) {
   return useQuery({
-    queryKey: ['upsell-page', id],
+    queryKey: ['upsells', 'detail', id],
     enabled: !!id,
     queryFn: async () => {
       const { data, error } = await (supabase.from('upsell_pages' as any) as any)

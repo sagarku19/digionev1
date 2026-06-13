@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { resolveProfileId } from '@/lib/server/resolve-profile';
 
 export async function POST(req: Request) {
   try {
@@ -20,11 +21,17 @@ export async function POST(req: Request) {
     // Initialize Admin Client to bypass RLS for secure ledger writes
     const supabaseAdmin = createServiceClient();
 
+    // Resolve the profiles.id — every money table keys on it, NOT auth.users.id (finding #3)
+    const profileId = await resolveProfileId(user.id, user.email);
+    if (!profileId) {
+      return NextResponse.json({ error: 'Creator profile not found.' }, { status: 404 });
+    }
+
     // 1. Verify KYC Status - Must be verified to withdraw
     const { data: kyc } = await supabaseAdmin
       .from('creator_kyc')
       .select('status')
-      .eq('creator_id', user.id)
+      .eq('creator_id', profileId)
       .single();
 
     if (!kyc || kyc.status !== 'verified') {
@@ -35,7 +42,7 @@ export async function POST(req: Request) {
     const { data: balanceData, error: balanceError } = await supabaseAdmin
       .from('creator_balances')
       .select('total_earnings, total_platform_fees, total_paid_out, pending_payout')
-      .eq('creator_id', user.id)
+      .eq('creator_id', profileId)
       .single();
 
     if (balanceError || !balanceData) {
@@ -57,9 +64,9 @@ export async function POST(req: Request) {
       .update({
         pending_payout: newPending,
       })
-      .eq('creator_id', user.id)
+      .eq('creator_id', profileId)
       // Optimistic concurrency check -> only update if pending_payout matches our reading
-      .eq('pending_payout', balanceData.pending_payout); 
+      .eq('pending_payout', balanceData.pending_payout);
 
     if (deductionError) {
       return NextResponse.json({ error: 'Transaction collision. Please try again.' }, { status: 409 });
@@ -69,7 +76,7 @@ export async function POST(req: Request) {
     const { data: payout, error: payoutError } = await supabaseAdmin
       .from('creator_payouts')
       .insert({
-        creator_id: user.id,
+        creator_id: profileId,
         amount: amount,
         currency: 'INR',
         status: 'pending'
@@ -83,7 +90,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, payout }, { status: 200 });
     
-  } catch (error: any) {
+  } catch (error) {
     console.error('Payout Request Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

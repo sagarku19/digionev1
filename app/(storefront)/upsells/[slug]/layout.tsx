@@ -2,6 +2,7 @@
 // Minimal layout — no header/footer, just theme CSS vars
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { safeCssColor } from '@/lib/safe-css';
 
 export default async function UpsellPageLayout({
   children,
@@ -23,9 +24,9 @@ export default async function UpsellPageLayout({
 
   const config = (page.config as any) || {};
   const theme = config.theme || {};
-  const primaryColor = theme.primary_color || '#6366F1';
-  const bgColor = theme.bg_color || '#FFFFFF';
-  const textColor = theme.text_color || '#0F172A';
+  const primaryColor = safeCssColor(theme.primary_color, '#6366F1');
+  const bgColor = safeCssColor(theme.bg_color, '#FFFFFF');
+  const textColor = safeCssColor(theme.text_color, '#0F172A');
 
   const themeCSS = `
     :root {

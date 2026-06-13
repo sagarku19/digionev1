@@ -1,53 +1,34 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
-
-const supabase = createServiceClient();
+import { validateCoupon } from '@/lib/server/coupons';
+import { rateLimit } from '@/lib/server/rate-limit';
 
 export async function POST(req: Request) {
   try {
+    if (!(await rateLimit(req, 'coupons-validate', { max: 10, windowSeconds: 60 }))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { code, cartAmount, creatorId } = await req.json();
 
     if (!code || !cartAmount || !creatorId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { data: coupon, error } = await supabase
-      .from('coupons')
-      .select('*')
-      .eq('code', code.toUpperCase())
-      .eq('creator_id', creatorId)
-      .eq('is_active', true)
-      .single();
+    const db = createServiceClient();
+    const result = await validateCoupon(db, String(code), String(creatorId), Number(cartAmount));
 
-    if (error || !coupon) {
-      return NextResponse.json({ error: "Invalid coupon" }, { status: 404 });
-    }
-
-    if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
-      return NextResponse.json({ error: "Coupon expired" }, { status: 400 });
-    }
-
-    if (coupon.valid_from && new Date(coupon.valid_from) > new Date()) {
-      return NextResponse.json({ error: "Coupon not yet active" }, { status: 400 });
-    }
-
-    if (coupon.max_uses != null && (coupon.current_uses ?? 0) >= coupon.max_uses) {
-      return NextResponse.json({ error: "Coupon usage limit reached" }, { status: 400 });
-    }
-
-    let discount = 0;
-    if (coupon.discount_type === 'percentage') {
-      discount = (cartAmount * coupon.discount_value) / 100;
-    } else if (coupon.discount_type === 'fixed') {
-      discount = Math.min(coupon.discount_value, cartAmount);
+    if (!result.valid) {
+      return NextResponse.json({ error: result.reason }, { status: result.status });
     }
 
     return NextResponse.json({
       valid: true,
-      discount_amount: discount,
-      final_price: cartAmount - discount
+      discount_amount: result.discountAmount,
+      final_price: result.finalPrice,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Internal error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

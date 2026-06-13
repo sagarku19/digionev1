@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { resolveProfileId } from '@/lib/server/resolve-profile';
 
 const DEFAULT_PALETTE = {
   primary: '#6366F1',
@@ -70,59 +71,15 @@ export async function POST(req: NextRequest) {
 
     const db = createServiceClient();
 
-    // Resolve auth user → public users → profiles
-    const { data: publicUser, error: userErr } = await db
-      .from('users')
-      .select('id')
-      .eq('auth_provider_id', user.id)
-      .maybeSingle();
-
-    if (userErr) {
-      console.error('[sites/create] users lookup error:', userErr.message);
-      return NextResponse.json({ error: 'Failed to resolve user record' }, { status: 500 });
+    const profileId = await resolveProfileId(user.id, user.email);
+    if (!profileId) {
+      return NextResponse.json(
+        { error: 'User record not found. Please complete your profile setup.' },
+        { status: 404 }
+      );
     }
 
-    if (!publicUser) {
-      const { data: userByEmail } = await db
-        .from('users')
-        .select('id')
-        .eq('email', user.email ?? '')
-        .maybeSingle();
-
-      if (!userByEmail) {
-        console.error('[sites/create] No public user found for auth id:', user.id);
-        return NextResponse.json({ error: 'User record not found. Please complete your profile setup.' }, { status: 404 });
-      }
-
-      const { data: profile } = await db
-        .from('profiles')
-        .select('id')
-        .eq('user_id', userByEmail.id)
-        .maybeSingle();
-
-      if (!profile) {
-        return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 });
-      }
-
-      return await createSite(req, db, profile.id);
-    }
-
-    const { data: profile, error: profileErr } = await db
-      .from('profiles')
-      .select('id')
-      .eq('user_id', publicUser.id)
-      .maybeSingle();
-
-    if (profileErr) {
-      console.error('[sites/create] profile lookup error:', profileErr.message);
-      return NextResponse.json({ error: 'Failed to resolve creator profile' }, { status: 500 });
-    }
-
-    if (!profile) {
-      return NextResponse.json({ error: 'Creator profile not found' }, { status: 404 });
-    }
-
-    return await createSite(req, db, profile.id);
+    return await createSite(req, db, profileId);
   } catch (err: unknown) {
     console.error('[sites/create] unhandled error:', err);
     const msg = err instanceof Error ? err.message : 'Unknown error';

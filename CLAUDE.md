@@ -93,7 +93,7 @@ digionev1/
 │   │   ├── checkout/             # Cashfree payment creation
 │   │   ├── webhook/cashfree/     # Payment confirmation (source of truth)
 │   │   ├── upload/               # Supabase Storage
-│   │   └── …                     # auth, sites, leads, coupons, payouts, discover, products, linkinbio
+│   │   └── …                     # auth, sites, leads, coupons, payouts, products, linkinbio
 │   └── …                         # account, actions, payment
 ├── src/
 │   ├── components/

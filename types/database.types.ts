@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      ab_tests: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          name: string
+          product_id: string | null
+          status: string
+          variant_a: Json | null
+          variant_b: Json | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          name: string
+          product_id?: string | null
+          status?: string
+          variant_a?: Json | null
+          variant_b?: Json | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          name?: string
+          product_id?: string | null
+          status?: string
+          variant_a?: Json | null
+          variant_b?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ab_tests_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ab_tests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       affiliates: {
         Row: {
           affiliate_user_id: string
@@ -927,6 +975,54 @@ export type Database = {
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linkinbio_analytics: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          ip_hash: string | null
+          link_id: string | null
+          referrer_url: string | null
+          site_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          ip_hash?: string | null
+          link_id?: string | null
+          referrer_url?: string | null
+          site_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_hash?: string | null
+          link_id?: string | null
+          referrer_url?: string | null
+          site_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linkinbio_analytics_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "linkinbio_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "linkinbio_analytics_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
             referencedColumns: ["id"]
           },
         ]
@@ -1856,6 +1952,24 @@ export type Database = {
           tags?: string[] | null
           url?: string
           width?: number | null
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          count: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          key: string
+          window_start: string
+        }
+        Update: {
+          count?: number
+          key?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -3173,6 +3287,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: { p_key: string; p_max: number; p_window_seconds: number }
+        Returns: boolean
+      }
+      credit_creator_balance: {
+        Args: {
+          p_creator_id: string
+          p_earnings_delta: number
+          p_fees_delta: number
+        }
+        Returns: undefined
+      }
+      current_profile_id: { Args: never; Returns: string }
+      increment_coupon_uses: {
+        Args: { p_coupon_id: string }
+        Returns: undefined
+      }
+      increment_link_click_count: {
+        Args: { p_link_id: string }
+        Returns: undefined
+      }
       sum_bucket_bytes_for_prefix: {
         Args: { p_bucket_id: string; p_prefix: string }
         Returns: number

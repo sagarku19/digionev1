@@ -6,6 +6,7 @@ import { useAuthSession, useLoginMutation } from '@/hooks/useAuthSession';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { isSafeInternalPath } from '@/lib/safe-redirect';
 
 /* ── Google icon SVG ── */
 function GoogleIcon() {
@@ -44,7 +45,7 @@ function LoginContent() {
 
     (async () => {
       const returnUrl = searchParams.get('returnUrl');
-      if (returnUrl) {
+      if (isSafeInternalPath(returnUrl)) {
         window.location.replace(returnUrl);
         return;
       }
@@ -85,7 +86,7 @@ function LoginContent() {
           setRedirecting(true);
 
           const returnUrl = searchParams.get('returnUrl');
-          if (returnUrl) {
+          if (isSafeInternalPath(returnUrl)) {
             window.location.href = returnUrl;
             return;
           }

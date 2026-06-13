@@ -15,10 +15,8 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | GET | `/api/auth/callback` | OAuth/email-link code | server (cookie) | sets session cookie |
 | POST | `/api/checkout/create` | none (buyerId optional) | service role | `orders`, `order_items` |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
-| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications` |
+| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access` |
 | POST | `/api/coupons/validate` | none | service role | — |
-| GET | `/api/discover` | none | service role | — |
-| GET | `/api/discover/[productId]` | none | service role | — |
 | POST | `/api/leads` | none | service role | `lead_form` |
 | POST | `/api/linkinbio/track` | none | service role | `linkinbio_analytics` |
 | POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` |
@@ -72,15 +70,15 @@ Product checkout. Verifies prices server-side, creates an `orders` row, calls Ca
 { "orderId": "uuid", "amount": 0, "status": "completed" }
 ```
 
-**Errors:** `400` (empty cart, unpublished product, multi-creator cart), `502` (Cashfree failure), `500` (other).
+**Errors:** `400` (empty cart, unpublished product, multi-creator cart), `429` (rate limit — 10/min/IP), `502` (Cashfree failure), `500` (other).
 
-**Side effects:** Inserts pending `orders` row (`status: 'pending'`). All items must belong to one creator. Re-reads `price` from DB — never trusts client.
+**Side effects:** Inserts pending `orders` row (`status: 'pending'`). All items must belong to one creator. Re-reads `price` from DB — never trusts client. Coupon validation is shared via `src/lib/server/coupons.ts` (full expiry/usage-cap checks); valid coupon stores `coupon_id` + `discount_amount` in `orders.metadata`. Free orders (`total === 0`) run through `fulfillOrder` directly — no Cashfree call.
 
 ---
 
 ### `POST /api/checkout/payment-link`
 
-Custom-amount payment links for `payment_requests` sites. Auto-creates a `payment_requests` row if the site doesn't have one yet.
+Custom-amount payment links for `payment_requests` sites. Does **not** auto-create a `payment_requests` row — the site must exist, be active (`is_active = true`), and have `site_type = 'payment'`; otherwise 404.
 
 ```json
 // Request
@@ -92,7 +90,7 @@ Custom-amount payment links for `payment_requests` sites. Auto-creates a `paymen
 { "payment_session_id": "...", "order_id": "pl_...", "submission_id": "uuid", "environment": "sandbox" | "production", "payment_url": "https://..." }
 ```
 
-**Errors:** `400` (missing fields, amount < 1, wrong amount for fixed-amount link), `502` (Cashfree).
+**Errors:** `400` (missing fields, amount < 1, wrong amount for fixed-amount link), `404` (site not found / inactive / wrong type), `429` (rate limit — 10/min/IP), `502` (Cashfree).
 
 ---
 
@@ -100,24 +98,30 @@ Custom-amount payment links for `payment_requests` sites. Auto-creates a `paymen
 
 Cashfree → us. The **only** path that flips an order to `completed` and credits a creator balance.
 
-**Auth:** HMAC-SHA256 of raw body using `CASHFREE_CLIENT_SECRET`, base64-encoded, must equal `x-webhook-signature` header. See `.claude/rules/security-model.md` → Revenue integrity rules.
+**Auth:** HMAC-SHA256 of raw body using `CASHFREE_CLIENT_SECRET`, base64-encoded, compared with `crypto.timingSafeEqual` against the `x-webhook-signature` header. See `.claude/rules/security-model.md` → Revenue integrity rules.
 
 **Body:** Cashfree v2 webhook envelope. Relevant fields:
 ```
-data.order.order_id            → matches orders.gateway_order_id
+data.order.order_id            → matches orders.gateway_order_id (or payment_submissions.gateway_order_id for pl_ prefix)
 data.payment.payment_status    → SUCCESS | FAILED | USER_DROPPED
-data.payment.cf_payment_id     → stored in orders.gateway_payment_id
+data.payment.cf_payment_id     → stored as gateway_payment_id
 ```
 
-**On `SUCCESS`:**
-1. `orders.status = 'completed'`, set `gateway_payment_id`, `payment_verified_at`
-2. Credit `creator_balances`: `+ (total_amount × 0.9)` to `total_earnings`, `+ 10%` to `total_platform_fees`
-3. Insert `transaction_ledger` row with `record_hash`
-4. Insert `notifications` row for the creator
+**Routing by `order_id` prefix:**
+- `pl_*` → payment-link submission: `SUCCESS` calls `fulfillPaymentLinkSubmission`; `FAILED`/`USER_DROPPED` flips `payment_submissions.payment_status = 'failed'`.
+- all others → product order: `SUCCESS` calls `fulfillOrder`; `FAILED`/`USER_DROPPED` sets `orders.status = 'failed'`.
 
-**On `FAILED` / `USER_DROPPED`:** `orders.status = 'failed'`.
+**On `SUCCESS` (product orders) — via `src/lib/server/fulfillment.ts` `fulfillOrder`:**
+1. Atomic claim: `UPDATE orders SET status='completed' WHERE id=? AND status='pending'` — zero rows = already processed, skip (idempotent).
+2. Credit `creator_balances` via `credit_creator_balance` RPC (platform fee from `getPlatformFeeRate()` in `src/lib/server/platform-fee.ts`, currently 0.10).
+3. Insert `transaction_ledger` row with `record_hash = sha256(orderId + ':' + cf_payment_id)` (UNIQUE constraint — replay-safe).
+4. Insert `notifications` row for the creator.
+5. Grant `user_product_access` rows for logged-in buyers (idempotent UNIQUE on `(order_id, product_id)`).
+6. Redeem coupon via `increment_coupon_uses` RPC if coupon was applied.
 
-**Idempotency:** orders already in `completed` or `refunded` return `200 { received: true }` without re-processing.
+**On `FAILED` / `USER_DROPPED`:** `orders.status = 'failed'` (or `payment_submissions.payment_status = 'failed'` for `pl_` orders).
+
+**Idempotency:** the atomic claim (`WHERE status='pending'`) is the guard — zero rows updated means already processed, returns `200 { received: true }` without re-processing.
 
 ---
 
@@ -133,29 +137,9 @@ data.payment.cf_payment_id     → stored in orders.gateway_payment_id
 { "valid": true, "discount_amount": 100, "final_price": 899 }
 ```
 
-**Errors:** `404` (invalid coupon), `400` (expired / not yet active / usage limit).
+**Errors:** `404` (invalid coupon), `400` (expired / not yet active / usage limit), `429` (rate limit — 10/min/IP).
 
----
-
-### `GET /api/discover`
-
-Public marketplace listing for `/discover`.
-
-| Query | Type | Default |
-|---|---|---|
-| `q` | string? | — |
-| `category` | string? \| `'all'` | `'all'` |
-| `limit` | 1–100 | 50 |
-
-Filters: `is_published = true`, `is_on_discover_page = true`, `deleted_at IS NULL`. Returns `{ products: [...] }` with creator profile joined.
-
----
-
-### `GET /api/discover/[productId]`
-
-Single product detail + 8 related (same category or same creator) + 4 more from the same creator.
-
-**Errors:** `404` if not published.
+> The `/api/discover` and `/api/discover/[productId]` routes have been deleted. The `/discover` and product-detail pages query Supabase directly via the browser client (public RLS allows anon reads). See `.claude/todo-later/4-2026-06-04-discover-routes-removal.md`.
 
 ---
 
@@ -168,7 +152,7 @@ Fuzzy title search.
 | `q` | string | Required. Empty → `{ results: [] }` |
 | `creator` | uuid? | Scope to one creator |
 
-Returns up to 20 published products.
+Returns up to 20 published products. Rate-limited 30/min/IP.
 
 ---
 
@@ -186,7 +170,7 @@ Lead-form capture. Verifies `formId` belongs to `siteId` before inserting.
 At least one of `name`, `email`, `mobile` required. Email format validated if provided.
 
 **Success:** `{ success: true }`
-**Errors:** `400` (missing form/site, no contact field, bad email), `500`.
+**Errors:** `400` (missing form/site, no contact field, bad email), `429` (rate limit — 5/min/IP), `500`.
 
 ---
 
@@ -199,7 +183,7 @@ Fire-and-forget analytics for link-in-bio pages. **Always returns 2xx**, even on
 { "site_id": "uuid", "link_id": "uuid?", "event_type": "page_view" | "link_click" | "product_click" | "social_click" }
 ```
 
-**Dedupe:** Skips inserts where the same `site_id + link_id + ip_hash` event occurred in the last 30 seconds. IP is SHA256-hashed, first 16 chars stored.
+**Rate limit:** 60/min/IP (fail-open — over-limit inserts are silently skipped, never 429). **Dedupe:** additionally skips inserts where the same `site_id + link_id + ip_hash` event occurred in the last 30 seconds. IP is SHA256-hashed, first 16 chars stored.
 
 **Side effects:** Inserts `linkinbio_analytics`. For `link_click`/`product_click`, calls RPC `increment_link_click_count`.
 
@@ -259,10 +243,13 @@ Creator requests a payout. Cookie session required.
 { "amount": 5000 }
 ```
 
+All four operations (KYC check, balance read, balance update, payout insert) key on the creator's `profiles.id`, resolved via `resolveProfileId` from `src/lib/server/resolve-profile.ts`. Returns `404` when no profile resolves for the authenticated user.
+
 **Preconditions checked in order:**
-1. `creator_kyc.status === 'verified'` → else 403
-2. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout` ≥ `amount` → else 400
-3. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409
+1. `profiles.id` resolved → else 404
+2. `creator_kyc.status === 'verified'` → else 403
+3. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout` ≥ `amount` → else 400
+4. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409
 
 **On success:** `pending_payout += amount`, inserts `creator_payouts` row with `status: 'pending'`, `currency: 'INR'`.
 
