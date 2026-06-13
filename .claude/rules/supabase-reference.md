@@ -60,7 +60,7 @@ DigiOne's rule (see `.claude/rules/anti-patterns.md` and commit `329b528`): **us
 
 ## Middleware — `proxy.ts`
 
-The middleware refreshes the session cookie on every request, then enforces route guards by reading `user.user_metadata.role` from the verified JWT (no DB hit).
+The middleware refreshes the session cookie on every request, then enforces route guards by reading `user.app_metadata.role` from the verified JWT (no DB hit). `app_metadata` is server-controlled; `user_metadata` is client-editable and must never gate access.
 
 Cookie handler pattern (already wired in `proxy.ts`):
 
@@ -217,7 +217,7 @@ The tool-results file lives under `C:\Users\<you>\.claude\projects\<project-slug
 
 - **Client wrapper is sync, server wrapper is async.** `await createClient()` on the server; not on the browser.
 - **`getSession()` does not contact the auth server.** Spoofable if you've already accepted the cookie blindly. Use `getUser()` for anything that gates real action.
-- **`user_metadata.role`** is read out of the verified JWT in `proxy.ts:68`. For sensitive checks, re-read from the DB inside the route — metadata is not the source of truth.
+- **`app_metadata.role`** is read out of the verified JWT in `proxy.ts` (server-controlled, set by `/api/auth/callback`). RLS additionally exposes a read-everything `super_admin` tier via `public.is_super_admin()`. For sensitive writes, re-read from the DB / use service-role — JWT metadata gates reads, not money writes.
 - **`.single()` throws if 0 or 2+ rows.** Use `.maybeSingle()` when 0 rows is expected.
 - **Service client throws at construction** if env vars are missing — fail fast at the route boundary, not deep in business logic.
 - **The browser client is exported as a singleton** (`export const supabase = createClient()`) for convenience. Don't pass it around server boundaries; create per-request server clients instead.

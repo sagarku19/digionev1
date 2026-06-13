@@ -60,7 +60,7 @@ Stored in **`auth.users.app_metadata.role`** (server-controlled — cannot be sp
 |---|---|
 | `buyer` (or unset) | `/account/library`, public storefronts, checkout |
 | `creator` | All of buyer + `/dashboard/*` |
-| `super_admin` | All of creator + admin-gated tables (RLS) |
+| `super_admin` | All of creator + **read-everything** across sensitive tables via the `public.is_super_admin()` RLS helper (SELECT policies only). Admin **writes** still go through service-role API routes — there are no admin INSERT/UPDATE/DELETE policies. |
 
 `proxy.ts` reads **only** `app_metadata.role` from the verified JWT — it no longer reads `user_metadata.role`. The signup form no longer uses `'user'` as the buyer value; it sends `'buyer'`. `/api/auth/callback` promotes the signup-requested `user_metadata.role` into `app_metadata` so it is server-controlled from that point on. For anything sensitive, re-read from the DB rather than trusting the JWT metadata.
 
@@ -68,9 +68,9 @@ Stored in **`auth.users.app_metadata.role`** (server-controlled — cannot be sp
 
 RLS is the entire authz model. There is **no** "is this user allowed?" code in the app — it's all in Postgres policies. Treat the policies in `supabase/migrations/` as the source of truth.
 
-**Implementation:** all policies live in `supabase/migrations/20260602000000_rls_policies.sql`. Full per-table reference + the access-pattern taxonomy is in `supabase/exports/RLS-POLICIES.md`. Every owner check resolves through the helper `public.current_profile_id()` (STABLE SECURITY DEFINER → `select id from profiles where user_id = auth.uid()`), since `profiles.id` is the `creator_id` used across the schema. `service_role` bypasses RLS, so revenue tables carry **read-only** policies for creators and rely on service-role API routes for all writes (no INSERT/UPDATE policy needed for those writes to work).
+**Implementation:** all policies live in `supabase/migrations/20260602000000_rls_policies.sql` (plus later migrations under `supabase/migrations/`); query the live policies directly (`pg_policies`) for the authoritative set. Every owner check resolves through the helper `public.current_profile_id()` (STABLE SECURITY DEFINER → `select id from profiles where user_id = auth.uid()`), since `profiles.id` is the `creator_id` used across the schema. `service_role` bypasses RLS, so revenue tables carry **read-only** policies for creators and rely on service-role API routes for all writes (no INSERT/UPDATE policy needed for those writes to work).
 
-> History: RLS was effectively off (only `public_images`) until 2026-06-02. If you're reading an older snapshot, see `supabase/exports/INVENTORY.md`.
+> History: RLS was effectively off (only `public_images`) until it was rolled out across all public tables (live: 62/62 tables, 87 policies). For the current production-readiness state and remaining gaps, see `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
 
 Tables you should not touch without understanding their RLS:
 

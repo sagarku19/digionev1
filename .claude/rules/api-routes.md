@@ -57,6 +57,7 @@ Product checkout. Verifies prices server-side, creates an `orders` row, calls Ca
   "items": [{ "id": "uuid" }],
   "buyerId": "uuid?",
   "couponCode": "string?",
+  "referralCode": "string?",
   "contact": { "name": "string", "email": "string", "phone": "string" },
   "upsellPageId": "uuid?"
 }
@@ -72,7 +73,7 @@ Product checkout. Verifies prices server-side, creates an `orders` row, calls Ca
 
 **Errors:** `400` (empty cart, unpublished product, multi-creator cart), `429` (rate limit — 10/min/IP), `502` (Cashfree failure), `500` (other).
 
-**Side effects:** Inserts pending `orders` row (`status: 'pending'`). All items must belong to one creator. Re-reads `price` from DB — never trusts client. Coupon validation is shared via `src/lib/server/coupons.ts` (full expiry/usage-cap checks); valid coupon stores `coupon_id` + `discount_amount` in `orders.metadata`. Free orders (`total === 0`) run through `fulfillOrder` directly — no Cashfree call.
+**Side effects:** Inserts pending `orders` row (`status: 'pending'`). All items must belong to one creator. Re-reads `price` from DB — never trusts client. Coupon validation is shared via `src/lib/server/coupons.ts` (full expiry/usage-cap checks); valid coupon stores `coupon_id` + `discount_amount` in `orders.metadata`. Free orders (`total === 0`) run through `fulfillOrder` directly — no Cashfree call. **Referral:** a valid `referralCode` (validated via `src/lib/server/referrals.ts`) writes a pending `order_referrals` row; the platform-fee-funded commission is settled in `fulfillOrder` (step 7). Only creator-owned codes (`owner_creator_id`) pay commission.
 
 ---
 
@@ -139,7 +140,7 @@ data.payment.cf_payment_id     → stored as gateway_payment_id
 
 **Errors:** `404` (invalid coupon), `400` (expired / not yet active / usage limit), `429` (rate limit — 10/min/IP).
 
-> The `/api/discover` and `/api/discover/[productId]` routes have been deleted. The `/discover` and product-detail pages query Supabase directly via the browser client (public RLS allows anon reads). See `.claude/todo-later/4-2026-06-04-discover-routes-removal.md`.
+> The `/api/discover` and `/api/discover/[productId]` routes have been deleted. The `/discover` and product-detail pages query Supabase directly via the browser client (public RLS allows anon reads).
 
 ---
 

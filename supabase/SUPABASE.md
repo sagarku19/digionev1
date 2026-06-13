@@ -11,57 +11,48 @@ whenever the schema changes.
 
 > **Project ref:** `qcendfisvyjnwmefruba`
 > **DB:** PostgreSQL 17.6 · **Region host (direct):** `db.qcendfisvyjnwmefruba.supabase.co`
-> **Last full sync:** 2026-06-02
+> **Last full sync:** 2026-06-13 (RLS rollout + money/index hardening landed; stale snapshot exports removed — see `CLEANUP-2026-06-13.md`)
 
 ---
 
 ## 🗂 File map — what each file is for
 
+The `supabase/migrations/` folder is the **single rebuild source of truth** and matches the live DB's registered migration history. The point-in-time `exports/` snapshots and raw `*-schema.sql` dumps were removed on 2026-06-13 (they captured pre-RLS state and had gone stale). To re-audit the live DB, query it directly via the Supabase MCP or run `export-everything.sql` in the SQL Editor.
+
 | File | Purpose | Regenerate from |
 |---|---|---|
 | **[SUPABASE.md](./SUPABASE.md)** | This index. Read first. | hand-maintained |
 | **[REBUILD.md](./REBUILD.md)** | Step-by-step to reset / migrate / rebuild the DB | hand-maintained |
-| **[migrations/00000000000000_baseline.sql](./migrations/00000000000000_baseline.sql)** | Entire `public` schema (the rebuild source) | `pg_dump --schema=public` |
-| [migrations/20260416_marketing_tables.sql](./migrations/20260416_marketing_tables.sql) | Historical — already in baseline (no-op) | — |
-| [migrations/20260418_insta_autodm.sql](./migrations/20260418_insta_autodm.sql) | **Pending** Instagram auto-DM feature (NOT applied to prod) | — |
-| **[migrations/20260602000000_rls_policies.sql](./migrations/20260602000000_rls_policies.sql)** | **RLS for all 59 tables** + `current_profile_id()` helper | hand-maintained |
-| [exports/RLS-POLICIES.md](./exports/RLS-POLICIES.md) | Per-table RLS design + rationale | hand-maintained |
-| [exports/RLS-TEST-CHECKLIST.md](./exports/RLS-TEST-CHECKLIST.md) | Pre-prod RLS verification steps | hand-maintained |
+| **[migrations/](./migrations/)** | **The rebuild source.** 14 migrations, registered in the live DB. `00000000000000_baseline.sql` is the full `public` schema + auth.users triggers; later files layer RLS, storage buckets, function hardening, money RPCs, money-integrity constraints, indexes. | `supabase db pull` |
+| [migrations/20260418_insta_autodm.sql](./migrations/20260418_insta_autodm.sql) | Instagram auto-DM feature — registered in history; tables not confirmed live. Decide: apply or drop. | — |
 | **[seed.sql](./seed.sql)** | Reference data (subscription_plans, public_images) | `pg_dump --data-only` |
-| **[exports/storage-and-auth.sql](./exports/storage-and-auth.sql)** | Buckets, storage RLS, auth.users triggers | live audit |
-| [exports/INVENTORY.md](./exports/INVENTORY.md) | Full read-only audit of the live DB | audit queries |
-| [exports/rls-policies.txt](./exports/rls-policies.txt) | All RLS policies, readable | `pg_policies` |
-| [exports/indexes.txt](./exports/indexes.txt) | All 55 indexes | `pg_indexes` |
-| [exports/rls-status.txt](./exports/rls-status.txt) | RLS on/off per table | `pg_class` |
-| [full-schema.sql](./full-schema.sql) | Raw public-schema dump | `pg_dump` |
-| [storage-schema.sql](./storage-schema.sql) | Raw storage-schema dump | `pg_dump` |
-| [export-everything.sql](./export-everything.sql) | Query pack to re-audit from SQL Editor | hand-maintained |
-| `exports/_*.{sql,py}` | Intermediate build artifacts (safe to delete/regenerate) | scripts |
+| [export-everything.sql](./export-everything.sql) | Read-only query pack to re-audit from the SQL Editor (regenerates what the deleted exports held) | hand-maintained |
+| [CLEANUP-2026-06-13.md](./CLEANUP-2026-06-13.md) | Record of the 2026-06-13 stale-file cleanup | hand-maintained |
+
+> Authoritative live-state reference (replaces the deleted `exports/` audit docs): `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
 
 ---
 
-## 📊 At a glance
+## 📊 At a glance (live, 2026-06-13)
 
 | Thing | Count |
 |---|---|
 | Schemas (ours) | `public` (full) + slices of `storage`, `auth` |
-| Public tables | 59 |
+| Public tables | 62 |
 | Enums | 21 |
-| Functions | 6 |
+| Functions | 12 |
 | Triggers | 6 (2 on `auth.users`, 4 on public tables) |
-| Indexes | 55 (141 incl. PK/unique) |
-| Sequences | 1 |
-| Storage buckets | 3 (`public-asset`, `uploads`, `user_files`) |
-| RLS policies | all 59 public tables + 11 storage (see RLS migration) |
+| Storage buckets | 4 (`public-asset`, `creator-public`, `creator-content`, `creator-private`) |
+| RLS | enabled on 62/62 tables · 87 policies |
 | Reference rows to seed | 13 (3 plans + 10 images) |
 
-Full detail: [exports/INVENTORY.md](./exports/INVENTORY.md).
+Full detail: `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
 
 ---
 
 ## 🔑 The 4 things that are NOT in a plain public-schema dump
 
-These bite you on a rebuild. All handled by `exports/storage-and-auth.sql`:
+These bite you on a rebuild. Auth.users triggers are captured in `migrations/00000000000000_baseline.sql`; storage buckets in the `migrations/*storage*` / bucket migrations. Storage `storage.objects` RLS policies are only thinly captured in migrations — **capture them into a dedicated migration as a follow-up** (tracked in `CLEANUP-2026-06-13.md`):
 
 1. **`auth.users` triggers** (`on_auth_user_created`, `on_auth_user_updated`) — wire
    signup → `public.users` + `public.profiles`. Outside `public`.
@@ -75,8 +66,11 @@ These bite you on a rebuild. All handled by `exports/storage-and-auth.sql`:
 
 | # | Issue | Status |
 |---|---|---|
-| 1 | **RLS gap** — was: only `public_images` had RLS despite docs claiming ~20 tables. | **Resolved 2026-06-02** via `migrations/20260602000000_rls_policies.sql` (all 59 tables). ⚠️ Test on a throwaway project before prod — see RLS-TEST-CHECKLIST.md. |
-| 2 | `20260418_insta_autodm.sql` never applied to prod | Intentional — pending feature |
+| 1 | **RLS gap** — was: only `public_images` had RLS. | **Resolved** — RLS rolled out live to 62/62 tables (87 policies). |
+| 2 | `20260418_insta_autodm.sql` registered in history; tables not confirmed live | Decide: apply or drop |
+| 7 | Payout write path — API inserts `status:'pending'` | **Resolved 2026-06-14** — CHECK now allows `pending/initiated/processed/failed` (migration `production_fixes`); concurrency guard fixed |
+| 8 | Admin `super_admin` RLS + referral commission | **Resolved 2026-06-14** — `is_super_admin()` read RLS added; referral attribution + platform-fee commission built (see `docs/db/money-path.md`) |
+| 9 | FK-isolated tables (missing FK constraints) | **Resolved 2026-06-14** — 12 FKs added in `production_fixes` |
 | 3 | 1 `public_images` seed row points at old project's storage URL | Will 404 on new project until re-uploaded |
 | 4 | `site_templates` table empty | Nothing to seed |
 | 5 | Pooler host hangs for pg_dump/psql | Always use direct host `db.<ref>.supabase.co` |
@@ -86,16 +80,18 @@ These bite you on a rebuild. All handled by `exports/storage-and-auth.sql`:
 
 ## 🔁 Routine: after any schema change
 
-1. Make the change (via a new timestamped migration in `migrations/`, or Dashboard).
-2. Regenerate the baseline + exports (commands in REBUILD.md → "Regenerating these files").
-3. `npm run update-types` to refresh `types/database.types.ts`.
-4. Update counts in this file + INVENTORY.md if tables/enums/functions changed.
-5. If you added a reference/lookup table, add its data to `seed.sql`.
-6. Commit. The DB is now reproducible again.
+1. Make the change as a new timestamped migration in `migrations/` (`supabase migration new …`), or via the Dashboard then `supabase db pull`.
+2. `npm run update-types` to refresh `types/database.types.ts`.
+3. Update the "At a glance" counts in this file if tables/enums/functions changed.
+4. If you added a reference/lookup table, add its data to `seed.sql`.
+5. Re-run `get_advisors` (security + performance) and reconcile against audit #5.
+6. Commit. The DB is now reproducible from `migrations/` again.
 
 ---
 
 ## 🚀 Rebuild in one breath
 
-New/empty project: run baseline → (optional autodm) → seed → storage-and-auth →
-set auth providers → `update-types` → update env. Full commands: [REBUILD.md](./REBUILD.md).
+New/empty project: run `migrations/` in order (baseline first) → seed → set auth
+providers (Google OAuth, Dashboard-only) → `update-types` → update env. Full
+commands: [REBUILD.md](./REBUILD.md). Auth.users triggers ship in the baseline;
+storage `storage.objects` RLS policies need a dedicated migration (see CLEANUP record).
