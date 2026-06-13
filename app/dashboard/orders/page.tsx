@@ -2,7 +2,7 @@
 // Orders dashboard — all orders for this creator with detail drawer.
 
 import React, { useState, useMemo } from 'react';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders, type Order } from '@/hooks/useOrders';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -22,7 +22,7 @@ function exportOrdersCSV(orders: ReturnType<typeof useOrders>['orders']) {
     o.customer_phone ?? '',
     o.total_amount,
     o.status,
-    (o.order_items ?? []).map((i: any) => i.products?.name ?? '').filter(Boolean).join('; '),
+    (o.order_items ?? []).map((i) => i.products?.name ?? '').filter(Boolean).join('; '),
     new Date(o.created_at).toLocaleDateString('en-IN'),
   ]);
   const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -63,7 +63,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
+function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) {
   const products = order.order_items ?? [];
   const receiptUrl = `/payment/receipt?order_id=${order.id}`;
 
@@ -120,7 +120,7 @@ function OrderDrawer({ order, onClose }: { order: any; onClose: () => void }) {
           {products.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Products</p>
-              {products.map((item: any, i: number) => (
+              {products.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 bg-[var(--surface-muted)] rounded-[var(--radius-sm)]">
                   <div className="w-10 h-10 rounded-lg bg-[var(--surface-hover)] flex items-center justify-center shrink-0">
                     {item.products?.thumbnail_url ? (
@@ -183,7 +183,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [selected, setSelected] = useState<any>(null);
+  const [selected, setSelected] = useState<Order | null>(null);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -368,7 +368,7 @@ export default function OrdersPage() {
           <div className="divide-y divide-[var(--border-subtle)]">
             {filtered.map(order => {
               const products = order.order_items ?? [];
-              const productNames = products.map((i: any) => i.products?.name).filter(Boolean);
+              const productNames = products.map((i) => i.products?.name).filter(Boolean);
 
               return (
                 <button

@@ -76,11 +76,11 @@ export default function UpsellEditPage() {
   const contactFields = config.contact_fields ?? { show_email: true, show_phone: false, show_name: true };
 
   const primaryProduct = products.find(p => p.id === page.primary_product_id);
-  const upsellProducts = (draft.upsell_product_ids ?? [])
-    .map((id: string) => products.find((p: any) => p.id === id))
-    .filter(Boolean);
+  const upsellProducts = ((draft.upsell_product_ids ?? []) as string[])
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is typeof products[number] => Boolean(p));
   const availableForUpsell = products.filter(
-    (p: any) => p.id !== page.primary_product_id && !(draft.upsell_product_ids ?? []).includes(p.id)
+    (p) => p.id !== page.primary_product_id && !(draft.upsell_product_ids ?? []).includes(p.id)
   );
 
   const handleSave = async () => {
@@ -209,7 +209,7 @@ export default function UpsellEditPage() {
             <div>
               <p className="text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-3">Upsell Products (max 2)</p>
               <div className="space-y-2">
-                {upsellProducts.map((p: any) => (
+                {upsellProducts.map((p) => (
                   <div key={p.id} className="flex items-center gap-3 p-3 bg-[var(--surface-muted)] rounded-[var(--radius-md)]">
                     {p.thumbnail_url ? (
                       <img src={p.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
@@ -239,7 +239,7 @@ export default function UpsellEditPage() {
                     }}
                   >
                     <option value="">+ Add upsell product...</option>
-                    {availableForUpsell.map((p: any) => (
+                    {availableForUpsell.map((p) => (
                       <option key={p.id} value={p.id}>{p.name} — {formatINR(p.price || 0)}</option>
                     ))}
                   </select>

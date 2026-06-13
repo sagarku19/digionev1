@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useProducts } from '@/hooks/useProducts';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders, type Order } from '@/hooks/useOrders';
 import { useSites } from '@/hooks/useSites';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { StatCard } from '@/components/ui/StatCard';
@@ -44,7 +44,7 @@ function timeAgo(iso: string) {
 }
 
 // ─── Activity Feed ────────────────────────────────────────────
-function ActivityFeed({ orders, loading }: { orders: any[]; loading: boolean }) {
+function ActivityFeed({ orders, loading }: { orders: Order[]; loading: boolean }) {
   if (loading) {
     return (
       <div className="space-y-0 divide-y divide-[var(--border-subtle)]">
@@ -73,7 +73,7 @@ function ActivityFeed({ orders, loading }: { orders: any[]; loading: boolean }) 
 
   return (
     <div className="divide-y divide-[var(--border-subtle)]">
-      {orders.slice(0, 8).map((order: any) => {
+      {orders.slice(0, 8).map((order) => {
         const isSuccess = order.status === 'completed' || order.status === 'success';
         const isPending = order.status === 'pending';
         return (
@@ -130,8 +130,8 @@ export default function DashboardHome() {
   const { sites }                                 = useSites();
 
   const mainSite            = sites?.find(s => s.site_type === 'main' && s.is_active) ?? sites?.find(s => s.site_type === 'main');
-  const activeProductsCount = products.filter((p: any) => p.is_published).length;
-  const topProducts         = useMemo(() => products.filter((p: any) => p.is_published).slice(0, 5), [products]);
+  const activeProductsCount = products.filter((p) => p.is_published).length;
+  const topProducts         = useMemo(() => products.filter((p) => p.is_published).slice(0, 5), [products]);
 
   const chartData = useMemo(() => {
     if (!stats?.orders) return [];
@@ -140,8 +140,8 @@ export default function DashboardHome() {
       d.setDate(d.getDate() - (29 - i));
       const ds = d.toISOString().split('T')[0];
       const revenue = stats.orders
-        .filter((o: any) => o.created_at?.startsWith(ds) && o.status === 'completed')
-        .reduce((acc: number, o: any) => acc + (Number(o.total_amount) || 0), 0);
+        .filter((o) => o.created_at?.startsWith(ds) && o.status === 'completed')
+        .reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
       return { name: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), revenue };
     });
   }, [stats]);
@@ -256,7 +256,7 @@ export default function DashboardHome() {
                         padding: '8px 12px',
                       }}
                       itemStyle={{ color: 'var(--text-primary)' }}
-                      formatter={(v: any) => [formatINR(Number(v)), 'Revenue']}
+                      formatter={(v) => [formatINR(Number(v)), 'Revenue']}
                       cursor={{ stroke: 'var(--brand)', strokeWidth: 1, strokeDasharray: '4 4' }}
                     />
                     <Area
@@ -311,7 +311,7 @@ export default function DashboardHome() {
                 />
               ) : (
                 <div className="divide-y divide-[var(--border-subtle)]">
-                  {topProducts.map((p: any, idx: number) => (
+                  {topProducts.map((p, idx) => (
                     <Link
                       key={p.id}
                       href={`/dashboard/products/${p.id}`}

@@ -185,7 +185,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   const [edits, setEdits] = useState<Record<string, any>>({});
 
   // The source product from the query
-  const sourceProduct = products.find((x: any) => x.id === productId) ?? null;
+  const sourceProduct = products.find((x) => x.id === productId) ?? null;
   // Merged: source fields + any local edits
   const formData: any = sourceProduct ? { ...sourceProduct, ...edits } : null;
 
@@ -233,8 +233,8 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
       await updateProduct({ id: productId, updates });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err: any) {
-      alert(`Failed to save: ${err?.message ?? 'Please try again.'}`);
+    } catch (err: unknown) {
+      alert(`Failed to save: ${err instanceof Error ? err.message : 'Please try again.'}`);
     } finally {
       setIsSaving(false);
     }

@@ -53,8 +53,8 @@ export default function EarningsPage() {
       setIsModalOpen(false);
       setPayoutAmount('');
       refreshEarnings();
-    } catch (err: any) {
-      setErrorMsg(err.message);
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to request payout');
     } finally {
       setIsSubmitting(false);
     }
@@ -62,21 +62,21 @@ export default function EarningsPage() {
 
   const filteredPayouts = useMemo(() => {
     if (statusFilter === 'all') return payouts;
-    return payouts.filter((p: any) => p.status === statusFilter);
+    return payouts.filter((p) => p.status === statusFilter);
   }, [payouts, statusFilter]);
 
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = { all: payouts.length };
-    for (const p of payouts as any[]) {
+    for (const p of payouts) {
       counts[p.status] = (counts[p.status] || 0) + 1;
     }
     return counts;
   }, [payouts]);
 
   const totalWithdrawn = useMemo(() =>
-    (payouts as any[])
-      .filter(p => p.status === 'completed' || p.status === 'paid')
-      .reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
+    payouts
+      .filter((p) => p.status === 'completed' || p.status === 'paid')
+      .reduce((sum, p) => sum + (p.amount || 0), 0),
     [payouts]
   );
 
@@ -363,7 +363,7 @@ export default function EarningsPage() {
             />
           ) : (
             <div className="divide-y divide-[var(--border-subtle)]">
-              {(filteredPayouts as any[]).map((payout) => (
+              {filteredPayouts.map((payout) => (
                 <div key={payout.id} className="px-6 py-4 flex items-center gap-4 hover:bg-[var(--surface-hover)] transition-colors">
                   {/* Icon */}
                   <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 ${
@@ -388,7 +388,7 @@ export default function EarningsPage() {
                       Withdrawal Request
                     </p>
                     <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
-                      {new Date(payout.created_at).toLocaleDateString('en-IN', {
+                      {new Date(payout.created_at!).toLocaleDateString('en-IN', {
                         year: 'numeric', month: 'short', day: 'numeric'
                       })}
                       {payout.processed_at && (
@@ -412,7 +412,7 @@ export default function EarningsPage() {
           )}
 
           {/* Footer summary */}
-          {!isLoading && (filteredPayouts as any[]).length > 0 && (
+          {!isLoading && filteredPayouts.length > 0 && (
             <div className="px-6 py-3 border-t border-[var(--border)] bg-[var(--surface-muted)] flex items-center justify-between">
               <span className="text-xs text-[var(--text-secondary)]">
                 {filteredPayouts.length} transaction{filteredPayouts.length !== 1 ? 's' : ''}

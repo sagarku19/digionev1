@@ -48,12 +48,19 @@ function DeltaBadge({ current, prev }: { current: number; prev: number }) {
   );
 }
 
-const CustomTooltip = ({ active, payload, label, formatter }: any) => {
+type ChartTooltipProps = {
+  active?: boolean;
+  payload?: { value: number; color?: string }[];
+  label?: string;
+  formatter?: (value: number) => React.ReactNode;
+};
+
+const CustomTooltip = ({ active, payload, label, formatter }: ChartTooltipProps) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 shadow-[var(--shadow-md)] text-sm">
       <p className="text-[var(--text-tertiary)] mb-1">{label}</p>
-      {payload.map((p: any, i: number) => (
+      {payload.map((p, i) => (
         <p key={i} className="font-semibold" style={{ color: p.color }}>
           {formatter ? formatter(p.value) : p.value}
         </p>
@@ -84,7 +91,7 @@ export default function AnalyticsPage() {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const ds = d.toISOString().split('T')[0];
-      const dayOrders = stats.orders.filter((o: any) =>
+      const dayOrders = stats.orders.filter((o) =>
         o.created_at?.startsWith(ds) && (o.status === 'success' || o.status === 'completed')
       );
       data.push({
@@ -93,7 +100,7 @@ export default function AnalyticsPage() {
           : daysBack <= 31
           ? d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
           : d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
-        revenue: dayOrders.reduce((acc: number, o: any) => acc + (o.total_amount || 0), 0),
+        revenue: dayOrders.reduce((acc, o) => acc + (o.total_amount || 0), 0),
         sales: dayOrders.length,
       });
     }

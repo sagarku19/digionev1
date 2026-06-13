@@ -80,10 +80,10 @@ function ProductsPageInner() {
   const showLoading = !mounted || isLoading;
   const showUpsellLoading = !mounted || upsellLoading;
 
-  const publishedCount = products.filter((p: any) => p.is_published).length;
-  const draftCount = products.filter((p: any) => !p.is_published).length;
+  const publishedCount = products.filter((p) => p.is_published).length;
+  const draftCount = products.filter((p) => !p.is_published).length;
 
-  const filtered = products.filter((p: any) => {
+  const filtered = products.filter((p) => {
     const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusTab === 'all' ? true : statusTab === 'published' ? p.is_published : !p.is_published;
     const matchCategory = categoryFilter === 'all' ? true : p.category === categoryFilter;
@@ -98,7 +98,7 @@ function ProductsPageInner() {
     });
   };
 
-  const selectAll = () => setSelectedIds(new Set(filtered.map((p: any) => p.id)));
+  const selectAll = () => setSelectedIds(new Set(filtered.map((p) => p.id)));
   const clearSelection = () => setSelectedIds(new Set());
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -134,7 +134,7 @@ function ProductsPageInner() {
   const handleCreateUpsell = async () => {
     if (!primaryId) return;
     try {
-      const title = upsellTitle.trim() || products.find((p: any) => p.id === primaryId)?.name || 'Upsell Page';
+      const title = upsellTitle.trim() || products.find((p) => p.id === primaryId)?.name || 'Upsell Page';
       const page = await createUpsellPage({
         title,
         primary_product_id: primaryId,
@@ -160,7 +160,7 @@ function ProductsPageInner() {
     setDeleteId(null);
   };
 
-  const filteredProducts = products.filter((p: any) =>
+  const filteredProducts = products.filter((p) =>
     p.name?.toLowerCase().includes(productSearch.toLowerCase())
   );
 
@@ -325,7 +325,7 @@ function ProductsPageInner() {
           {/* Product card grid */}
           {!showLoading && filtered.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filtered.map((product: any) => {
+              {filtered.map((product) => {
                 const isSelected = selectedIds.has(product.id);
                 return (
                 <div
@@ -373,7 +373,7 @@ function ProductsPageInner() {
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <h3 className="font-bold text-[var(--text-primary)] text-base leading-tight line-clamp-1 group-hover:text-[var(--brand)] transition-colors">{product.name}</h3>
                       <span className="text-base font-black text-[var(--text-primary)] shrink-0 bg-[var(--surface-muted)] px-2 py-0.5 rounded-lg border border-[var(--border)] shadow-[var(--shadow-xs)]">
-                        {product.is_free ? 'Free' : formatINR(product.price || 0)}
+                        {(product as { is_free?: boolean }).is_free ? 'Free' : formatINR(product.price || 0)}
                       </span>
                     </div>
 
@@ -715,7 +715,7 @@ function ProductsPageInner() {
                       type="text" value={upsellTitle}
                       onChange={e => setUpsellTitle(e.target.value)}
                       className={INPUT}
-                      placeholder={products.find((p: any) => p.id === primaryId)?.name || 'e.g. Black Friday Mastery Bundle'}
+                      placeholder={products.find((p) => p.id === primaryId)?.name || 'e.g. Black Friday Mastery Bundle'}
                     />
                   </div>
 
@@ -731,7 +731,7 @@ function ProductsPageInner() {
                       />
                     </div>
                     <div className="max-h-48 overflow-y-auto border border-[var(--border)] rounded-[var(--radius-sm)] divide-y divide-[var(--border-subtle)] bg-[var(--surface)] shadow-inner custom-scrollbar">
-                      {filteredProducts.map((p: any) => (
+                      {filteredProducts.map((p) => (
                         <button
                           key={p.id} type="button"
                           onClick={() => { setPrimaryId(p.id); setSecondaryIds(ids => ids.filter(id => id !== p.id)); if (!upsellTitle) setUpsellTitle(p.name); }}
@@ -768,7 +768,7 @@ function ProductsPageInner() {
                         Add Order Bumps <span className="text-[var(--text-tertiary)] font-medium text-xs ml-1">(Optional, max 2)</span>
                       </label>
                       <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                        {products.filter((p: any) => p.id !== primaryId).map((p: any) => {
+                        {products.filter((p) => p.id !== primaryId).map((p) => {
                           const selected = secondaryIds.includes(p.id);
                           const disabled = !selected && secondaryIds.length >= 2;
                           return (
