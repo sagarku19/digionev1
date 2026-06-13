@@ -6,7 +6,7 @@ tags: []
 # Post-dashboard follow-ups (DB hardening + maturity)
 
 **Captured:** 2026-06-14 — deferred by the user, to be picked up *after* the next round of dashboard add/update work.
-**Context:** the production-readiness fix-set landed (see `5-2026-06-13-db-production-audit.md` punch-list = mostly resolved, and `docs/superpowers/specs|plans/2026-06-13-db-production-fixes*`). The schema is solid; what remains is cleanup + operational maturity. None of this blocks shipping.
+**Context:** the production-readiness fix-set landed (see `5(done)-2026-06-13-db-production-audit.md` punch-list = mostly resolved, and `docs/superpowers/specs|plans/2026-06-13-db-production-fixes*`). The schema is solid; what remains is cleanup + operational maturity. None of this blocks shipping.
 
 ---
 

@@ -7,7 +7,7 @@ tags: []
 # DigiOne — DB + Code Production-Readiness Fixes — Design
 
 **Date:** 2026-06-13
-**Source of findings:** `.claude/todo-later/5-2026-06-13-db-production-audit.md`
+**Source of findings:** `.claude/todo-later/5(done)-2026-06-13-db-production-audit.md`
 **Project:** Supabase `qcendfisvyjnwmefruba` · Postgres 17.6
 **Packaging:** Approach 1 — one structural DB migration → grouped code changes → onboarding docs.
 

@@ -62,9 +62,9 @@ Items consciously punted from earlier sessions live here as `N-YYYY-MM-DD-<topic
 
 | File | What |
 |---|---|
-| `.claude/todo-later/1-2026-06-03-storage-followups.md` | 12 deferred items for `/api/upload`, `/api/deliverables/*`, `/api/private/download`, bucket policies. Read when touching any of those routes/buckets or asking "what's left on storage?" |
-| `.claude/todo-later/5-2026-06-13-db-production-audit.md` | **The current DB audit.** Live-state production-readiness review (post-RLS rollout): table structure, FKs, indexes, RLS, functions/triggers, auth flow, referral system, payout logic, admin permissions — with a severity-ordered punch-list. Read for any DB/schema/RLS/money-path work. Supersedes the removed 2026-06-03 audits (see `supabase/CLEANUP-2026-06-13.md`). |
-| `.claude/todo-later/6-2026-06-14-post-dashboard-followups.md` | **Deferred DB hardening + maturity backlog** (user picks up after dashboard work): staging branch, money-route tests + CI, drop/build the ~20 dead tables, naming + enum cleanup, the coupon-create identity bug, scale/ops. Read when resuming DB hardening or asking "what's left on the DB?". |
+| `.claude/todo-later/1(left)-2026-06-03-storage-followups.md` | 12 deferred items for `/api/upload`, `/api/deliverables/*`, `/api/private/download`, bucket policies. Read when touching any of those routes/buckets or asking "what's left on storage?" |
+| `.claude/todo-later/5(done)-2026-06-13-db-production-audit.md` | **The current DB audit.** Live-state production-readiness review (post-RLS rollout): table structure, FKs, indexes, RLS, functions/triggers, auth flow, referral system, payout logic, admin permissions — with a severity-ordered punch-list. Read for any DB/schema/RLS/money-path work. Supersedes the removed 2026-06-03 audits (see `supabase/CLEANUP-2026-06-13.md`). |
+| `.claude/todo-later/6(left)-2026-06-14-post-dashboard-followups.md` | **Deferred DB hardening + maturity backlog** (user picks up after dashboard work): staging branch, money-route tests + CI, drop/build the ~20 dead tables, naming + enum cleanup, the coupon-create identity bug, scale/ops. Read when resuming DB hardening or asking "what's left on the DB?". |
 
 ---
 

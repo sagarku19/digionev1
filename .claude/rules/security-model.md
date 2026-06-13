@@ -70,7 +70,7 @@ RLS is the entire authz model. There is **no** "is this user allowed?" code in t
 
 **Implementation:** all policies live in `supabase/migrations/20260602000000_rls_policies.sql` (plus later migrations under `supabase/migrations/`); query the live policies directly (`pg_policies`) for the authoritative set. Every owner check resolves through the helper `public.current_profile_id()` (STABLE SECURITY DEFINER → `select id from profiles where user_id = auth.uid()`), since `profiles.id` is the `creator_id` used across the schema. `service_role` bypasses RLS, so revenue tables carry **read-only** policies for creators and rely on service-role API routes for all writes (no INSERT/UPDATE policy needed for those writes to work).
 
-> History: RLS was effectively off (only `public_images`) until it was rolled out across all public tables (live: 62/62 tables, 87 policies). For the current production-readiness state and remaining gaps, see `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
+> History: RLS was effectively off (only `public_images`) until it was rolled out across all public tables (live: 62/62 tables, 87 policies). For the current production-readiness state and remaining gaps, see `.claude/todo-later/5(done)-2026-06-13-db-production-audit.md`.
 
 Tables you should not touch without understanding their RLS:
 

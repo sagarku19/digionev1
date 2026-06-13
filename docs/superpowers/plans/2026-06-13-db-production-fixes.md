@@ -754,7 +754,7 @@ git commit -m "docs(db): ERD + per-table schema reference"
 ### Task 16: Sync rules + audit
 
 **Files:**
-- Modify: `.claude/rules/security-model.md`, `.claude/rules/api-routes.md`, `.claude/rules/supabase-reference.md`, `supabase/SUPABASE.md`, `.claude/todo-later/5-2026-06-13-db-production-audit.md`
+- Modify: `.claude/rules/security-model.md`, `.claude/rules/api-routes.md`, `.claude/rules/supabase-reference.md`, `supabase/SUPABASE.md`, `.claude/todo-later/5(done)-2026-06-13-db-production-audit.md`
 
 - [ ] **Step 1: `security-model.md`** — document: admin = read-everything via `is_super_admin()` RLS + writes service-role only; referral commission is a service-role fulfillment write funded from platform fee; payout status lifecycle.
 
@@ -769,7 +769,7 @@ git commit -m "docs(db): ERD + per-table schema reference"
 - [ ] **Step 6: Commit**
 
 ```bash
-git add .claude/rules/ supabase/SUPABASE.md .claude/todo-later/5-2026-06-13-db-production-audit.md
+git add .claude/rules/ supabase/SUPABASE.md .claude/todo-later/5(done)-2026-06-13-db-production-audit.md
 git commit -m "docs: sync rules + audit with production-fixes changes"
 ```
 

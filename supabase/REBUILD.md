@@ -18,7 +18,7 @@ How to recreate the entire Supabase database from scratch — on the same projec
 > those files as historical; apply the numbered `migrations/` in order instead. This
 > runbook needs a full rewrite around the CLI flow (tracked in the cleanup record).
 >
-> Live-state reference: `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
+> Live-state reference: `.claude/todo-later/5(done)-2026-06-13-db-production-audit.md`.
 
 ---
 

@@ -29,7 +29,7 @@ The `supabase/migrations/` folder is the **single rebuild source of truth** and 
 | [export-everything.sql](./export-everything.sql) | Read-only query pack to re-audit from the SQL Editor (regenerates what the deleted exports held) | hand-maintained |
 | [CLEANUP-2026-06-13.md](./CLEANUP-2026-06-13.md) | Record of the 2026-06-13 stale-file cleanup | hand-maintained |
 
-> Authoritative live-state reference (replaces the deleted `exports/` audit docs): `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
+> Authoritative live-state reference (replaces the deleted `exports/` audit docs): `.claude/todo-later/5(done)-2026-06-13-db-production-audit.md`.
 
 ---
 
@@ -46,7 +46,7 @@ The `supabase/migrations/` folder is the **single rebuild source of truth** and 
 | RLS | enabled on 62/62 tables · 87 policies |
 | Reference rows to seed | 13 (3 plans + 10 images) |
 
-Full detail: `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
+Full detail: `.claude/todo-later/5(done)-2026-06-13-db-production-audit.md`.
 
 ---
 
