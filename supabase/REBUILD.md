@@ -9,8 +9,16 @@ tags: []
 How to recreate the entire Supabase database from scratch — on the same project
 (reset) or a brand-new project (migrate). Designed so this takes minutes, not a day.
 
-> Snapshot basis: project `qcendfisvyjnwmefruba`, 2026-06-02.
-> Full audit: [exports/INVENTORY.md](./exports/INVENTORY.md).
+> ⚠️ **Partially superseded (2026-06-13).** The rebuild source of truth is now
+> `supabase/migrations/` applied via the Supabase CLI (`supabase db reset` / `db push`),
+> not the hand-rolled `pg_dump` + `storage-and-auth.sql` flow described below. The
+> `exports/*` snapshots and `full-schema.sql` / `storage-schema.sql` dumps referenced
+> in this runbook were **removed** on 2026-06-13 (stale, pre-RLS) — see
+> [CLEANUP-2026-06-13.md](./CLEANUP-2026-06-13.md). Treat the sections below that apply
+> those files as historical; apply the numbered `migrations/` in order instead. This
+> runbook needs a full rewrite around the CLI flow (tracked in the cleanup record).
+>
+> Live-state reference: `.claude/todo-later/5-2026-06-13-db-production-audit.md`.
 
 ---
 
