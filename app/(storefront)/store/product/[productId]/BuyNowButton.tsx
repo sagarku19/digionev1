@@ -20,10 +20,13 @@ export function BuyNowButton({ productId, price, label }: Props) {
     setLoading(true);
     setError('');
     try {
+      const referralCode = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('ref')
+        : null;
       const res = await fetch('/api/checkout/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: [{ id: productId }], contact }),
+        body: JSON.stringify({ items: [{ id: productId }], contact, referralCode }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Checkout failed');

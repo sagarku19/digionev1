@@ -65,6 +65,9 @@ export default function UpsellCheckoutClient({ page, primaryProduct, upsellProdu
     setIsSubmitting(true);
     setError(null);
     try {
+      const referralCode = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('ref')
+        : null;
       const items = [
         { id: primaryProduct.id, qty: 1 },
         ...selectedUpsellProducts.map(p => ({ id: p.id, qty: 1 })),
@@ -76,6 +79,7 @@ export default function UpsellCheckoutClient({ page, primaryProduct, upsellProdu
           items,
           contact: contactInfo,
           upsellPageId: page.id,
+          referralCode,
         }),
       });
       const data = await res.json();

@@ -29,12 +29,16 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
+      const referralCode = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('ref')
+        : null;
       const res = await fetch('/api/checkout/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items,
           contact: { name: name.trim(), email: email.trim(), phone: phone.trim() || undefined },
+          referralCode,
         }),
       });
       const data = await res.json();
