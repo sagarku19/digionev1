@@ -266,7 +266,15 @@ export type Database = {
           valid_from?: string | null
           valid_until?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_coupons_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       creator_balances: {
         Row: {
@@ -658,6 +666,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_creator_payouts_creator"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_payout_request"
             columns: ["payout_request_id"]
@@ -1434,6 +1449,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_order_referrals_code"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_order_referrals_creator"
             columns: ["referrer_creator_id"]
             isOneToOne: false
@@ -2004,7 +2026,22 @@ export type Database = {
           owner_user_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_referral_codes_owner_creator"
+            columns: ["owner_creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_referral_codes_owner_user"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_bookings: {
         Row: {
@@ -2286,7 +2323,15 @@ export type Database = {
           sticky_header?: boolean | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_site_navigation_site"
+            columns: ["site_id"]
+            isOneToOne: true
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_page_views: {
         Row: {
@@ -2358,7 +2403,22 @@ export type Database = {
           site_id?: string
           sort_order?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_spa_product"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_spa_site"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_sections_config: {
         Row: {
@@ -2385,7 +2445,15 @@ export type Database = {
           site_type?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_site_sections_config_site"
+            columns: ["site_id"]
+            isOneToOne: true
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_singlepage: {
         Row: {
@@ -3026,7 +3094,29 @@ export type Database = {
           snapshot_metadata?: Json | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_upa_order"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_upa_product"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_upa_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_referrals: {
         Row: {
@@ -3308,6 +3398,7 @@ export type Database = {
         Args: { p_link_id: string }
         Returns: undefined
       }
+      is_super_admin: { Args: never; Returns: boolean }
       sum_bucket_bytes_for_prefix: {
         Args: { p_bucket_id: string; p_prefix: string }
         Returns: number
