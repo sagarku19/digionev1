@@ -70,6 +70,7 @@ returns boolean language sql stable security definer set search_path = public as
   select coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') = 'super_admin';
 $$;
 revoke execute on function public.is_super_admin() from public;
+revoke execute on function public.is_super_admin() from anon;
 grant execute on function public.is_super_admin() to authenticated;
 
 do $$
