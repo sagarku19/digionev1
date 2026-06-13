@@ -70,6 +70,9 @@ function ProductsPageInner() {
 
   // Delete confirm
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [createError, setCreateError] = useState('');
+  const [upsellError, setUpsellError] = useState('');
+  const [deleteError, setDeleteError] = useState('');
 
   // Copied link feedback
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -104,15 +107,16 @@ function ProductsPageInner() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    setCreateError('');
     try {
       const p = await createProduct({ name: name.trim(), category, price: parseFloat(price) || 0, is_published: false });
       if (p) { setModal(false); router.push(`/dashboard/products/${p.id}`); }
-    } catch {
-      // silent
+    } catch (err: unknown) {
+      setCreateError(err instanceof Error ? err.message : 'Failed to create product. Please try again.');
     }
   };
 
-  const openModal = () => { setName(''); setCategory('digital'); setPrice(''); setModal(true); };
+  const openModal = () => { setName(''); setCategory('digital'); setPrice(''); setCreateError(''); setModal(true); };
 
   useEffect(() => {
     if (searchParams.get('new') === '1') {
@@ -128,11 +132,13 @@ function ProductsPageInner() {
     setUpsellTitle('');
     setUpsellStep('info');
     setProductSearch('');
+    setUpsellError('');
     setUpsellModal(true);
   };
 
   const handleCreateUpsell = async () => {
     if (!primaryId) return;
+    setUpsellError('');
     try {
       const title = upsellTitle.trim() || products.find((p) => p.id === primaryId)?.name || 'Upsell Page';
       const page = await createUpsellPage({
@@ -142,8 +148,8 @@ function ProductsPageInner() {
       });
       setUpsellModal(false);
       if (page) router.push(`/dashboard/products/upsells/${page.id}`);
-    } catch {
-      // silent
+    } catch (err: unknown) {
+      setUpsellError(err instanceof Error ? err.message : 'Failed to create upsell page. Please try again.');
     }
   };
 
@@ -156,8 +162,13 @@ function ProductsPageInner() {
 
   const handleDeleteUpsell = async () => {
     if (!deleteId) return;
-    try { await deleteUpsellPage(deleteId); } catch { /* silent */ }
-    setDeleteId(null);
+    setDeleteError('');
+    try {
+      await deleteUpsellPage(deleteId);
+      setDeleteId(null);
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete. Please try again.');
+    }
   };
 
   const filteredProducts = products.filter((p) =>
@@ -563,7 +574,7 @@ function ProductsPageInner() {
                           </div>
 
                           <button
-                            onClick={() => setDeleteId(up.id)}
+                            onClick={() => { setDeleteError(''); setDeleteId(up.id); }}
                             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[var(--danger-bg)] text-[var(--text-tertiary)] hover:text-[var(--danger)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                             title="Delete"
                           >
@@ -642,6 +653,12 @@ function ProductsPageInner() {
                 </div>
                 <p className="text-xs text-[var(--text-secondary)] mt-2 font-medium">You can configure free products or change pricing later.</p>
               </div>
+
+              {createError && (
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-sm)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--danger)] shrink-0" /> {createError}
+                </div>
+              )}
 
               <div className="pt-2">
                 <button type="submit" disabled={isCreating || !name.trim()} className="w-full flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
@@ -797,6 +814,12 @@ function ProductsPageInner() {
                     </div>
                   )}
 
+                  {upsellError && (
+                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-sm)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--danger)] shrink-0" /> {upsellError}
+                    </div>
+                  )}
+
                   <div className="pt-4">
                     <button
                       onClick={handleCreateUpsell}
@@ -823,6 +846,11 @@ function ProductsPageInner() {
             </div>
             <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">Delete Funnel?</h3>
             <p className="text-sm text-[var(--text-secondary)] mb-8 leading-relaxed">This will permanently remove the upsell page. Your base products will not be affected.</p>
+            {deleteError && (
+              <div className="flex items-center justify-center gap-2 px-3 py-2.5 mb-4 rounded-[var(--radius-sm)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--danger)] shrink-0" /> {deleteError}
+              </div>
+            )}
             <div className="flex gap-3">
               <button onClick={() => setDeleteId(null)} className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-[var(--border)] text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 Cancel
