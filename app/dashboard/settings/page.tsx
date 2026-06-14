@@ -88,17 +88,8 @@ export default function SettingsPage() {
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden divide-y divide-[var(--border-subtle)]">
             {group.sections.map((section) => {
               const isSoon = section.badge === 'Soon';
-              const Wrapper = isSoon ? 'div' : Link;
-              const wrapperProps = isSoon
-                ? { className: 'flex items-center gap-4 px-6 py-5 opacity-60 cursor-not-allowed' }
-                : {
-                    href: section.href,
-                    className:
-                      'flex items-center gap-4 px-6 py-5 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors group',
-                  };
-
-              return (
-                <Wrapper key={section.label} {...(wrapperProps as any)}>
+              const inner = (
+                <>
                   <div className={`w-10 h-10 ${section.iconBg} ${section.iconColor} rounded-[var(--radius-sm)] flex items-center justify-center shrink-0`}>
                     <section.icon size={18} />
                   </div>
@@ -127,7 +118,17 @@ export default function SettingsPage() {
                       className="shrink-0 text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] group-hover:translate-x-0.5 transition-all"
                     />
                   )}
-                </Wrapper>
+                </>
+              );
+
+              return isSoon ? (
+                <div key={section.label} className="flex items-center gap-4 px-6 py-5 opacity-60 cursor-not-allowed">
+                  {inner}
+                </div>
+              ) : (
+                <Link key={section.label} href={section.href} className="flex items-center gap-4 px-6 py-5 hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors group">
+                  {inner}
+                </Link>
               );
             })}
           </div>
