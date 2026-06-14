@@ -6,17 +6,132 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ShoppingCart, Shield, Star, ChevronDown,
-  Quote, CheckCircle2, Clock, Sparkles,
+  Quote, CheckCircle2, Clock,
   Zap, Rocket, Heart, Gift,
   BookOpen, Code, Globe, Layers, Lightbulb, TrendingUp, Users,
   MessageCircle,
 } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
+import type { Database } from '@/types/database.types';
 
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
 
-const getCSSVariables = (palette: any) => {
-  if (!palette) return {};
+// ── Prop type: DB row + joined products ───────────────────────────────────────
+type SitesinglepageRow = Database['public']['Tables']['site_singlepage']['Row'];
+type ProductsRow = Database['public']['Tables']['products']['Row'];
+
+/** site_singlepage row as returned by `select('*, products(*)')`.
+ *  The DB Row uses Json for jsonb columns; we narrow those inside the component. */
+type SinglePageData = SitesinglepageRow & {
+  products?: ProductsRow | ProductsRow[] | null;
+};
+
+// ── Narrowed jsonb interfaces (used for type-safe access after casting) ───────
+// reason: metadata/theme/faq_items/testimonials/guarantee_badges are jsonb (Json);
+//         narrowed once at each read boundary inside the component.
+
+interface SinglePageMeta {
+  features?: { title: string; description: string; icon: string }[];
+  creator_profile?: { name: string; avatarUrl: string; bio: string };
+  content_blocks?: ContentBlock[];
+  social_links?: { platform: string; url: string }[];
+  social_position?: string;
+  social_display_style?: string;
+  logo_url?: string;
+  header_text?: string;
+  show_logo?: boolean;
+  logo_placement?: string;
+  header_alignment?: string;
+  logo_shape?: string;
+  logo_header_gap?: string;
+  header_divider?: boolean;
+  header_width?: string;
+  contact_whatsapp?: string;
+}
+
+interface SinglePageTheme {
+  buttonStyle?: string;
+  backgroundType?: string;
+  backgroundValue?: string;
+  showWatermark?: boolean;
+}
+
+// ── Content block types ───────────────────────────────────────────────────────
+
+interface ContentBlockMeta {
+  size?: string;
+  alt?: string;
+  url?: string;
+  style?: string;
+  author?: string;
+}
+
+interface ContentBlock {
+  id: string;
+  type: string;
+  content?: string;
+  metadata?: ContentBlockMeta;
+}
+
+// ── Data item types ───────────────────────────────────────────────────────────
+
+interface FaqItem {
+  question?: string;
+  q?: string;
+  answer?: string;
+  a?: string;
+}
+
+interface TestimonialItem {
+  text: string;
+  name: string;
+  role?: string;
+  avatarUrl?: string;
+}
+
+interface CreatorProfile {
+  name: string;
+  avatarUrl: string;
+  bio: string;
+}
+
+// ── Live-preview postMessage payload types ────────────────────────────────────
+// reason: postMessage payload is untyped at the window boundary; narrowed with optional fields.
+
+interface LiveContent {
+  heroImage?: string;
+  features?: { title: string; description: string; icon: string }[];
+  creatorProfile?: CreatorProfile;
+  faqs?: FaqItem[];
+  testimonials?: TestimonialItem[];
+  whatsIncluded?: string[];
+  contentBlocks?: ContentBlock[];
+  socialLinks?: { platform: string; url: string }[];
+  socialPosition?: string;
+  socialDisplayStyle?: string;
+  logoUrl?: string;
+  headerText?: string;
+  showLogo?: boolean;
+  logoPlacement?: string;
+  headerAlignment?: string;
+  logoShape?: string;
+  logoHeaderGap?: string;
+  headerDivider?: boolean;
+  headerWidth?: string;
+  contactWhatsApp?: string;
+  fakePrice?: number;
+}
+
+interface LiveAppearance {
+  buttonStyle?: string;
+  backgroundType?: string;
+  backgroundValue?: string;
+  showWatermark?: boolean;
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+
+const getCSSVariables = (palette: Record<string, string>): React.CSSProperties => {
   return {
     '--brand-primary': palette.primary || '#EC4899',
     '--brand-secondary': palette.secondary || '#8B5CF6',
@@ -34,43 +149,397 @@ function formatINR(n: number) {
   return `₹${n.toLocaleString('en-IN')}`;
 }
 
-
 const FEATURE_ICONS: Record<string, React.ElementType> = {
   zap: Zap, rocket: Rocket, shield: Shield, heart: Heart, gift: Gift, star: Star,
   book: BookOpen, code: Code, globe: Globe, layers: Layers, lightbulb: Lightbulb,
   trending: TrendingUp, users: Users, check: CheckCircle2,
 };
 
-export default function ProductSalesPage({ singlePage, palette }: { siteId?: string; singlePage: any; palette?: any }) {
-  const product = Array.isArray(singlePage?.products) ? singlePage.products[0] : singlePage?.products;
-  const router = useRouter();
-  const { addItem } = useCart();
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-  const handleBuyNow = () => {
-    if (!product?.id) return;
-    addItem({
-      id: product.id,
-      title: product.name || 'Product',
-      price: product.price || 0,
-      creatorId: product.creator_id || '',
-      coverImage: product.thumbnail_url || null,
-      slug: product.id,
-    });
-    router.push('/checkout');
+interface LogoHeaderProps {
+  logoUrl: string;
+  headerText: string;
+  showLogo: boolean;
+  placement: string;
+  alignment: string;
+  logoShape: string;
+  gap: string;
+  divider: boolean;
+  headerWidth: string;
+}
+
+function LogoHeader({ logoUrl, headerText, showLogo, placement, alignment, logoShape, gap, divider, headerWidth }: LogoHeaderProps) {
+  if ((!logoUrl || !showLogo) && !headerText) return null;
+  if (placement === 'inline-hero') return null;
+
+  const alignClass = alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center';
+  const gapPx = gap === 'none' ? 'gap-0' : gap === 'sm' ? 'gap-2' : gap === 'lg' ? 'gap-6' : 'gap-4';
+  const maxW = headerWidth === 'sm' ? 'max-w-[640px]' : headerWidth === 'md' ? 'max-w-[768px]' : headerWidth === 'lg' ? 'max-w-[1024px]' : 'max-w-full';
+  const shapeClass = logoShape === 'circle' ? 'rounded-full' : logoShape === 'square' ? 'rounded-lg' : '';
+  const isFree = logoShape === 'free';
+  const logoSizeClass = isFree ? 'h-10 max-w-[160px] object-contain' : 'w-10 h-10 object-cover';
+  const isTopBar = placement === 'top-bar';
+
+  return (
+    <div className={`relative z-10 w-full px-5 sm:px-8 ${isTopBar ? 'pt-4 pb-0' : ''}`}>
+      <div className={`mx-auto ${maxW}`}>
+        <div className={`flex items-center ${gapPx} ${alignClass}`}>
+          {logoUrl && showLogo && (
+            <img src={logoUrl} alt="Logo" className={`${logoSizeClass} ${shapeClass} drop-shadow-sm hover:opacity-90 transition-opacity`} />
+          )}
+          {headerText && (
+            <span className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-primary)]/80 hover:opacity-80 transition-opacity">{headerText}</span>
+          )}
+        </div>
+        {divider && <hr className="mt-2 border-[var(--border-color)]/50" />}
+      </div>
+    </div>
+  );
+}
+
+interface InlineHeroLogoProps {
+  logoUrl: string;
+  headerText: string;
+  showLogo: boolean;
+  placement: string;
+  alignment: string;
+  logoShape: string;
+  gap: string;
+}
+
+function InlineHeroLogo({ logoUrl, headerText, showLogo, placement, alignment, logoShape, gap }: InlineHeroLogoProps) {
+  if (placement !== 'inline-hero') return null;
+  if ((!logoUrl || !showLogo) && !headerText) return null;
+
+  const alignClass = alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center';
+  const gapPx = gap === 'none' ? 'gap-0' : gap === 'sm' ? 'gap-1' : gap === 'lg' ? 'gap-4' : 'gap-2';
+  const shapeClass = logoShape === 'circle' ? 'rounded-full' : logoShape === 'square' ? 'rounded-md' : '';
+  const isFree = logoShape === 'free';
+  const logoSizeClass = isFree ? 'h-9 max-w-[140px] object-contain' : 'w-9 h-9 object-cover';
+
+  return (
+    <div className={`absolute top-4 left-4 right-4 z-10 flex items-center ${gapPx} ${alignClass}`}>
+      {logoUrl && showLogo && (
+        <img src={logoUrl} alt="Logo" className={`${logoSizeClass} ${shapeClass} drop-shadow-lg`} />
+      )}
+      {headerText && (
+        <span className="text-base font-bold text-white drop-shadow-lg">{headerText}</span>
+      )}
+    </div>
+  );
+}
+
+interface CountdownProps {
+  timeLeft: { d: number; h: number; m: number; s: number };
+}
+
+function CountdownTimer({ timeLeft }: CountdownProps) {
+  const parts = [
+    { key: 'd' as const, label: 'D' },
+    { key: 'h' as const, label: 'H' },
+    { key: 'm' as const, label: 'M' },
+    { key: 's' as const, label: 'S' },
+  ] as const;
+
+  return (
+    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex flex-col">
+      <div className="text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1.5">
+        <Clock className="w-3 h-3" /> Limited Time Offer
+      </div>
+      <div className="flex items-center gap-2 text-sm">
+        {parts.map(({ key, label }, i) => (
+          <React.Fragment key={key}>
+            {i > 0 && <span className="text-red-500/30">:</span>}
+            <div className="flex flex-col items-center">
+              <span className="font-bold text-red-600 dark:text-red-400">
+                {String(timeLeft[key]).padStart(2, '0')}
+              </span>
+              <span className="text-[10px] text-red-500/70">{label}</span>
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface ContentBlocksProps {
+  blocks: ContentBlock[];
+  getButtonRadius: () => string;
+}
+
+function ContentBlocks({ blocks, getButtonRadius }: ContentBlocksProps) {
+  if (!blocks.length) return null;
+
+  const getVideoEmbed = (url: string) => {
+    try {
+      const u = new URL(url);
+      if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
+        const id = u.searchParams.get('v') || u.pathname.split('/').pop() || '';
+        return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
+      }
+      if (u.hostname.includes('vimeo.com')) {
+        const id = u.pathname.split('/').pop() || '';
+        return `https://player.vimeo.com/video/${id}`;
+      }
+    } catch { /* ignore invalid URLs */ }
+    return url;
   };
 
+  return (
+    <div className="space-y-6">
+      {blocks.map((block) => {
+        const meta = block.metadata ?? {};
+
+        if (block.type === 'heading') {
+          const size = meta.size || 'h2';
+          const cls = size === 'h1' ? 'text-3xl md:text-4xl lg:text-5xl' : size === 'h3' ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl';
+          return (
+            <h2 key={block.id} className={`${cls} font-extrabold text-[var(--text-primary)] leading-tight`}>
+              {block.content}
+            </h2>
+          );
+        }
+        if (block.type === 'text') {
+          return (
+            <p key={block.id} className="text-base text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
+              {block.content}
+            </p>
+          );
+        }
+        if (block.type === 'image' && block.content) {
+          return (
+            <div key={block.id} className="w-full">
+              <img src={block.content} alt={meta.alt || ''} className="w-full rounded-2xl object-cover border border-[var(--border-color)]" />
+            </div>
+          );
+        }
+        if (block.type === 'video' && block.content) {
+          return (
+            <div key={block.id} className="relative w-full rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-lg bg-black aspect-video">
+              <iframe
+                src={getVideoEmbed(block.content)}
+                className="absolute inset-0 w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          );
+        }
+        if (block.type === 'button' && block.content) {
+          const btnSize = meta.size === 'sm' ? 'px-5 py-2.5 text-sm' : meta.size === 'lg' ? 'px-8 py-4 text-lg' : 'px-6 py-3 text-base';
+          const btnStyle = meta.style === 'outline'
+            ? 'bg-transparent border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10'
+            : meta.style === 'ghost'
+              ? 'bg-transparent text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10'
+              : 'bg-[var(--brand-primary)] text-[var(--brand-foreground)] hover:opacity-90 shadow-lg';
+          return (
+            <div key={block.id} className="flex justify-center">
+              <a href={meta.url || '#'} target={meta.url?.startsWith('http') ? '_blank' : undefined} rel="noreferrer"
+                className={cn('inline-flex items-center justify-center font-bold transition-all', btnSize, btnStyle, getButtonRadius())}>
+                {block.content}
+              </a>
+            </div>
+          );
+        }
+        if (block.type === 'quote') {
+          return (
+            <blockquote key={block.id} className="border-l-4 border-[var(--brand-primary)] pl-6 py-2">
+              <p className="text-lg italic text-[var(--text-primary)] leading-relaxed">&ldquo;{block.content}&rdquo;</p>
+              {meta.author && <cite className="block mt-2 text-sm text-[var(--text-secondary)] not-italic">— {meta.author}</cite>}
+            </blockquote>
+          );
+        }
+        if (block.type === 'iframe' && block.content) {
+          return (
+            <div key={block.id} className="w-full rounded-2xl overflow-hidden border border-[var(--border-color)]"
+              dangerouslySetInnerHTML={{ __html: block.content }} />
+          );
+        }
+        if (block.type === 'html' && block.content) {
+          return <div key={block.id} dangerouslySetInnerHTML={{ __html: block.content }} />;
+        }
+        if (block.type === 'divider') {
+          return <hr key={block.id} className="border-[var(--border-color)]" />;
+        }
+        if (block.type === 'spacer') {
+          const h = ({ sm: '16px', md: '32px', lg: '64px', xl: '96px' } as Record<string, string>)[meta.size || 'md'] || '32px';
+          return <div key={block.id} style={{ height: h }} />;
+        }
+        return null;
+      })}
+    </div>
+  );
+}
+
+interface FeaturesGridProps {
+  features: { title: string; description: string; icon: string }[];
+}
+
+function FeaturesGrid({ features }: FeaturesGridProps) {
+  if (!features.length) return null;
+  return (
+    <div className="space-y-4">
+      <div className="text-center space-y-1">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">What&apos;s Included</h2>
+        <p className="text-sm text-[var(--text-secondary)]">Everything you get with this package</p>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {features.map((feat, i) => {
+          const FeatureIcon = FEATURE_ICONS[feat.icon] ?? Zap;
+          return (
+            <div key={i} className="flex gap-3 p-4 rounded-xl bg-[var(--bg-secondary)]/60 border border-[var(--border-color)] backdrop-blur-sm hover:border-[var(--brand-primary)]/30 transition-all duration-300 group">
+              <div className="w-9 h-9 rounded-lg bg-[var(--brand-primary)]/10 flex items-center justify-center shrink-0 group-hover:bg-[var(--brand-primary)]/20 transition-colors">
+                <FeatureIcon className="w-4 h-4 text-[var(--brand-primary)]" />
+              </div>
+              <div>
+                <div className="font-semibold text-[var(--text-primary)] text-xs mb-0.5">{feat.title}</div>
+                <div className="text-[var(--text-secondary)] text-[11px] leading-snug">{feat.description}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+interface TestimonialsProps {
+  testimonials: TestimonialItem[];
+}
+
+function Testimonials({ testimonials }: TestimonialsProps) {
+  if (!testimonials.length) return null;
+  return (
+    <div className="space-y-4">
+      <div className="text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Loved by Users</h2>
+      </div>
+      <div className={cn('grid gap-4', testimonials.length > 1 ? 'sm:grid-cols-2' : 'grid-cols-1 max-w-2xl mx-auto')}>
+        {testimonials.map((t, i) => (
+          <div key={i} className="bg-[var(--bg-secondary)]/60 backdrop-blur-md rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
+            <div className="flex gap-0.5 mb-3">
+              {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
+            </div>
+            <Quote className="w-5 h-5 text-[var(--brand-primary)]/30 mb-2" />
+            <p className="text-[var(--text-primary)] italic mb-4 leading-relaxed text-sm">&quot;{t.text}&quot;</p>
+            <div className="flex items-center gap-2">
+              {t.avatarUrl ? (
+                <img src={t.avatarUrl} alt={t.name} className="w-10 h-10 rounded-full object-cover border-2 border-[var(--border-color)]" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-secondary)] flex items-center justify-center text-white font-bold text-sm">
+                  {t.name?.charAt(0) ?? 'A'}
+                </div>
+              )}
+              <div>
+                <div className="font-bold text-[var(--text-primary)] text-sm">{t.name}</div>
+                <div className="text-[var(--text-secondary)] text-xs">{t.role}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface FaqProps {
+  faqs: FaqItem[];
+  openFaq: number | null;
+  setOpenFaq: (i: number | null) => void;
+}
+
+function FaqSection({ faqs, openFaq, setOpenFaq }: FaqProps) {
+  if (!faqs.length) return null;
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">FAQ</h2>
+      <div className="space-y-2">
+        {faqs.map((f, i) => (
+          <div key={i} className="border border-[var(--border-color)] bg-[var(--bg-secondary)]/50 backdrop-blur-md rounded-lg overflow-hidden transition-all duration-200">
+            <button
+              onClick={() => setOpenFaq(openFaq === i ? null : i)}
+              className="w-full flex items-center justify-between px-5 py-4 text-left font-medium text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]/30 transition-colors"
+            >
+              {f.question || f.q}
+              <div className={cn('w-7 h-7 rounded-full bg-[var(--bg-primary)] flex items-center justify-center shrink-0 border border-[var(--border-color)] transition-transform duration-300', openFaq === i && 'bg-[var(--brand-primary)] border-[var(--brand-primary)] rotate-180')}>
+                <ChevronDown className={cn('w-3.5 h-3.5', openFaq === i ? 'text-white' : 'text-[var(--text-secondary)]')} />
+              </div>
+            </button>
+            <div className={cn('grid transition-all duration-300 ease-in-out', openFaq === i ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+              <div className="overflow-hidden">
+                <div className="px-5 pb-4 pt-1 text-sm text-[var(--text-secondary)] leading-relaxed">{f.answer || f.a}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface SocialLinksFooterProps {
+  socialLinks: { platform: string; url: string }[];
+  position: string;
+  displayStyle: string;
+}
+
+function SocialLinksFooter({ socialLinks, position, displayStyle }: SocialLinksFooterProps) {
+  if (!socialLinks.length || position === 'header') return null;
+
+  const PLATFORM_LABELS: Record<string, string> = {
+    instagram: 'Instagram', twitter: 'Twitter', youtube: 'YouTube', linkedin: 'LinkedIn',
+    github: 'GitHub', tiktok: 'TikTok', whatsapp: 'WhatsApp', telegram: 'Telegram',
+    threads: 'Threads', website: 'Website',
+  };
+
+  return (
+    <div className="relative z-10 pb-8 flex justify-center">
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {socialLinks.filter((l) => l.url).map((link, i) => (
+          <a key={i} href={link.url} target="_blank" rel="noreferrer"
+            className={cn(
+              'flex items-center gap-2 transition-all hover:opacity-80',
+              displayStyle === 'pills'
+                ? 'px-4 py-2 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-semibold'
+                : displayStyle === 'icons-labels'
+                  ? 'text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  : 'w-10 h-10 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)]'
+            )}>
+            <Globe className="w-4 h-4" />
+            {displayStyle !== 'icons-only' && <span>{PLATFORM_LABELS[link.platform] || link.platform}</span>}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export default function ProductSalesPage({ singlePage, palette }: {
+  siteId?: string;
+  singlePage: SinglePageData | null;
+  palette?: Record<string, string>;
+}) {
+  // All hooks must run unconditionally before any early return.
+  const router = useRouter();
+  const { addItem } = useCart();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ d: number; h: number; m: number; s: number } | null>(null);
 
   // ── Live preview state (populated via postMessage from editor) ──
-  const [liveContent, setLiveContent] = useState<any>(null);
-  const [liveAppearance, setLiveAppearance] = useState<any>(null);
-  const [livePalette, setLivePalette] = useState<any>(null);
+  // reason: postMessage payload arrives as unknown at the window boundary; narrowed via LiveContent/LiveAppearance interfaces above.
+  const [liveContent, setLiveContent] = useState<LiveContent | null>(null);
+  const [liveAppearance, setLiveAppearance] = useState<LiveAppearance | null>(null);
+  const [livePalette, setLivePalette] = useState<Record<string, string> | null>(null);
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
-      const msg = e.data;
+      // reason: postMessage data is untyped at the DOM boundary; cast once and rely on optional chaining.
+      const msg = e.data as { type?: string; content?: LiveContent; appearance?: LiveAppearance; palette?: Record<string, string> } | null;
       if (!msg || typeof msg !== 'object') return;
       if (msg.type === 'sp-content-update') {
         if (msg.content) setLiveContent(msg.content);
@@ -85,30 +554,8 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
     return () => window.removeEventListener('message', handler);
   }, []);
 
-  // Merge live data over server-rendered props
-  const activePalette = livePalette ?? palette ?? {};
-  const c = liveContent; // shorthand for live content
-
-  // ── Extract values (live content takes priority over DB) ──
-  const price = product?.price ?? 0;
-  const heroImage: string = c?.heroImage || singlePage?.hero_image_url || product?.thumbnail_url || '';
-  const features: { title: string; description: string; icon: string }[] = c?.features ?? (singlePage?.metadata as any)?.features ?? [];
-  const creatorProfile = c?.creatorProfile ?? (singlePage?.metadata as any)?.creator_profile ?? { name: '', avatarUrl: '', bio: '' };
-  const faqs: any[] = c?.faqs ?? singlePage?.faq_items ?? [];
-  const testimonials: any[] = c?.testimonials ?? singlePage?.testimonials ?? [];
-  const guaranteeBadges: string[] = c?.whatsIncluded ?? singlePage?.guarantee_badges ?? [];
-
-  const showBuyNow = singlePage?.show_buy_now ?? true;
-  const showAddToCart = singlePage?.show_add_to_cart ?? false;
   const countdownEnd = singlePage?.countdown_end_at;
 
-  const themeSettings = liveAppearance ?? (singlePage?.theme as any) ?? {};
-  const buttonStyle = themeSettings.buttonStyle || 'rounded';
-  const backgroundType = themeSettings.backgroundType || 'solid';
-  const backgroundValue = themeSettings.backgroundValue || '';
-  const showWatermark = themeSettings.showWatermark ?? true;
-
-  // ── Countdown ──
   useEffect(() => {
     if (!countdownEnd) return;
     const end = new Date(countdownEnd).getTime();
@@ -125,6 +572,75 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
     return () => clearInterval(interval);
   }, [countdownEnd]);
 
+  if (!singlePage) return null;
+
+  // reason: faq_items, testimonials, guarantee_badges, metadata, theme are jsonb (Json);
+  //         narrowed once here at the component boundary via unknown cast.
+  const meta = (singlePage.metadata ?? {}) as unknown as SinglePageMeta;
+  const themeDb = (singlePage.theme ?? {}) as unknown as SinglePageTheme;
+  const faqItemsDb = (singlePage.faq_items ?? []) as unknown as FaqItem[];
+  const testimonialsDb = (singlePage.testimonials ?? []) as unknown as TestimonialItem[];
+  const guaranteeBadgesDb = (singlePage.guarantee_badges ?? []) as unknown as string[];
+
+  const product = Array.isArray(singlePage.products) ? singlePage.products[0] : singlePage.products;
+
+  const handleBuyNow = () => {
+    if (!product?.id) return;
+    addItem({
+      id: product.id,
+      title: product.name || 'Product',
+      price: product.price || 0,
+      creatorId: product.creator_id || '',
+      coverImage: product.thumbnail_url || null,
+      slug: product.id,
+    });
+    router.push('/checkout');
+  };
+
+  // Merge live data over server-rendered props
+  const activePalette = livePalette ?? palette ?? {};
+  const c = liveContent; // shorthand for live content
+
+  // ── Extract values (live content takes priority over DB) ──
+  const price = product?.price ?? 0;
+  const heroImage: string = c?.heroImage || singlePage.hero_image_url || product?.thumbnail_url || '';
+  const features: { title: string; description: string; icon: string }[] = c?.features ?? meta.features ?? [];
+  const creatorProfile: CreatorProfile = c?.creatorProfile ?? meta.creator_profile ?? { name: '', avatarUrl: '', bio: '' };
+  const faqs: FaqItem[] = c?.faqs ?? faqItemsDb;
+  const testimonials: TestimonialItem[] = c?.testimonials ?? testimonialsDb;
+  const guaranteeBadges: string[] = c?.whatsIncluded ?? guaranteeBadgesDb;
+  const contentBlocks: ContentBlock[] = c?.contentBlocks ?? meta.content_blocks ?? [];
+
+  const showBuyNow = singlePage.show_buy_now ?? true;
+
+  const themeSettings: SinglePageTheme = liveAppearance ?? themeDb;
+  const buttonStyle = themeSettings.buttonStyle || 'rounded';
+  const backgroundType = themeSettings.backgroundType || 'solid';
+  const backgroundValue = themeSettings.backgroundValue || '';
+  const showWatermark = themeSettings.showWatermark ?? true;
+
+  // Logo / header derived values (used in two spots: top-bar and inline-hero)
+  const logoUrl: string = c?.logoUrl || meta.logo_url || '';
+  const headerText: string = c?.headerText || meta.header_text || '';
+  const showLogo: boolean = c?.showLogo ?? meta.show_logo ?? true;
+  const logoPlacement: string = c?.logoPlacement || meta.logo_placement || 'top-bar';
+  const headerAlignment: string = c?.headerAlignment || meta.header_alignment || 'center';
+  const logoShape: string = c?.logoShape || meta.logo_shape || 'free';
+  const logoHeaderGap: string = c?.logoHeaderGap || meta.logo_header_gap || 'md';
+  const headerDivider: boolean = c?.headerDivider ?? meta.header_divider ?? false;
+  const headerWidth: string = c?.headerWidth || meta.header_width || 'full';
+
+  // Social links
+  const socialLinks: { platform: string; url: string }[] = c?.socialLinks ?? meta.social_links ?? [];
+  const socialPosition: string = c?.socialPosition ?? meta.social_position ?? 'footer';
+  const socialDisplayStyle: string = c?.socialDisplayStyle ?? meta.social_display_style ?? 'icons-only';
+
+  // WhatsApp
+  const waNumber: string = c?.contactWhatsApp ?? meta.contact_whatsapp ?? '';
+
+  // Fake price (for strike-through)
+  const fakePrice: number = c?.fakePrice || 0;
+
   // ── Styles ──
   const getButtonRadius = () => ({ pill: 'rounded-full', sharp: 'rounded-none' } as Record<string, string>)[buttonStyle] ?? 'rounded-2xl';
 
@@ -138,258 +654,60 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
       {backgroundType === 'image' && <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-0" />}
 
       {/* ─── LOGO / HEADER ─── */}
-      {(() => {
-        const logoUrl: string = c?.logoUrl || (singlePage?.metadata as any)?.logo_url || '';
-        const headerText: string = c?.headerText || (singlePage?.metadata as any)?.header_text || '';
-        const showLogo: boolean = c?.showLogo ?? (singlePage?.metadata as any)?.show_logo ?? true;
-        const placement: string = c?.logoPlacement || (singlePage?.metadata as any)?.logo_placement || 'top-bar';
-        const alignment: string = c?.headerAlignment || (singlePage?.metadata as any)?.header_alignment || 'center';
-        const logoShape: string = c?.logoShape || (singlePage?.metadata as any)?.logo_shape || 'free';
-        const gap: string = c?.logoHeaderGap || (singlePage?.metadata as any)?.logo_header_gap || 'md';
-        const divider: boolean = c?.headerDivider ?? (singlePage?.metadata as any)?.header_divider ?? false;
-        const headerWidth: string = c?.headerWidth || (singlePage?.metadata as any)?.header_width || 'full';
-
-        if ((!logoUrl || !showLogo) && !headerText) return null;
-        if (placement === 'inline-hero') return null; // rendered inside hero
-
-        const alignClass = alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center';
-        const gapPx = gap === 'none' ? 'gap-0' : gap === 'sm' ? 'gap-2' : gap === 'lg' ? 'gap-6' : 'gap-4';
-        const maxW = headerWidth === 'sm' ? 'max-w-[640px]' : headerWidth === 'md' ? 'max-w-[768px]' : headerWidth === 'lg' ? 'max-w-[1024px]' : 'max-w-full';
-        const shapeClass = logoShape === 'circle' ? 'rounded-full' : logoShape === 'square' ? 'rounded-lg' : '';
-        const isFree = logoShape === 'free';
-        const logoSizeClass = isFree ? 'h-10 max-w-[160px] object-contain' : 'w-10 h-10 object-cover';
-        const isTopBar = placement === 'top-bar';
-
-        return (
-          <div className={`relative z-10 w-full px-5 sm:px-8 ${isTopBar ? 'pt-4 pb-0' : ''}`}>
-            <div className={`mx-auto ${maxW}`}>
-              <div className={`flex items-center ${gapPx} ${alignClass}`}>
-                {logoUrl && showLogo && (
-                  <img src={logoUrl} alt="Logo" className={`${logoSizeClass} ${shapeClass} drop-shadow-sm hover:opacity-90 transition-opacity`} />
-                )}
-                {headerText && (
-                  <span className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--text-primary)] to-[var(--text-primary)]/80 hover:opacity-80 transition-opacity">{headerText}</span>
-                )}
-              </div>
-              {divider && <hr className="mt-2 border-[var(--border-color)]/50" />}
-            </div>
-          </div>
-        );
-      })()}
+      <LogoHeader
+        logoUrl={logoUrl}
+        headerText={headerText}
+        showLogo={showLogo}
+        placement={logoPlacement}
+        alignment={headerAlignment}
+        logoShape={logoShape}
+        gap={logoHeaderGap}
+        divider={headerDivider}
+        headerWidth={headerWidth}
+      />
 
       <div className="relative z-10 py-6 px-5 sm:px-8 max-w-5xl mx-auto space-y-6 pb-32">
 
         {/* ─── HERO IMAGE ─── */}
         {heroImage && (
           <div className="w-full relative group">
-            {/* Inline-hero logo overlay */}
-            {(() => {
-              const logoUrl: string = c?.logoUrl || (singlePage?.metadata as any)?.logo_url || '';
-              const headerText: string = c?.headerText || (singlePage?.metadata as any)?.header_text || '';
-              const showLogo: boolean = c?.showLogo ?? (singlePage?.metadata as any)?.show_logo ?? true;
-              const placement: string = c?.logoPlacement || (singlePage?.metadata as any)?.logo_placement || 'top-bar';
-              const alignment: string = c?.headerAlignment || (singlePage?.metadata as any)?.header_alignment || 'center';
-              const logoShape: string = c?.logoShape || (singlePage?.metadata as any)?.logo_shape || 'free';
-              const gap: string = c?.logoHeaderGap || (singlePage?.metadata as any)?.logo_header_gap || 'md';
-
-              if (placement !== 'inline-hero') return null;
-              if ((!logoUrl || !showLogo) && !headerText) return null;
-
-              const alignClass = alignment === 'left' ? 'justify-start' : alignment === 'right' ? 'justify-end' : 'justify-center';
-              const gapPx = gap === 'none' ? 'gap-0' : gap === 'sm' ? 'gap-1' : gap === 'lg' ? 'gap-4' : 'gap-2';
-              const shapeClass = logoShape === 'circle' ? 'rounded-full' : logoShape === 'square' ? 'rounded-md' : '';
-              const isFree = logoShape === 'free';
-              const logoSizeClass = isFree ? 'h-9 max-w-[140px] object-contain' : 'w-9 h-9 object-cover';
-
-              return (
-                <div className={`absolute top-4 left-4 right-4 z-10 flex items-center ${gapPx} ${alignClass}`}>
-                  {logoUrl && showLogo && (
-                    <img src={logoUrl} alt="Logo" className={`${logoSizeClass} ${shapeClass} drop-shadow-lg`} />
-                  )}
-                  {headerText && (
-                    <span className="text-base font-bold text-white drop-shadow-lg">{headerText}</span>
-                  )}
-                </div>
-              );
-            })()}
+            <InlineHeroLogo
+              logoUrl={logoUrl}
+              headerText={headerText}
+              showLogo={showLogo}
+              placement={logoPlacement}
+              alignment={headerAlignment}
+              logoShape={logoShape}
+              gap={logoHeaderGap}
+            />
             <div className="absolute -inset-2 bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] rounded-[2rem] blur-xl opacity-20 group-hover:opacity-30 transition duration-1000" />
             <img src={heroImage} alt="Hero" className="relative w-full object-cover shadow-2xl border border-[var(--border-color)]/30 rounded-3xl" />
           </div>
         )}
 
         {/* ─── PRICE SECTION ─── */}
-        {(() => {
-          const fakePrice: number = c?.fakePrice || 0;
-          return (
-            <div className="space-y-4 py-3 px-5 sm:px-0 border-b border-[var(--border-color)]">
-              <div className="flex items-baseline gap-3">
-                <span className="text-4xl sm:text-5xl font-bold text-[var(--text-primary)]">{price === 0 ? 'Free' : formatINR(price)}</span>
-                {fakePrice > price && (
-                  <span className="text-lg sm:text-xl text-[var(--text-secondary)] line-through">{formatINR(fakePrice)}</span>
-                )}
-              </div>
-              {fakePrice > price && (
-                <p className="text-sm text-green-600 dark:text-green-400 font-semibold">
-                  Save {formatINR(fakePrice - price)}
-                </p>
-              )}
+        <div className="space-y-4 py-3 px-5 sm:px-0 border-b border-[var(--border-color)]">
+          <div className="flex items-baseline gap-3">
+            <span className="text-4xl sm:text-5xl font-bold text-[var(--text-primary)]">{price === 0 ? 'Free' : formatINR(price)}</span>
+            {fakePrice > price && (
+              <span className="text-lg sm:text-xl text-[var(--text-secondary)] line-through">{formatINR(fakePrice)}</span>
+            )}
+          </div>
+          {fakePrice > price && (
+            <p className="text-sm text-green-600 dark:text-green-400 font-semibold">
+              Save {formatINR(fakePrice - price)}
+            </p>
+          )}
 
-              {/* Countdown Timer */}
-              {countdownEnd && timeLeft && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex flex-col">
-                  <div className="text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                    <Clock className="w-3 h-3" /> Limited Time Offer
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    {([['d', 'D'], ['h', 'H'], ['m', 'M'], ['s', 'S']] as const).map(([key, label], i) => (
-                      <React.Fragment key={key}>
-                        {i > 0 && <span className="text-red-500/30">:</span>}
-                        <div className="flex flex-col items-center">
-                          <span className="font-bold text-red-600 dark:text-red-400">
-                            {String((timeLeft as any)[key]).padStart(2, '0')}
-                          </span>
-                          <span className="text-[10px] text-red-500/70">{label}</span>
-                        </div>
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })()}
+          {/* Countdown Timer */}
+          {countdownEnd && timeLeft && <CountdownTimer timeLeft={timeLeft} />}
+        </div>
 
         {/* ─── CONTENT BLOCKS ─── */}
-        {(() => {
-          const blocks: any[] = c?.contentBlocks ?? (singlePage?.metadata as any)?.content_blocks ?? [];
-          if (!blocks.length) return null;
-
-          const getVideoEmbed = (url: string) => {
-            try {
-              const u = new URL(url);
-              if (u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
-                const id = u.searchParams.get('v') || u.pathname.split('/').pop() || '';
-                return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
-              }
-              if (u.hostname.includes('vimeo.com')) {
-                const id = u.pathname.split('/').pop() || '';
-                return `https://player.vimeo.com/video/${id}`;
-              }
-            } catch {}
-            return url;
-          };
-
-          return (
-            <div className="space-y-6">
-              {blocks.map((block: any) => {
-                const meta = block.metadata || {};
-
-                if (block.type === 'heading') {
-                  const size = meta.size || 'h2';
-                  const cls = size === 'h1' ? 'text-3xl md:text-4xl lg:text-5xl' : size === 'h3' ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl';
-                  return (
-                    <h2 key={block.id} className={`${cls} font-extrabold text-[var(--text-primary)] leading-tight`}>
-                      {block.content}
-                    </h2>
-                  );
-                }
-                if (block.type === 'text') {
-                  return (
-                    <p key={block.id} className="text-base text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
-                      {block.content}
-                    </p>
-                  );
-                }
-                if (block.type === 'image' && block.content) {
-                  return (
-                    <div key={block.id} className="w-full">
-                      <img src={block.content} alt={meta.alt || ''} className="w-full rounded-2xl object-cover border border-[var(--border-color)]" />
-                    </div>
-                  );
-                }
-                if (block.type === 'video' && block.content) {
-                  return (
-                    <div key={block.id} className="relative w-full rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-lg bg-black aspect-video">
-                      <iframe
-                        src={getVideoEmbed(block.content)}
-                        className="absolute inset-0 w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                  );
-                }
-                if (block.type === 'button' && block.content) {
-                  const btnSize = meta.size === 'sm' ? 'px-5 py-2.5 text-sm' : meta.size === 'lg' ? 'px-8 py-4 text-lg' : 'px-6 py-3 text-base';
-                  const btnStyle = meta.style === 'outline'
-                    ? 'bg-transparent border-2 border-[var(--brand-primary)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10'
-                    : meta.style === 'ghost'
-                      ? 'bg-transparent text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10'
-                      : 'bg-[var(--brand-primary)] text-[var(--brand-foreground)] hover:opacity-90 shadow-lg';
-                  return (
-                    <div key={block.id} className="flex justify-center">
-                      <a href={meta.url || '#'} target={meta.url?.startsWith('http') ? '_blank' : undefined} rel="noreferrer"
-                        className={cn('inline-flex items-center justify-center font-bold transition-all', btnSize, btnStyle, getButtonRadius())}>
-                        {block.content}
-                      </a>
-                    </div>
-                  );
-                }
-                if (block.type === 'quote') {
-                  return (
-                    <blockquote key={block.id} className="border-l-4 border-[var(--brand-primary)] pl-6 py-2">
-                      <p className="text-lg italic text-[var(--text-primary)] leading-relaxed">&ldquo;{block.content}&rdquo;</p>
-                      {meta.author && <cite className="block mt-2 text-sm text-[var(--text-secondary)] not-italic">— {meta.author}</cite>}
-                    </blockquote>
-                  );
-                }
-                if (block.type === 'iframe' && block.content) {
-                  return (
-                    <div key={block.id} className="w-full rounded-2xl overflow-hidden border border-[var(--border-color)]"
-                      dangerouslySetInnerHTML={{ __html: block.content }} />
-                  );
-                }
-                if (block.type === 'html' && block.content) {
-                  return <div key={block.id} dangerouslySetInnerHTML={{ __html: block.content }} />;
-                }
-                if (block.type === 'divider') {
-                  return <hr key={block.id} className="border-[var(--border-color)]" />;
-                }
-                if (block.type === 'spacer') {
-                  const h = ({ sm: '16px', md: '32px', lg: '64px', xl: '96px' } as Record<string, string>)[meta.size || 'md'] || '32px';
-                  return <div key={block.id} style={{ height: h }} />;
-                }
-                return null;
-              })}
-            </div>
-          );
-        })()}
+        <ContentBlocks blocks={contentBlocks} getButtonRadius={getButtonRadius} />
 
         {/* ─── FEATURES / BENEFITS ─── */}
-        {features.length > 0 && (
-          <div className="space-y-4">
-            <div className="text-center space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">What's Included</h2>
-              <p className="text-sm text-[var(--text-secondary)]">Everything you get with this package</p>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {features.map((feat, i) => {
-                const FeatureIcon = FEATURE_ICONS[feat.icon] ?? Zap;
-                return (
-                  <div key={i} className="flex gap-3 p-4 rounded-xl bg-[var(--bg-secondary)]/60 border border-[var(--border-color)] backdrop-blur-sm hover:border-[var(--brand-primary)]/30 transition-all duration-300 group">
-                    <div className="w-9 h-9 rounded-lg bg-[var(--brand-primary)]/10 flex items-center justify-center shrink-0 group-hover:bg-[var(--brand-primary)]/20 transition-colors">
-                      <FeatureIcon className="w-4 h-4 text-[var(--brand-primary)]" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[var(--text-primary)] text-xs mb-0.5">{feat.title}</div>
-                      <div className="text-[var(--text-secondary)] text-[11px] leading-snug">{feat.description}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        <FeaturesGrid features={features} />
 
         {/* ─── WHAT'S INCLUDED ─── */}
         {guaranteeBadges.length > 0 && (
@@ -433,101 +751,15 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
         )}
 
         {/* ─── TESTIMONIALS ─── */}
-        {testimonials.length > 0 && (
-          <div className="space-y-4">
-            <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Loved by Users</h2>
-            </div>
-            <div className={cn('grid gap-4', testimonials.length > 1 ? 'sm:grid-cols-2' : 'grid-cols-1 max-w-2xl mx-auto')}>
-              {testimonials.map((t: any, i: number) => (
-                <div key={i} className="bg-[var(--bg-secondary)]/60 backdrop-blur-md rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
-                  <div className="flex gap-0.5 mb-3">
-                    {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />)}
-                  </div>
-                  <Quote className="w-5 h-5 text-[var(--brand-primary)]/30 mb-2" />
-                  <p className="text-[var(--text-primary)] italic mb-4 leading-relaxed text-sm">"{t.text}"</p>
-                  <div className="flex items-center gap-2">
-                    {t.avatarUrl ? (
-                      <img src={t.avatarUrl} alt={t.name} className="w-10 h-10 rounded-full object-cover border-2 border-[var(--border-color)]" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-secondary)] flex items-center justify-center text-white font-bold text-sm">
-                        {t.name?.charAt(0) ?? 'A'}
-                      </div>
-                    )}
-                    <div>
-                      <div className="font-bold text-[var(--text-primary)] text-sm">{t.name}</div>
-                      <div className="text-[var(--text-secondary)] text-xs">{t.role}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <Testimonials testimonials={testimonials} />
 
         {/* ─── FAQ ─── */}
-        {faqs.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">FAQ</h2>
-            <div className="space-y-2">
-              {faqs.map((f: any, i: number) => (
-                <div key={i} className="border border-[var(--border-color)] bg-[var(--bg-secondary)]/50 backdrop-blur-md rounded-lg overflow-hidden transition-all duration-200">
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left font-medium text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]/30 transition-colors"
-                  >
-                    {f.question || f.q}
-                    <div className={cn('w-7 h-7 rounded-full bg-[var(--bg-primary)] flex items-center justify-center shrink-0 border border-[var(--border-color)] transition-transform duration-300', openFaq === i && 'bg-[var(--brand-primary)] border-[var(--brand-primary)] rotate-180')}>
-                      <ChevronDown className={cn('w-3.5 h-3.5', openFaq === i ? 'text-white' : 'text-[var(--text-secondary)]')} />
-                    </div>
-                  </button>
-                  <div className={cn('grid transition-all duration-300 ease-in-out', openFaq === i ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
-                    <div className="overflow-hidden">
-                      <div className="px-5 pb-4 pt-1 text-sm text-[var(--text-secondary)] leading-relaxed">{f.answer || f.a}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <FaqSection faqs={faqs} openFaq={openFaq} setOpenFaq={setOpenFaq} />
 
       </div>
 
       {/* ─── Social Links Footer ─── */}
-      {(() => {
-        const socialLinks: { platform: string; url: string }[] = c?.socialLinks ?? (singlePage?.metadata as any)?.social_links ?? [];
-        const position: string = c?.socialPosition ?? (singlePage?.metadata as any)?.social_position ?? 'footer';
-        const displayStyle: string = c?.socialDisplayStyle ?? (singlePage?.metadata as any)?.social_display_style ?? 'icons-only';
-        if (!socialLinks.length || position === 'header') return null;
-
-        const PLATFORM_LABELS: Record<string, string> = {
-          instagram: 'Instagram', twitter: 'Twitter', youtube: 'YouTube', linkedin: 'LinkedIn',
-          github: 'GitHub', tiktok: 'TikTok', whatsapp: 'WhatsApp', telegram: 'Telegram',
-          threads: 'Threads', website: 'Website',
-        };
-
-        return (
-          <div className="relative z-10 pb-8 flex justify-center">
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {socialLinks.filter((l: any) => l.url).map((link: any, i: number) => (
-                <a key={i} href={link.url} target="_blank" rel="noreferrer"
-                  className={cn(
-                    'flex items-center gap-2 transition-all hover:opacity-80',
-                    displayStyle === 'pills'
-                      ? 'px-4 py-2 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-semibold'
-                      : displayStyle === 'icons-labels'
-                        ? 'text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                        : 'w-10 h-10 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-secondary)]'
-                  )}>
-                  <Globe className="w-4 h-4" />
-                  {displayStyle !== 'icons-only' && <span>{PLATFORM_LABELS[link.platform] || link.platform}</span>}
-                </a>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
+      <SocialLinksFooter socialLinks={socialLinks} position={socialPosition} displayStyle={socialDisplayStyle} />
 
       {/* ─── Mobile Bottom CTA ─── */}
       {showBuyNow && (
@@ -562,9 +794,7 @@ export default function ProductSalesPage({ singlePage, palette }: { siteId?: str
       )}
 
       {/* ─── Floating WhatsApp Button ─── */}
-      {(() => {
-        const waNumber: string = c?.contactWhatsApp ?? (singlePage?.metadata as any)?.contact_whatsapp ?? '';
-        if (!waNumber) return null;
+      {waNumber && (() => {
         const clean = waNumber.replace(/[^0-9]/g, '');
         return (
           <a href={`https://wa.me/${clean}`} target="_blank" rel="noreferrer"
