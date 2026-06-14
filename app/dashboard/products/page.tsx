@@ -11,24 +11,19 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatINR } from '@/lib/format';
+import CreateProductModal from '@/components/dashboard/products/CreateProductModal';
+import CreateUpsellModal from '@/components/dashboard/products/CreateUpsellModal';
+import DeleteUpsellConfirm from '@/components/dashboard/products/DeleteUpsellConfirm';
+import BulkActionConfirm from '@/components/dashboard/products/BulkActionConfirm';
 import {
   Plus, X, Package, FileText, Tag, BookOpen, Search, Edit3, Eye,
   Link2, Copy, Trash2, ExternalLink, TrendingUp, CheckCircle2,
-  ImageIcon, Sparkles, ArrowRight, Filter, Archive, CheckSquare,
+  ImageIcon, Filter, Archive, CheckSquare,
   Square,
 } from 'lucide-react';
 
 type StatusTab = 'all' | 'published' | 'draft';
 type CategoryFilter = 'all' | 'digital' | 'course' | 'template' | 'other';
-
-const INPUT = 'w-full px-4 py-3 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all';
-
-const CATEGORIES = [
-  { value: 'digital', label: 'Digital File', icon: FileText, desc: 'PDF, ZIP, video, audio' },
-  { value: 'course', label: 'Course', icon: BookOpen, desc: 'Structured learning' },
-  { value: 'template', label: 'Template', icon: Tag, desc: 'Design or code templates' },
-  { value: 'other', label: 'Other', icon: Package, desc: 'Custom digital product' },
-];
 
 // ─── Page ────────────────────────────────────────────────────
 export default function ProductsPage() {
@@ -613,297 +608,48 @@ function ProductsPageInner() {
         </aside>
       </div>
 
-      {/* ═══ Create Product Modal ═══ */}
       {modal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200">
-          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-[480px] border border-[var(--border)] overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
-            <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-[var(--border-subtle)] shrink-0">
-              <h2 className="text-2xl font-bold text-[var(--text-primary)] relative z-10">Create Product</h2>
-              <p className="text-sm text-[var(--text-secondary)] mt-1 relative z-10">Add a new offering to your catalog.</p>
-              <button onClick={() => setModal(false)} className="absolute top-8 right-8 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] p-2 rounded-full hover:bg-[var(--surface-hover)] transition-colors z-20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreate} className="p-6 sm:p-8 space-y-6 bg-[var(--surface-muted)]/30 overflow-y-auto custom-scrollbar">
-              <div>
-                <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Product Name <span className="text-[var(--danger)]">*</span></label>
-                <input type="text" required autoFocus value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Masterclass: Advanced UI Design" className={INPUT} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[var(--text-primary)] mb-3">Category Type</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {CATEGORIES.map(c => (
-                    <button key={c.value} type="button" onClick={() => setCategory(c.value)}
-                      className={`relative flex flex-col items-start p-4 rounded-[var(--radius-lg)] text-left transition-all duration-200 border-2 overflow-hidden group focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${category === c.value ? 'border-[var(--brand)] bg-[var(--brand)]/5' : 'border-[var(--border)] hover:border-[var(--brand)]/40 bg-[var(--surface)]'}`}>
-                      <c.icon className={`w-6 h-6 mb-3 ${category === c.value ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]'}`} />
-                      <div className={`text-sm font-bold mb-0.5 ${category === c.value ? 'text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}`}>{c.label}</div>
-                      <div className="text-xs text-[var(--text-secondary)] leading-tight">{c.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Base Price (INR)</label>
-                <div className="relative group">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] font-medium group-focus-within:text-[var(--brand)] transition-colors">{'₹'}</span>
-                  <input type="number" min="0" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" className={`${INPUT} pl-10 font-mono text-lg tracking-wider placeholder:text-base`} />
-                </div>
-                <p className="text-xs text-[var(--text-secondary)] mt-2 font-medium">You can configure free products or change pricing later.</p>
-              </div>
-
-              {createError && (
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-sm)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--danger)] shrink-0" /> {createError}
-                </div>
-              )}
-
-              <div className="pt-2">
-                <button type="submit" disabled={isCreating || !name.trim()} className="w-full flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                  {isCreating ? 'Creating Product...' : 'Create & Continue'}
-                  {!isCreating && <ArrowRight className="w-4 h-4 ml-1" />}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <CreateProductModal
+          name={name} setName={setName}
+          category={category} setCategory={setCategory}
+          price={price} setPrice={setPrice}
+          isCreating={isCreating}
+          error={createError}
+          onSubmit={handleCreate}
+          onClose={() => setModal(false)}
+        />
       )}
 
-      {/* ═══ Create Upsell Modal ═══ */}
       {upsellModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200">
-          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-[540px] border border-[var(--border)] overflow-hidden transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
-            <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-[var(--border-subtle)] shrink-0">
-              <h2 className="text-2xl font-bold text-[var(--text-primary)] relative z-10">
-                {upsellStep === 'info' ? 'Create Upsell Page' : 'Configure Upsell'}
-              </h2>
-              <p className="text-sm text-[var(--text-secondary)] mt-1 relative z-10">
-                {upsellStep === 'info' ? 'Maximize revenue with smart bundle checkouts.' : 'Select products to bundle together.'}
-              </p>
-              <button onClick={() => setUpsellModal(false)} className="absolute top-8 right-8 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] p-2 rounded-full hover:bg-[var(--surface-hover)] transition-colors z-20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 sm:p-8 bg-[var(--surface-muted)]/30 overflow-y-auto custom-scrollbar">
-              {upsellStep === 'info' ? (
-                <div className="space-y-5">
-                  {/* Hero */}
-                  <div className="bg-[var(--brand)] rounded-[var(--radius-lg)] p-5 text-[var(--text-on-brand)]">
-                    <div className="w-10 h-10 bg-white/20 rounded-[var(--radius-sm)] flex items-center justify-center mb-4">
-                      <Sparkles className="w-5 h-5 text-[var(--text-on-brand)]" />
-                    </div>
-                    <h3 className="text-base font-extrabold mb-1">One link. Multiple products.</h3>
-                    <p className="text-sm text-[var(--text-on-brand)]/80 leading-relaxed">
-                      Bundle a main product with optional add-ons buyers can toggle at checkout — no extra clicks, no friction.
-                    </p>
-                  </div>
-
-                  {/* Steps */}
-                  <div className="space-y-2">
-                    {[
-                      { n: '1', label: 'Pick your primary product' },
-                      { n: '2', label: 'Add up to 2 optional add-ons' },
-                      { n: '3', label: 'Share the link and watch revenue grow' },
-                    ].map(step => (
-                      <div key={step.n} className="flex items-center gap-3 px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)]">
-                        <span className="w-6 h-6 rounded-full bg-[var(--brand)]/15 text-[var(--brand)] text-xs font-extrabold flex items-center justify-center shrink-0">{step.n}</span>
-                        <span className="text-sm font-medium text-[var(--text-secondary)]">{step.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => setUpsellStep('select')}
-                    disabled={products.length === 0}
-                    className="w-full flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] py-3.5 rounded-[var(--radius-sm)] font-bold text-sm transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                  >
-                    {products.length === 0 ? 'Create a product first' : 'Start Building →'}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Title */}
-                  <div>
-                    <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Campaign Internal Name</label>
-                    <input
-                      type="text" value={upsellTitle}
-                      onChange={e => setUpsellTitle(e.target.value)}
-                      className={INPUT}
-                      placeholder={products.find((p) => p.id === primaryId)?.name || 'e.g. Black Friday Mastery Bundle'}
-                    />
-                  </div>
-
-                  {/* Primary Product */}
-                  <div>
-                    <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">Select Primary Product <span className="text-[var(--danger)]">*</span></label>
-                    <div className="relative mb-3 group">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] group-focus-within:text-[var(--brand)] transition-colors" />
-                      <input
-                        type="text" value={productSearch} onChange={e => setProductSearch(e.target.value)}
-                        placeholder="Search your inventory..."
-                        className={`${INPUT} pl-11 py-2.5`}
-                      />
-                    </div>
-                    <div className="max-h-48 overflow-y-auto border border-[var(--border)] rounded-[var(--radius-sm)] divide-y divide-[var(--border-subtle)] bg-[var(--surface)] shadow-inner custom-scrollbar">
-                      {filteredProducts.map((p) => (
-                        <button
-                          key={p.id} type="button"
-                          onClick={() => { setPrimaryId(p.id); setSecondaryIds(ids => ids.filter(id => id !== p.id)); if (!upsellTitle) setUpsellTitle(p.name); }}
-                          className={`w-full flex items-center gap-4 px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                            primaryId === p.id ? 'bg-[var(--brand)]/8' : 'hover:bg-[var(--surface-hover)]'
-                          }`}
-                        >
-                          {p.thumbnail_url ? (
-                            <img src={p.thumbnail_url} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0 border border-[var(--border-subtle)]" />
-                          ) : (
-                            <div className="w-10 h-10 bg-[var(--surface-muted)] rounded-lg flex items-center justify-center shrink-0 border border-[var(--border)]">
-                              <Package className="w-4 h-4 text-[var(--text-tertiary)]" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className={`text-sm font-bold truncate ${primaryId === p.id ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{p.name}</p>
-                            <p className="text-xs font-semibold text-[var(--text-secondary)] mt-0.5">{formatINR(p.price || 0)}</p>
-                          </div>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${primaryId === p.id ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
-                            {primaryId === p.id && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--text-on-brand)]" />}
-                          </div>
-                        </button>
-                      ))}
-                      {filteredProducts.length === 0 && (
-                        <div className="py-6 text-center text-sm text-[var(--text-secondary)]">No products found.</div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Secondary Products */}
-                  {primaryId && (
-                    <div className="animate-in slide-in-from-top-2 fade-in duration-300">
-                      <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">
-                        Add Order Bumps <span className="text-[var(--text-tertiary)] font-medium text-xs ml-1">(Optional, max 2)</span>
-                      </label>
-                      <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                        {products.filter((p) => p.id !== primaryId).map((p) => {
-                          const selected = secondaryIds.includes(p.id);
-                          const disabled = !selected && secondaryIds.length >= 2;
-                          return (
-                            <button
-                              key={p.id} type="button" disabled={disabled}
-                              onClick={() => setSecondaryIds(ids => selected ? ids.filter(id => id !== p.id) : [...ids, p.id])}
-                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--radius-sm)] text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                                selected
-                                  ? 'bg-[var(--surface)] border-2 border-[var(--brand)] shadow-[var(--shadow-xs)]'
-                                  : disabled
-                                    ? 'opacity-40 cursor-not-allowed bg-[var(--surface)] border-2 border-transparent'
-                                    : 'bg-[var(--surface)] border-2 border-[var(--border)] hover:border-[var(--border-strong)]'
-                              }`}
-                            >
-                              <div className={`w-5 h-5 rounded-[6px] border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
-                                {selected && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--text-on-brand)]" />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-bold truncate ${selected ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{p.name}</p>
-                              </div>
-                              <p className="text-xs font-bold text-[var(--text-secondary)] shrink-0 bg-[var(--surface-muted)] px-2 py-1 rounded-md">{formatINR(p.price || 0)}</p>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {upsellError && (
-                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-sm)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--danger)] shrink-0" /> {upsellError}
-                    </div>
-                  )}
-
-                  <div className="pt-4">
-                    <button
-                      onClick={handleCreateUpsell}
-                      disabled={!primaryId || upsellCreating}
-                      className="w-full flex items-center justify-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 text-[var(--text-on-brand)] py-4 rounded-[var(--radius-sm)] font-bold text-base shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                    >
-                      {upsellCreating ? 'Building Funnel...' : 'Publish Funnel Page'}
-                      {!upsellCreating && <ArrowRight className="w-4 h-4 ml-1" />}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <CreateUpsellModal
+          step={upsellStep} setStep={setUpsellStep}
+          products={products} filteredProducts={filteredProducts}
+          primaryId={primaryId} setPrimaryId={setPrimaryId}
+          secondaryIds={secondaryIds} setSecondaryIds={setSecondaryIds}
+          title={upsellTitle} setTitle={setUpsellTitle}
+          productSearch={productSearch} setProductSearch={setProductSearch}
+          isCreating={upsellCreating}
+          error={upsellError}
+          onCreate={handleCreateUpsell}
+          onClose={() => setUpsellModal(false)}
+        />
       )}
 
-      {/* ═══ Delete Confirm ═══ */}
       {deleteId && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
-          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm border border-[var(--border)] p-8 text-center transform transition-all scale-in-95">
-            <div className="w-16 h-16 bg-[var(--danger-bg)] rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-inner border border-[var(--danger)]/20">
-              <Trash2 className="w-8 h-8 text-[var(--danger)]" />
-            </div>
-            <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">Delete Funnel?</h3>
-            <p className="text-sm text-[var(--text-secondary)] mb-8 leading-relaxed">This will permanently remove the upsell page. Your base products will not be affected.</p>
-            {deleteError && (
-              <div className="flex items-center justify-center gap-2 px-3 py-2.5 mb-4 rounded-[var(--radius-sm)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--danger)] shrink-0" /> {deleteError}
-              </div>
-            )}
-            <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-[var(--border)] text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                Cancel
-              </button>
-              <button onClick={handleDeleteUpsell} className="flex-1 py-3.5 rounded-[var(--radius-sm)] bg-[var(--danger)] hover:bg-[var(--danger)]/90 text-white text-sm font-bold shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                Yes, Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <DeleteUpsellConfirm
+          error={deleteError}
+          onConfirm={handleDeleteUpsell}
+          onClose={() => setDeleteId(null)}
+        />
       )}
-      {/* ═══ Bulk Action Confirm ═══ */}
+
       {bulkAction && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
-          <div className="bg-[var(--surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm border border-[var(--border)] p-8 text-center">
-            <div className={`w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-6 shadow-inner border ${
-              bulkAction === 'delete'
-                ? 'bg-[var(--danger-bg)] border-[var(--danger)]/20'
-                : 'bg-[var(--warning-bg)] border-[var(--warning)]/20'
-            }`}>
-              {bulkAction === 'delete'
-                ? <Trash2 className="w-8 h-8 text-[var(--danger)]" />
-                : <Archive className="w-8 h-8 text-[var(--warning)]" />
-              }
-            </div>
-            <h3 className="text-xl font-extrabold text-[var(--text-primary)] mb-2">
-              {bulkAction === 'delete' ? `Delete ${selectedIds.size} product${selectedIds.size !== 1 ? 's' : ''}?` : `Archive ${selectedIds.size} product${selectedIds.size !== 1 ? 's' : ''}?`}
-            </h3>
-            <p className="text-sm text-[var(--text-secondary)] mb-8 leading-relaxed">
-              {bulkAction === 'delete'
-                ? 'This action cannot be undone. Products will be permanently removed.'
-                : 'Archived products will be unpublished and hidden from your store.'}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setBulkAction(null)}
-                className="flex-1 py-3.5 rounded-[var(--radius-sm)] border-2 border-[var(--border)] text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => { clearSelection(); setBulkAction(null); }}
-                className={`flex-1 py-3.5 rounded-[var(--radius-sm)] text-white text-sm font-bold shadow-[var(--shadow-sm)] transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                  bulkAction === 'delete'
-                    ? 'bg-[var(--danger)] hover:bg-[var(--danger)]/90'
-                    : 'bg-[var(--warning)] hover:bg-[var(--warning)]/90'
-                }`}
-              >
-                {bulkAction === 'delete' ? 'Delete All' : 'Archive All'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <BulkActionConfirm
+          action={bulkAction}
+          count={selectedIds.size}
+          onConfirm={() => { clearSelection(); setBulkAction(null); }}
+          onClose={() => setBulkAction(null)}
+        />
       )}
     </div>
   );
