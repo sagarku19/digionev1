@@ -34,7 +34,7 @@ function PageBreadcrumb({ pathname }: { pathname: string | null }) {
 
     if (isUUID) {
       if (prevSeg === 'products') {
-        const product = products?.find((p: any) => p.id === lastSeg);
+        const product = products?.find((p) => p.id === lastSeg);
         label = product?.name || 'Edit Product';
       } else {
         label = 'Details';
@@ -78,7 +78,7 @@ export default function TopBar() {
   };
 
   const fullName = profile?.full_name || 'Creator';
-  const avatarUrl = (profile as any)?.avatar_url;
+  const avatarUrl = profile?.avatar_url;
   const initial = fullName.charAt(0).toUpperCase();
 
   return (

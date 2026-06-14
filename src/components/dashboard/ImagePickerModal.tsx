@@ -138,7 +138,7 @@ export default function ImagePickerModal({
     reset ? setLoading(true) : setLoadingMore(true);
 
     try {
-      let query = (supabaseRef.current.from('public_images' as any) as any)
+      let query = supabaseRef.current.from('public_images')
         .select('id, url, name, category, tags')
         .order('created_at', { ascending: false })
         .range(offset, offset + PAGE_SIZE - 1);

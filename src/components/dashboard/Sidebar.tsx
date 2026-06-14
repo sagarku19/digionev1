@@ -111,7 +111,7 @@ export default function Sidebar() {
 
   const userName = profile?.full_name || 'Creator';
   const userInitials = userName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
-  const avatarUrl = (profile as any)?.avatar_url;
+  const avatarUrl = profile?.avatar_url;
 
 
   // ── Leaf link ─────────────────────────────────────────────
