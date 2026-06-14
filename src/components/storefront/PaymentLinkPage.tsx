@@ -11,10 +11,12 @@ function formatINR(n: number) {
 
 import { load } from '@cashfreepayments/cashfree-js';
 
-export default function PaymentLinkPage({ siteId, siteMain }: { siteId: string; siteMain: any }) {
+type PaymentSiteMain = { title?: string | null; meta_description?: string | null; fixed_amount?: number | null } | null;
+
+export default function PaymentLinkPage({ siteId, siteMain }: { siteId: string; siteMain: PaymentSiteMain }) {
   const title       = siteMain?.title ?? 'Pay securely';
   const description = siteMain?.meta_description ?? '';
-  const amount      = siteMain?.fixed_amount as number | undefined;
+  const amount      = siteMain?.fixed_amount ?? undefined;
   const isFlexible  = !amount;
 
   const [name,    setName]    = useState('');

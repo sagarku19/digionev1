@@ -36,10 +36,27 @@ export interface StorefrontSection {
   settings: Record<string, unknown>;
 }
 
+export interface StorefrontProduct {
+  id: string;
+  name: string;
+  price: number;
+  category: string | null;
+  thumbnail_url: string | null;
+  is_published: boolean | null;
+  description: string | null;
+}
+
+export interface StorefrontSiteMain {
+  title: string | null;
+  meta_description: string | null;
+  logo_url: string | null;
+  banner_url: string | null;
+}
+
 export interface SectionRendererProps {
   sections: StorefrontSection[];
-  products?: any[];
-  siteMain?: any;
+  products?: StorefrontProduct[];
+  siteMain?: StorefrontSiteMain | null;
   siteId?: string;
 }
 
