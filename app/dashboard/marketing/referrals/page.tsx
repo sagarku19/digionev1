@@ -56,7 +56,7 @@ export default function ReferralsPage() {
       setShowModal(false);
       setNewCode(genCode());
     } catch (err) {
-      setFormError((err as Error).message ?? 'Failed to create code.');
+      setFormError(err instanceof Error ? err.message : 'Failed to create code.');
     } finally {
       setSaving(false);
     }

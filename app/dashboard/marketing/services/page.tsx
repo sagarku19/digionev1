@@ -89,7 +89,7 @@ export default function ServicesPage() {
       else await createService(payload as Omit<Service, 'id' | 'created_at'>);
       setShowModal(false);
     } catch (err) {
-      setFormError((err as Error).message ?? 'Failed to save service.');
+      setFormError(err instanceof Error ? err.message : 'Failed to save service.');
     } finally {
       setSaving(false);
     }

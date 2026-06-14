@@ -77,7 +77,7 @@ export default function CommunityPage() {
       setNewContent('');
       setNewCategory('General');
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof Error ? e.message : 'Failed to post.');
     } finally {
       setPosting(false);
     }
