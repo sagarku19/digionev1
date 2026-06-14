@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import LinkInBioPage from '@/components/storefront/LinkInBioPage';
 import type { BioData, BioLink, ProductLite } from '@/components/storefront/linkinbio/blockRenderers/_shared';
 import type { Database } from '@/types/database.types';
+import { mapBlocksToLinks } from './mapBlocksToLinks';
 
 type LinkinbioItemRow = Database['public']['Tables']['linkinbio_items']['Row'];
 
@@ -33,11 +34,6 @@ type LinkinbioSeo = {
   custom_description?: string;
   custom_image?: string;
 };
-// reason: block content/style/item metadata are heterogeneous per-block jsonb
-type BlockContent = Record<string, unknown>;
-type BlockStyle = Record<string, unknown>;
-type ItemMetadata = Record<string, unknown>;
-
 export async function generateMetadata({
   params,
 }: {
@@ -170,26 +166,7 @@ export default async function LinkInBioStorefront({
   }
 
   // Map V2 blocks+items → old flat BioLink shape
-  const links: BioLink[] = blocks.map(b => {
-    const content = (b.content ?? {}) as BlockContent;
-    const style = (b.style ?? {}) as BlockStyle;
-    const item = itemsByBlock[b.id];
-    // reason: item.metadata is heterogeneous per-block jsonb
-    const itemMeta = item ? (item.metadata as ItemMetadata) : {};
-
-    return {
-      id: b.id,
-      link_type: b.type,
-      title: item?.title ?? (content.title as string | undefined) ?? null,
-      description: item?.description ?? (content.description as string | undefined) ?? null,
-      url: item?.url ?? (content.url as string | undefined) ?? null,
-      thumbnail_url: item?.thumbnail_url ?? (content.thumbnail_url as string | undefined) ?? null,
-      product_id: item?.product_id ?? null,
-      icon_type: (itemMeta.icon_type as string | undefined) ?? (style.icon_type as string | undefined) ?? null,
-      style_variant: (itemMeta.style_variant as string | undefined) ?? (style.variant as string | undefined) ?? 'default',
-      metadata: { ...content, ...itemMeta },
-    };
-  });
+  const links: BioLink[] = mapBlocksToLinks(blocks, itemsByBlock);
 
   // For product-type links, fetch product data
   const productIds = links
