@@ -23,8 +23,8 @@ This is what `/verify` automates. Run it before every commit.
 ## Lane 2 — Automated tests 🟡 partially in place
 
 **In place now:**
-- **Vitest** is installed and configured (`vitest.config.ts` — `environment: 'node'`, `include: ['src/**/*.test.ts']`). Run with `npm test` (`vitest run`).
-- One suite exists: `src/lib/server/referrals.test.ts` (5 tests). Add new `*.test.ts` files next to the `src/` code they cover and they're picked up automatically.
+- **Vitest** is installed and configured (`vitest.config.ts` — `environment: 'node'`, `include: ['{src,app,lib}/**/*.test.{ts,tsx}']`). Run with `npm test` (`vitest run`).
+- One suite exists: `src/lib/server/referrals.test.ts` (5 tests). Add new `*.test.ts` (or `.test.tsx`) files next to the `src/`, `app/`, or `lib/` code they cover and they're picked up automatically.
 
 **Still missing (what a mature setup adds):**
 - **Unit tests** (Vitest + React Testing Library) for hooks (`src/hooks/use*.ts`) and the rest of the pure utilities in `src/lib/`.
@@ -32,7 +32,7 @@ This is what `/verify` automates. Run it before every commit.
 - **E2E tests** (Playwright) for the three critical flows: signup → create site, buyer checkout, dashboard product publish.
 - **Visual regression** (optional — Chromatic) for storefront sections.
 
-> Note: the config only globs `src/**/*.test.ts`. Tests for code under `app/` or `lib/` (no `src/` prefix) won't be picked up until the `include` glob is widened.
+> Note: the glob now covers `src/`, `app/`, and `lib/` (`.test.ts`/`.test.tsx`). The environment is `node`, so React-component (`.test.tsx`) tests that touch the DOM will need `environment: 'jsdom'` (per-file `// @vitest-environment jsdom` or a config split) before they pass.
 
 ## Lane 3 — CI / pre-deploy gates ❌ not in place
 
