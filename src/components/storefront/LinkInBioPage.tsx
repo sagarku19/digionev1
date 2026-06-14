@@ -6,62 +6,21 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  Instagram, Twitter, Youtube, Linkedin, Github, Globe, Music,
-  ExternalLink, Share2, Package, Play, Music2,
+  Globe, ExternalLink, Share2, Package, Play,
+  Instagram, Twitter, Music2, Music, Github, Linkedin,
 } from 'lucide-react';
-
-// ─── Types ───────────────────────────────────────────────────
-type SocialLink = { platform: string; url: string; is_visible?: boolean };
-
-type BioData = {
-  display_name: string;
-  bio_text: string | null;
-  avatar_url: string | null;
-  cover_image_url: string | null;
-  layout_style: string;
-  button_style: string;
-  background_type: string;
-  background_value: string | null;
-  social_links: SocialLink[] | null;
-  show_watermark: boolean;
-  show_share_button: boolean;
-  // V2 appearance fields
-  font_family?: string;
-  card_style?: string;
-  animation?: string;
-  border_radius?: string;
-  spacing?: string;
-  avatar_shape?: 'circular' | 'rounded' | 'square';
-  avatar_border?: boolean;
-};
-
-type BioLink = {
-  id: string;
-  link_type: string;
-  title: string | null;
-  description: string | null;
-  url: string | null;
-  thumbnail_url: string | null;
-  product_id: string | null;
-  icon_type: string | null;
-  style_variant: string;
-  metadata: any;
-};
+import {
+  type BioData, type BioLink, type SocialLink, type ProductLite,
+  SOCIAL_ICONS, getRadiusClass, getAnimationStyle, getCardStyle, getButtonClasses, trackClick,
+} from './linkinbio/blockRenderers/_shared';
 
 type Props = {
   siteId: string;
   username?: string;
   bio: BioData;
   links: BioLink[];
-  productsMap: Record<string, { id: string; name: string; price: number; thumbnail_url: string | null; is_published: boolean }>;
+  productsMap: Record<string, ProductLite>;
   palette: Record<string, string>;
-};
-
-// ─── Social icon map ─────────────────────────────────────────
-const SOCIAL_ICONS: Record<string, React.ElementType> = {
-  instagram: Instagram, twitter: Twitter, youtube: Youtube,
-  linkedin: Linkedin, github: Github, tiktok: Music,
-  website: Globe, spotify: Music2,
 };
 
 // ─── Font family CSS ─────────────────────────────────────────
@@ -91,17 +50,6 @@ function FontLink({ font }: { font?: string }) {
   return <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${family}&display=swap`} />;
 }
 
-// ─── Border radius map ───────────────────────────────────────
-function getRadiusClass(r?: string): string {
-  switch (r) {
-    case 'none': return 'rounded-none';
-    case 'sm': return 'rounded-md';
-    case 'lg': return 'rounded-2xl';
-    case 'full': return 'rounded-full';
-    default: return 'rounded-xl';
-  }
-}
-
 // ─── Spacing gap map ─────────────────────────────────────────
 function getSpacingClass(s?: string): string {
   switch (s) {
@@ -111,52 +59,9 @@ function getSpacingClass(s?: string): string {
   }
 }
 
-// ─── Animation class ─────────────────────────────────────────
-function getAnimationStyle(anim?: string, index?: number): React.CSSProperties {
-  const delay = `${(index ?? 0) * 60}ms`;
-  switch (anim) {
-    case 'fade-in': return { opacity: 0, animation: `bioFadeIn 0.4s ease-out ${delay} forwards` };
-    case 'slide-up': return { opacity: 0, transform: 'translateY(12px)', animation: `bioSlideUp 0.4s ease-out ${delay} forwards` };
-    case 'scale': return { opacity: 0, transform: 'scale(0.95)', animation: `bioScale 0.3s ease-out ${delay} forwards` };
-    default: return {};
-  }
-}
-
-// ─── Card style classes ──────────────────────────────────────
-function getCardStyle(style?: string, palette?: Record<string, string>): React.CSSProperties {
-  switch (style) {
-    case 'glass': return {
-      backgroundColor: `${palette?.surface || '#FFFFFF'}40`,
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-    };
-    case 'transparent': return { backgroundColor: 'transparent' };
-    case 'bordered': return { backgroundColor: 'transparent', border: `2px solid ${palette?.text || '#000'}15` };
-    default: return { backgroundColor: palette?.surface || '#FFFFFF' };
-  }
-}
-
-// ─── Button style classes ────────────────────────────────────
-function getButtonClasses(style: string, radius?: string): string {
-  const r = getRadiusClass(radius);
-  const base = `w-full flex items-center gap-3 px-5 py-3.5 transition-all duration-200 text-left ${r}`;
-  switch (style) {
-    case 'pill':
-      return `${base} !rounded-full border-2 border-[--creator-text]/10 hover:border-[--creator-primary] hover:shadow-lg`;
-    case 'sharp':
-      return `${base} !rounded-none border-2 border-[--creator-text]/10 hover:border-[--creator-primary] hover:shadow-lg`;
-    case 'outline':
-      return `${base} border-2 border-[--creator-primary]/30 hover:border-[--creator-primary] hover:bg-[--creator-primary]/5`;
-    case 'shadow':
-      return `${base} border border-[--creator-text]/5 shadow-md hover:shadow-xl hover:translate-y-[-1px]`;
-    default:
-      return `${base} border-2 border-[--creator-text]/10 hover:border-[--creator-primary] hover:shadow-lg`;
-  }
-}
-
 // ─── Lead Form Block (client component with state) ──────────
-function LeadFormBlock({ link, bio, palette, siteId, animStyle, getRadiusClass }: {
-  link: any; bio: any; palette: any; siteId: string; animStyle: any;
+function LeadFormBlock({ link, bio, palette, siteId, animStyle, getRadiusClass: getRadiusClassProp }: {
+  link: BioLink; bio: BioData; palette: Record<string, string>; siteId: string; animStyle: React.CSSProperties;
   getRadiusClass: (r: string) => string;
 }) {
   const fields: { type: string; label: string; required: boolean; placeholder: string }[] =
@@ -215,8 +120,8 @@ function LeadFormBlock({ link, bio, palette, siteId, animStyle, getRadiusClass }
         throw new Error(j.error || 'Submission failed');
       }
       setSubmitted(true);
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setSubmitting(false);
     }
@@ -229,7 +134,7 @@ function LeadFormBlock({ link, bio, palette, siteId, animStyle, getRadiusClass }
   if (submitted) {
     return (
       <div className="w-full col-span-2" style={animStyle}>
-        <div className={`${getRadiusClass(bio.border_radius)} border-2 p-5 text-center`}
+        <div className={`${getRadiusClassProp(bio.border_radius ?? '')} border-2 p-5 text-center`}
           style={{ borderColor: `${pri}30`, backgroundColor: `${pri}08` }}>
           <div className="w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center" style={{ backgroundColor: `${pri}15` }}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke={pri} strokeWidth={2.5}>
@@ -247,7 +152,7 @@ function LeadFormBlock({ link, bio, palette, siteId, animStyle, getRadiusClass }
   return (
     <div className="w-full col-span-2" style={animStyle}>
       <form onSubmit={handleSubmit}
-        className={`${getRadiusClass(bio.border_radius)} border-2 p-4 space-y-3`}
+        className={`${getRadiusClassProp(bio.border_radius ?? '')} border-2 p-4 space-y-3`}
         style={{ borderColor: `${pri}30`, backgroundColor: `${pri}08` }}>
         {link.title && (
           <p className="text-sm font-semibold" style={{ color: txt }}>{link.title}</p>
@@ -288,18 +193,6 @@ function LeadFormBlock({ link, bio, palette, siteId, animStyle, getRadiusClass }
       </form>
     </div>
   );
-}
-
-// ─── Click tracking ──────────────────────────────────────────
-function trackClick(siteId: string, linkId: string, eventType: string) {
-  try {
-    const body = JSON.stringify({ site_id: siteId, link_id: linkId, event_type: eventType });
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon('/api/linkinbio/track', new Blob([body], { type: 'application/json' }));
-    } else {
-      fetch('/api/linkinbio/track', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'application/json' } });
-    }
-  } catch { /* silent */ }
 }
 
 // ─── Profile Section ─────────────────────────────────────────
@@ -383,7 +276,7 @@ function LinkCard({
   link: BioLink;
   bio: BioData;
   palette: Record<string, string>;
-  productsMap: Record<string, any>;
+  productsMap: Record<string, ProductLite>;
   siteId: string;
   index: number;
 }) {
@@ -396,7 +289,7 @@ function LinkCard({
     const sizeMap: Record<string, string> = { sm: 'text-sm', md: 'text-base', lg: 'text-lg', xl: 'text-xl', '2xl': 'text-2xl' };
     const sizeClass = sizeMap[link.metadata?.size || 'xl'] || 'text-xl';
     return (
-      <div className="w-full col-span-2" style={{ textAlign: align as any, ...animStyle }}>
+      <div className="w-full col-span-2" style={{ textAlign: align as React.CSSProperties['textAlign'], ...animStyle }}>
         <h2 className={`${sizeClass} font-bold`} style={{ color: palette.text || '#0F172A' }}>{link.title}</h2>
         {link.metadata?.subtitle && (
           <p className="text-sm mt-1" style={{ color: palette.muted || '#64748B' }}>{link.metadata.subtitle}</p>
@@ -421,7 +314,7 @@ function LinkCard({
     const textSizeMap: Record<string, string> = { sm: 'text-xs', base: 'text-sm', lg: 'text-base' };
     const sizeClass = textSizeMap[link.metadata?.size || 'base'] || 'text-sm';
     return (
-      <div className="w-full col-span-2" style={{ textAlign: align as any, ...animStyle }}>
+      <div className="w-full col-span-2" style={{ textAlign: align as React.CSSProperties['textAlign'], ...animStyle }}>
         <p className={`${sizeClass} leading-relaxed whitespace-pre-wrap`} style={{ color: palette.text || '#0F172A' }}>
           {link.metadata?.content}
         </p>
@@ -435,7 +328,7 @@ function LinkCard({
     const headingSizeMap: Record<string, string> = { sm: 'text-xs', md: 'text-sm', lg: 'text-base' };
     const sizeClass = headingSizeMap[link.metadata?.size || 'md'] || 'text-sm';
     return (
-      <div className="pt-2 w-full col-span-2" style={{ textAlign: align as any, ...animStyle }}>
+      <div className="pt-2 w-full col-span-2" style={{ textAlign: align as React.CSSProperties['textAlign'], ...animStyle }}>
         <p className={`${sizeClass} font-bold`} style={{ color: palette.text || '#0F172A' }}>{link.title}</p>
         {link.metadata?.subtitle && (
           <p className="text-xs mt-0.5" style={{ color: palette.muted || '#64748B' }}>{link.metadata.subtitle}</p>
@@ -474,7 +367,7 @@ function LinkCard({
         <div className={`flex items-center gap-2.5 flex-wrap ${
           align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-start'
         }`}>
-          {iconLinks.filter((s: any) => s.url).map((s: any, i: number) => {
+          {(iconLinks as Array<{ platform: string; url: string }>).filter((s) => s.url).map((s, i) => {
             const Icon = SOCIAL_ICONS[s.platform] || Globe;
             return (
               <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
@@ -494,7 +387,7 @@ function LinkCard({
     return (
       <div className="w-full col-span-2 overflow-hidden rounded-xl" style={animStyle}>
         <div
-          dangerouslySetInnerHTML={{ __html: link.metadata.html }}
+          dangerouslySetInnerHTML={{ __html: link.metadata.html as string }}
           className="w-full [&>iframe]:w-full [&>iframe]:border-0"
         />
       </div>
@@ -527,11 +420,11 @@ function LinkCard({
     return (
       <div className="w-full col-span-2" style={animStyle}>
         <div className={`${getRadiusClass(bio.border_radius)} p-5 text-center`}
-          style={{ backgroundColor: bgColor, color: '#FFFFFF' }}>
+          style={{ backgroundColor: bgColor as string, color: '#FFFFFF' }}>
           {link.title && <h3 className="text-lg font-bold">{link.title}</h3>}
           {link.metadata?.description && <p className="text-sm mt-1 opacity-90">{link.metadata.description}</p>}
           {link.metadata?.button_url && (
-            <a href={link.metadata.button_url} target="_blank" rel="noopener noreferrer"
+            <a href={link.metadata.button_url as string} target="_blank" rel="noopener noreferrer"
               onClick={() => trackClick(siteId, link.id, 'link_click')}
               className="inline-block mt-3 px-6 py-2.5 bg-white/20 hover:bg-white/30 rounded-full text-sm font-semibold transition">
               {link.metadata?.button_text || 'Learn More'}
@@ -548,19 +441,19 @@ function LinkCard({
       : link.metadata?.border_radius === 'full' ? 'rounded-3xl'
       : 'rounded-xl';
     const ratio = link.metadata?.aspect_ratio && link.metadata.aspect_ratio !== 'auto'
-      ? { aspectRatio: link.metadata.aspect_ratio } : {};
+      ? { aspectRatio: link.metadata.aspect_ratio as string } : {};
 
     const inner = (
       <>
-        <img src={link.thumbnail_url} alt={link.metadata?.alt_text || ''} className={`w-full object-cover ${radius}`} style={ratio} />
+        <img src={link.thumbnail_url} alt={link.metadata?.alt_text as string || ''} className={`w-full object-cover ${radius}`} style={ratio} />
         {link.metadata?.caption && (
-          <p className="text-xs mt-1.5 text-center" style={{ color: palette.muted || '#64748B' }}>{link.metadata.caption}</p>
+          <p className="text-xs mt-1.5 text-center" style={{ color: palette.muted || '#64748B' }}>{link.metadata.caption as string}</p>
         )}
       </>
     );
 
     return link.metadata?.link_url ? (
-      <a href={link.metadata.link_url} target="_blank" rel="noopener noreferrer"
+      <a href={link.metadata.link_url as string} target="_blank" rel="noopener noreferrer"
         onClick={() => trackClick(siteId, link.id, 'link_click')}
         className="w-full col-span-2 hover:opacity-90 transition" style={animStyle}>{inner}</a>
     ) : (
@@ -572,9 +465,9 @@ function LinkCard({
   if (link.link_type === 'video_embed' && link.metadata?.embed_url) {
     return (
       <div className="w-full col-span-2" style={animStyle}>
-        <div className="rounded-xl overflow-hidden" style={{ aspectRatio: link.metadata.aspect_ratio || '16/9' }}>
+        <div className="rounded-xl overflow-hidden" style={{ aspectRatio: link.metadata.aspect_ratio as string || '16/9' }}>
           <iframe
-            src={link.metadata.embed_url}
+            src={link.metadata.embed_url as string}
             className="w-full h-full border-0"
             allowFullScreen
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -582,7 +475,7 @@ function LinkCard({
           />
         </div>
         {link.metadata?.caption && (
-          <p className="text-xs mt-1.5 text-center" style={{ color: palette.muted || '#64748B' }}>{link.metadata.caption}</p>
+          <p className="text-xs mt-1.5 text-center" style={{ color: palette.muted || '#64748B' }}>{link.metadata.caption as string}</p>
         )}
       </div>
     );
@@ -616,11 +509,11 @@ function LinkCard({
     const PriceBlock = ({ className = '' }: { className?: string }) => showPrice && displayPrice !== undefined ? (
       <span className={`flex items-center gap-1.5 ${className}`}>
         <span className="font-bold" style={{ color: pri }}>
-          {'\u20B9'}{displayPrice.toLocaleString('en-IN')}
+          {'₹'}{displayPrice.toLocaleString('en-IN')}
         </span>
         {originalPrice !== null && Number(originalPrice) > 0 && (
           <span className="line-through opacity-50 text-[11px]" style={{ color: palette.muted || '#64748B' }}>
-            {'\u20B9'}{Number(originalPrice).toLocaleString('en-IN')}
+            {'₹'}{Number(originalPrice).toLocaleString('en-IN')}
           </span>
         )}
       </span>
@@ -846,7 +739,7 @@ export default function LinkInBioPage({ siteId, username, bio, links, productsMa
   const [liveBio, setLiveBio] = useState<BioData | null>(null);
   const [liveLinks, setLiveLinks] = useState<BioLink[] | null>(null);
   const [livePalette, setLivePalette] = useState<Record<string, string> | null>(null);
-  const [liveProductsMap, setLiveProductsMap] = useState<Record<string, any> | null>(null);
+  const [liveProductsMap, setLiveProductsMap] = useState<Record<string, ProductLite> | null>(null);
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
