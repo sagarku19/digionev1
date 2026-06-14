@@ -4,10 +4,18 @@
 
 import React from 'react';
 
-export default function RichText({ settings }: { settings: any }) {
-  const content  = settings?.content ?? '';
-  const maxWidth = settings?.max_width ?? '768px';
-  const align    = settings?.text_align ?? 'left';
+interface RichTextSettings {
+  content?: string;
+  max_width?: string;
+  text_align?: string;
+}
+
+export default function RichText({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as RichTextSettings;
+  const content  = s?.content ?? '';
+  const maxWidth = s?.max_width ?? '768px';
+  const align    = s?.text_align ?? 'left';
 
   return (
     <section className="py-12 px-4">

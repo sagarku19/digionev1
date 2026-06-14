@@ -1,12 +1,22 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function HeroBanner({ settings }: { settings: any }) {
-  const title = settings?.title || 'Welcome to my store';
-  const subtitle = settings?.subtitle || 'Discover premium digital products, courses, and more.';
-  const primaryCta = settings?.primary_cta || { text: 'Shop Now', url: '#products' };
-  const alignment = settings?.alignment || 'center'; // 'left', 'center', 'right'
-  const bgImageUrl = settings?.background_image_url;
+interface HeroBannerSettings {
+  title?: string;
+  subtitle?: string;
+  primary_cta?: { text?: string; url?: string };
+  alignment?: 'left' | 'center' | 'right';
+  background_image_url?: string;
+}
+
+export default function HeroBanner({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as HeroBannerSettings;
+  const title = s?.title || 'Welcome to my store';
+  const subtitle = s?.subtitle || 'Discover premium digital products, courses, and more.';
+  const primaryCta = s?.primary_cta || { text: 'Shop Now', url: '#products' };
+  const alignment = s?.alignment || 'center'; // 'left', 'center', 'right'
+  const bgImageUrl = s?.background_image_url;
 
   return (
     <section className={`relative w-full py-24 md:py-32 flex items-center justify-center overflow-hidden

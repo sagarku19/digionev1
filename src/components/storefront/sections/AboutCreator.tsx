@@ -1,10 +1,19 @@
 import React from 'react';
 
-export default function AboutCreator({ settings }: { settings: any }) {
-  const name = settings?.name || 'Creator Name';
-  const bio = settings?.bio || 'I am a creator passionate about building tools and teaching others how to succeed in the digital economy. With over 5 years of experience, I share my exact strategies here.';
-  const avatarUrl = settings?.avatar_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400';
-  const showSocials = settings?.show_socials !== false;
+interface AboutCreatorSettings {
+  name?: string;
+  bio?: string;
+  avatar_url?: string;
+  show_socials?: boolean;
+}
+
+export default function AboutCreator({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as AboutCreatorSettings;
+  const name = s?.name || 'Creator Name';
+  const bio = s?.bio || 'I am a creator passionate about building tools and teaching others how to succeed in the digital economy. With over 5 years of experience, I share my exact strategies here.';
+  const avatarUrl = s?.avatar_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400';
+  const showSocials = s?.show_socials !== false;
 
   return (
     <section className="w-full py-24 bg-[--creator-bg]">

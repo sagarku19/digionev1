@@ -1,8 +1,15 @@
 import React from 'react';
 
-export default function TrustBadges({ settings }: { settings: any }) {
-  const text = settings?.text || 'Trusted by over 10,000+ creators and professionals worldwide';
-  const showPaymentLogos = settings?.show_payment_logos !== false;
+interface TrustBadgesSettings {
+  text?: string;
+  show_payment_logos?: boolean;
+}
+
+export default function TrustBadges({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as TrustBadgesSettings;
+  const text = s?.text || 'Trusted by over 10,000+ creators and professionals worldwide';
+  const showPaymentLogos = s?.show_payment_logos !== false;
   
   return (
     <section className="w-full py-16 bg-[--creator-surface]">

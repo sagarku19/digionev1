@@ -5,11 +5,20 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 
-export default function AnnouncementBar({ settings }: { settings: any }) {
-  const text    = settings?.text    ?? '🎉 New products just dropped! Limited time offer.';
-  const ctaText = settings?.cta_text ?? '';
-  const ctaUrl  = settings?.cta_url  ?? '';
-  const barId   = settings?.bar_id   ?? 'default-bar';
+interface AnnouncementBarSettings {
+  text?: string;
+  cta_text?: string;
+  cta_url?: string;
+  bar_id?: string;
+}
+
+export default function AnnouncementBar({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as AnnouncementBarSettings;
+  const text    = s?.text    ?? '🎉 New products just dropped! Limited time offer.';
+  const ctaText = s?.cta_text ?? '';
+  const ctaUrl  = s?.cta_url  ?? '';
+  const barId   = s?.bar_id   ?? 'default-bar';
 
   const [visible, setVisible] = useState(false);
 
