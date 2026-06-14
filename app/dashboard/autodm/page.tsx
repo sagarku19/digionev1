@@ -1,4 +1,10 @@
 'use client';
+// ⚠️ PROTOTYPE — not wired to real data. This entire page renders from
+// MOCK_AUTOMATIONS (no hooks, no API, no persistence) and is linked live in the
+// Sidebar ("Auto DM"). Before this ships as a real feature it needs: data hooks,
+// API routes, and persistence. Deferred from the dashboard production refactor by
+// decision — left as-is intentionally rather than refactored. See
+// docs/superpowers/specs/2026-06-14-dashboard-production-audit-design.md.
 
 import React, { useState, useCallback } from 'react';
 import {
