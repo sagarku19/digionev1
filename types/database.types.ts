@@ -1465,7 +1465,7 @@ export type Database = {
           {
             foreignKeyName: "fk_order_referrals_order"
             columns: ["order_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1905,6 +1905,7 @@ export type Database = {
           email_verified: boolean | null
           full_name: string | null
           id: string
+          metadata: Json | null
           mobile: string | null
           mobile_verified: boolean | null
           updated_at: string | null
@@ -1917,6 +1918,7 @@ export type Database = {
           email_verified?: boolean | null
           full_name?: string | null
           id?: string
+          metadata?: Json | null
           mobile?: string | null
           mobile_verified?: boolean | null
           updated_at?: string | null
@@ -1929,6 +1931,7 @@ export type Database = {
           email_verified?: boolean | null
           full_name?: string | null
           id?: string
+          metadata?: Json | null
           mobile?: string | null
           mobile_verified?: boolean | null
           updated_at?: string | null

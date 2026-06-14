@@ -198,7 +198,7 @@ export default function ProfileSettingsPage() {
   useEffect(() => {
     if (!profile || !profileId || hydratedRef.current === profileId) return;
     hydratedRef.current = profileId;
-    const meta = (profile as any).metadata ?? {};
+    const meta = (profile.metadata ?? {}) as Record<string, string | undefined>;
     setForm({
       full_name: profile.full_name ?? '',
       email: profile.email ?? '',
@@ -239,7 +239,7 @@ export default function ProfileSettingsPage() {
             linkedin: form.linkedin.trim() || null,
             telegram: form.telegram.trim() || null,
           },
-        } as any,
+        },
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
