@@ -5,9 +5,16 @@
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function ImageGallery({ settings }: { settings: any }) {
-  const title  = settings?.title  ?? '';
-  const images = (settings?.images as { url: string; alt?: string }[]) ?? [];
+interface ImageGallerySettings {
+  title?: string;
+  images?: { url: string; alt?: string }[];
+}
+
+export default function ImageGallery({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as ImageGallerySettings;
+  const title  = s?.title  ?? '';
+  const images = s?.images ?? [];
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const prev = () => setLightbox(i => (i !== null ? (i - 1 + images.length) % images.length : null));

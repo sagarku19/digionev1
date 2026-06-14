@@ -6,12 +6,22 @@ import React, { useEffect, useState } from 'react';
 
 function pad(n: number) { return String(n).padStart(2, '0'); }
 
-export default function CountdownTimerSection({ settings }: { settings: any }) {
-  const targetDate = settings?.target_date ? new Date(settings.target_date) : new Date(Date.now() + 7 * 86400000);
-  const title = settings?.title ?? 'Offer ends in';
-  const expireAction = settings?.expire_action ?? 'hide'; // 'hide' | 'message' | 'redirect'
-  const expireMessage = settings?.expire_message ?? 'This offer has expired.';
-  const expireRedirect = settings?.expire_redirect ?? '/';
+interface CountdownTimerSectionSettings {
+  target_date?: string;
+  title?: string;
+  expire_action?: string;
+  expire_message?: string;
+  expire_redirect?: string;
+}
+
+export default function CountdownTimerSection({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as CountdownTimerSectionSettings;
+  const targetDate = s?.target_date ? new Date(s.target_date) : new Date(Date.now() + 7 * 86400000);
+  const title = s?.title ?? 'Offer ends in';
+  const expireAction = s?.expire_action ?? 'hide'; // 'hide' | 'message' | 'redirect'
+  const expireMessage = s?.expire_message ?? 'This offer has expired.';
+  const expireRedirect = s?.expire_redirect ?? '/';
 
   const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
   const [expired, setExpired] = useState(false);

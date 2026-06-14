@@ -5,12 +5,22 @@
 import React, { useState } from 'react';
 import { Loader2, CheckCircle2, Mail } from 'lucide-react';
 
-export default function EmailCapture({ settings, siteId }: { settings: any; siteId?: string }) {
-  const title       = settings?.title       ?? 'Get exclusive updates';
-  const subtitle    = settings?.subtitle    ?? 'Join the newsletter and never miss a new product or launch.';
-  const placeholder = settings?.placeholder ?? 'Your email address';
-  const buttonText  = settings?.button_text ?? 'Subscribe free';
-  const successMsg  = settings?.success_message ?? 'You\'re in! Check your inbox.';
+interface EmailCaptureSettings {
+  title?: string;
+  subtitle?: string;
+  placeholder?: string;
+  button_text?: string;
+  success_message?: string;
+}
+
+export default function EmailCapture({ settings, siteId }: { settings: Record<string, unknown>; siteId?: string }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as EmailCaptureSettings;
+  const title       = s?.title       ?? 'Get exclusive updates';
+  const subtitle    = s?.subtitle    ?? 'Join the newsletter and never miss a new product or launch.';
+  const placeholder = s?.placeholder ?? 'Your email address';
+  const buttonText  = s?.button_text ?? 'Subscribe free';
+  const successMsg  = s?.success_message ?? 'You\'re in! Check your inbox.';
 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);

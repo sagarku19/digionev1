@@ -48,15 +48,28 @@ const DEFAULT_STATS = [
   { value: 98,   label: 'Satisfaction rate',   suffix: '%' },
 ];
 
-export default function SocialProof({ settings }: { settings: any }) {
-  const title = settings?.title ?? '';
-  const stats  = settings?.stats ?? DEFAULT_STATS;
+interface SocialProofStat {
+  value: number;
+  label: string;
+  suffix?: string;
+}
+
+interface SocialProofSettings {
+  title?: string;
+  stats?: SocialProofStat[];
+}
+
+export default function SocialProof({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as SocialProofSettings;
+  const title = s?.title ?? '';
+  const stats  = s?.stats ?? DEFAULT_STATS;
   return (
     <section className="py-16 bg-[--creator-surface]">
       {title && <h2 className="text-2xl font-bold text-center text-[--creator-text] mb-10">{title}</h2>}
       <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-y md:divide-y-0 divide-gray-200">
-        {stats.map((s: any, i: number) => (
-          <StatItem key={i} value={s.value} label={s.label} suffix={s.suffix} />
+        {stats.map((stat, i: number) => (
+          <StatItem key={i} value={stat.value} label={stat.label} suffix={stat.suffix} />
         ))}
       </div>
     </section>

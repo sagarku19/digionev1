@@ -5,11 +5,20 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 
-export default function StickyCta({ settings }: { settings: any }) {
-  const text    = settings?.text     ?? 'Get instant access';
-  const ctaUrl  = settings?.cta_url  ?? '#products';
-  const bgColor = settings?.bg_color ?? 'var(--creator-primary)';
-  const threshold = settings?.scroll_threshold ?? 400;
+interface StickyCtaSettings {
+  text?: string;
+  cta_url?: string;
+  bg_color?: string;
+  scroll_threshold?: number;
+}
+
+export default function StickyCta({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as StickyCtaSettings;
+  const text    = s?.text     ?? 'Get instant access';
+  const ctaUrl  = s?.cta_url  ?? '#products';
+  const bgColor = s?.bg_color ?? 'var(--creator-primary)';
+  const threshold = s?.scroll_threshold ?? 400;
 
   const [show, setShow] = useState(false);
 

@@ -20,11 +20,20 @@ function getEmbedUrl(url: string): string {
   return url;
 }
 
-export default function VideoShowcase({ settings }: { settings: any }) {
-  const title    = settings?.title       ?? '';
-  const subtitle = settings?.subtitle    ?? '';
-  const videoUrl = settings?.video_url   ?? '';
-  const poster   = settings?.poster_url  ?? '';
+interface VideoShowcaseSettings {
+  title?: string;
+  subtitle?: string;
+  video_url?: string;
+  poster_url?: string;
+}
+
+export default function VideoShowcase({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as VideoShowcaseSettings;
+  const title    = s?.title       ?? '';
+  const subtitle = s?.subtitle    ?? '';
+  const videoUrl = s?.video_url   ?? '';
+  const poster   = s?.poster_url  ?? '';
   const [playing, setPlaying] = useState(false);
 
   return (
