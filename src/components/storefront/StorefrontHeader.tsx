@@ -3,12 +3,23 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function StorefrontHeader({ navConfig, siteMain }: { navConfig: any, siteMain: any }) {
-  const logoUrl = navConfig?.header_logo_url || siteMain?.logo_url;
-  const storeName = siteMain?.title || "Store";
-  const navItems = navConfig?.nav_items || [{ label: "Home", url: "/" }];
-  const showSearch = navConfig?.show_search ?? false;
-  const showCart = navConfig?.show_cart_icon ?? true;
+type HeaderNav = {
+  header_logo_url?: string | null;
+  nav_items?: { label?: string; url?: string }[];
+  show_search?: boolean;
+  show_cart_icon?: boolean;
+};
+type HeaderSiteMain = { logo_url?: string | null; title?: string | null };
+
+export default function StorefrontHeader({ navConfig, siteMain }: { navConfig: Record<string, unknown> | null; siteMain: Record<string, unknown> | null }) {
+  // reason: nav/site_main rows carry jsonb columns; narrow to the fields used here
+  const nav = navConfig as unknown as HeaderNav | null;
+  const sm = siteMain as unknown as HeaderSiteMain | null;
+  const logoUrl = nav?.header_logo_url || sm?.logo_url;
+  const storeName = sm?.title || "Store";
+  const navItems = nav?.nav_items || [{ label: "Home", url: "/" }];
+  const showSearch = nav?.show_search ?? false;
+  const showCart = nav?.show_cart_icon ?? true;
 
   // Render minimal standard storefront header using tailwind utilities
   return (
@@ -26,8 +37,8 @@ export default function StorefrontHeader({ navConfig, siteMain }: { navConfig: a
             </Link>
 
             <nav className="hidden md:flex gap-6">
-              {navItems.map((item: any, i: number) => (
-                <Link key={i} href={item.url} className="text-sm font-medium text-[--creator-text] hover:opacity-70 transition-opacity">
+              {navItems.map((item, i) => (
+                <Link key={i} href={item.url || '#'} className="text-sm font-medium text-[--creator-text] hover:opacity-70 transition-opacity">
                   {item.label}
                 </Link>
               ))}

@@ -14,7 +14,8 @@ export default async function UpsellPageLayout({
   const { slug } = await params;
   const supabase = await createClient();
 
-  const { data: page } = await (supabase.from('upsell_pages' as any) as any)
+  const { data: page } = await supabase
+    .from('upsell_pages')
     .select('id, config, is_published')
     .eq('slug', slug)
     .eq('is_published', true)
@@ -22,7 +23,8 @@ export default async function UpsellPageLayout({
 
   if (!page) notFound();
 
-  const config = (page.config as any) || {};
+  // reason: config is a jsonb column typed as Json
+  const config = (page.config as { theme?: { primary_color?: string; bg_color?: string; text_color?: string } }) || {};
   const theme = config.theme || {};
   const primaryColor = safeCssColor(theme.primary_color, '#6366F1');
   const bgColor = safeCssColor(theme.bg_color, '#FFFFFF');

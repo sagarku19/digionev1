@@ -32,7 +32,8 @@ export default async function MainSiteLayout({
     supabase.from('site_main').select('*').eq('site_id', site.id).single(),
   ]);
 
-  const palette = (tokens?.color_palette as any) || {
+  // reason: color_palette is a jsonb column typed as Json
+  const palette = (tokens?.color_palette as Record<string, string>) || {
     primary: '#6366F1', secondary: '#8B5CF6', accent: '#EC4899',
     surface: '#FFFFFF', text: '#0F172A', muted: '#64748B', background: '#FFFFFF',
   };

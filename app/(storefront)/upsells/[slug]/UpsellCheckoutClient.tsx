@@ -10,7 +10,7 @@ type Product = {
   description: string | null;
   price: number;
   thumbnail_url: string | null;
-  metadata: any;
+  metadata: unknown;
 };
 
 type UpsellConfig = {
@@ -59,7 +59,8 @@ export default function UpsellCheckoutClient({ page, primaryProduct, upsellProdu
   const total = primaryProduct.price + selectedUpsellProducts.reduce((sum, p) => sum + p.price, 0);
 
   // "What's included" from product metadata
-  const whatsIncluded: string[] = primaryProduct.metadata?.whats_included ?? [];
+  // reason: metadata is jsonb; narrow to the field read here
+  const whatsIncluded: string[] = (primaryProduct.metadata as { whats_included?: string[] } | null)?.whats_included ?? [];
 
   const handleCheckout = async () => {
     setIsSubmitting(true);

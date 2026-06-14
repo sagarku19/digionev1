@@ -1,11 +1,20 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function StorefrontFooter({ navConfig, siteMain }: { navConfig: any, siteMain: any }) {
-  // Footer is simple and standard utilizing the creator's theme context.
-  const storeName = siteMain?.title || "Creator Store";
-  const { about_us, terms, privacy, refund } = siteMain?.legal_pages || {};
-  const socialLinks = siteMain?.social_links || {};
+type FooterSiteMain = {
+  title?: string | null;
+  legal_pages?: { about_us?: boolean; terms?: boolean; privacy?: boolean; refund?: boolean };
+  social_links?: { instagram?: string; twitter?: string; youtube?: string };
+  contact_email?: string | null;
+  contact_mobile?: string | null;
+};
+
+export default function StorefrontFooter({ siteMain }: { navConfig?: Record<string, unknown> | null; siteMain: Record<string, unknown> | null }) {
+  // reason: site_main row carries jsonb columns; narrow to the fields used here
+  const sm = siteMain as unknown as FooterSiteMain | null;
+  const storeName = sm?.title || "Creator Store";
+  const { about_us, terms, privacy, refund } = sm?.legal_pages || {};
+  const socialLinks = sm?.social_links || {};
 
   return (
     <footer className="w-full bg-[--creator-surface] border-t border-[--creator-border] py-12 px-6">
@@ -35,13 +44,13 @@ export default function StorefrontFooter({ navConfig, siteMain }: { navConfig: a
 
           <div className="flex flex-col gap-3">
             <span className="font-bold text-[--creator-text] uppercase tracking-wider text-xs">Contact</span>
-            {siteMain?.contact_email && (
-              <a href={`mailto:${siteMain.contact_email}`} className="text-[--creator-text-muted] hover:underline">
-                {siteMain.contact_email}
+            {sm?.contact_email && (
+              <a href={`mailto:${sm.contact_email}`} className="text-[--creator-text-muted] hover:underline">
+                {sm.contact_email}
               </a>
             )}
-            {siteMain?.contact_mobile && (
-              <span className="text-[--creator-text-muted]">{siteMain.contact_mobile}</span>
+            {sm?.contact_mobile && (
+              <span className="text-[--creator-text-muted]">{sm.contact_mobile}</span>
             )}
           </div>
         </div>

@@ -33,7 +33,8 @@ export default async function LinkInBioLayout({
     .eq('site_id', site.id)
     .maybeSingle();
 
-  const palette = (tokens?.color_palette as any) || {
+  // reason: color_palette is a jsonb column typed as Json
+  const palette = (tokens?.color_palette as Record<string, string>) || {
     primary: '#EC4899', secondary: '#8B5CF6', accent: '#F59E0B',
     surface: '#FFFFFF', text: '#0F172A', muted: '#64748B', background: '#FFFFFF',
   };

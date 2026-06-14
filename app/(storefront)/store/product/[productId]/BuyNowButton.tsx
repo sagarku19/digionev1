@@ -40,8 +40,8 @@ export function BuyNowButton({ productId, price, label }: Props) {
         paymentSessionId: data.payment_session_id,
         returnUrl: `${window.location.origin}/payment/status?order_id=${data.orderId}`,
       });
-    } catch (err: any) {
-      setError(err.message ?? 'Something went wrong');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoading(false);
     }
   };
