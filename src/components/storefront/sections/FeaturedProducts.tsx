@@ -1,14 +1,30 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function FeaturedProducts({ settings }: { settings: any }) {
-  const title = settings?.title || 'Featured Products';
-  const subtitle = settings?.subtitle || 'Explore my top selling digital items.';
-  const productIds = settings?.product_ids || [];
+interface FeaturedProductItem {
+  id?: string;
+  name?: string;
+  price?: number;
+  thumbnail_url?: string;
+}
+
+interface FeaturedProductsSettings {
+  title?: string;
+  subtitle?: string;
+  product_ids?: string[];
+  products?: FeaturedProductItem[];
+}
+
+export default function FeaturedProducts({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as FeaturedProductsSettings;
+  const title = s?.title || 'Featured Products';
+  const subtitle = s?.subtitle || 'Explore my top selling digital items.';
+  const productIds = s?.product_ids || [];
   
   // Note: In a real app, we would fetch the specific products using the IDs from Supabase or pass them from the page level.
   // For the storefront renderer demo, we render a placeholder grid if no products are explicitly passed.
-  const products = settings?.products || [
+  const products = s?.products || [
     { id: '1', name: 'Digital Course Demo', price: 4999, thumbnail_url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600' },
     { id: '2', name: 'Premium Notion Template', price: 999, thumbnail_url: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=600' },
     { id: '3', name: 'Design System Kit', price: 2999, thumbnail_url: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600' },
@@ -26,7 +42,7 @@ export default function FeaturedProducts({ settings }: { settings: any }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product: any) => (
+          {products.map((product) => (
             <Link key={product.id} href={`/product/${product.id}`} className="group flex flex-col bg-[--creator-surface] rounded-2xl overflow-hidden border border-[--creator-border] hover:border-[--creator-primary] transition-all duration-300 hover:shadow-xl">
               <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
                 {product.thumbnail_url ? (

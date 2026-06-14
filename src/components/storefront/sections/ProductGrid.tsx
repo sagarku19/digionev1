@@ -4,23 +4,29 @@
 
 import React from 'react';
 import Link from 'next/link';
+import type { StorefrontProduct } from '../SectionRenderer';
 
 function formatINR(n: number) {
   return `₹${n.toLocaleString('en-IN')}`;
 }
 
-export default function ProductGrid({ settings, products = [] }: { settings: any; products?: any[] }) {
-  const title     = settings?.title     ?? '';
-  const columns   = settings?.columns   ?? 3;
-  const showPrice = settings?.show_price !== false;
-  const maxItems  = settings?.max_items  ?? 12;
+interface ProductGridSettings { title?: string; columns?: number; show_price?: boolean; max_items?: number; }
+type GridProduct = StorefrontProduct & { slug?: string | null };
+
+export default function ProductGrid({ settings, products = [] }: { settings: Record<string, unknown>; products?: GridProduct[] }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as ProductGridSettings;
+  const title     = s?.title     ?? '';
+  const columns   = s?.columns   ?? 3;
+  const showPrice = s?.show_price !== false;
+  const maxItems  = s?.max_items  ?? 12;
   const colClass  = columns === 2
     ? 'sm:grid-cols-2'
     : columns === 4
     ? 'sm:grid-cols-2 lg:grid-cols-4'
     : 'sm:grid-cols-2 lg:grid-cols-3';
 
-  const visible = products.filter((p: any) => p.is_published).slice(0, maxItems);
+  const visible = products.filter((p) => p.is_published).slice(0, maxItems);
 
   return (
     <section className="py-16 px-4 max-w-7xl mx-auto w-full" id="products">
@@ -29,7 +35,7 @@ export default function ProductGrid({ settings, products = [] }: { settings: any
         <p className="text-center text-[--creator-text-muted] py-12">No products available yet.</p>
       ) : (
         <div className={`grid grid-cols-1 ${colClass} gap-6`}>
-          {visible.map((p: any) => (
+          {visible.map((p) => (
             <Link
               key={p.id}
               href={p.slug ? `#${p.slug}` : '#'}

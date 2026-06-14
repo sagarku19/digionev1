@@ -2,9 +2,21 @@
 
 import React, { useState } from 'react';
 
-export default function FaqAccordion({ settings }: { settings: any }) {
-  const title = settings?.title || 'Frequently Asked Questions';
-  const faqs = settings?.faqs || [
+interface FaqItem {
+  question?: string;
+  answer?: string;
+}
+
+interface FaqAccordionSettings {
+  title?: string;
+  faqs?: FaqItem[];
+}
+
+export default function FaqAccordion({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as FaqAccordionSettings;
+  const title = s?.title || 'Frequently Asked Questions';
+  const faqs = s?.faqs || [
     { question: 'Do I get lifetime access?', answer: 'Yes! Once purchased, you retain lifetime access to the materials and any future updates.' },
     { question: 'Is there a refund policy?', answer: 'We offer a 14-day money-back guarantee if you are not satisfied with your purchase.' },
     { question: 'Do I need prior experience?', answer: 'Not at all. The content is designed to be accessible for beginners while providing advanced insights for veterans.' },
@@ -19,7 +31,7 @@ export default function FaqAccordion({ settings }: { settings: any }) {
         <h2 className="text-3xl font-bold text-[--creator-text] text-center mb-12">{title}</h2>
         
         <div className="space-y-4">
-          {faqs.map((faq: any, index: number) => {
+          {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
               <div 

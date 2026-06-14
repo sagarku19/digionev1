@@ -22,10 +22,29 @@ function formatINR(n: number) {
   return `₹${n.toLocaleString('en-IN')}`;
 }
 
-export default function PricingTable({ settings }: { settings: any }) {
-  const title = settings?.title ?? 'Simple pricing';
-  const subtitle = settings?.subtitle ?? '';
-  const plans = settings?.plans ?? DEFAULT_PLANS;
+interface PricingPlan {
+  name?: string;
+  price?: number;
+  period?: string;
+  highlight?: boolean;
+  description?: string;
+  features?: string[];
+  cta_text?: string;
+  cta_url?: string;
+}
+
+interface PricingTableSettings {
+  title?: string;
+  subtitle?: string;
+  plans?: PricingPlan[];
+}
+
+export default function PricingTable({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as PricingTableSettings;
+  const title = s?.title ?? 'Simple pricing';
+  const subtitle = s?.subtitle ?? '';
+  const plans = s?.plans ?? DEFAULT_PLANS;
 
   return (
     <section className="py-20 px-4 bg-[--creator-surface]">
@@ -35,7 +54,7 @@ export default function PricingTable({ settings }: { settings: any }) {
           {subtitle && <p className="text-[--creator-text-muted] mt-3">{subtitle}</p>}
         </div>
         <div className={`grid grid-cols-1 gap-6 ${plans.length > 2 ? 'md:grid-cols-3' : 'md:grid-cols-2 max-w-3xl mx-auto'}`}>
-          {plans.map((plan: any, i: number) => (
+          {plans.map((plan, i) => (
             <div
               key={i}
               className={`relative flex flex-col rounded-2xl p-7 border-2 transition-shadow ${
@@ -53,7 +72,7 @@ export default function PricingTable({ settings }: { settings: any }) {
                 <h3 className={`text-lg font-bold ${plan.highlight ? 'text-[--creator-primary]' : 'text-[--creator-text]'}`}>{plan.name}</h3>
                 <p className="text-sm text-[--creator-text-muted] mt-1">{plan.description}</p>
                 <div className="mt-4 flex items-end gap-1">
-                  <span className="text-4xl font-extrabold text-[--creator-text]">{formatINR(plan.price)}</span>
+                  <span className="text-4xl font-extrabold text-[--creator-text]">{formatINR(plan.price ?? 0)}</span>
                   <span className="text-[--creator-text-muted] text-sm mb-1">{plan.period}</span>
                 </div>
               </div>

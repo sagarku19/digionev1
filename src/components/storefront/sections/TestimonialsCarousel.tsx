@@ -1,8 +1,22 @@
 import React from 'react';
 
-export default function TestimonialsCarousel({ settings }: { settings: any }) {
-  const title = settings?.title || 'What People Say';
-  const testimonials = settings?.testimonials || [
+interface Testimonial {
+  id?: number | string;
+  name?: string;
+  role?: string;
+  text?: string;
+}
+
+interface TestimonialsCarouselSettings {
+  title?: string;
+  testimonials?: Testimonial[];
+}
+
+export default function TestimonialsCarousel({ settings }: { settings: Record<string, unknown> }) {
+  // reason: section settings is jsonb; narrow once to the typed view
+  const s = settings as unknown as TestimonialsCarouselSettings;
+  const title = s?.title || 'What People Say';
+  const testimonials = s?.testimonials || [
     { id: 1, name: 'Alex Johnson', role: 'Freelancer', text: 'This changed the way I work. Absolutely incredible value and easy to understand.' },
     { id: 2, name: 'Sarah Miller', role: 'Designer', text: 'The attention to detail here is unmatched. I recommend this to everyone in my network.' },
     { id: 3, name: 'David Lee', role: 'Entrepreneur', text: 'Best investment I have made this year. High quality and super practical.' },
@@ -14,7 +28,7 @@ export default function TestimonialsCarousel({ settings }: { settings: any }) {
         <h2 className="text-3xl font-bold text-[--creator-text] mb-12">{title}</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonials.map((t: any) => (
+          {testimonials.map((t) => (
             <div key={t.id} className="bg-[--creator-bg] p-8 rounded-2xl shadow-sm border border-[--creator-border] flex flex-col items-center">
               {/* Stars */}
               <div className="flex gap-1 mb-6 text-yellow-400">
