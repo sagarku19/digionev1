@@ -55,6 +55,8 @@ Files in `.claude/rules/` are **auto-loaded by Claude Code** on every session.
 | `.claude/rules/cashfree-reference.md` | Editing checkout, the Cashfree webhook, payment status pages, or the browser checkout SDK |
 | `.claude/rules/dashboard-design.md` | Building or modifying any page under `app/dashboard/**`, or any component in `src/components/dashboard/**` or `src/components/ui/**` — the dashboard design language (tokens, primitives, page anatomy, light + dark) |
 | `.claude/rules/ledger-design.md` | Building or modifying any marketing (`app/(marketing)/**`), auth (`app/(auth)/**`), or account (`app/account/**`) surface, the shared `MarketingNav`/`MarketingFooter` chrome — or porting the engineered-ledger language (rails, `>>` kickers, ink/vermilion/paper, flat mockups) to new surfaces, including dashboard redesigns |
+| `docs/reference/dashboard-map.md` | Starting ANY `app/dashboard/**` task — read this first instead of globbing pages |
+| `docs/reference/storefront-map.md` | Starting ANY storefront task (`app/(storefront)/**`, `src/components/storefront/**`) — read this first |
 
 ## Deferred Work — `.claude/todo-later/`
 
@@ -149,6 +151,7 @@ digionev1/
 - No `useEffect` for data fetching — use TanStack Query hooks.
 - No new packages without asking first.
 - No comments explaining what code does — write self-documenting names instead.
+- When you change a dashboard route or a storefront renderer/registry, update the matching map in `docs/reference/` in the same change-set (or confirm it's unaffected). The Stop hook in `.claude/hooks/check-doc-drift.mjs` enforces this.
 
 ---
 
