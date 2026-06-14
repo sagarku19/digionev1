@@ -14,18 +14,25 @@ Every change goes through three lanes. Where DigiOne currently sits is marked.
 |---|---|---|
 | 1 | `npx tsc --noEmit` | Type errors, missing imports, broken refactors |
 | 2 | `npm run lint` | Unused vars, unsafe patterns, React hook rules |
-| 3 | `/verify` (this project's slash command) | Rule violations on changed files + smoke-test checklist |
-| 4 | `npm run dev` + manual click-through | UI regressions, runtime errors |
+| 3 | `npm test` | Regressions in the (small) Vitest suite — see Lane 2 |
+| 4 | `/verify` (this project's slash command) | Rule violations on changed files + smoke-test checklist |
+| 5 | `npm run dev` + manual click-through | UI regressions, runtime errors |
 
 This is what `/verify` automates. Run it before every commit.
 
-## Lane 2 — Automated tests ❌ not in place
+## Lane 2 — Automated tests 🟡 partially in place
 
-A mature setup adds:
-- **Unit tests** (Vitest + React Testing Library) for hooks (`src/hooks/use*.ts`) and pure utilities (`src/lib/`).
+**In place now:**
+- **Vitest** is installed and configured (`vitest.config.ts` — `environment: 'node'`, `include: ['src/**/*.test.ts']`). Run with `npm test` (`vitest run`).
+- One suite exists: `src/lib/server/referrals.test.ts` (5 tests). Add new `*.test.ts` files next to the `src/` code they cover and they're picked up automatically.
+
+**Still missing (what a mature setup adds):**
+- **Unit tests** (Vitest + React Testing Library) for hooks (`src/hooks/use*.ts`) and the rest of the pure utilities in `src/lib/`.
 - **Integration tests** for API route handlers (`app/api/**`) using a real Supabase test schema or `supabase/migrations` snapshot.
 - **E2E tests** (Playwright) for the three critical flows: signup → create site, buyer checkout, dashboard product publish.
 - **Visual regression** (optional — Chromatic) for storefront sections.
+
+> Note: the config only globs `src/**/*.test.ts`. Tests for code under `app/` or `lib/` (no `src/` prefix) won't be picked up until the `include` glob is widened.
 
 ## Lane 3 — CI / pre-deploy gates ❌ not in place
 
@@ -47,6 +54,6 @@ A mature setup adds:
 | Question | Answer |
 |---|---|
 | What should I run *today* before committing? | `/verify` → all of Lane 1 |
-| Where should I invest next? | Lane 2 unit tests for the 20 hooks in `src/hooks/` — cheapest, highest ROI |
+| Where should I invest next? | Expand Lane 2 — the harness exists; add unit tests for the money-path libs (`src/lib/server/*`) and the 27 hooks in `src/hooks/`. Cheapest, highest ROI. |
 | When does Lane 3 become worth it? | When more than one person commits, or when a regression hits prod |
-| Why no tests yet? | Solo project, fast iteration. Type system + Supabase RLS catch most issues. Trade-off, not negligence. |
+| Why so few tests? | Solo project, fast iteration. Vitest is wired and one money-path suite (`referrals`) exists; coverage is being grown incrementally. Type system + Supabase RLS catch most of the rest. Trade-off, not negligence. |
