@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import SectionRenderer from '@/components/storefront/SectionRenderer';
+import SectionRenderer, { type StorefrontSection } from '@/components/storefront/SectionRenderer';
 
 export const revalidate = 60;
 
@@ -31,12 +31,13 @@ export default async function MainStorefrontPage({
     supabase.from('site_main').select('title, meta_description, logo_url, banner_url').eq('site_id', site.id).maybeSingle(),
   ]);
 
-  const sections = (config?.sections as any[]) ?? [];
-  const products = (assignments ?? []).flatMap((a: any) => (a.products ? [a.products] : []));
+  // reason: sections is jsonb (typed Json); cast via unknown — StorefrontSection is the expected runtime shape
+  const sections = (config?.sections as unknown as StorefrontSection[]) ?? [];
+  const products = (assignments ?? []).flatMap((a) => (a.products ? [a.products] : []));
 
   const visible = sections
-    .filter((s: any) => s.is_visible !== false)
-    .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    .filter((s) => s.is_visible !== false)
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
   if (visible.length === 0) {
     return (

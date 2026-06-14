@@ -44,10 +44,11 @@ export async function generateMetadata({
 
   if (!sp) return {};
 
-  const metaDict = (sp.metadata as any) ?? {};
-  const title = metaDict.custom_title || sp.title || slug;
-  const description = sp.meta_description || metaDict.custom_description || sp.description || '';
-  const imageUrl = metaDict.custom_image || sp.hero_image_url || '';
+  // reason: metadata is jsonb (typed Json); narrow once at the read boundary
+  const metaDict = (sp.metadata as Record<string, unknown>) ?? {};
+  const title = String(metaDict.custom_title || sp.title || slug);
+  const description = sp.meta_description || String(metaDict.custom_description || '') || sp.description || '';
+  const imageUrl = String(metaDict.custom_image || '') || sp.hero_image_url || '';
 
   return {
     title,
@@ -114,7 +115,8 @@ export default async function SingleSitePage({
     .eq('site_id', site.id)
     .maybeSingle();
 
-  const palette = (tokens?.color_palette as any) || {};
+  // reason: color_palette is jsonb (typed Json); narrow once at the read boundary
+  const palette = (tokens?.color_palette as Record<string, string>) || {};
 
   return <ProductSalesPage siteId={site.id} singlePage={sp} palette={palette} />;
 }
