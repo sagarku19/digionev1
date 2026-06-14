@@ -38,6 +38,16 @@ Grep for forbidden patterns. **Always verify matches are real, not placeholder/e
 - Read the `SECTION_TYPES` registry in `src/components/dashboard/site-edit/section-defs.ts`
 - Report any section that exists on disk but isn't wired into both, or any case/registry entry pointing to a missing file.
 
+### 6. Dashboard map — `docs/reference/dashboard-map.md`
+- Glob `app/dashboard/**/page.tsx`.
+- Compare against the Pages table in `docs/reference/dashboard-map.md`.
+- Report routes on disk missing from the map, and rows pointing at routes that no longer exist.
+
+### 7. Storefront map — `docs/reference/storefront-map.md`
+- Read the renderer block-type branches in `src/components/storefront/LinkInBioPage.tsx` (or `src/components/storefront/linkinbio/blockRenderers/registry.tsx` if it exists), the editor registry `src/components/dashboard/site-edit/tabs/linkinbio/blockEditors/registry.tsx`, `src/components/storefront/SectionRenderer.tsx`, and `src/components/dashboard/site-edit/section-defs.ts`.
+- Compare the generated type/section lists against `docs/reference/storefront-map.md`; report any drift.
+- **Parity check:** diff the renderer block-type keys against the editor block-type keys. Report any type one side has that the other lacks.
+
 ---
 
 ## Output format
@@ -60,6 +70,14 @@ DRIFT REPORT
 
 5. STOREFRONT SECTIONS
 ...
+
+6. DASHBOARD MAP
+✅ in sync   OR   ❌ DRIFT — [N items]
+   [details]
+
+7. STOREFRONT MAP
+✅ in sync   OR   ❌ DRIFT — [N items]
+   [details with parity gaps]
 
 ============================================
 TOTAL: N categories in sync, M drift items.
