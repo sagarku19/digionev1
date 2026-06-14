@@ -1,6 +1,6 @@
 # Storefront Reference Map
 
-> Last synced: 2026-06-14
+> Last synced: 2026-06-14 (Task 5 — BlockRenderer dispatch)
 > Generated from: `app/(storefront)/**/page.tsx`, `src/components/storefront/**`, the block/section registries
 > Regenerate / audit: `/sync-docs`
 > Read this FIRST for any storefront task. Styling uses creator vars (`var(--creator-primary)`, `var(--creator-text)`, `var(--creator-bg)`, …) — NOT dashboard `--bg-*`/`--text-*` tokens.
@@ -9,7 +9,7 @@
 
 | Type | URL | Slug page (server) | Renderer | Type/section source |
 |---|---|---|---|---|
-| link-in-bio | `/link/[username]` | `app/(storefront)/link/[username]/page.tsx` | `src/components/storefront/LinkInBioPage.tsx` | inline `link_type` branches (block list below) |
+| link-in-bio | `/link/[username]` | `app/(storefront)/link/[username]/page.tsx` | `src/components/storefront/LinkInBioPage.tsx` | `src/components/storefront/linkinbio/blockRenderers/registry.tsx` (block list below) |
 | single-page | `/site/[slug]` | `app/(storefront)/site/[slug]/page.tsx` | `src/components/storefront/ProductSalesPage.tsx` (fixed template) | inline sub-sections |
 | store | `/store/[slug]` | `app/(storefront)/store/[slug]/page.tsx` | `src/components/storefront/SectionRenderer.tsx` | `section-defs.ts` (sections below) |
 | payment | `/pay/[siteId]` | `app/(storefront)/pay/[siteId]/page.tsx` | `src/components/storefront/PaymentLinkPage.tsx` | n/a |
@@ -18,7 +18,7 @@ Standalone pages: `app/(storefront)/upsells/[slug]/page.tsx`, `app/(storefront)/
 
 ## Link-in-bio block types
 
-Renderer branches (`LinkInBioPage.tsx`): `header`, `text`, `heading`, `divider`, `space`, `social_icons`, `html_embed`, `spotify`, `banner`, `image`, `video_embed`, `lead_form`, `email_capture` (alias branch, shares `LeadFormBlock`), `url` (catch-all fallback for any link with a `url` value)
+Renderer keys (`registry.tsx` → dispatched by `BlockRenderer`): `header`, `text`, `heading`, `divider`, `space`, `social_icons`, `html_embed`, `spotify`, `banner`, `image`, `video_embed`, `lead_form`, `email_capture` (legacy alias → `LeadFormBlock`), `product`, `url` (catch-all fallback for any link with a `url` value)
 
 Editor registry keys (`blockEditors/registry.tsx`): `header`, `text`, `heading`, `space`, `url`, `product`, `video_embed`, `lead_form`, `image`, `html_embed`, `spotify`, `social_icons`, `banner`
 
