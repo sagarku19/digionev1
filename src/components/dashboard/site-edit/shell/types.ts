@@ -6,7 +6,7 @@ export type SectionItem = { id: string; is_visible: boolean };
 export type SectionCategory = { id: string; label: string };
 
 // One registry entry = one section/block type.
-export type SectionDef<TItem> = {
+export type SectionDef<TItem extends SectionItem> = {
   type: string;
   label: string;
   icon: React.ElementType;
@@ -14,7 +14,7 @@ export type SectionDef<TItem> = {
   summarize: (item: TItem) => string;
 };
 
-export type SectionRegistry<TItem> = {
+export type SectionRegistry<TItem extends SectionItem> = {
   categories: SectionCategory[];
   defs: Record<string, SectionDef<TItem>>;
 };

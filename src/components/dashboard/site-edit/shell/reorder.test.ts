@@ -19,4 +19,10 @@ describe('moveItem', () => {
     moveItem(src, 0, 2);
     expect(src).toEqual(['a', 'b', 'c']);
   });
+  it('is a no-op when from === to', () => {
+    expect(moveItem(['a', 'b', 'c'], 1, 1)).toEqual(['a', 'b', 'c']);
+  });
+  it('returns an empty array unchanged', () => {
+    expect(moveItem([], 0, 0)).toEqual([]);
+  });
 });
