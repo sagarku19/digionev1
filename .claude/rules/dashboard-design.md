@@ -101,6 +101,18 @@ Canonical pair: `bg-[var(--success-bg)] text-[var(--success)]`. For borders use 
 | `--shadow-md` | Popovers, tooltips, dropdowns |
 | `--shadow-lg` | Modals, drawers, mobile sidebar |
 
+### Editor-surface premium tokens
+
+The Link-in-Bio editor (`src/components/dashboard/site-edit/editor/**`) is a distinct, premium surface. It may additionally use:
+
+| Token | Value | Use |
+|---|---|---|
+| `--radius-xl` | `20px` | Editor block/profile cards |
+| `--shadow-card` | soft | Card at rest in the editor |
+| `--shadow-card-lg` | softer/larger | Expanded/active editor card |
+
+These are **only** for `site-edit/editor/**`. List/form/dashboard pages keep `--radius-lg`/`--shadow-xs/sm`.
+
 ### Focus
 
 | Token | Use |
