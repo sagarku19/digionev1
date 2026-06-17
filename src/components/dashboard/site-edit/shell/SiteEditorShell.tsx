@@ -74,7 +74,7 @@ export default function SiteEditorShell(props: Props) {
       <div className="flex min-h-0 flex-1">
 
         {/* LEFT PANEL */}
-        <div className="flex w-[440px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-primary)]">
+        <div className="flex w-1/2 min-w-[420px] shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-primary)]">
           {/* header */}
           <div className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] px-4">
             <div className="flex items-center gap-3">

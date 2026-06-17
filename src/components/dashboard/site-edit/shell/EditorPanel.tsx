@@ -37,10 +37,12 @@ export default function EditorPanel({ view, onViewChange, content, design, setti
           ))}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4">
-        {view === 'content' && content}
-        {view === 'design' && design}
-        {view === 'settings' && settings}
+      <div className="flex-1 overflow-y-auto p-5">
+        <div className="mx-auto w-full max-w-2xl">
+          {view === 'content' && content}
+          {view === 'design' && design}
+          {view === 'settings' && settings}
+        </div>
       </div>
     </div>
   );
