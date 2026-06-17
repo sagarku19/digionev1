@@ -1,6 +1,6 @@
 'use client';
 import { useState, type ReactNode } from 'react';
-import { GripVertical, Eye, EyeOff, Copy, Trash2, ChevronRight, Plus, Layers } from 'lucide-react';
+import { GripVertical, Copy, Trash2, Plus, Layers } from 'lucide-react';
 import type { SectionItem, SectionRegistry } from './types';
 import AddSectionPicker from './AddSectionPicker';
 
@@ -49,7 +49,7 @@ export default function SectionList<TItem extends SectionItem>({
         {items.map((item, idx) => {
           const def = registry.defs[typeOf(item)];
           const Icon = def?.icon;
-          const hidden = !item.is_visible;
+          const visible = item.is_visible;
           const isDragging = dragIdx === idx;
           const isOver = overIdx === idx && dragIdx !== null && dragIdx !== idx;
           return (
@@ -61,11 +61,11 @@ export default function SectionList<TItem extends SectionItem>({
               onDragLeave={() => setOverIdx((o) => (o === idx ? null : o))}
               onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) onReorder(dragIdx, idx); setDragIdx(null); setOverIdx(null); }}
               onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
-              className={`group flex items-center gap-1.5 rounded-[var(--radius-lg)] border bg-[var(--surface)] py-2 pl-1 pr-2 transition-colors ${
+              className={`group flex items-center gap-1.5 rounded-[var(--radius-lg)] border bg-[var(--surface)] py-2 pl-1 pr-2.5 transition-colors ${
                 isOver
                   ? 'border-[var(--brand)] shadow-[inset_0_2px_0_0_var(--brand)]'
                   : 'border-[var(--border)] hover:bg-[var(--surface-hover)]'
-              } ${isDragging ? 'opacity-50' : ''} ${hidden ? 'opacity-60' : ''}`}
+              } ${isDragging ? 'opacity-50' : ''} ${!visible ? 'opacity-60' : ''}`}
             >
               <span
                 aria-hidden
@@ -82,18 +82,19 @@ export default function SectionList<TItem extends SectionItem>({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-[var(--text-primary)]">{def?.label ?? typeOf(item)}</span>
-                  <span className="block truncate text-xs text-[var(--text-tertiary)]">{hidden ? 'Hidden' : def?.summarize(item)}</span>
+                  <span className="block truncate text-xs text-[var(--text-tertiary)]">{def?.summarize(item)}</span>
                 </span>
               </button>
-              <div className="flex shrink-0 items-center gap-0.5">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                  <IconBtn label={hidden ? 'Show' : 'Hide'} onClick={() => onToggleVisible(item.id)}>
-                    {hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </IconBtn>
                   <IconBtn label="Duplicate" onClick={() => onDuplicate(item.id)}><Copy className="h-3.5 w-3.5" /></IconBtn>
                   <IconBtn label="Delete" onClick={() => onDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></IconBtn>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-[var(--text-tertiary)] opacity-60" />
+                <Toggle
+                  checked={visible}
+                  onClick={() => onToggleVisible(item.id)}
+                  label={visible ? 'Hide block' : 'Show block'}
+                />
               </div>
             </div>
           );
@@ -109,7 +110,7 @@ export default function SectionList<TItem extends SectionItem>({
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--border-strong)] py-3 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[var(--brand)] py-3 text-sm font-semibold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
           <Plus className="h-4 w-4" /> Add block
         </button>
@@ -127,6 +128,26 @@ function IconBtn({ label, onClick, children }: { label: string; onClick: () => v
       className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
     >
       {children}
+    </button>
+  );
+}
+
+function Toggle({ checked, onClick, label }: { checked: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+        checked ? 'bg-[var(--success)]' : 'bg-[var(--surface-muted)] border border-[var(--border)]'
+      }`}
+    >
+      <span
+        className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-4' : 'translate-x-0.5'}`}
+      />
     </button>
   );
 }
