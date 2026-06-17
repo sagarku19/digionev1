@@ -1,12 +1,13 @@
 'use client';
-import type { ReactNode } from 'react';
+import type { ReactNode, ElementType } from 'react';
+import { LayoutList, Palette, Settings2 } from 'lucide-react';
 
 export type EditorView = 'content' | 'design' | 'settings';
 
-const VIEWS: { id: EditorView; label: string }[] = [
-  { id: 'content', label: 'Content' },
-  { id: 'design', label: 'Design' },
-  { id: 'settings', label: 'Settings' },
+const VIEWS: { id: EditorView; label: string; icon: ElementType }[] = [
+  { id: 'content', label: 'Content', icon: LayoutList },
+  { id: 'design', label: 'Design', icon: Palette },
+  { id: 'settings', label: 'Settings', icon: Settings2 },
 ];
 
 type Props = {
@@ -26,12 +27,13 @@ export default function EditorPanel({ view, onViewChange, content, design, setti
             <button
               key={v.id}
               onClick={() => onViewChange(v.id)}
-              className={`flex-1 rounded-[var(--radius-sm)] px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                 view === v.id
                   ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
+              <v.icon className="h-3.5 w-3.5" />
               {v.label}
             </button>
           ))}
