@@ -4,53 +4,26 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import BioProfileEditor, { type BioProfileData, type SocialLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioProfileEditor';
-import BioLinksEditor, { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioLinksEditor';
+import { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioLinksEditor';
 import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioAppearanceEditor';
 import {
-  Link2, User, LinkIcon, Sparkles, Paintbrush,
-  ArrowLeft, Save, Loader2, CheckCircle2, ExternalLink,
-  Settings, Monitor, Tablet, Smartphone, RefreshCw,
-  XCircle, LayoutDashboard, Package, Store, BarChart2,
-  Copy, Check, Plus, HelpCircle, Moon, Sun, Search, ImagePlus, Globe2,
-  Undo2, Redo2,
+  Link2, User, ChevronRight, Globe2, Search,
+  Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
-
-// ─── Device presets ──────────────────────────────────────────
-const DEVICES = [
-  { id: 'desktop', icon: Monitor, width: '100%', label: 'Desktop' },
-  { id: 'tablet', icon: Tablet, width: '768px', label: 'Tablet' },
-  { id: 'mobile', icon: Smartphone, width: '375px', label: 'Mobile' },
-] as const;
-
-// ─── Mini sidebar nav ────────────────────────────────────────
-// The mini sidebar is split into top/bottom actions inline.
-
-// ─── Tabs ────────────────────────────────────────────────────
-type Tab = 'profile' | 'templates' | 'section' | 'appearance' | 'settings';
-
-type TabDef = {
-  id: Tab;
-  label: string;
-  icon: React.ElementType;
-  activeColor: string;
-  activeBg: string;
-  activeBorder: string;
-};
-
-const TABS: TabDef[] = [
-  { id: 'profile', label: 'Profile', icon: User, activeColor: 'text-blue-600 dark:text-blue-400', activeBg: 'bg-blue-50 dark:bg-blue-500/10', activeBorder: 'ring-1 ring-blue-200 dark:ring-blue-500/20' },
-  { id: 'templates', label: 'Template', icon: Paintbrush, activeColor: 'text-[var(--text-secondary)]', activeBg: 'bg-[var(--surface-muted)]', activeBorder: 'ring-1 ring-gray-300 dark:ring-gray-600' },
-  { id: 'section', label: 'Section', icon: LinkIcon, activeColor: 'text-emerald-600 dark:text-emerald-400', activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeBorder: 'ring-1 ring-emerald-200 dark:ring-emerald-500/20' },
-  { id: 'appearance', label: 'Appearance', icon: Sparkles, activeColor: 'text-rose-600 dark:text-rose-400', activeBg: 'bg-rose-50 dark:bg-rose-500/10', activeBorder: 'ring-1 ring-rose-200 dark:ring-rose-500/20' },
-  { id: 'settings', label: 'Settings', icon: Settings, activeColor: 'text-amber-600 dark:text-amber-400', activeBg: 'bg-amber-50 dark:bg-amber-500/10', activeBorder: 'ring-1 ring-amber-200 dark:ring-amber-500/20' },
-];
+import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import SiteEditorShell from '@/components/dashboard/site-edit/shell/SiteEditorShell';
+import EditorPanel, { type EditorView } from '@/components/dashboard/site-edit/shell/EditorPanel';
+import SectionList from '@/components/dashboard/site-edit/shell/SectionList';
+import SectionDetail from '@/components/dashboard/site-edit/shell/SectionDetail';
+import { moveItem } from '@/components/dashboard/site-edit/shell/reorder';
+import { linkinbioRegistry } from '@/components/dashboard/site-edit/tabs/linkinbio/sectionRegistry';
+import { BlockBody } from '@/components/dashboard/site-edit/tabs/linkinbio/blockEditors/registry';
 
 // ─── Templates ──────────────────────────────────────────────────────────
 type BioTemplateBlock = {
@@ -285,28 +258,20 @@ export default function EditLinkInBioPage() {
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const previewWrapperRef = useRef<HTMLDivElement>(null);
-  const [previewW, setPreviewW] = useState(700);
   const { theme, setTheme } = useTheme();
 
-  // Measure available preview panel width for desktop zoom scaling
-  useEffect(() => {
-    const el = previewWrapperRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(es => setPreviewW(es[0].contentRect.width - 2));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
   // ── UI state ──
-  const [activeTab, setActiveTab] = useState<Tab>('profile');
-  const [isScrolled, setIsScrolled] = useState(false);
   const [device, setDevice] = useState<string>('mobile');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
-  const [copied, setCopied] = useState(false);
+
+  // ── New shell editing state ──
+  const [view, setView] = useState<EditorView>('content');
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [imagePicker, setImagePicker] = useState<{ open: boolean; field: string }>({ open: false, field: '' });
 
   // ── Site data ──
   const [site, setSite] = useState<any>(null);
@@ -893,624 +858,318 @@ export default function EditLinkInBioPage() {
     }
   }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo, isPublished, queryClient]);
 
+  // ── Section-list helpers (operate on the `links` block array) ──
+  const reindex = (ls: BioLink[]) => ls.map((l, i) => ({ ...l, sort_order: i + 1 }));
+  const handleReorder = (from: number, to: number) => setLinks(prev => reindex(moveItem(prev, from, to)));
+  const handleToggleVisible = (id: string) =>
+    setLinks(prev => prev.map(l => (l.id === id ? { ...l, is_visible: !l.is_visible } : l)));
+  const handleDeleteBlock = (id: string) => {
+    setLinks(prev => reindex(prev.filter(l => l.id !== id)));
+    if (selectedBlockId === id) setSelectedBlockId(null);
+  };
+  const handleDuplicateBlock = (id: string) =>
+    setLinks(prev => {
+      const idx = prev.findIndex(l => l.id === id);
+      if (idx < 0) return prev;
+      const src = prev[idx];
+      const clone: BioLink = {
+        ...src,
+        id: crypto.randomUUID(),
+        title: src.title ? `${src.title} (copy)` : '',
+        metadata: src.metadata ? JSON.parse(JSON.stringify(src.metadata)) : {},
+      };
+      const next = [...prev];
+      next.splice(idx + 1, 0, clone);
+      return reindex(next);
+    });
+  const handleAddBlock = (type: string) => {
+    const meta: Record<string, any> = {
+      social_icons: { links: [], style: 'circle', size: 'md', alignment: 'center' },
+      header: { subtitle: '', alignment: 'center', size: 'xl', show_divider: false },
+      text: { content: '', alignment: 'left', size: 'base' },
+      html_embed: { html: '' },
+      spotify: { spotify_url: '', embed_type: 'track' },
+      banner: { description: '', button_text: 'Learn More', button_url: '', bg_color: '' },
+      space: { height: 'md' },
+      lead_form: {
+        fields: [
+          { type: 'name', label: 'Full Name', required: false, placeholder: 'Your name' },
+          { type: 'email', label: 'Email', required: true, placeholder: 'your@email.com' },
+        ],
+        button_text: 'Submit',
+        description: '',
+        success_message: "Thanks! We'll be in touch.",
+      },
+      product: { layout: 'horizontal', button_position: 'right', show_price: true, badge: '', cta_text: 'Buy Now' },
+    };
+    const newLink: BioLink = {
+      id: crypto.randomUUID(),
+      link_type: type,
+      title: '',
+      description: '',
+      url: '',
+      thumbnail_url: '',
+      product_id: '',
+      icon_type: 'external',
+      style_variant: 'default',
+      is_visible: true,
+      sort_order: links.length + 1,
+      metadata: meta[type] ?? {},
+    };
+    setLinks(prev => [...prev, newLink]);
+    setSelectedBlockId(newLink.id);
+  };
+  const updateSelected = (updates: Partial<BioLink>) =>
+    setLinks(prev => prev.map(l => (l.id === selectedBlockId ? { ...l, ...updates } : l)));
+  const updateSelectedMeta = (key: string, value: unknown) =>
+    setLinks(prev => prev.map(l => (l.id === selectedBlockId ? { ...l, metadata: { ...l.metadata, [key]: value } } : l)));
+
   // ── Derived ──
   const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
   const displayTitle = profile.displayName || site?.slug || 'Untitled';
 
   // The main layout remains visible during loading.
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[var(--bg-primary)]">
+  const INPUT_CLS =
+    'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow';
 
-      {/* ═══ BODY — full height, panels own their headers ═══ */}
-      <div className="flex-1 flex min-h-0">
+  const selectedBlock = links.find(l => l.id === selectedBlockId) ?? null;
+  const selectedDef = selectedBlock ? linkinbioRegistry.defs[selectedBlock.link_type] : null;
 
-        {/* ═══ MINI SIDEBAR ═══ */}
-        <div className="w-14 shrink-0 relative">
-          <div className="group/sidebar absolute inset-y-0 left-0 w-14 hover:w-48 bg-[var(--bg-primary)] border-r border-[var(--border)] flex flex-col transition-all duration-200 overflow-hidden z-30 hover:shadow-xl hover:shadow-black/10">
-            {/* Back button — h-14 aligns with panel headers */}
-            <div className="h-14 shrink-0 border-b border-[var(--border)] flex items-center justify-center group-hover/sidebar:justify-start group-hover/sidebar:px-4 gap-3">
-              <button
-                onClick={() => router.push('/dashboard/sites')}
-                className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition shrink-0"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <span className="hidden group-hover/sidebar:inline text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">Dashboard</span>
-            </div>
-            {/* Top Nav links */}
-            <div className="flex flex-col py-3 gap-1 flex-1 overflow-y-auto">
-              <Link href="/dashboard" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0">
-                <LayoutDashboard className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">Overview</span>
-              </Link>
+  const contentSlot = profileOpen ? (
+    <SectionDetail title="Profile" icon={User} backLabel="Back to blocks" onBack={() => setProfileOpen(false)}>
+      <BioProfileEditor data={profile} onChange={setProfile} />
+    </SectionDetail>
+  ) : selectedBlock ? (
+    <SectionDetail
+      title={selectedDef?.label ?? 'Block'}
+      icon={selectedDef?.icon}
+      backLabel="Back to blocks"
+      onBack={() => setSelectedBlockId(null)}
+    >
+      <BlockBody
+        link={selectedBlock}
+        update={updateSelected}
+        updateMeta={updateSelectedMeta}
+        openImagePicker={(field) => setImagePicker({ open: true, field })}
+        products={products}
+      />
+    </SectionDetail>
+  ) : (
+    <SectionList
+      items={links}
+      registry={linkinbioRegistry}
+      typeOf={(l) => l.link_type}
+      onReorder={handleReorder}
+      onToggleVisible={handleToggleVisible}
+      onDuplicate={handleDuplicateBlock}
+      onDelete={handleDeleteBlock}
+      onSelect={setSelectedBlockId}
+      onAdd={handleAddBlock}
+      pinned={
+        <button
+          onClick={() => setProfileOpen(true)}
+          className="flex w-full items-center gap-2.5 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-2.5 text-left transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-secondary)]">
+            <User className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-medium text-[var(--text-primary)]">Profile header</span>
+            <span className="block truncate text-xs text-[var(--text-tertiary)]">Avatar, name, bio, socials</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)]" />
+        </button>
+      }
+    />
+  );
 
-              <Link href="/dashboard/products" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0">
-                <Package className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">Products</span>
-              </Link>
-              <Link href="/dashboard/products/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0 mb-1 group/addbtn">
-                <div className="relative shrink-0 w-4 h-4 flex items-center justify-center">
-                  <Package className="w-3.5 h-3.5" />
-                  <div className="absolute -bottom-1.5 -right-1.5 bg-[var(--bg-primary)] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
-                    <Plus className="w-[10px] h-[10px] stroke-[3]" />
-                  </div>
-                </div>
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium whitespace-nowrap">Add New Product</span>
-              </Link>
-
-              <Link href="/dashboard/sites" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0">
-                <Store className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">Sites</span>
-              </Link>
-              <Link href="/dashboard/sites/new" target="_blank" rel="noopener noreferrer" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0 mb-1 group/addbtn">
-                <div className="relative shrink-0 w-4 h-4 flex items-center justify-center">
-                  <Store className="w-3.5 h-3.5" />
-                  <div className="absolute -bottom-1.5 -right-1.5 bg-[var(--bg-primary)] group-hover/addbtn:bg-transparent rounded-full p-[1px]">
-                    <Plus className="w-[10px] h-[10px] stroke-[3]" />
-                  </div>
-                </div>
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium whitespace-nowrap">Create New Site</span>
-              </Link>
-            </div>
-
-            {/* Bottom Nav links */}
-            <div className="flex flex-col py-3 gap-1 border-t border-[var(--border)]">
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0"
-              >
-                {theme === 'dark' ? <Sun className="w-4 h-4 shrink-0" /> : <Moon className="w-4 h-4 shrink-0" />}
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">
-                  Theme: {theme === 'dark' ? 'Dark' : 'Light'}
-                </span>
-              </button>
-              <Link href="/dashboard/help" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0">
-                <HelpCircle className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">Help Center</span>
-              </Link>
-              <Link href="/dashboard/settings" className="mx-2.5 group-hover/sidebar:mx-2 h-9 rounded-lg flex items-center gap-3 justify-center group-hover/sidebar:justify-start px-2.5 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 shrink-0">
-                <Settings className="w-4 h-4 shrink-0" />
-                <span className="hidden group-hover/sidebar:inline text-xs font-medium text-[var(--text-secondary)] whitespace-nowrap">Settings</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* ═══ LEFT PANEL ═══ */}
-        <div className="flex flex-col flex-1 min-w-80 max-w-[50%] border-r border-[var(--border)] bg-[var(--bg-primary)]">
-
-          {/* ── Editor Header ── */}
-          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-3 gap-2">
-            {/* Undo / Redo */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)"
-                className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-30 disabled:pointer-events-none transition">
-                <Undo2 className="w-4 h-4" />
-              </button>
-              <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)"
-                className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-30 disabled:pointer-events-none transition">
-                <Redo2 className="w-4 h-4" />
-              </button>
-            </div>
-            {/* Site name — centered */}
-            <div className="flex-1 flex items-center justify-center min-w-0">
-              <div className="flex items-center gap-1.5">
-                <Link2 className="w-3.5 h-3.5 text-pink-500 shrink-0" />
-                <h1 className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[180px]">
-                  {displayTitle}
-                </h1>
-              </div>
-            </div>
-            {/* Save */}
+  const designSlot = (
+    <div className="space-y-6">
+      <div>
+        <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)] mb-2">Templates</p>
+        <div className="space-y-2">
+          {TEMPLATES.map(tpl => (
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-1.5 text-xs font-semibold bg-pink-600 hover:bg-pink-500 disabled:opacity-60 text-white px-3.5 py-2 rounded-lg shadow-sm shadow-pink-500/20 transition-all shrink-0"
+              key={tpl.name}
+              onClick={() => applyTemplate(tpl)}
+              className="flex w-full items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-3 text-left transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
-              {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : saved ? (
-                <CheckCircle2 className="w-3.5 h-3.5" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              {saved ? 'Saved' : 'Save Changes'}
-            </button>
-          </div>
-
-          {/* ── Tab Bar ── */}
-          <div className={`shrink-0 border-[var(--border)] transition-all duration-300 ease-in-out origin-top overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 border-b-0' : 'max-h-24 opacity-100 border-b'}`}>
-            <div className="px-3 py-3">
-              <div className="flex gap-1.5 p-1.5 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-2xl border border-gray-200/50 dark:border-[var(--border)]/50 overflow-x-auto hide-scrollbar">
-                {TABS.map(tab => {
-                  const active = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`group relative flex-1 min-w-[72px] flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-xl text-[11px] font-semibold transition-all duration-300
-                      ${active
-                          ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm scale-100`
-                          : 'text-[var(--text-secondary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-tertiary)] hover:bg-white/60 dark:hover:bg-gray-700/50 scale-[0.98] hover:scale-100'
-                        }`}
-                    >
-                      <div className={`transition-transform duration-300 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
-                        <tab.icon className="w-4 h-4" strokeWidth={active ? 2.5 : 2} />
-                      </div>
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* ── Editor Content (scrollable) ── */}
-          <div
-            className="flex-1 overflow-y-auto p-5 space-y-5"
-            onScroll={(e) => setIsScrolled(e.currentTarget.scrollTop > 20)}
-          >
-            {loading ? (
-              <div className="w-full space-y-8 opacity-70">
-                <div className="space-y-3">
-                  <div className="h-4 w-28 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
-                  <div className="h-11 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
-                </div>
-                <div className="space-y-3">
-                  <div className="h-4 w-32 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
-                  <div className="h-28 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
-                </div>
-                <div className="space-y-3">
-                  <div className="h-4 w-40 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
-                  <div className="flex gap-4">
-                    <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
-                    <div className="h-24 flex-1 rounded-xl bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="h-4 w-48 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
-                  <div className="h-12 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* ── Profile Tab ── */}
-                {activeTab === 'profile' && (
-                  <BioProfileEditor data={profile} onChange={setProfile} />
-                )}
-
-                {/* ── Templates Tab ── */}
-                {activeTab === 'templates' && (
-                  <div className="space-y-5">
-                    <div>
-                      <p className="text-xs text-[var(--text-secondary)]">Pick a template to set your page&apos;s layout, theme, and sections instantly.</p>
-                    </div>
-
-                    {/* Category groups */}
-                    {(['starter', 'creative', 'business', 'social'] as const).map(cat => {
-                      const catTemplates = TEMPLATES.filter(t => t.category === cat);
-                      if (catTemplates.length === 0) return null;
-                      const catLabel = { starter: 'Get Started', creative: 'Creative', business: 'Business', social: 'Social & Store' }[cat];
-                      return (
-                        <div key={cat} className="space-y-3">
-                          <h3 className="text-[11px] font-bold text-[var(--text-tertiary)] dark:text-gray-500 uppercase tracking-wider">{catLabel}</h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            {catTemplates.map(tpl => {
-                              const btnRadius = tpl.buttonStyle === 'pill' ? '9999px' : tpl.buttonStyle === 'sharp' ? '0' : tpl.borderRadius === 'lg' ? '12px' : tpl.borderRadius === 'sm' ? '4px' : tpl.borderRadius === 'none' ? '0' : '8px';
-                              const bgStyle = tpl.backgroundType === 'gradient' ? tpl.backgroundValue : tpl.preview.bg;
-                              const isGlass = tpl.cardStyle === 'glass';
-                              const { accent, text: textC, card } = tpl.preview;
-                              const avatarRadius = tpl.profileShape === 'square' ? '3px' : tpl.profileShape === 'rounded' ? '6px' : '9999px';
-
-                              return (
-                                <button
-                                  key={tpl.name}
-                                  onClick={() => applyTemplate(tpl)}
-                                  className="group relative flex flex-col items-center text-left transition-all"
-                                >
-                                  {tpl.tag && (
-                                    <span className="absolute -top-1.5 right-2 px-2 py-0.5 bg-pink-500 text-white text-[7px] font-bold rounded-full uppercase z-10 shadow-sm shadow-pink-500/30">
-                                      {tpl.tag}
-                                    </span>
-                                  )}
-
-                                  {/* Phone frame */}
-                                  <div className="w-full rounded-[1.5rem] border-[6px] border-[var(--border)] group-hover:border-pink-100 dark:group-hover:border-pink-900/40 overflow-hidden transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-pink-500/20 group-hover:-translate-y-1">
-                                    {/* Inner bezel */}
-                                    <div className="w-full bg-white dark:bg-black overflow-hidden relative" style={{ borderRadius: '1.1rem' }}>
-                                      {/* Notch bar */}
-                                      <div className="h-4 flex items-center justify-center" style={{ background: bgStyle }}>
-                                        <div className="w-10 h-1.5 rounded-full" style={{ backgroundColor: textC, opacity: 0.15 }} />
-                                      </div>
-
-                                      {/* Screen content */}
-                                      <div className="px-3.5 pb-3 pt-1 flex flex-col items-center gap-[5px] overflow-hidden" style={{ background: bgStyle, minHeight: '180px' }}>
-                                        {tpl.blocks.slice(0, 8).map((b, i) => {
-                                          if (b.link_type === 'header') return (
-                                            <div key={i} className="flex flex-col items-center gap-[3px] mb-1 shrink-0">
-                                              <div className="w-7 h-7 shadow-sm" style={{ backgroundColor: accent, borderRadius: avatarRadius, border: `1.5px solid ${bgStyle === textC ? accent : textC}20` }} />
-                                              <div className="w-16 h-[5px] rounded-full mt-0.5" style={{ backgroundColor: textC, opacity: 0.85 }} />
-                                              <div className="w-11 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.35 }} />
-                                            </div>
-                                          );
-                                          if (b.link_type === 'heading') return (
-                                            <div key={i} className="w-14 h-[4px] rounded-sm self-start shrink-0 mt-1" style={{ backgroundColor: textC, opacity: 0.55 }} />
-                                          );
-                                          if (b.link_type === 'url') {
-                                            const featured = b.style_variant === 'featured';
-                                            return (
-                                              <div key={i} className="w-full shrink-0 flex items-center gap-[5px] px-[5px]" style={{
-                                                height: featured ? '14px' : '12px',
-                                                backgroundColor: isGlass ? card : card,
-                                                borderRadius: btnRadius,
-                                                border: tpl.buttonStyle === 'outline' ? `1px solid ${accent}` : tpl.cardStyle === 'bordered' ? `1px solid ${textC}25` : 'none',
-                                                boxShadow: tpl.buttonStyle === 'shadow' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                                                backdropFilter: isGlass ? 'blur(4px)' : 'none',
-                                              }}>
-                                                <div className="w-[6px] h-[6px] rounded-sm shrink-0" style={{ backgroundColor: accent, opacity: 0.5 }} />
-                                                <div className="flex-1 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.4 }} />
-                                              </div>
-                                            );
-                                          }
-                                          if (b.link_type === 'divider') return (
-                                            <div key={i} className="w-10 shrink-0 my-[2px]" style={{ height: '1px', backgroundColor: textC, opacity: 0.12 }} />
-                                          );
-                                          if (b.link_type === 'text') return (
-                                            <div key={i} className="flex flex-col gap-[2px] w-full px-1 shrink-0">
-                                              <div className="w-full h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.2 }} />
-                                              <div className="w-2/3 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
-                                            </div>
-                                          );
-                                          if (b.link_type === 'social_icons') return (
-                                            <div key={i} className="flex gap-[4px] justify-center shrink-0 my-[2px]">
-                                              {Array.from({ length: Math.min(b.metadata?.links?.length || 4, 5) }).map((_, j) => (
-                                                <div key={j} className="w-[8px] h-[8px] rounded-full" style={{ backgroundColor: accent, opacity: 0.6 }} />
-                                              ))}
-                                            </div>
-                                          );
-                                          if (b.link_type === 'lead_form') return (
-                                            <div key={i} className="w-full flex gap-[4px] shrink-0">
-                                              <div className="flex-1 h-[11px] rounded-sm" style={{ backgroundColor: card, border: `1px solid ${textC}15` }} />
-                                              <div className="w-9 h-[11px] shrink-0" style={{ backgroundColor: accent, opacity: 0.8, borderRadius: btnRadius }} />
-                                            </div>
-                                          );
-                                          if (b.link_type === 'banner') return (
-                                            <div key={i} className="w-full h-[14px] shrink-0 flex items-center justify-between px-[5px]" style={{ backgroundColor: b.metadata?.bg_color || accent, opacity: 0.8, borderRadius: btnRadius }}>
-                                              <div className="w-10 h-[3px] rounded-full bg-white" style={{ opacity: 0.7 }} />
-                                              <div className="w-6 h-[7px] rounded-sm bg-white" style={{ opacity: 0.4 }} />
-                                            </div>
-                                          );
-                                          if (b.link_type === 'space') return <div key={i} className="h-[4px] shrink-0" />;
-                                          return <div key={i} className="w-full h-[8px] rounded-sm shrink-0" style={{ backgroundColor: card }} />;
-                                        })}
-                                      </div>
-
-                                      {/* Bottom nav dots */}
-                                      <div className="h-3 flex items-center justify-center" style={{ background: bgStyle }}>
-                                        <div className="w-8 h-[3px] rounded-full" style={{ backgroundColor: textC, opacity: 0.12 }} />
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Label */}
-                                  <div className="w-full mt-3 px-1">
-                                    <p className="text-xs font-semibold text-[var(--text-primary)]">{tpl.name}</p>
-                                    <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5 line-clamp-1">{tpl.description}</p>
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* ── Section Tab (formerly Links) ── */}
-                {activeTab === 'section' && (
-                  <BioLinksEditor links={links} onChange={setLinks} products={products} />
-                )}
-
-                {/* ── Appearance Tab ── */}
-                {activeTab === 'appearance' && (
-                  <BioAppearanceEditor
-                    data={appearance}
-                    onChange={setAppearance}
-                    palette={palette}
-                    onPaletteChange={updatePalette}
-                  />
-                )}
-
-                {/* ── Settings Tab ── */}
-                {activeTab === 'settings' && (
-                  <div className="space-y-5">
-
-                    {/* URL Slug */}
-                    <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-                      <div>
-                        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                          <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
-                        </h3>
-                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Your link-in-bio page address</p>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5 px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all duration-300">
-                          <span className="text-[13px] font-medium text-[var(--text-tertiary)] shrink-0 select-none">digione.ai/link/</span>
-                          <input
-                            type="text"
-                            value={slug}
-                            onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                            className="flex-1 bg-transparent text-[13px] font-semibold outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-w-0"
-                            placeholder="your-name"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2 min-h-5">
-                          {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--text-tertiary)]" />}
-                          {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
-                            <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Your current URL</span>
-                          )}
-                          {slugStatus === 'available' && (
-                            <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available — save to apply</span>
-                          )}
-                          {slugStatus === 'taken' && (
-                            <span className="flex items-center gap-1 text-xs text-red-500"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
-                          )}
-                          {slugStatus === 'invalid' && (
-                            <span className="text-xs text-red-500">3+ chars, letters, numbers, hyphens only</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* SEO & Social Sharing */}
-                    <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-                      <div>
-                        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                          <Search className="w-4 h-4 text-pink-500" /> SEO & Social Sharing
-                        </h3>
-                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">How your page looks when shared on WhatsApp, Twitter, etc.</p>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
-                            Page Title <span className="text-[var(--text-tertiary)] font-normal ml-1">(overrides your display name)</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={seo.title}
-                            onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
-                            maxLength={70}
-                            className="w-full px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all duration-300"
-                            placeholder={profile.displayName || 'Your Name · Link in Bio'}
-                          />
-                          <p className="text-[11px] font-medium text-[var(--text-tertiary)] mt-1.5">{seo.title.length}/70 characters</p>
-                        </div>
-
-                        <div>
-                          <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
-                            Meta Description <span className="text-[var(--text-tertiary)] font-normal ml-1">(overrides your bio)</span>
-                          </label>
-                          <textarea
-                            value={seo.description}
-                            onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
-                            maxLength={160}
-                            rows={2}
-                            className="w-full px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all duration-300 resize-none"
-                            placeholder={profile.bioText || 'A short description of your page...'}
-                          />
-                          <p className="text-[11px] font-medium text-[var(--text-tertiary)] mt-1.5">{seo.description.length}/160 characters</p>
-                        </div>
-
-                        <div>
-                          <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
-                            Share Preview Image <span className="text-[var(--text-tertiary)] font-normal ml-1">(OG image)</span>
-                          </label>
-                          <div className="flex gap-2">
-                            <input
-                              type="url"
-                              value={seo.image}
-                              onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
-                              className="flex-1 px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all duration-300"
-                              placeholder="https://... (defaults to your avatar)"
-                            />
-                          </div>
-                          {(seo.image || profile.avatarUrl) && (
-                            <div className="mt-2 rounded-lg overflow-hidden border border-[var(--border)] h-16 bg-[var(--bg-secondary)]">
-                              <img src={seo.image || profile.avatarUrl} alt="OG preview" className="w-full h-full object-cover" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Live share preview card */}
-                      {(seo.title || profile.displayName) && (
-                        <div className="mt-2">
-                          <p className="text-[10px] font-medium text-[var(--text-tertiary)] mb-2 uppercase tracking-wide">Preview when shared</p>
-                          <div className="border border-[var(--border)] rounded-xl overflow-hidden text-left">
-                            {(seo.image || profile.avatarUrl) && (
-                              <div className="h-24 bg-[var(--surface-muted)]">
-                                <img src={seo.image || profile.avatarUrl} alt="" className="w-full h-full object-cover" />
-                              </div>
-                            )}
-                            <div className="px-3 py-2.5">
-                              <p className="text-[10px] text-[var(--text-tertiary)] mb-0.5">digione.ai</p>
-                              <p className="text-xs font-semibold text-[var(--text-primary)] line-clamp-1">
-                                {seo.title || profile.displayName || 'Your page title'}
-                              </p>
-                              <p className="text-[10px] text-[var(--text-secondary)] line-clamp-2 mt-0.5">
-                                {seo.description || profile.bioText || 'Your page description will appear here.'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Activate / Deactivate Link */}
-                    <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                            {isPublished ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                            ) : (
-                              <XCircle className="w-4 h-4 text-[var(--text-tertiary)]" />
-                            )}
-                            {isPublished ? 'Link is Active' : 'Link is Inactive'}
-                          </h3>
-                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                            {isPublished
-                              ? 'Your page is live and accessible to visitors.'
-                              : 'Your page is hidden. Visitors will see a 404 page.'}
-                          </p>
-                        </div>
-                        <button
-                          role="switch"
-                          aria-checked={isPublished}
-                          aria-label={isPublished ? 'Deactivate link' : 'Activate link'}
-                          onClick={() => setIsPublished(!isPublished)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isPublished ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'
-                            }`}
-                        >
-                          <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${isPublished ? 'translate-x-6' : 'translate-x-1'
-                            }`} />
-                        </button>
-                      </div>
-                    </div>
-
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* ═══ RIGHT PANEL — full-height preview ═══ */}
-        <div className="flex-1 flex flex-col bg-[var(--surface-muted)]">
-
-          {/* ── Preview Header ── */}
-          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-4 gap-3 relative">
-            {/* Open in Browser */}
-            <a
-              href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
-              title="Open in browser"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open
-            </a>
-            {/* Copy link */}
-            <button
-              onClick={() => {
-                if (site) {
-                  navigator.clipboard.writeText(`https://${getSiteDisplayUrl(site)}`);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }
-              }}
-              disabled={!site}
-              className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
-              title="Copy page link"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? 'Copied!' : 'Link'}
-            </button>
-            {/* Preview Page label — truly centered */}
-            <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none">
-              <span className="text-xs font-semibold text-[var(--text-tertiary)] dark:text-gray-500 uppercase tracking-widest">
-                Website Preview
+              <span className="flex shrink-0 gap-1">
+                {Object.values(tpl.palette).slice(0, 3).map((c, i) => (
+                  <span key={i} className="h-6 w-6 rounded-full border border-[var(--border)]" style={{ backgroundColor: c }} />
+                ))}
               </span>
-            </div>
-            <div className="flex-1" />
-            {/* Device toggles */}
-            <div className="flex items-center gap-1 bg-[var(--surface)] p-1 rounded-lg border border-[var(--border)] shrink-0">
-              {DEVICES.map(d => (
-                <button
-                  key={d.id}
-                  onClick={() => setDevice(d.id)}
-                  className={`p-1.5 rounded-md transition ${device === d.id
-                    ? 'bg-[var(--surface-muted)] text-[var(--text-primary)] shadow-sm'
-                    : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-tertiary)]'
-                    }`}
-                  title={d.label}
-                >
-                  <d.icon className="w-4 h-4" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Preview iframe */}
-          {(() => {
-            const DESKTOP_W = 1280;
-            const DESKTOP_H = Math.round(DESKTOP_W * 10 / 16); // 16:10 aspect ratio = 800px
-            const isDesktop = device === 'desktop';
-            const isMobile = device === 'mobile';
-            const devicePx = isDesktop ? DESKTOP_W : isMobile ? 375 : 768;
-            const zoom = isDesktop ? Math.min(1, previewW / DESKTOP_W) : 1;
-
-            const BrowserChrome = () => (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface-muted)] border-b border-[var(--border)] shrink-0">
-                <div className="flex gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-400" />
-                  <span className="w-3 h-3 rounded-full bg-amber-400" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                </div>
-                <div className="flex-1 px-3 py-1 bg-[var(--surface)] rounded-md border border-[var(--border)]">
-                  <p className="text-[10px] text-[var(--text-tertiary)] font-mono truncate">
-                    {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
-                  </p>
-                </div>
-                <button onClick={() => setPreviewKey(Date.now())}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-tertiary)] transition" title="Refresh">
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            );
-
-            // Single container for all devices — avoids unmount/remount flash on device switch
-            return (
-              <div ref={previewWrapperRef} className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-16' : 'pt-6'}`}>
-                <div
-                  className="bg-[var(--surface)] rounded-xl shadow-2xl border border-[var(--border)] overflow-hidden flex flex-col"
-                  style={{
-                    width: devicePx,
-                    maxWidth: '100%',
-                    height: isDesktop ? DESKTOP_H : '100%',
-                    zoom: isDesktop ? zoom : undefined,
-                    transformOrigin: 'top left',
-                  }}
-                >
-                  <BrowserChrome />
-                  {loading ? (
-                    <div className="flex-1 flex flex-col items-center pt-24 px-6 gap-5 bg-[var(--surface)] border-0">
-                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
-                      <div className="w-48 h-6 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
-                      <div className="w-64 h-3 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0 mt-1" />
-
-                      <div className="w-full max-w-[320px] mt-10 space-y-3.5">
-                        <div className="w-full h-14 rounded-xl bg-[var(--surface-muted)] animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-[var(--surface-muted)] animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-[var(--surface-muted)] animate-pulse" />
-                      </div>
-                    </div>
-                  ) : previewUrl ? (
-                    <iframe ref={iframeRef} key={previewKey} src={previewUrl}
-                      className="w-full flex-1 border-0" title="Bio Preview" />
-                  ) : (
-                    <div className="flex items-center justify-center flex-1 text-sm text-[var(--text-tertiary)]">No preview available</div>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-[var(--text-primary)]">
+                  {tpl.name}{tpl.tag ? ` · ${tpl.tag}` : ''}
+                </span>
+                <span className="block truncate text-xs text-[var(--text-tertiary)]">{tpl.description}</span>
+              </span>
+            </button>
+          ))}
         </div>
-      </div>{/* close flex-1 flex min-h-0 body wrapper */}
+      </div>
+      <BioAppearanceEditor
+        data={appearance}
+        onChange={setAppearance}
+        palette={palette}
+        onPaletteChange={updatePalette}
+      />
     </div>
+  );
+
+  const settingsSlot = (
+    <div className="space-y-5">
+      {/* Public URL */}
+      <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3">
+        <div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
+            <Globe2 className="w-4 h-4" /> Public URL
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5">Your link-in-bio page address</p>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--focus-ring)] transition-shadow">
+          <span className="text-sm text-[var(--text-tertiary)] shrink-0 select-none">digione.ai/link/</span>
+          <input
+            type="text"
+            value={slug}
+            onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+            className="flex-1 bg-transparent text-sm font-medium outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-w-0"
+            placeholder="your-name"
+          />
+        </div>
+        <div className="flex items-center gap-2 min-h-5 text-xs">
+          {slugStatus === 'checking' && (
+            <span className="flex items-center gap-1 text-[var(--text-tertiary)]"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking…</span>
+          )}
+          {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
+            <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="w-3.5 h-3.5" /> Your current URL</span>
+          )}
+          {slugStatus === 'available' && (
+            <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="w-3.5 h-3.5" /> Available — save to apply</span>
+          )}
+          {slugStatus === 'taken' && (
+            <span className="flex items-center gap-1 text-[var(--danger)]"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
+          )}
+          {slugStatus === 'invalid' && (
+            <span className="text-[var(--danger)]">3+ chars, letters, numbers, hyphens only</span>
+          )}
+        </div>
+      </div>
+
+      {/* SEO & Social Sharing */}
+      <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
+        <div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
+            <Search className="w-4 h-4" /> SEO &amp; Social Sharing
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] mt-0.5">How your page looks when shared on WhatsApp, Twitter, etc.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Page Title</label>
+          <input
+            type="text"
+            value={seo.title}
+            onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
+            maxLength={70}
+            className={INPUT_CLS}
+            placeholder={profile.displayName || 'Your Name · Link in Bio'}
+          />
+          <p className="mt-1 text-xs text-[var(--text-tertiary)]">{seo.title.length}/70 characters</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Meta Description</label>
+          <textarea
+            value={seo.description}
+            onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
+            maxLength={160}
+            rows={2}
+            className={`${INPUT_CLS} resize-none`}
+            placeholder={profile.bioText || 'A short description of your page...'}
+          />
+          <p className="mt-1 text-xs text-[var(--text-tertiary)]">{seo.description.length}/160 characters</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Share Preview Image</label>
+          <input
+            type="url"
+            value={seo.image}
+            onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
+            className={INPUT_CLS}
+            placeholder="https://... (defaults to your avatar)"
+          />
+        </div>
+      </div>
+
+      {/* Activate / Deactivate */}
+      <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">
+              {isPublished ? 'Link is Active' : 'Link is Inactive'}
+            </p>
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+              {isPublished ? 'Your page is live and accessible to visitors.' : 'Your page is hidden. Visitors will see a 404 page.'}
+            </p>
+          </div>
+          <button
+            role="switch"
+            aria-checked={isPublished}
+            aria-label={isPublished ? 'Deactivate link' : 'Activate link'}
+            onClick={() => setIsPublished(!isPublished)}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${isPublished ? 'bg-[var(--success)]' : 'bg-[var(--surface-muted)] border border-[var(--border)]'}`}
+          >
+            <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${isPublished ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <SiteEditorShell
+        title={displayTitle}
+        typeLabel="Link-in-bio"
+        typeIcon={Link2}
+        onBack={() => router.push('/dashboard/sites')}
+        saving={saving}
+        saved={saved}
+        onSave={handleSave}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        theme={theme}
+        onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        previewUrl={previewUrl}
+        displayUrl={site ? getSiteDisplayUrl(site) : null}
+        iframeRef={iframeRef}
+        previewKey={previewKey}
+        onRefresh={() => setPreviewKey(Date.now())}
+        device={device}
+        onDeviceChange={setDevice}
+      >
+        <EditorPanel
+          view={view}
+          onViewChange={setView}
+          content={contentSlot}
+          design={designSlot}
+          settings={settingsSlot}
+        />
+      </SiteEditorShell>
+
+      {imagePicker.open && (
+        <ImagePickerModal
+          open={imagePicker.open}
+          onClose={() => setImagePicker(p => ({ ...p, open: false }))}
+          onSelect={(url) => {
+            if (imagePicker.field === 'thumbnail_url') updateSelected({ thumbnail_url: url });
+            else if (imagePicker.field === 'meta_link_url') updateSelectedMeta('link_url', url);
+          }}
+        />
+      )}
+    </>
   );
 }
