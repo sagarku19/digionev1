@@ -19,7 +19,7 @@ import type { BioLink, ProductLite } from './blockEditors/types';
 export type { BioLink };
 
 // ─── Block type categories ─────────────────────────────────
-const BLOCK_CATEGORIES = [
+export const BLOCK_CATEGORIES = [
   {
     label: 'Content',
     types: [
