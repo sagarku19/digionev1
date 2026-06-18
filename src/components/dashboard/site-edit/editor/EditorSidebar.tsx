@@ -1,5 +1,5 @@
 'use client';
-import { ChevronsLeft } from 'lucide-react';
+import { ArrowLeft, ChevronsLeft } from 'lucide-react';
 import type { ElementType } from 'react';
 
 export type SidebarItem = {
@@ -16,9 +16,15 @@ type Props = {
   onSelect: (id: string) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  title: string;
+  typeLabel: string;
+  typeIcon: ElementType;
+  onBack: () => void;
 };
 
-export default function EditorSidebar({ items, active, onSelect, collapsed, onToggleCollapse }: Props) {
+export default function EditorSidebar({
+  items, active, onSelect, collapsed, onToggleCollapse, title, typeLabel, typeIcon: TypeIcon, onBack,
+}: Props) {
   const main = items.filter((i) => i.group === 'main');
   const tools = items.filter((i) => i.group === 'tools');
   const width = collapsed ? 'w-[64px]' : 'w-[210px]';
@@ -47,6 +53,25 @@ export default function EditorSidebar({ items, active, onSelect, collapsed, onTo
 
   return (
     <div className={`${width} hidden shrink-0 flex-col border-r border-[var(--border)] bg-[var(--bg-secondary)] transition-all duration-200 lg:flex`}>
+      {/* header: back + site title + type label */}
+      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-[var(--border)] px-2.5">
+        <button
+          onClick={onBack}
+          aria-label="Back to sites"
+          className="shrink-0 rounded-[var(--radius-md)] p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        {!collapsed && (
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{title}</p>
+            <p className="flex items-center gap-1 text-[11px] font-medium text-[var(--text-tertiary)]">
+              <TypeIcon className="h-3 w-3" /> {typeLabel}
+            </p>
+          </div>
+        )}
+      </div>
+
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-2.5">
         {main.map(Row)}
         {tools.length > 0 && (

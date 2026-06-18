@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, type ReactNode, type RefObject, type ElementType } from 'react';
-import { LayoutList, LayoutTemplate, User, Palette, Settings2, BarChart3, GraduationCap, Link2, CalendarDays } from 'lucide-react';
-import EditorTopBar from './EditorTopBar';
+import { LayoutList, LayoutTemplate, User, Palette, Settings2, BarChart3, GraduationCap, Link2, CalendarDays, Undo2, Redo2, Save, Loader2, CheckCircle2 } from 'lucide-react';
 import PreviewPane from './PreviewPane';
 import EditorSidebar, { type SidebarItem } from './EditorSidebar';
 import ComingSoon from './ComingSoon';
@@ -41,7 +40,6 @@ type Props = {
   title: string; typeLabel: string; typeIcon: ElementType; onBack: () => void;
   saving: boolean; saved: boolean; onSave: () => void;
   canUndo?: boolean; canRedo?: boolean; onUndo?: () => void; onRedo?: () => void;
-  theme: 'light' | 'dark'; onToggleTheme: () => void;
   // preview
   previewUrl: string | null; displayUrl: string | null;
   iframeRef: RefObject<HTMLIFrameElement | null>; previewKey: number; onRefresh: () => void;
@@ -98,14 +96,6 @@ export default function LinkInBioShell(props: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[var(--bg-secondary)] text-[var(--text-primary)]">
-      <EditorTopBar
-        title={props.title} typeLabel={props.typeLabel} typeIcon={props.typeIcon} onBack={props.onBack}
-        saving={props.saving} saved={props.saved} onSave={props.onSave}
-        canUndo={props.canUndo} canRedo={props.canRedo} onUndo={props.onUndo} onRedo={props.onRedo}
-        theme={props.theme} onToggleTheme={props.onToggleTheme}
-        displayUrl={props.displayUrl}
-      />
-
       {/* mobile tab switch */}
       <div className="flex shrink-0 gap-1 border-b border-[var(--border)] bg-[var(--bg-primary)] p-2 lg:hidden">
         {(['edit', 'preview'] as const).map((t) => (
@@ -120,10 +110,25 @@ export default function LinkInBioShell(props: Props) {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <EditorSidebar items={NAV} active={active} onSelect={setActive} collapsed={collapsed} onToggleCollapse={toggleCollapse} />
+        <EditorSidebar
+          items={NAV} active={active} onSelect={setActive} collapsed={collapsed} onToggleCollapse={toggleCollapse}
+          title={props.title} typeLabel={props.typeLabel} typeIcon={props.typeIcon} onBack={props.onBack}
+        />
 
         {/* canvas */}
-        <div className={`min-w-0 flex-1 flex-col overflow-y-auto bg-[var(--bg-primary)] ${mobileTab === 'edit' ? 'flex' : 'hidden'} lg:flex`}>
+        <div className={`min-w-0 flex-1 flex-col bg-[var(--bg-primary)] ${mobileTab === 'edit' ? 'flex' : 'hidden'} lg:flex`}>
+          {/* canvas toolbar: undo/redo (left) · Save (right) */}
+          <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-5 py-2.5">
+            <div className="flex items-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--border)] p-1">
+              <button onClick={props.onUndo} disabled={!props.canUndo} title="Undo" aria-label="Undo" className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-secondary)] enabled:hover:bg-[var(--surface-hover)] disabled:opacity-40 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><Undo2 className="h-4 w-4" /></button>
+              <button onClick={props.onRedo} disabled={!props.canRedo} title="Redo" aria-label="Redo" className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-secondary)] enabled:hover:bg-[var(--surface-hover)] disabled:opacity-40 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><Redo2 className="h-4 w-4" /></button>
+            </div>
+            <button onClick={props.onSave} disabled={props.saving} className={`flex items-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50 ${props.saved ? 'bg-[var(--success)] text-[var(--text-on-brand)]' : 'bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]'}`}>
+              {props.saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : props.saved ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {props.saved ? 'Saved!' : 'Save'}
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-2xl p-5">
             {/* mobile section switcher */}
             <div className="mb-3 flex gap-1 overflow-x-auto lg:hidden">
@@ -149,6 +154,7 @@ export default function LinkInBioShell(props: Props) {
                 {sectionBody}
               </motion.div>
             </AnimatePresence>
+          </div>
           </div>
         </div>
 

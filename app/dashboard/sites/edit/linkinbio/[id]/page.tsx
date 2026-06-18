@@ -13,7 +13,6 @@ import {
   Link2, Globe2, Search,
   Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
-import { useTheme } from '@/contexts/DashboardThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
@@ -258,7 +257,6 @@ export default function EditLinkInBioPage() {
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const { theme, setTheme } = useTheme();
 
   // ── UI state ──
   const [saving, setSaving] = useState(false);
@@ -1130,8 +1128,6 @@ export default function EditLinkInBioPage() {
         canRedo={canRedo}
         onUndo={handleUndo}
         onRedo={handleRedo}
-        theme={theme}
-        onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         previewUrl={previewUrl}
         displayUrl={site ? getSiteDisplayUrl(site) : null}
         iframeRef={iframeRef}
