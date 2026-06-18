@@ -1,0 +1,76 @@
+<h2>Which editing model should the new shell use?</h2>
+<p class="subtitle">All three keep your iframe preview on the right untouched. The difference is how the LEFT panel is organized. Click the one that feels right.</p>
+
+<div class="cards" data-multiselect>
+
+  <div class="card" data-choice="grouped" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f6f6f7; padding:0;">
+      <div style="display:flex; height:160px; font-size:9px;">
+        <div style="width:34%; background:#fff; border-right:1px solid #ddd; display:flex; flex-direction:column;">
+          <div style="padding:5px 7px; border-bottom:1px solid #eee; font-weight:700;">‹ Store ▸ Save</div>
+          <div style="padding:6px 7px; color:#888; font-weight:700;">PAGE</div>
+          <div style="padding:3px 12px;">Header</div>
+          <div style="padding:3px 12px; background:#ececff; border-left:2px solid #6366f1;">Hero</div>
+          <div style="padding:3px 12px;">Products</div>
+          <div style="padding:6px 7px; color:#888; font-weight:700;">DESIGN</div>
+          <div style="padding:3px 12px;">Theme</div>
+          <div style="padding:6px 7px; color:#888; font-weight:700;">SETTINGS</div>
+          <div style="padding:3px 12px;">SEO &amp; URL</div>
+        </div>
+        <div style="flex:1; background:#fafafa; display:flex; align-items:center; justify-content:center; color:#bbb;">preview iframe</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>1 · Grouped Navigator</h3>
+      <p>Rainbow tabs collapse into labeled groups (Page / Design / Settings), each expandable. Familiar (Linear, Vercel). Lowest-risk evolution. Flat list, not section-aware.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="section" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f6f6f7; padding:0;">
+      <div style="display:flex; height:160px; font-size:9px;">
+        <div style="width:42%; background:#fff; border-right:1px solid #ddd; display:flex; flex-direction:column;">
+          <div style="padding:5px 7px; border-bottom:1px solid #eee; font-weight:700;">‹ Store ▸ Save</div>
+          <div style="display:flex; gap:3px; padding:5px 7px; font-size:8px;">
+            <span style="background:#111; color:#fff; padding:2px 6px; border-radius:4px;">Content</span>
+            <span style="color:#888; padding:2px 6px;">Design</span>
+            <span style="color:#888; padding:2px 6px;">Settings</span>
+          </div>
+          <div style="margin:2px 7px; padding:4px 6px; border:1px solid #ddd; border-radius:4px; display:flex; justify-content:space-between;">⠿ Header <span>👁</span></div>
+          <div style="margin:2px 7px; padding:4px 6px; border:1px solid #6366f1; background:#ececff; border-radius:4px; display:flex; justify-content:space-between;">⠿ Hero <span>⚙</span></div>
+          <div style="margin:2px 7px; padding:4px 6px; border:1px solid #ddd; border-radius:4px; display:flex; justify-content:space-between;">⠿ Products <span>👁</span></div>
+          <div style="margin:4px 7px; padding:4px 6px; border:1px dashed #aaa; border-radius:4px; text-align:center; color:#666;">+ Add section</div>
+        </div>
+        <div style="flex:1; background:#fafafa; display:flex; align-items:center; justify-content:center; color:#bbb;">preview iframe</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>2 · Section / Block-centric  ★ my lean</h3>
+      <p>Left panel's main view is the page's ordered sections (drag to reorder, toggle visibility, add). Click one → its settings open. Design + Settings live behind a top switch. This is THE modern site-builder model (Shopify/Beacons) and unifies blocks+sections under one mental model. Biggest UX leap.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="properties" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f6f6f7; padding:0;">
+      <div style="display:flex; height:160px; font-size:9px;">
+        <div style="width:12%; background:#1a1a1a; color:#aaa; display:flex; flex-direction:column; align-items:center; gap:7px; padding-top:8px;">▦<br>◐<br>⚙</div>
+        <div style="width:30%; background:#fff; border-right:1px solid #ddd;">
+          <div style="padding:5px 7px; border-bottom:1px solid #eee; font-weight:700;">Navigator</div>
+          <div style="padding:3px 10px;">▾ Header</div>
+          <div style="padding:3px 10px; background:#ececff;">▾ Hero</div>
+          <div style="padding:3px 18px; color:#666;">· Title</div>
+          <div style="padding:3px 18px; color:#666;">· Button</div>
+          <div style="padding:3px 10px;">▸ Products</div>
+        </div>
+        <div style="flex:1; background:#fafafa; display:flex; align-items:center; justify-content:center; color:#bbb;">preview iframe</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>3 · Navigator + Icon Rail</h3>
+      <p>Pro design-tool feel (Framer/Webflow): thin icon rail + a tree navigator. Powerful but heaviest to build, fights the iframe constraint (no click-to-select), and is overkill for payment/linkinbio. Highest effort, lowest fit.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:14px;">Multi-select is on — you can pick a primary and note anything you'd borrow from another. Tell me your pick in the terminal.</p>

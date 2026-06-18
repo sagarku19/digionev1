@@ -1,0 +1,24 @@
+<h2>Design locked — Link-in-Bio editor redesign</h2>
+<p class="subtitle">Decisions captured. Next: I write the spec.</p>
+
+<div class="section">
+  <p class="label">Decisions</p>
+  <ul style="font-size:14px; line-height:1.8;">
+    <li><b>Look:</b> hybrid — dashboard color tokens (dark mode preserved) + premium radius / soft shadow / airy spacing on the editor surface.</li>
+    <li><b>Layout:</b> 3-zone — <b>left sidebar nav</b> · editor canvas · live phone preview, with a top bar (Back · Save · Preview · Publish).</li>
+    <li><b>Block editing:</b> inline expand (card grows in place; list + preview stay visible). Drill-in retired.</li>
+    <li><b>Sidebar:</b> Profile · Content · Design · Settings (real) + Insights · Course · Tools ("Coming soon").</li>
+    <li><b>Preserved:</b> all data, save, postMessage preview, block schemas, undo/redo. No API/DB changes.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <p class="label">Build phases</p>
+  <ol style="font-size:13.5px; line-height:1.7;">
+    <li>Extract TopBar + Preview from the shell; add premium tokens (no behavior change).</li>
+    <li>3-zone shell + sidebar nav; render Content / Design / Settings as sections.</li>
+    <li>Inline-expand block cards (replace drill-in); profile card.</li>
+    <li>Design / Settings premium polish + "Coming soon" sections.</li>
+    <li>Mobile (sidebar drawer + Edit | Preview tab).</li>
+  </ol>
+</div>

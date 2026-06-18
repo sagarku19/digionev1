@@ -1,0 +1,33 @@
+<h2>Implementation plan ready ✓</h2>
+<p class="subtitle">docs/superpowers/plans/2026-06-17-site-editor-shell-foundation.md · branch feat/site-editor-shell · 12 tasks</p>
+
+<div class="section">
+  <p class="label">Build order</p>
+  <ol style="font-size:13.5px; line-height:1.7;">
+    <li>Shell types + reorder util <b>(TDD)</b></li>
+    <li>linkinbio summarizeBlock <b>(TDD)</b></li>
+    <li>linkinbio section registry</li>
+    <li>AddSectionPicker</li>
+    <li>SectionList (drag / hide / duplicate / delete / add)</li>
+    <li>SectionDetail (drill-in)</li>
+    <li>EditorPanel (Content / Design / Settings switch)</li>
+    <li>SiteEditorShell (tokenized header + preview)</li>
+    <li>Migrate linkinbio page onto the shell</li>
+    <li>Manual verification (light + dark)</li>
+    <li>Docs + final gate</li>
+  </ol>
+</div>
+
+<div class="section">
+  <p class="label">How to run it</p>
+  <div class="options">
+    <div class="option" data-choice="subagent" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content"><h3>Subagent-driven (recommended)</h3><p>Fresh subagent per task, I review between tasks. Fast, isolated, good for a big refactor.</p></div>
+    </div>
+    <div class="option" data-choice="inline" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content"><h3>Inline execution</h3><p>I execute tasks in this session with checkpoints for your review.</p></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<h2>First decision: which design language for the editor?</h2>
+<p class="subtitle">Your brief wants a premium/airy feel. The project's dashboard rules mandate compact/restrained. Same Link block card, both ways — pick the direction (this governs every component we build).</p>
+
+<div class="split">
+
+  <div class="mockup">
+    <div class="mockup-header">A · Stay in the dashboard system (current rules)</div>
+    <div class="mockup-body" style="background:#f4f4f5; padding:20px;">
+      <div style="background:#fff; border:1px solid #e4e4e7; border-radius:14px; padding:10px 12px; display:flex; align-items:center; gap:10px; font-size:13px;">
+        <span style="color:#c4c4cc;">⋮⋮</span>
+        <span style="width:30px; height:30px; border-radius:9px; background:#f1f1f4; display:flex; align-items:center; justify-content:center; font-size:13px;">🔗</span>
+        <span style="flex:1;">
+          <span style="display:block; font-weight:600; color:#18181b;">Link</span>
+          <span style="display:block; color:#9b9ba3; font-size:11px;">Project Alpha · alpha.com</span>
+        </span>
+        <span style="width:34px; height:19px; border-radius:999px; background:#16a34a; position:relative;"><span style="position:absolute; top:2px; right:2px; width:15px; height:15px; border-radius:50%; background:#fff;"></span></span>
+      </div>
+      <p style="font-size:12px; color:#71717a; margin-top:14px; line-height:1.6;">Tight, 1px borders, small radius, no shadow at rest. Identical to Products / Settings / Orders pages — one consistent dashboard. "Premium" comes from spacing &amp; hierarchy, not softness.</p>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">B · Evolve a premium editor surface</div>
+    <div class="mockup-body" style="background:#fafafa; padding:20px;">
+      <div style="background:#fff; border:1px solid #f0f0f2; border-radius:22px; padding:16px 18px; display:flex; align-items:center; gap:14px; font-size:14px; box-shadow:0 10px 30px -12px rgba(20,20,30,.18);">
+        <span style="color:#cfcfd6;">⋮⋮</span>
+        <span style="width:42px; height:42px; border-radius:14px; background:#f4f4f6; display:flex; align-items:center; justify-content:center; font-size:18px;">🔗</span>
+        <span style="flex:1;">
+          <span style="display:block; font-weight:600; font-size:15px; color:#18181b;">Project Alpha</span>
+          <span style="display:block; color:#a1a1ab; font-size:12px;">alpha.com</span>
+        </span>
+        <span style="width:46px; height:26px; border-radius:999px; background:#16a34a; position:relative;"><span style="position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.2);"></span></span>
+      </div>
+      <p style="font-size:12px; color:#71717a; margin-top:14px; line-height:1.6;">Bigger radius (22px), soft layered shadow, airy padding, larger controls — the Linktree/Framer/Stripe feel. Diverges from the rest of the dashboard; requires updating dashboard-design.md to define the editor as its own surface.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="options">
+  <div class="option" data-choice="A" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content"><h3>Stay in the dashboard system</h3><p>Compact tokens, consistent with every other dashboard page. Lower risk, no rule change. Premium via craft.</p></div>
+  </div>
+  <div class="option" data-choice="B" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content"><h3>Evolve a premium editor surface (my lean)</h3><p>Larger radius + soft shadows + air, scoped to the editor. Matches your brief. We update dashboard-design.md to legitimize it. The editor will look distinct from Products/Settings.</p></div>
+  </div>
+  <div class="option" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content"><h3>Hybrid</h3><p>Keep dashboard tokens for color/dark-mode, but adopt the premium radius/shadow/spacing only inside the editor. Best of both, slightly more nuance to maintain.</p></div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:14px;">Click one (or tell me in the terminal). This is purely the visual language — we'll decide the editing interaction next.</p>

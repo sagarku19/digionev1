@@ -1,0 +1,29 @@
+<h2>Spec 1 built ✓ — linkinbio on the new shell</h2>
+<p class="subtitle">branch feat/site-editor-shell · 13 commits · all automated gates green</p>
+
+<div class="section">
+  <p class="label">Done & committed (10 build tasks)</p>
+  <ul style="font-size:13.5px; line-height:1.7;">
+    <li>Shell foundation: <code>types</code>, <code>reorder</code>, <code>SectionList</code>, <code>AddSectionPicker</code>, <code>SectionDetail</code>, <code>EditorPanel</code>, <code>SiteEditorShell</code></li>
+    <li>linkinbio: <code>summarizeBlock</code>, <code>sectionRegistry</code>, and the page migrated onto the shell</li>
+    <li>Mini app-sidebar removed · rainbow tabs → Content / Design / Settings · drill-in editing · tokenized</li>
+    <li>Preserved verbatim: data load, save, undo/redo, live-preview postMessage, slug checks</li>
+    <li>page.tsx: 656 deletions / 315 insertions (net −341 lines)</li>
+  </ul>
+</div>
+
+<div class="section">
+  <p class="label">Automated gates</p>
+  <ul style="font-size:13.5px; line-height:1.7;">
+    <li>✓ <code>tsc --noEmit</code> = 0</li>
+    <li>✓ <code>vitest</code> = 24/24 passing (incl. new reorder + summarize suites)</li>
+    <li>✓ hardcoded-color grep = clean (only the allowed white toggle-knob)</li>
+    <li>✓ zero unused-var lint in the migrated page</li>
+    <li>· pre-existing <code>any</code> debt in the data/save logic left as-is (out of scope)</li>
+  </ul>
+</div>
+
+<div class="section">
+  <p class="label">Left for you — Task 10: in-app check</p>
+  <p style="font-size:13.5px;">Needs the running app + a real link-in-bio site, in <b>light AND dark</b>. Checklist in the terminal.</p>
+</div>

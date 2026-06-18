@@ -1,0 +1,55 @@
+<h2>The real current state of the 4 editors</h2>
+<p class="subtitle">Three of four are bespoke. The "shared" component only powers the simplest one.</p>
+
+<div class="mockup">
+  <div class="mockup-header">What each editor actually uses today</div>
+  <div class="mockup-body">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <tr style="text-align:left; border-bottom:2px solid var(--border,#ccc);">
+        <th style="padding:8px;">Editor</th>
+        <th style="padding:8px;">Shell</th>
+        <th style="padding:8px;">Tabs</th>
+        <th style="padding:8px;">Lines</th>
+        <th style="padding:8px;">Tab layout</th>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border,#eee);">
+        <td style="padding:8px;"><b>linkinbio</b></td>
+        <td style="padding:8px;">Bespoke (its own)</td>
+        <td style="padding:8px;">5</td>
+        <td style="padding:8px;">~1517</td>
+        <td style="padding:8px;">Mini app-sidebar + horizontal tabs</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border,#eee);">
+        <td style="padding:8px;"><b>main</b></td>
+        <td style="padding:8px;">Bespoke (its own)</td>
+        <td style="padding:8px;">9</td>
+        <td style="padding:8px;">~1065</td>
+        <td style="padding:8px;">Vertical tab rail</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border,#eee);">
+        <td style="padding:8px;"><b>singlepage</b></td>
+        <td style="padding:8px;">Bespoke — near-twin of main</td>
+        <td style="padding:8px;">9</td>
+        <td style="padding:8px;">~1000</td>
+        <td style="padding:8px;">Vertical tab rail</td>
+      </tr>
+      <tr>
+        <td style="padding:8px;"><b>payment</b></td>
+        <td style="padding:8px;">SiteVisualEditor (only user)</td>
+        <td style="padding:8px;">5</td>
+        <td style="padding:8px;">~116</td>
+        <td style="padding:8px;">Collapsible vertical rail</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">What this means</p>
+  <ul style="font-size:14px; line-height:1.6;">
+    <li><b>main</b> and <b>singlepage</b> are ~90% duplicated code (same header, undo/redo, theme toggle, device switcher, preview, framer-motion) — just different tab content.</li>
+    <li><b>linkinbio</b> is a third, different shell with an extra mini app-sidebar and tabs across the top.</li>
+    <li><b>SiteVisualEditor</b> (the supposed "shared" shell) is only used by <b>payment</b>, the simplest one.</li>
+    <li>Every editor hardcodes per-tab colors (blue/emerald/rose/amber/fuchsia…) — all violate the dashboard token rule.</li>
+  </ul>
+</div>

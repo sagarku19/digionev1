@@ -1,0 +1,87 @@
+<h2>How should the left editing panel be organized?</h2>
+<p class="subtitle">The preview on the right never changes. We're only redesigning the LEFT side — how you find and edit things. Here's TODAY, then two ways to modernize it.</p>
+
+<!-- TODAY -->
+<div class="section">
+  <p class="label">▶ Today — flat colored tabs</p>
+  <div style="display:flex; border:1px solid #d0d0d5; border-radius:10px; overflow:hidden; height:230px; font-size:13px; background:#fff;">
+    <div style="width:170px; background:#f7f7f9; border-right:1px solid #e2e2e7; padding:10px 8px;">
+      <div style="font-size:11px; color:#999; margin-bottom:8px; font-weight:600;">9 stacked tabs, each a different color</div>
+      <div style="padding:7px 10px; border-radius:7px; background:#d9f7e6; color:#0a7a44; margin-bottom:4px;">🟢 Header</div>
+      <div style="padding:7px 10px; border-radius:7px; background:#e0f0ff; color:#1769c4; margin-bottom:4px;">🔵 Main</div>
+      <div style="padding:7px 10px; border-radius:7px; background:#e6ecff; color:#3b5bdb; margin-bottom:4px;">🔵 Content</div>
+      <div style="padding:7px 10px; border-radius:7px; background:#fde9ff; color:#a521b5; margin-bottom:4px;">🟣 Template</div>
+      <div style="padding:7px 10px; border-radius:7px; background:#ffe3ec; color:#c2255c; margin-bottom:4px;">🔴 Appearance</div>
+      <div style="padding:7px 10px; border-radius:7px; background:#fff0db; color:#b5650a;">🟠 Advanced</div>
+    </div>
+    <div style="flex:1; background:#fafafa; display:flex; align-items:center; justify-content:center; color:#bbb;">live preview (unchanged)</div>
+  </div>
+  <p style="font-size:13px; color:#777; margin-top:8px;">Problem: 9 equally-weighted tabs in a rainbow of colors. Nothing tells you "structure of the page" vs "global look" vs "settings." Each of the 4 editors arranges these differently, so they all feel like different products.</p>
+</div>
+
+<hr style="border:none; border-top:1px solid #e2e2e7; margin:24px 0;">
+
+<p class="label" style="margin-bottom:10px;">Pick one of these two directions ↓</p>
+
+<div class="cards">
+
+  <!-- OPTION 1 -->
+  <div class="card" data-choice="grouped" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; background:#fff;">
+      <div style="display:flex; height:230px; font-size:13px;">
+        <div style="width:190px; background:#fff; border-right:1px solid #e2e2e7; padding:10px 8px;">
+          <div style="font-size:11px; color:#999; font-weight:700; letter-spacing:.5px; margin:2px 4px 4px;">PAGE</div>
+          <div style="padding:6px 10px; border-radius:6px;">Header</div>
+          <div style="padding:6px 10px; border-radius:6px; background:#eef0ff; color:#3b5bdb; font-weight:600;">Hero &nbsp;←editing</div>
+          <div style="padding:6px 10px; border-radius:6px;">Products</div>
+          <div style="font-size:11px; color:#999; font-weight:700; letter-spacing:.5px; margin:10px 4px 4px;">DESIGN</div>
+          <div style="padding:6px 10px; border-radius:6px;">Theme &amp; colors</div>
+          <div style="font-size:11px; color:#999; font-weight:700; letter-spacing:.5px; margin:10px 4px 4px;">SETTINGS</div>
+          <div style="padding:6px 10px; border-radius:6px;">SEO &amp; URL</div>
+        </div>
+        <div style="flex:1; background:#fafafa; display:flex; align-items:center; justify-content:center; color:#bbb;">live preview</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option 1 · Grouped Navigator</h3>
+      <p><b>What changes:</b> the same items, but sorted under 3 plain headings — <b>Page</b> (the parts of your page), <b>Design</b> (global look), <b>Settings</b>. One neutral accent color, no rainbow.</p>
+      <p style="color:#16a34a;"><b>Feels like:</b> Vercel / Linear settings. Clean, calm, familiar.</p>
+      <p style="color:#888;"><b>Effort:</b> lower. Still a flat list — you don't reorder the page from here.</p>
+    </div>
+  </div>
+
+  <!-- OPTION 2 -->
+  <div class="card" data-choice="section" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0; background:#fff;">
+      <div style="display:flex; height:230px; font-size:13px;">
+        <div style="width:210px; background:#fff; border-right:1px solid #e2e2e7; padding:10px 8px;">
+          <div style="display:flex; gap:4px; margin:2px 2px 10px; font-size:12px;">
+            <span style="background:#111; color:#fff; padding:4px 10px; border-radius:6px;">Content</span>
+            <span style="color:#999; padding:4px 10px;">Design</span>
+            <span style="color:#999; padding:4px 8px;">Settings</span>
+          </div>
+          <div style="margin:5px 2px; padding:9px 10px; border:1px solid #e2e2e7; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span><span style="color:#bbb;">⋮⋮</span> &nbsp;Header</span><span style="font-size:11px; color:#999;">hide</span>
+          </div>
+          <div style="margin:5px 2px; padding:9px 10px; border:1.5px solid #3b5bdb; background:#eef0ff; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span><span style="color:#3b5bdb;">⋮⋮</span> &nbsp;<b>Hero</b></span><span style="font-size:11px; color:#3b5bdb;">edit ›</span>
+          </div>
+          <div style="margin:5px 2px; padding:9px 10px; border:1px solid #e2e2e7; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span><span style="color:#bbb;">⋮⋮</span> &nbsp;Products</span><span style="font-size:11px; color:#999;">hide</span>
+          </div>
+          <div style="margin:8px 2px 2px; padding:9px 10px; border:1.5px dashed #b9b9c2; border-radius:8px; text-align:center; color:#555;">+ Add section</div>
+        </div>
+        <div style="flex:1; background:#fafafa; display:flex; align-items:center; justify-content:center; color:#bbb;">live preview</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Option 2 · Section List  ★ recommended</h3>
+      <p><b>What changes:</b> the left panel becomes the actual <b>map of your page</b> — a list of sections you can <b>drag to reorder</b>, <b>hide</b>, or <b>click to edit</b>. "Design" and "Settings" sit behind the top switch.</p>
+      <p style="color:#16a34a;"><b>Feels like:</b> Shopify / Beacons / Linktree — what people now expect from a site builder.</p>
+      <p style="color:#888;"><b>Effort:</b> higher. But it's the same idea for all 4 editors (linkinbio blocks = main/single sections = payment's single form).</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">(There's a 3rd "pro design tool" option — Framer-style icon rail + tree — but it's heaviest and the worst fit here, so I've dropped it unless you want it back.) Click a card, or just tell me 1 or 2 in the terminal.</p>

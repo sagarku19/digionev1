@@ -1,0 +1,27 @@
+<h2>Implementation plan ready ✓</h2>
+<p class="subtitle">docs/superpowers/plans/2026-06-18-linkinbio-editor-redesign.md · branch feat/site-editor-shell · 14 tasks / 5 phases</p>
+
+<div class="section">
+  <p class="label">Phases</p>
+  <ol style="font-size:13.5px; line-height:1.8;">
+    <li><b>Extract + tokens</b> — EditorTopBar, PreviewPane, premium CSS vars (no behavior change)</li>
+    <li><b>Shell + sidebar</b> — LinkInBioShell, EditorSidebar, ComingSoon; page on the new shell</li>
+    <li><b>Inline-expand</b> — BlockCard; SectionList uses it; retire SectionDetail</li>
+    <li><b>Profile + polish</b> — ProfileCard, premium Design/Settings; retire EditorPanel</li>
+    <li><b>Mobile</b> — drawer + Edit/Preview tab + section switcher</li>
+  </ol>
+</div>
+
+<div class="section">
+  <p class="label">Choose how to run it</p>
+  <div class="options">
+    <div class="option" data-choice="subagent" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content"><h3>Subagent-driven (recommended)</h3><p>Fresh subagent per task, I review between tasks.</p></div>
+    </div>
+    <div class="option" data-choice="inline" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content"><h3>Inline execution</h3><p>I build the tasks in this session with checkpoints.</p></div>
+    </div>
+  </div>
+</div>

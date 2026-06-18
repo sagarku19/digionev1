@@ -1,0 +1,94 @@
+<h2>New layout: sidebar · editor · preview (modern SaaS)</h2>
+<p class="subtitle">Locked: hybrid premium look · inline-expand block editing. Now with a left dashboard sidebar. Green dot = maps to data we already have · amber = needs scoping.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Link-in-bio dashboard</div>
+  <div class="mockup-body" style="padding:0; background:#f5f5f7;">
+    <!-- TOP BAR -->
+    <div style="display:flex; align-items:center; gap:10px; padding:9px 14px; background:#fff; border-bottom:1px solid #ececef; font-size:12px;">
+      <span style="color:#71717a;">‹ Back</span>
+      <b style="font-size:13px;">My Links</b>
+      <span style="color:#a1a1aa;">· Link-in-bio</span>
+      <span style="flex:1;"></span>
+      <span style="border:1px solid #e4e4e7; border-radius:8px; padding:4px 8px; color:#71717a;">↶ ↷</span>
+      <span style="border:1px solid #e4e4e7; border-radius:8px; padding:4px 10px; color:#52525b;">Save</span>
+      <span style="border:1px solid #e4e4e7; border-radius:8px; padding:4px 10px; color:#52525b;">↗ Preview</span>
+      <span style="background:#E83A2E; color:#fff; border-radius:8px; padding:4px 12px; font-weight:600;">Publish</span>
+    </div>
+
+    <div style="display:flex; height:330px; font-size:11px;">
+      <!-- SIDEBAR -->
+      <div style="width:178px; background:#fbfbfc; border-right:1px solid #ececef; padding:12px 10px; display:flex; flex-direction:column; gap:2px;">
+        <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; margin-bottom:8px;">
+          <span style="width:24px; height:24px; border-radius:8px; background:#E83A2E;"></span>
+          <b style="font-size:12px;">Create With…</b>
+        </div>
+        <NavItem>👤 Profile</NavItem>
+        <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:10px; background:#fff; box-shadow:0 2px 8px -4px rgba(0,0,0,.12); font-weight:600;">▦ Content <span style="flex:1;"></span><span style="color:#16a34a;">●</span></div>
+        <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; color:#52525b;">🎓 Course <span style="flex:1;"></span><span style="color:#f59e0b;">●</span></div>
+        <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; color:#52525b;">📈 Insights <span style="flex:1;"></span><span style="color:#16a34a;">●</span></div>
+        <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; color:#52525b;">🎨 Design <span style="flex:1;"></span><span style="color:#16a34a;">●</span></div>
+        <div style="display:flex; align-items:center; gap:8px; padding:7px 9px; color:#52525b;">⚙ Settings <span style="flex:1;"></span><span style="color:#16a34a;">●</span></div>
+        <div style="font-size:9px; color:#a1a1aa; font-weight:700; letter-spacing:.4px; margin:10px 8px 4px;">TOOLS</div>
+        <div style="padding:7px 9px; color:#52525b;">🔗 Link shortener <span style="color:#f59e0b;">●</span></div>
+        <div style="padding:7px 9px; color:#52525b;">📅 Social planner <span style="color:#f59e0b;">●</span></div>
+        <span style="flex:1;"></span>
+        <div style="padding:7px 9px; color:#a1a1aa;">❓ Help</div>
+      </div>
+
+      <!-- EDITOR CONTENT -->
+      <div style="flex:1; padding:14px 16px; overflow:hidden;">
+        <!-- profile card -->
+        <div style="display:flex; align-items:center; gap:12px; background:#fff; border-radius:18px; padding:12px 14px; box-shadow:0 8px 22px -14px rgba(0,0,0,.18); margin-bottom:14px;">
+          <span style="width:40px; height:40px; border-radius:50%; background:#e8e8ee;"></span>
+          <span style="flex:1;"><b style="font-size:13px;">Create With Shivam</b><br><span style="color:#a1a1aa;">@createwithshivam · Helping creators grow</span></span>
+          <span style="border:1px solid #e4e4e7; border-radius:8px; padding:4px 10px; color:#52525b;">Edit</span>
+        </div>
+        <div style="font-size:10px; color:#a1a1aa; font-weight:700; letter-spacing:.4px; margin:0 0 8px 2px;">BLOCKS · drag to reorder</div>
+        <!-- collapsed block -->
+        <div style="background:#fff; border-radius:16px; padding:10px 12px; margin-bottom:8px; display:flex; align-items:center; gap:10px; box-shadow:0 4px 14px -10px rgba(0,0,0,.16);">
+          <span style="color:#cfcfd6;">⋮⋮</span><span style="width:30px; height:30px; border-radius:9px; background:#f1f1f4; text-align:center; line-height:30px;">🔗</span>
+          <span style="flex:1;"><b>Header link</b><br><span style="color:#a1a1aa;">header.com</span></span>
+          <span style="width:34px; height:19px; border-radius:999px; background:#16a34a; position:relative;"><span style="position:absolute;top:2px;right:2px;width:15px;height:15px;border-radius:50%;background:#fff;"></span></span>
+        </div>
+        <!-- EXPANDED block (inline edit) -->
+        <div style="background:#fff; border-radius:16px; padding:12px; margin-bottom:8px; box-shadow:0 14px 30px -16px rgba(0,0,0,.28); border:1px solid #f0eefe;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="color:#cfcfd6;">⋮⋮</span><span style="width:30px; height:30px; border-radius:9px; background:#eef0ff; text-align:center; line-height:30px;">🔗</span>
+            <b style="flex:1;">Project Alpha</b>
+            <span style="width:34px; height:19px; border-radius:999px; background:#16a34a; position:relative;"><span style="position:absolute;top:2px;right:2px;width:15px;height:15px;border-radius:50%;background:#fff;"></span></span>
+          </div>
+          <div style="margin:10px 0 0 40px;">
+            <div style="color:#a1a1aa; margin-bottom:2px;">Title</div>
+            <div style="height:22px; background:#fafafa; border:1px solid #eee; border-radius:9px; margin-bottom:7px;"></div>
+            <div style="color:#a1a1aa; margin-bottom:2px;">URL</div>
+            <div style="height:22px; background:#fafafa; border:1px solid #eee; border-radius:9px;"></div>
+            <div style="display:flex; gap:6px; margin-top:9px; color:#71717a;"><span>🖼 Thumbnail</span><span>✦ Featured</span><span>📊 Analytics</span></div>
+          </div>
+        </div>
+        <!-- sticky add -->
+        <div style="background:#E83A2E; color:#fff; border-radius:14px; padding:11px; text-align:center; font-weight:600; box-shadow:0 8px 18px -8px rgba(232,58,46,.5);">+ Add block</div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div style="width:300px; background:#edecf0; display:flex; align-items:center; justify-content:center; border-left:1px solid #ececef;">
+        <div style="width:150px; height:300px; background:#fff; border:7px solid #1d1d22; border-radius:26px; display:flex; flex-direction:column; align-items:center; padding-top:18px; gap:7px;">
+          <div style="width:46px; height:46px; border-radius:50%; background:#ddd;"></div>
+          <div style="width:84px; height:8px; background:#eee; border-radius:4px;"></div>
+          <div style="width:120px; height:26px; background:#eef0ff; border-radius:13px; margin-top:6px;"></div>
+          <div style="width:120px; height:26px; background:#f3f3f5; border-radius:13px;"></div>
+          <div style="width:120px; height:26px; background:#f3f3f5; border-radius:13px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">Sidebar items — which are real now vs scoped later?</p>
+  <ul style="font-size:13px; line-height:1.7;">
+    <li><span style="color:#16a34a;">●</span> <b>Profile, Content, Design, Settings</b> — map directly to data/editors we already have.</li>
+    <li><span style="color:#16a34a;">●</span> <b>Insights</b> — we have a <code>linkinbio_analytics</code> table (page views, link clicks) — real, but building the charts is its own chunk.</li>
+    <li><span style="color:#f59e0b;">●</span> <b>Course</b> + <b>Tools</b> (Link shortener, Social planner) — net-new features, no data/UI yet.</li>
+  </ul>
+</div>
