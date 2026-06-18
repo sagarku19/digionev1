@@ -5,6 +5,7 @@ import EditorTopBar from './EditorTopBar';
 import PreviewPane from './PreviewPane';
 import EditorSidebar, { type SidebarItem } from './EditorSidebar';
 import ComingSoon from './ComingSoon';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type SectionId = 'content' | 'profile' | 'design' | 'settings';
 
@@ -24,6 +25,13 @@ const COMING_SOON: Record<string, { label: string; icon: ElementType }> = {
   course: { label: 'Course', icon: GraduationCap },
   'link-shortener': { label: 'Link shortener', icon: Link2 },
   'social-planner': { label: 'Social planner', icon: CalendarDays },
+};
+
+const SECTION_META: Record<SectionId, string> = {
+  content: 'Arrange the blocks visitors see on your page.',
+  profile: 'Your avatar, name, username, and bio.',
+  design: 'Theme, colors, fonts, and templates.',
+  settings: 'Link address, SEO, and visibility.',
 };
 
 type Props = {
@@ -72,6 +80,20 @@ export default function LinkInBioShell(props: Props) {
       ? sections[active as SectionId]
       : <ComingSoon icon={COMING_SOON[active]?.icon} title={COMING_SOON[active]?.label ?? 'Coming soon'} />;
 
+  const activeNav = NAV.find((n) => n.id === active);
+  const ActiveIcon = activeNav?.icon;
+  const sectionHeader = active in sections && activeNav && ActiveIcon ? (
+    <div className="mb-5 flex items-center gap-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
+        <ActiveIcon className="h-5 w-5" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="text-[17px] font-semibold tracking-tight text-[var(--text-primary)]">{activeNav.label}</h2>
+        <p className="text-xs text-[var(--text-secondary)]">{SECTION_META[active as SectionId]}</p>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[var(--bg-secondary)] text-[var(--text-primary)]">
       <EditorTopBar
@@ -113,7 +135,18 @@ export default function LinkInBioShell(props: Props) {
                 </button>
               ))}
             </div>
-            {sectionBody}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+              >
+                {sectionHeader}
+                {sectionBody}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
 

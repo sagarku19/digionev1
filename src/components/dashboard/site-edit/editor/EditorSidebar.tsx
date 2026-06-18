@@ -36,7 +36,7 @@ export default function EditorSidebar({ items, active, onSelect, collapsed, onTo
             : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
         }`}
       >
-        <it.icon className="h-4 w-4 shrink-0" />
+        <it.icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-[var(--brand)]' : ''}`} />
         {!collapsed && <span className="flex-1 truncate text-left">{it.label}</span>}
         {!collapsed && it.comingSoon && (
           <span className="rounded-full bg-[var(--surface-muted)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">soon</span>
