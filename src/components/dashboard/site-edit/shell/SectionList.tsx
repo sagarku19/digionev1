@@ -1,8 +1,9 @@
 'use client';
 import { useState, type ReactNode } from 'react';
-import { GripVertical, Copy, Trash2, Plus, Layers } from 'lucide-react';
+import { Plus, Layers } from 'lucide-react';
 import type { SectionItem, SectionRegistry } from './types';
 import AddSectionPicker from './AddSectionPicker';
+import BlockCard from '../editor/BlockCard';
 
 type Props<TItem extends SectionItem> = {
   items: TItem[];
@@ -12,16 +13,17 @@ type Props<TItem extends SectionItem> = {
   onToggleVisible: (id: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
-  onSelect: (id: string) => void;
   onAdd: (type: string) => void;
+  renderEditor: (item: TItem) => ReactNode;
   pinned?: ReactNode;
 };
 
 export default function SectionList<TItem extends SectionItem>({
-  items, registry, typeOf, onReorder, onToggleVisible, onDuplicate, onDelete, onSelect, onAdd, pinned,
+  items, registry, typeOf, onReorder, onToggleVisible, onDuplicate, onDelete, onAdd, renderEditor, pinned,
 }: Props<TItem>) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
   return (
@@ -36,7 +38,7 @@ export default function SectionList<TItem extends SectionItem>({
       )}
 
       {items.length === 0 && (
-        <div className="flex flex-col items-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-6 py-10 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-[var(--radius-xl)] border border-dashed border-[var(--border)] bg-[var(--surface-muted)] px-6 py-10 text-center">
           <span className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-tertiary)]">
             <Layers className="h-5 w-5" />
           </span>
@@ -45,58 +47,34 @@ export default function SectionList<TItem extends SectionItem>({
         </div>
       )}
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {items.map((item, idx) => {
           const def = registry.defs[typeOf(item)];
-          const Icon = def?.icon;
-          const visible = item.is_visible;
-          const isDragging = dragIdx === idx;
-          const isOver = overIdx === idx && dragIdx !== null && dragIdx !== idx;
+          const expanded = expandedId === item.id;
           return (
-            <div
+            <BlockCard
               key={item.id}
-              draggable
-              onDragStart={() => setDragIdx(idx)}
-              onDragOver={(e) => { e.preventDefault(); setOverIdx(idx); }}
-              onDragLeave={() => setOverIdx((o) => (o === idx ? null : o))}
-              onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) onReorder(dragIdx, idx); setDragIdx(null); setOverIdx(null); }}
-              onDragEnd={() => { setDragIdx(null); setOverIdx(null); }}
-              className={`group flex items-center gap-1.5 rounded-[var(--radius-lg)] border bg-[var(--surface)] py-2 pl-1 pr-2.5 transition-colors ${
-                isOver
-                  ? 'border-[var(--brand)] shadow-[inset_0_2px_0_0_var(--brand)]'
-                  : 'border-[var(--border)] hover:bg-[var(--surface-hover)]'
-              } ${isDragging ? 'opacity-50' : ''} ${!visible ? 'opacity-60' : ''}`}
-            >
-              <span
-                aria-hidden
-                className="flex h-7 w-5 shrink-0 cursor-grab items-center justify-center text-[var(--text-tertiary)] opacity-40 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
-              >
-                <GripVertical className="h-4 w-4" />
-              </span>
-              <button
-                onClick={() => onSelect(item.id)}
-                className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[var(--radius-sm)] text-left focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
-                  {Icon ? <Icon className="h-4 w-4" /> : null}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-[var(--text-primary)]">{def?.label ?? typeOf(item)}</span>
-                  <span className="block truncate text-xs text-[var(--text-tertiary)]">{def?.summarize(item)}</span>
-                </span>
-              </button>
-              <div className="flex shrink-0 items-center gap-1.5">
-                <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                  <IconBtn label="Duplicate" onClick={() => onDuplicate(item.id)}><Copy className="h-3.5 w-3.5" /></IconBtn>
-                  <IconBtn label="Delete" onClick={() => onDelete(item.id)}><Trash2 className="h-3.5 w-3.5" /></IconBtn>
-                </div>
-                <Toggle
-                  checked={visible}
-                  onClick={() => onToggleVisible(item.id)}
-                  label={visible ? 'Hide block' : 'Show block'}
-                />
-              </div>
-            </div>
+              label={def?.label ?? typeOf(item)}
+              summary={def?.summarize(item) ?? ''}
+              icon={def?.icon}
+              visible={item.is_visible}
+              expanded={expanded}
+              dragging={dragIdx === idx}
+              over={overIdx === idx && dragIdx !== null && dragIdx !== idx}
+              onExpandToggle={() => setExpandedId((id) => (id === item.id ? null : item.id))}
+              onVisibleToggle={() => onToggleVisible(item.id)}
+              onDuplicate={() => onDuplicate(item.id)}
+              onDelete={() => onDelete(item.id)}
+              dragProps={{
+                draggable: true,
+                onDragStart: () => setDragIdx(idx),
+                onDragOver: (e) => { e.preventDefault(); setOverIdx(idx); },
+                onDragLeave: () => setOverIdx((o) => (o === idx ? null : o)),
+                onDrop: (e) => { e.preventDefault(); if (dragIdx !== null) onReorder(dragIdx, idx); setDragIdx(null); setOverIdx(null); },
+                onDragEnd: () => { setDragIdx(null); setOverIdx(null); },
+              }}
+              editor={expanded ? renderEditor(item) : null}
+            />
           );
         })}
       </div>
@@ -110,44 +88,11 @@ export default function SectionList<TItem extends SectionItem>({
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[var(--brand)] py-3 text-sm font-semibold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-xl)] bg-[var(--brand)] py-3 text-sm font-semibold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
           <Plus className="h-4 w-4" /> Add block
         </button>
       )}
     </div>
-  );
-}
-
-function IconBtn({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--surface-muted)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-    >
-      {children}
-    </button>
-  );
-}
-
-function Toggle({ checked, onClick, label }: { checked: boolean; onClick: () => void; label: string }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-        checked ? 'bg-[var(--success)]' : 'bg-[var(--surface-muted)] border border-[var(--border)]'
-      }`}
-    >
-      <span
-        className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-4' : 'translate-x-0.5'}`}
-      />
-    </button>
   );
 }

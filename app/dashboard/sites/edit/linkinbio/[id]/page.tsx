@@ -19,7 +19,6 @@ import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import LinkInBioShell from '@/components/dashboard/site-edit/editor/LinkInBioShell';
 import SectionList from '@/components/dashboard/site-edit/shell/SectionList';
-import SectionDetail from '@/components/dashboard/site-edit/shell/SectionDetail';
 import { moveItem } from '@/components/dashboard/site-edit/shell/reorder';
 import { linkinbioRegistry } from '@/components/dashboard/site-edit/tabs/linkinbio/sectionRegistry';
 import { BlockBody } from '@/components/dashboard/site-edit/tabs/linkinbio/blockEditors/registry';
@@ -268,8 +267,7 @@ export default function EditLinkInBioPage() {
 
   // ── New shell editing state ──
   const [section, setSection] = useState('content');
-  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-  const [imagePicker, setImagePicker] = useState<{ open: boolean; field: string }>({ open: false, field: '' });
+  const [imagePicker, setImagePicker] = useState<{ open: boolean; field: string; blockId: string }>({ open: false, field: '', blockId: '' });
 
   // ── Site data ──
   const [site, setSite] = useState<any>(null);
@@ -863,7 +861,6 @@ export default function EditLinkInBioPage() {
     setLinks(prev => prev.map(l => (l.id === id ? { ...l, is_visible: !l.is_visible } : l)));
   const handleDeleteBlock = (id: string) => {
     setLinks(prev => reindex(prev.filter(l => l.id !== id)));
-    if (selectedBlockId === id) setSelectedBlockId(null);
   };
   const handleDuplicateBlock = (id: string) =>
     setLinks(prev => {
@@ -915,12 +912,11 @@ export default function EditLinkInBioPage() {
       metadata: meta[type] ?? {},
     };
     setLinks(prev => [...prev, newLink]);
-    setSelectedBlockId(newLink.id);
   };
-  const updateSelected = (updates: Partial<BioLink>) =>
-    setLinks(prev => prev.map(l => (l.id === selectedBlockId ? { ...l, ...updates } : l)));
-  const updateSelectedMeta = (key: string, value: unknown) =>
-    setLinks(prev => prev.map(l => (l.id === selectedBlockId ? { ...l, metadata: { ...l.metadata, [key]: value } } : l)));
+  const updateBlock = (id: string, updates: Partial<BioLink>) =>
+    setLinks(prev => prev.map(l => (l.id === id ? { ...l, ...updates } : l)));
+  const updateBlockMeta = (id: string, key: string, value: unknown) =>
+    setLinks(prev => prev.map(l => (l.id === id ? { ...l, metadata: { ...l.metadata, [key]: value } } : l)));
 
   // ── Derived ──
   const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
@@ -931,27 +927,9 @@ export default function EditLinkInBioPage() {
   const INPUT_CLS =
     'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow';
 
-  const selectedBlock = links.find(l => l.id === selectedBlockId) ?? null;
-  const selectedDef = selectedBlock ? linkinbioRegistry.defs[selectedBlock.link_type] : null;
-
   const profileSection = <BioProfileEditor data={profile} onChange={setProfile} />;
 
-  const contentSlot = selectedBlock ? (
-    <SectionDetail
-      title={selectedDef?.label ?? 'Block'}
-      icon={selectedDef?.icon}
-      backLabel="Back to blocks"
-      onBack={() => setSelectedBlockId(null)}
-    >
-      <BlockBody
-        link={selectedBlock}
-        update={updateSelected}
-        updateMeta={updateSelectedMeta}
-        openImagePicker={(field) => setImagePicker({ open: true, field })}
-        products={products}
-      />
-    </SectionDetail>
-  ) : (
+  const contentSlot = (
     <SectionList
       items={links}
       registry={linkinbioRegistry}
@@ -960,23 +938,31 @@ export default function EditLinkInBioPage() {
       onToggleVisible={handleToggleVisible}
       onDuplicate={handleDuplicateBlock}
       onDelete={handleDeleteBlock}
-      onSelect={setSelectedBlockId}
       onAdd={handleAddBlock}
       pinned={
         <button
           onClick={() => setSection('profile')}
-          className="flex w-full items-center gap-2.5 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-2.5 text-left transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          className="flex w-full items-center gap-2.5 rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left shadow-[var(--shadow-card)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-secondary)]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
             <User className="h-4 w-4" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium text-[var(--text-primary)]">Profile header</span>
+            <span className="block text-sm font-semibold text-[var(--text-primary)]">Profile header</span>
             <span className="block truncate text-xs text-[var(--text-tertiary)]">Avatar, name, bio, socials</span>
           </span>
           <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)]" />
         </button>
       }
+      renderEditor={(l) => (
+        <BlockBody
+          link={l}
+          update={(u) => updateBlock(l.id, u)}
+          updateMeta={(k, v) => updateBlockMeta(l.id, k, v)}
+          openImagePicker={(field) => setImagePicker({ open: true, field, blockId: l.id })}
+          products={products}
+        />
+      )}
     />
   );
 
@@ -1156,8 +1142,8 @@ export default function EditLinkInBioPage() {
           open={imagePicker.open}
           onClose={() => setImagePicker(p => ({ ...p, open: false }))}
           onSelect={(url) => {
-            if (imagePicker.field === 'thumbnail_url') updateSelected({ thumbnail_url: url });
-            else if (imagePicker.field === 'meta_link_url') updateSelectedMeta('link_url', url);
+            if (imagePicker.field === 'thumbnail_url') updateBlock(imagePicker.blockId, { thumbnail_url: url });
+            else if (imagePicker.field === 'meta_link_url') updateBlockMeta(imagePicker.blockId, 'link_url', url);
           }}
         />
       )}
