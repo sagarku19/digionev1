@@ -19,6 +19,7 @@ import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import LinkInBioShell from '@/components/dashboard/site-edit/editor/LinkInBioShell';
 import ProfileCard from '@/components/dashboard/site-edit/editor/ProfileCard';
+import ProfilePreviewCard from '@/components/dashboard/site-edit/editor/ProfilePreviewCard';
 import SectionList from '@/components/dashboard/site-edit/shell/SectionList';
 import { moveItem } from '@/components/dashboard/site-edit/shell/reorder';
 import { linkinbioRegistry } from '@/components/dashboard/site-edit/tabs/linkinbio/sectionRegistry';
@@ -927,7 +928,17 @@ export default function EditLinkInBioPage() {
   const INPUT_CLS =
     'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow';
 
-  const profileSection = <BioProfileEditor data={profile} onChange={setProfile} />;
+  const profileSection = (
+    <div className="space-y-5">
+      <ProfilePreviewCard
+        name={profile.displayName}
+        bio={profile.bioText}
+        avatarUrl={profile.avatarUrl}
+        socialLinks={profile.socialLinks}
+      />
+      <BioProfileEditor data={profile} onChange={setProfile} />
+    </div>
+  );
 
   const contentSlot = (
     <SectionList
@@ -960,39 +971,41 @@ export default function EditLinkInBioPage() {
     />
   );
 
-  const designSlot = (
-    <div className="space-y-6">
-      <div>
-        <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)] mb-2">Templates</p>
-        <div className="space-y-2">
-          {TEMPLATES.map(tpl => (
-            <button
-              key={tpl.name}
-              onClick={() => applyTemplate(tpl)}
-              className="flex w-full items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-3 text-left transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-            >
-              <span className="flex shrink-0 gap-1">
-                {Object.values(tpl.palette).slice(0, 3).map((c, i) => (
-                  <span key={i} className="h-6 w-6 rounded-full border border-[var(--border)]" style={{ backgroundColor: c }} />
-                ))}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-medium text-[var(--text-primary)]">
-                  {tpl.name}{tpl.tag ? ` · ${tpl.tag}` : ''}
-                </span>
-                <span className="block truncate text-xs text-[var(--text-tertiary)]">{tpl.description}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <BioAppearanceEditor
-        data={appearance}
-        onChange={setAppearance}
-        palette={palette}
-        onPaletteChange={updatePalette}
-      />
+  const templateSlot = (
+    <div className="grid grid-cols-2 gap-3">
+      {TEMPLATES.map((tpl) => {
+        const primary = tpl.palette.primary ?? tpl.preview.accent;
+        return (
+          <button
+            key={tpl.name}
+            onClick={() => applyTemplate(tpl)}
+            className="group flex flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] text-left shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-card-lg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          >
+            {/* skeleton mockup tinted with the template palette */}
+            <div className="flex flex-col items-center gap-1.5 px-4 pb-3 pt-4" style={{ backgroundColor: tpl.preview.bg }}>
+              <span className="h-7 w-7 rounded-full" style={{ backgroundColor: primary }} />
+              <span className="h-1.5 w-12 rounded-full" style={{ backgroundColor: tpl.preview.text, opacity: 0.25 }} />
+              <span className="mt-1 h-4 w-full rounded-md" style={{ backgroundColor: primary, opacity: 0.85 }} />
+              <span className="h-4 w-full rounded-md" style={{ backgroundColor: tpl.preview.text, opacity: 0.12 }} />
+              <span className="h-4 w-full rounded-md" style={{ backgroundColor: tpl.preview.text, opacity: 0.12 }} />
+            </div>
+            <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+              <span className="block min-w-0 truncate text-sm font-semibold text-[var(--text-primary)]">{tpl.name}</span>
+              {tpl.tag && <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">{tpl.tag}</span>}
+            </div>
+          </button>
+        );
+      })}
     </div>
+  );
+
+  const designSlot = (
+    <BioAppearanceEditor
+      data={appearance}
+      onChange={setAppearance}
+      palette={palette}
+      onPaletteChange={updatePalette}
+    />
   );
 
   const settingsSlot = (
@@ -1126,7 +1139,7 @@ export default function EditLinkInBioPage() {
         onRefresh={() => setPreviewKey(Date.now())}
         active={section}
         onActiveChange={setSection}
-        sections={{ content: contentSlot, profile: profileSection, design: designSlot, settings: settingsSlot }}
+        sections={{ profile: profileSection, template: templateSlot, content: contentSlot, design: designSlot, settings: settingsSlot }}
       />
 
       {imagePicker.open && (

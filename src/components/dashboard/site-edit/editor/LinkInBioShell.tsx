@@ -1,17 +1,18 @@
 'use client';
 import { useEffect, useState, type ReactNode, type RefObject, type ElementType } from 'react';
-import { LayoutList, User, Palette, Settings2, BarChart3, GraduationCap, Link2, CalendarDays } from 'lucide-react';
+import { LayoutList, LayoutTemplate, User, Palette, Settings2, BarChart3, GraduationCap, Link2, CalendarDays } from 'lucide-react';
 import EditorTopBar from './EditorTopBar';
 import PreviewPane from './PreviewPane';
 import EditorSidebar, { type SidebarItem } from './EditorSidebar';
 import ComingSoon from './ComingSoon';
 import { AnimatePresence, motion } from 'framer-motion';
 
-type SectionId = 'content' | 'profile' | 'design' | 'settings';
+type SectionId = 'profile' | 'template' | 'content' | 'design' | 'settings';
 
 const NAV: SidebarItem[] = [
-  { id: 'content', label: 'Content', icon: LayoutList, group: 'main' },
   { id: 'profile', label: 'Profile', icon: User, group: 'main' },
+  { id: 'template', label: 'Template', icon: LayoutTemplate, group: 'main' },
+  { id: 'content', label: 'Content', icon: LayoutList, group: 'main' },
   { id: 'design', label: 'Design', icon: Palette, group: 'main' },
   { id: 'settings', label: 'Settings', icon: Settings2, group: 'main' },
   { id: 'insights', label: 'Insights', icon: BarChart3, group: 'tools', comingSoon: true },
@@ -28,9 +29,10 @@ const COMING_SOON: Record<string, { label: string; icon: ElementType }> = {
 };
 
 const SECTION_META: Record<SectionId, string> = {
+  profile: 'Your avatar, name, and bio.',
+  template: 'Pick a starting layout for your page.',
   content: 'Arrange the blocks visitors see on your page.',
-  profile: 'Your avatar, name, username, and bio.',
-  design: 'Theme, colors, fonts, and templates.',
+  design: 'Theme, colors, and buttons.',
   settings: 'Link address, SEO, and visibility.',
 };
 

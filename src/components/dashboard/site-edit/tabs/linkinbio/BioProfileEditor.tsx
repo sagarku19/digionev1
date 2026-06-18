@@ -73,37 +73,17 @@ export default function BioProfileEditor({
           <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <ImagePlus className="w-4 h-4 text-pink-500" /> Identity Media
           </h3>
-          <p className="text-[13px] text-gray-500 mt-1">Tap the layout below to upload your cover and avatar.</p>
+          <p className="text-[13px] text-gray-500 mt-1">Tap the avatar below to upload your profile picture.</p>
         </div>
 
         {/* Visual Mock Header */}
         <div className="relative rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--bg-secondary)]">
 
-          {/* Cover Area */}
-          <div
-            onClick={() => setImagePicker({ open: true, field: 'cover' })}
-            className="group relative w-full h-36 bg-gray-200 dark:bg-[var(--bg-secondary)] cursor-pointer overflow-hidden flex items-center justify-center transition-all"
-          >
-            {data.coverImageUrl ? (
-              <img src={data.coverImageUrl} alt="Cover" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-            ) : (
-              <div className="text-gray-400 flex flex-col items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                <ImagePlus className="w-6 h-6" />
-                <span className="text-[11px] font-semibold uppercase tracking-widest">Add Cover</span>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-              <span className="bg-white text-gray-900 px-4 py-2 rounded-xl text-xs font-bold shadow-xl flex items-center gap-2">
-                <ImagePlus className="w-3.5 h-3.5" /> {data.coverImageUrl ? 'Change Cover' : 'Upload Cover'}
-              </span>
-            </div>
-          </div>
-
           {/* Avatar Area */}
-          <div className="px-6 pb-6 relative flex items-end justify-between">
+          <div className="px-6 py-6 relative flex items-end justify-between">
             <div
               onClick={() => setImagePicker({ open: true, field: 'avatar' })}
-              className="group relative -mt-12 cursor-pointer z-10"
+              className="group relative cursor-pointer z-10"
             >
               <div
                 className={`w-24 h-24 bg-white dark:bg-[var(--bg-secondary)] shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300
