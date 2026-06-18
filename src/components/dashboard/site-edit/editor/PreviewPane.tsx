@@ -17,7 +17,7 @@ export default function PreviewPane({ previewUrl, iframeRef, previewKey }: Props
     <div className="flex flex-1 flex-col items-start overflow-y-auto bg-[var(--bg-primary)] pb-8 pl-8 pr-4 pt-6">
       {/* iPhone skeleton — thin always-dark bezel, fixed width */}
       <div
-        className="flex w-[360px] shrink-0 flex-1 flex-col overflow-hidden rounded-[2.5rem] p-1.5 shadow-[var(--shadow-card-lg)]"
+        className="flex w-[320px] shrink-0 flex-1 flex-col overflow-hidden rounded-[2.5rem] p-1.5 shadow-[var(--shadow-card-lg)]"
         style={{ minHeight: 580, backgroundColor: BEZEL }}
       >
         <div className="relative flex flex-1 flex-col overflow-hidden rounded-[2.1rem] bg-[var(--surface)]">
