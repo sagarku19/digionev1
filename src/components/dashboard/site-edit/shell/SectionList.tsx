@@ -79,19 +79,19 @@ export default function SectionList<TItem extends SectionItem>({
         })}
       </div>
 
-      {adding ? (
+      <button
+        onClick={() => setAdding(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-xl)] bg-[var(--brand)] py-3 text-sm font-semibold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      >
+        <Plus className="h-4 w-4" /> Add block
+      </button>
+
+      {adding && (
         <AddSectionPicker
           registry={registry}
           onPick={(type) => { onAdd(type); setAdding(false); }}
           onClose={() => setAdding(false)}
         />
-      ) : (
-        <button
-          onClick={() => setAdding(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-xl)] bg-[var(--brand)] py-3 text-sm font-semibold text-[var(--text-on-brand)] transition-colors hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-        >
-          <Plus className="h-4 w-4" /> Add block
-        </button>
       )}
     </div>
   );
