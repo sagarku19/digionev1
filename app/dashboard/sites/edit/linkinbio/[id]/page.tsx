@@ -260,7 +260,6 @@ export default function EditLinkInBioPage() {
   const { theme, setTheme } = useTheme();
 
   // ── UI state ──
-  const [device, setDevice] = useState<string>('mobile');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -1125,8 +1124,6 @@ export default function EditLinkInBioPage() {
         iframeRef={iframeRef}
         previewKey={previewKey}
         onRefresh={() => setPreviewKey(Date.now())}
-        device={device}
-        onDeviceChange={setDevice}
         active={section}
         onActiveChange={setSection}
         sections={{ content: contentSlot, profile: profileSection, design: designSlot, settings: settingsSlot }}

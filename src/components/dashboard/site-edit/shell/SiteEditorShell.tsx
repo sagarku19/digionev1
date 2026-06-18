@@ -24,8 +24,6 @@ type Props = {
   iframeRef: RefObject<HTMLIFrameElement | null>;
   previewKey: number;
   onRefresh: () => void;
-  device: string;
-  onDeviceChange: (d: string) => void;
   // left panel body (EditorPanel)
   children: ReactNode;
 };
@@ -34,7 +32,7 @@ export default function SiteEditorShell(props: Props) {
   const {
     title, typeLabel, typeIcon, onBack, saving, saved, onSave,
     canUndo, canRedo, onUndo, onRedo, theme, onToggleTheme,
-    previewUrl, displayUrl, iframeRef, previewKey, onRefresh, device, onDeviceChange,
+    previewUrl, displayUrl, iframeRef, previewKey, onRefresh,
     children,
   } = props;
 
@@ -58,6 +56,7 @@ export default function SiteEditorShell(props: Props) {
             onRedo={onRedo}
             theme={theme}
             onToggleTheme={onToggleTheme}
+            displayUrl={displayUrl}
           />
           {/* body slot */}
           <div className="min-h-0 flex-1">{children}</div>
@@ -70,8 +69,6 @@ export default function SiteEditorShell(props: Props) {
           iframeRef={iframeRef}
           previewKey={previewKey}
           onRefresh={onRefresh}
-          device={device}
-          onDeviceChange={onDeviceChange}
         />
       </div>
     </div>

@@ -35,7 +35,6 @@ type Props = {
   // preview
   previewUrl: string | null; displayUrl: string | null;
   iframeRef: RefObject<HTMLIFrameElement | null>; previewKey: number; onRefresh: () => void;
-  device: string; onDeviceChange: (d: string) => void;
   // section bodies
   sections: Record<SectionId, ReactNode>;
   // optional controlled section nav
@@ -80,6 +79,7 @@ export default function LinkInBioShell(props: Props) {
         saving={props.saving} saved={props.saved} onSave={props.onSave}
         canUndo={props.canUndo} canRedo={props.canRedo} onUndo={props.onUndo} onRedo={props.onRedo}
         theme={props.theme} onToggleTheme={props.onToggleTheme}
+        displayUrl={props.displayUrl}
       />
 
       {/* mobile tab switch */}
@@ -121,7 +121,7 @@ export default function LinkInBioShell(props: Props) {
         <div className={`w-full shrink-0 lg:w-[400px] ${mobileTab === 'preview' ? 'flex' : 'hidden'} lg:flex`}>
           <PreviewPane
             previewUrl={props.previewUrl} displayUrl={props.displayUrl} iframeRef={props.iframeRef}
-            previewKey={props.previewKey} onRefresh={props.onRefresh} device={props.device} onDeviceChange={props.onDeviceChange}
+            previewKey={props.previewKey} onRefresh={props.onRefresh}
           />
         </div>
       </div>
