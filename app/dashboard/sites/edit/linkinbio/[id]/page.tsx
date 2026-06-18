@@ -17,8 +17,7 @@ import { useTheme } from '@/contexts/DashboardThemeContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
-import SiteEditorShell from '@/components/dashboard/site-edit/shell/SiteEditorShell';
-import EditorPanel, { type EditorView } from '@/components/dashboard/site-edit/shell/EditorPanel';
+import LinkInBioShell from '@/components/dashboard/site-edit/editor/LinkInBioShell';
 import SectionList from '@/components/dashboard/site-edit/shell/SectionList';
 import SectionDetail from '@/components/dashboard/site-edit/shell/SectionDetail';
 import { moveItem } from '@/components/dashboard/site-edit/shell/reorder';
@@ -268,9 +267,8 @@ export default function EditLinkInBioPage() {
   const [previewKey, setPreviewKey] = useState(Date.now());
 
   // ── New shell editing state ──
-  const [view, setView] = useState<EditorView>('content');
+  const [section, setSection] = useState('content');
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [imagePicker, setImagePicker] = useState<{ open: boolean; field: string }>({ open: false, field: '' });
 
   // ── Site data ──
@@ -936,11 +934,9 @@ export default function EditLinkInBioPage() {
   const selectedBlock = links.find(l => l.id === selectedBlockId) ?? null;
   const selectedDef = selectedBlock ? linkinbioRegistry.defs[selectedBlock.link_type] : null;
 
-  const contentSlot = profileOpen ? (
-    <SectionDetail title="Profile" icon={User} backLabel="Back to blocks" onBack={() => setProfileOpen(false)}>
-      <BioProfileEditor data={profile} onChange={setProfile} />
-    </SectionDetail>
-  ) : selectedBlock ? (
+  const profileSection = <BioProfileEditor data={profile} onChange={setProfile} />;
+
+  const contentSlot = selectedBlock ? (
     <SectionDetail
       title={selectedDef?.label ?? 'Block'}
       icon={selectedDef?.icon}
@@ -968,7 +964,7 @@ export default function EditLinkInBioPage() {
       onAdd={handleAddBlock}
       pinned={
         <button
-          onClick={() => setProfileOpen(true)}
+          onClick={() => setSection('profile')}
           className="flex w-full items-center gap-2.5 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-2.5 text-left transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-secondary)]">
@@ -1129,7 +1125,7 @@ export default function EditLinkInBioPage() {
 
   return (
     <>
-      <SiteEditorShell
+      <LinkInBioShell
         title={displayTitle}
         typeLabel="Link-in-bio"
         typeIcon={Link2}
@@ -1150,15 +1146,10 @@ export default function EditLinkInBioPage() {
         onRefresh={() => setPreviewKey(Date.now())}
         device={device}
         onDeviceChange={setDevice}
-      >
-        <EditorPanel
-          view={view}
-          onViewChange={setView}
-          content={contentSlot}
-          design={designSlot}
-          settings={settingsSlot}
-        />
-      </SiteEditorShell>
+        active={section}
+        onActiveChange={setSection}
+        sections={{ content: contentSlot, profile: profileSection, design: designSlot, settings: settingsSlot }}
+      />
 
       {imagePicker.open && (
         <ImagePickerModal
