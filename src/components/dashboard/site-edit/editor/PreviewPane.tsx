@@ -12,7 +12,7 @@ type Props = {
 
 export default function PreviewPane({ previewUrl, displayUrl, iframeRef, previewKey, onRefresh }: Props) {
   return (
-    <div className="flex flex-1 flex-col items-center overflow-y-auto bg-[var(--bg-tertiary)] px-6 pb-8 pt-6">
+    <div className="flex flex-1 flex-col items-center overflow-y-auto bg-[var(--bg-primary)] px-6 pb-8 pt-6">
       {/* meta row: url chip + refresh */}
       <div className="mb-4 flex w-full max-w-[380px] items-center justify-between gap-2">
         <span className="flex min-w-0 items-center gap-1.5">
