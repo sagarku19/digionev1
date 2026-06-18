@@ -1,6 +1,9 @@
 'use client';
 import type { RefObject } from 'react';
 
+// Device bezel: intentionally ALWAYS dark (a phone is black) — not a theme token.
+const BEZEL = '#101012';
+
 type Props = {
   previewUrl: string | null;
   displayUrl: string | null;
@@ -11,16 +14,19 @@ type Props = {
 
 export default function PreviewPane({ previewUrl, iframeRef, previewKey }: Props) {
   return (
-    <div className="flex flex-1 flex-col items-center overflow-y-auto bg-[var(--bg-primary)] px-6 pb-8 pt-6">
-      {/* phone frame — mobile preview only */}
+    <div className="flex flex-1 flex-col items-start overflow-y-auto bg-[var(--bg-primary)] pb-8 pl-8 pr-4 pt-6">
+      {/* iPhone skeleton — thin always-dark bezel, fixed width */}
       <div
-        className="flex w-full max-w-[380px] flex-1 flex-col overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-[var(--shadow-card-lg)]"
-        style={{ minHeight: 580 }}
+        className="flex w-[360px] shrink-0 flex-1 flex-col overflow-hidden rounded-[2.5rem] p-1.5 shadow-[var(--shadow-card-lg)]"
+        style={{ minHeight: 580, backgroundColor: BEZEL }}
       >
-        <div className="flex flex-1 flex-col overflow-hidden rounded-[26px] bg-[var(--surface)]">
-          <div className="flex shrink-0 items-center justify-center py-2">
-            <span className="h-1.5 w-14 rounded-full bg-[var(--border-strong)]" />
-          </div>
+        <div className="relative flex flex-1 flex-col overflow-hidden rounded-[2.1rem] bg-[var(--surface)]">
+          {/* dynamic island floats over the content so the camera area still shows the page */}
+          <span
+            aria-hidden
+            className="absolute left-1/2 top-2 z-10 h-5 w-20 -translate-x-1/2 rounded-full"
+            style={{ backgroundColor: BEZEL }}
+          />
           {previewUrl ? (
             <iframe
               ref={iframeRef}
