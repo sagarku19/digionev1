@@ -10,7 +10,7 @@ import BioProfileEditor, { type BioProfileData, type SocialLink } from '@/src/co
 import { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioLinksEditor';
 import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioAppearanceEditor';
 import {
-  Link2, User, ChevronRight, Globe2, Search,
+  Link2, Globe2, Search,
   Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/DashboardThemeContext';
@@ -18,6 +18,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import LinkInBioShell from '@/components/dashboard/site-edit/editor/LinkInBioShell';
+import ProfileCard from '@/components/dashboard/site-edit/editor/ProfileCard';
 import SectionList from '@/components/dashboard/site-edit/shell/SectionList';
 import { moveItem } from '@/components/dashboard/site-edit/shell/reorder';
 import { linkinbioRegistry } from '@/components/dashboard/site-edit/tabs/linkinbio/sectionRegistry';
@@ -940,19 +941,13 @@ export default function EditLinkInBioPage() {
       onDelete={handleDeleteBlock}
       onAdd={handleAddBlock}
       pinned={
-        <button
-          onClick={() => setSection('profile')}
-          className="flex w-full items-center gap-2.5 rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] px-3 py-3 text-left shadow-[var(--shadow-card)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
-            <User className="h-4 w-4" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-semibold text-[var(--text-primary)]">Profile header</span>
-            <span className="block truncate text-xs text-[var(--text-tertiary)]">Avatar, name, bio, socials</span>
-          </span>
-          <ChevronRight className="h-4 w-4 text-[var(--text-tertiary)]" />
-        </button>
+        <ProfileCard
+          name={profile.displayName}
+          username={site?.slug ?? ''}
+          bio={profile.bioText}
+          avatarUrl={profile.avatarUrl}
+          onEdit={() => setSection('profile')}
+        />
       }
       renderEditor={(l) => (
         <BlockBody
@@ -1004,7 +999,7 @@ export default function EditLinkInBioPage() {
   const settingsSlot = (
     <div className="space-y-5">
       {/* Public URL */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 space-y-3">
+      <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] space-y-3">
         <div>
           <h3 className="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <Globe2 className="w-4 h-4" /> Public URL
@@ -1041,7 +1036,7 @@ export default function EditLinkInBioPage() {
       </div>
 
       {/* SEO & Social Sharing */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 space-y-4">
+      <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)] space-y-4">
         <div>
           <h3 className="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
             <Search className="w-4 h-4" /> SEO &amp; Social Sharing
@@ -1085,7 +1080,7 @@ export default function EditLinkInBioPage() {
       </div>
 
       {/* Activate / Deactivate */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5">
+      <div className="rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold text-[var(--text-primary)]">
