@@ -2,7 +2,8 @@
 // SitePreviewPane — live preview column for full-page site editors (single-page,
 // store). A browser-chrome frame with a device-width toggle, on the dotted canvas.
 import { useState, type RefObject } from 'react';
-import { Copy, Check, ExternalLink, RefreshCw, Monitor, Smartphone } from 'lucide-react';
+import { Copy, Check, ExternalLink, RefreshCw, Monitor, Smartphone, QrCode } from 'lucide-react';
+import QRModal from './QRModal';
 
 type Device = 'desktop' | 'mobile';
 
@@ -17,6 +18,7 @@ type Props = {
 export default function SitePreviewPane({ previewUrl, displayUrl, iframeRef, previewKey, onRefresh }: Props) {
   const [copied, setCopied] = useState(false);
   const [device, setDevice] = useState<Device>('desktop');
+  const [showQR, setShowQR] = useState(false);
 
   const fullUrl = displayUrl ? `https://${displayUrl}` : null;
   const copyUrl = () => {
@@ -24,6 +26,14 @@ export default function SitePreviewPane({ previewUrl, displayUrl, iframeRef, pre
     navigator.clipboard.writeText(fullUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+  const shareUrl = () => {
+    if (!fullUrl) return;
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({ title: displayUrl ?? 'My page', url: fullUrl }).catch(() => {});
+    } else {
+      copyUrl();
+    }
   };
 
   const frameWidth = device === 'mobile' ? 'max-w-[390px]' : 'max-w-none';
@@ -52,6 +62,15 @@ export default function SitePreviewPane({ previewUrl, displayUrl, iframeRef, pre
           ))}
         </div>
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setShowQR(true)}
+            disabled={!fullUrl}
+            title="Show QR code"
+            aria-label="Show QR code"
+            className="inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-2 text-xs font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-40 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          >
+            <QrCode className="h-4 w-4" /> QR
+          </button>
           <button
             onClick={onRefresh}
             title="Refresh preview"
@@ -107,6 +126,17 @@ export default function SitePreviewPane({ previewUrl, displayUrl, iframeRef, pre
           <div className="flex flex-1 items-center justify-center text-sm text-[var(--text-tertiary)]">No preview available</div>
         )}
       </div>
+
+      {showQR && fullUrl && (
+        <QRModal
+          url={fullUrl}
+          displayUrl={displayUrl ?? fullUrl}
+          copied={copied}
+          onCopy={copyUrl}
+          onShare={shareUrl}
+          onClose={() => setShowQR(false)}
+        />
+      )}
     </div>
   );
 }
