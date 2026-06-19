@@ -22,7 +22,7 @@ import SinglePageCheckoutEditor from '@/src/components/dashboard/site-edit/tabs/
 import SinglePageSettingsEditor, { type SinglePageSettingsData } from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageSettingsEditor';
 import SinglePageAdvancedEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageAdvancedEditor';
 import EditorShell from '@/src/components/dashboard/site-edit/editor/EditorShell';
-import SitePreviewPane from '@/src/components/dashboard/site-edit/editor/SitePreviewPane';
+import PreviewPane from '@/src/components/dashboard/site-edit/editor/PreviewPane';
 import { type SidebarItem } from '@/src/components/dashboard/site-edit/editor/EditorSidebar';
 import {
   Image, Package, FileText, Sparkles, Palette, Share2, ShoppingCart, Settings, Terminal,
@@ -634,7 +634,7 @@ export default function EditSinglePagePage() {
         onUndo={handleUndo}
         onRedo={handleRedo}
         preview={
-          <SitePreviewPane
+          <PreviewPane
             previewUrl={previewUrl} displayUrl={displayUrl} iframeRef={iframeRef}
             previewKey={previewKey} onRefresh={() => setPreviewKey(Date.now())}
           />
