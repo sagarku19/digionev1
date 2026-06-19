@@ -1,6 +1,6 @@
 import type { BioLink } from './blockEditors/types';
 import type { SectionRegistry, SectionDef } from '../../shell/types';
-import { BLOCK_CATEGORIES } from './BioLinksEditor';
+import { BLOCK_CATEGORIES } from './blockCategories';
 import { summarizeBlock } from './summarize';
 
 // Build the shell registry from the existing block categories. Each category's

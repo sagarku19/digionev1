@@ -14,10 +14,10 @@ export default function SpaceBlock({ link, updateMeta }: BlockEditorProps) {
           { id: 'xl', label: 'X-Large', px: '96px' },
         ].map(h => (
           <button key={h.id} onClick={() => updateMeta('height', h.id)}
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 transition ${(link.metadata?.height || 'md') === h.id ? CHIP_ON : 'border-gray-200 dark:border-[var(--border)] hover:border-gray-300'
+            className={`flex flex-1 flex-col items-center gap-1 rounded-[var(--radius-md)] border py-2.5 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${(link.metadata?.height || 'md') === h.id ? `${CHIP_ON} border-transparent` : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
               }`}>
             <span className="text-xs font-semibold">{h.label}</span>
-            <span className="text-[10px] text-gray-400">{h.px}</span>
+            <span className="text-[10px] text-[var(--text-tertiary)]">{h.px}</span>
           </button>
         ))}
       </div>

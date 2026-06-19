@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import BioProfileEditor, { type BioProfileData, type SocialLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioProfileEditor';
-import { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioLinksEditor';
+import { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/blockEditors/types';
 import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioAppearanceEditor';
 import BioTemplates from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioTemplates';
 import BioSetupWizard from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioSetupWizard';

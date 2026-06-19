@@ -31,15 +31,15 @@ export default function SocialIconsBlock({ link, updateMeta }: BlockEditorProps)
           const Icon = platform?.icon || Globe;
           return (
             <div key={i} className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
-                <Icon className="w-3.5 h-3.5 text-gray-500" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--surface-muted)]">
+                <Icon className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
               </div>
               <input type="url" value={s.url}
                 onChange={e => updateSocial(i, 'url', e.target.value)}
-                className="flex-1 px-2.5 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500 text-[var(--text-primary)] placeholder-gray-400"
+                className="flex-1 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-xs text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus:ring-2 focus:ring-[var(--brand)]/20"
                 placeholder={platform?.placeholder || 'URL'} />
-              <button onClick={() => removeSocial(i)}
-                className="p-1.5 text-gray-400 hover:text-red-500 transition">
+              <button onClick={() => removeSocial(i)} aria-label="Remove"
+                className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-tertiary)] transition hover:bg-[var(--danger-bg)] hover:text-[var(--danger)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -51,8 +51,8 @@ export default function SocialIconsBlock({ link, updateMeta }: BlockEditorProps)
         <div className="flex flex-wrap gap-1.5">
           {avail.map(p => (
             <button key={p.id} onClick={() => addSocial(p.id)}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 dark:bg-[var(--bg-secondary)] hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg text-[11px] font-medium text-gray-600 dark:text-[var(--text-secondary)] transition">
-              <Plus className="w-3 h-3" /> {p.label}
+              className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+              <Plus className="h-3 w-3" /> {p.label}
             </button>
           ))}
         </div>

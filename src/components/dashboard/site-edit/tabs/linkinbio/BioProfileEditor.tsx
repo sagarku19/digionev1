@@ -1,17 +1,16 @@
-﻿'use client';
+'use client';
 // BioProfileEditor — controlled profile editor for Link in Bio.
-// Upgraded UI: Visual Header Mockup, Premium Inputs, Refined Spacing
 
 import React, { useState } from 'react';
 import {
   User, Instagram, Twitter, Youtube, Linkedin, Github, Globe, Music,
-  Plus, Trash2, Eye, EyeOff, ImagePlus, Check, ChevronDown
+  Plus, Trash2, Eye, EyeOff, ImagePlus, Check,
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
-const INPUT = editorInput(EDITOR_ACCENTS.pink);
-const CARD = 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] p-6 space-y-6 shadow-[var(--shadow-card)]';
+const INPUT = editorInput(EDITOR_ACCENTS.brand);
+const CARD = 'rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 space-y-6 shadow-[var(--shadow-card)]';
 
 export type SocialLink = { platform: string; url: string; is_visible: boolean };
 
@@ -44,7 +43,7 @@ export default function BioProfileEditor({
 }) {
   const [imagePicker, setImagePicker] = useState<{ open: boolean; field: 'avatar' | 'cover' }>({ open: false, field: 'avatar' });
 
-  const updateSocial = (index: number, field: keyof SocialLink, value: any) => {
+  const updateSocial = (index: number, field: keyof SocialLink, value: string | boolean) => {
     const next = [...data.socialLinks];
     next[index] = { ...next[index], [field]: value };
     onChange({ ...data, socialLinks: next });
@@ -67,57 +66,55 @@ export default function BioProfileEditor({
   return (
     <div className="space-y-6">
 
-      {/* ─── VISUAL HEADER (Cover & Avatar) ─── */}
+      {/* ─── VISUAL HEADER (Avatar) ─── */}
       <div className={CARD}>
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-            <ImagePlus className="w-4 h-4 text-pink-500" /> Identity Media
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+            <ImagePlus className="h-4 w-4 text-[var(--brand)]" /> Identity Media
           </h3>
-          <p className="text-[13px] text-gray-500 mt-1">Tap the avatar below to upload your profile picture.</p>
+          <p className="mt-1 text-[13px] text-[var(--text-secondary)]">Tap the avatar below to upload your profile picture.</p>
         </div>
 
-        {/* Visual Mock Header */}
-        <div className="relative rounded-2xl border border-[var(--border)] overflow-hidden bg-[var(--bg-secondary)]">
-
-          {/* Avatar Area */}
-          <div className="px-6 py-6 relative flex items-end justify-between">
-            <div
+        {/* Visual mock header */}
+        <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)]">
+          <div className="relative flex items-end justify-between px-6 py-6">
+            <button
+              type="button"
               onClick={() => setImagePicker({ open: true, field: 'avatar' })}
-              className="group relative cursor-pointer z-10"
+              className="group relative z-10 cursor-pointer rounded-full focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               <div
-                className={`w-24 h-24 bg-white dark:bg-[var(--bg-secondary)] shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300
-                  ${data.avatarShape === 'square' ? 'rounded-xl' : data.avatarShape === 'rounded' ? 'rounded-[2rem]' : 'rounded-full'}
-                  ${data.avatarBorder !== false ? 'border-4 border-white dark:border-gray-900' : 'border border-[var(--border)]'}
+                className={`flex h-24 w-24 items-center justify-center overflow-hidden bg-[var(--surface)] shadow-[var(--shadow-card)] transition-all duration-300
+                  ${data.avatarShape === 'square' ? 'rounded-[var(--radius-lg)]' : data.avatarShape === 'rounded' ? 'rounded-[2rem]' : 'rounded-full'}
+                  ${data.avatarBorder !== false ? 'border-4 border-[var(--surface)]' : 'border border-[var(--border)]'}
                 `}
               >
                 {data.avatarUrl ? (
-                  <img src={data.avatarUrl} alt="Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <img src={data.avatarUrl} alt="Avatar" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 ) : (
-                  <User className="w-10 h-10 text-gray-400 group-hover:text-gray-500 transition-colors" />
+                  <User className="h-10 w-10 text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--text-secondary)]" />
                 )}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <ImagePlus className="w-6 h-6 text-white drop-shadow-md" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                  <ImagePlus className="h-6 w-6 text-white drop-shadow-md" />
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Shape toggles */}
-            <div className="flex gap-1.5 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 p-1.5 rounded-xl border border-gray-200/50 dark:border-[var(--border)]/50 backdrop-blur-sm">
+            <div className="flex gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-1.5">
               {[
                 { id: 'circular', label: 'Circle' },
                 { id: 'rounded', label: 'Rounded' },
-                { id: 'square', label: 'Square' }
+                { id: 'square', label: 'Square' },
               ].map(s => {
                 const active = (data.avatarShape || 'circular') === s.id;
                 return (
-                  <button key={s.id} onClick={() => onChange({ ...data, avatarShape: s.id as any })}
-                    className={`px-3 py-1.5 text-[11px] font-semibold transition-all duration-300 rounded-lg flex items-center gap-1.5
-                        ${active
-                        ? 'bg-white dark:bg-gray-700 shadow-sm text-[var(--text-primary)] scale-100'
-                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 scale-95 hover:scale-100'
-                      }`}>
-                    {active && <Check className="w-3 h-3 text-pink-500" />}
+                  <button key={s.id} onClick={() => onChange({ ...data, avatarShape: s.id as BioProfileData['avatarShape'] })}
+                    className={`flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active
+                      ? 'bg-[var(--surface-muted)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]'
+                      : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'
+                    }`}>
+                    {active && <Check className="h-3 w-3 text-[var(--brand)]" />}
                     {s.label}
                   </button>
                 );
@@ -130,15 +127,15 @@ export default function BioProfileEditor({
       {/* ─── PROFILE INFO ─── */}
       <div className={CARD}>
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-            <User className="w-4 h-4 text-pink-500" /> About You
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+            <User className="h-4 w-4 text-[var(--brand)]" /> About You
           </h3>
-          <p className="text-[13px] text-gray-500 mt-1">The primary details displayed on your page.</p>
+          <p className="mt-1 text-[13px] text-[var(--text-secondary)]">The primary details displayed on your page.</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-1.5">Profile Title</label>
+            <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Profile Title</label>
             <input
               type="text"
               value={data.displayName || ''}
@@ -149,9 +146,9 @@ export default function BioProfileEditor({
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)]">Bio Description</label>
-              <span className={`text-[11px] font-medium tabular-nums px-2 py-0.5 rounded-full ${(data.bioText || '').length > 200 ? 'bg-red-100 text-red-600 dark:bg-red-500/20' : 'bg-gray-100 text-gray-500 dark:bg-[var(--bg-secondary)]'}`}>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="text-[13px] font-medium text-[var(--text-secondary)]">Bio Description</label>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${(data.bioText || '').length > 200 ? 'bg-[var(--danger-bg)] text-[var(--danger)]' : 'bg-[var(--surface-muted)] text-[var(--text-tertiary)]'}`}>
                 {(data.bioText || '').length}/200
               </span>
             </div>
@@ -169,10 +166,10 @@ export default function BioProfileEditor({
       {/* ─── SOCIAL LINKS ─── */}
       <div className={CARD}>
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-            <Globe className="w-4 h-4 text-pink-500" /> Social Icons
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+            <Globe className="h-4 w-4 text-[var(--brand)]" /> Social Icons
           </h3>
-          <p className="text-[13px] text-gray-500 mt-1">Add your social profiles to show as a refined row of icons.</p>
+          <p className="mt-1 text-[13px] text-[var(--text-secondary)]">Add your social profiles to show as a refined row of icons.</p>
         </div>
 
         <div className="space-y-3">
@@ -182,32 +179,33 @@ export default function BioProfileEditor({
             const isVisible = social.is_visible !== false;
 
             return (
-              <div key={i} className={`flex items-center gap-3 p-2 border rounded-2xl transition-all duration-300 ${isVisible ? 'bg-gray-50/50 dark:bg-[var(--bg-secondary)]/30 border-[var(--border)]' : 'bg-gray-50/20 dark:bg-[var(--bg-secondary)]/20 border-[var(--border)]/30 opacity-60'}`}>
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[var(--bg-secondary)] shadow-sm border border-gray-100 dark:border-[var(--border)] flex items-center justify-center shrink-0">
-                  <Icon className={`w-4 h-4 ${isVisible ? 'text-gray-700 dark:text-[var(--text-secondary)]' : 'text-gray-400'}`} />
+              <div key={i} className={`flex items-center gap-3 rounded-[var(--radius-md)] border p-2 transition-colors ${isVisible ? 'border-[var(--border)] bg-[var(--surface-muted)]' : 'border-[var(--border)] bg-[var(--surface-muted)] opacity-60'}`}>
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)]">
+                  <Icon className={`h-4 w-4 ${isVisible ? 'text-[var(--text-secondary)]' : 'text-[var(--text-tertiary)]'}`} />
                 </div>
 
                 <input
                   type="url"
                   value={social.url || ''}
                   onChange={e => updateSocial(i, 'url', e.target.value)}
-                  className="flex-1 bg-transparent border-none text-[13px] outline-none focus:ring-0 text-[var(--text-primary)] placeholder-gray-400 w-full"
+                  className="w-full min-w-0 flex-1 border-none bg-transparent text-[13px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)] focus:ring-0"
                   placeholder={platform?.placeholder || 'https://...'}
                 />
 
                 <div className="flex items-center gap-1 pr-1">
                   <button
                     onClick={() => updateSocial(i, 'is_visible', !isVisible)}
-                    className={`p-2 rounded-lg transition-colors ${isVisible ? 'text-gray-400 hover:text-gray-700 hover:bg-white dark:hover:bg-gray-700' : 'text-gray-300'}`}
+                    className="rounded-[var(--radius-sm)] p-2 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                     title={isVisible ? 'Hide' : 'Show'}
                   >
-                    {isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {isVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                   </button>
                   <button
                     onClick={() => removeSocial(i)}
-                    className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                    aria-label="Remove"
+                    className="rounded-[var(--radius-sm)] p-2 text-[var(--text-tertiary)] transition-colors hover:bg-[var(--danger-bg)] hover:text-[var(--danger)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -217,15 +215,15 @@ export default function BioProfileEditor({
 
         {available.length > 0 && (
           <div className="pt-2">
-            <p className="text-xs font-medium text-gray-500 mb-3">Add more links</p>
+            <p className="mb-3 text-xs font-medium text-[var(--text-secondary)]">Add more links</p>
             <div className="flex flex-wrap gap-2">
               {available.map(p => (
                 <button
                   key={p.id}
                   onClick={() => addSocial(p.id)}
-                  className="group flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-600 dark:text-[var(--text-secondary)] hover:bg-white hover:shadow-sm dark:hover:bg-gray-700 border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-xl text-[12px] font-semibold transition-all duration-300"
+                  className="group inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-[12px] font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
-                  <Plus className="w-3.5 h-3.5 group-hover:text-pink-500 transition-colors" />
+                  <Plus className="h-3.5 w-3.5 transition-colors group-hover:text-[var(--brand)]" />
                   {p.label}
                 </button>
               ))}

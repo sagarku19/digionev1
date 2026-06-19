@@ -8,13 +8,24 @@ import { editorInput, EDITOR_ACCENTS } from '../../../_shared/editorStyles';
 
 export { FieldLabel } from '../../../_shared/editorStyles';
 
-export const INPUT = editorInput(EDITOR_ACCENTS.pink);
-export const CHIP_ON = 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-100';
-export const CHIP_OFF = 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50 scale-95 hover:scale-100';
+export const INPUT = editorInput(EDITOR_ACCENTS.brand);
+// Segmented chip-group container (holds <Chip>s).
+export const SEG = 'flex flex-wrap items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--surface-muted)] p-1';
+// Small brand-tinted "ghost" action button (pick image, add field, …).
+export const ACCENT_BTN =
+  'inline-flex shrink-0 items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--brand)]/30 bg-[var(--brand)]/10 px-2.5 py-1.5 text-[11px] font-semibold text-[var(--brand)] transition hover:bg-[var(--brand)]/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]';
+// Helper / hint caption under a field.
+export const HELP = 'mt-1 text-[10px] text-[var(--text-tertiary)]';
+export const CHIP_ON = 'bg-[var(--surface)] text-[var(--brand)] shadow-[var(--shadow-xs)] ring-1 ring-[var(--brand)]';
+export const CHIP_OFF = 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]';
 
 export function Chip({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
   return (
-    <button onClick={onClick} className={`flex-1 px-3 py-1.5 rounded-[10px] text-[11px] font-semibold transition-all duration-300 ${active ? CHIP_ON : CHIP_OFF}`}>
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex-1 px-3 py-1.5 rounded-[var(--radius-sm)] text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active ? CHIP_ON : CHIP_OFF}`}
+    >
       {children}
     </button>
   );
@@ -27,11 +38,11 @@ export function AlignPicker({ value, onChange }: { value: string; onChange: (v: 
     { id: 'right', icon: AlignRight },
   ];
   return (
-    <div className="flex items-center gap-1 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl">
+    <div className="flex items-center gap-1 rounded-[var(--radius-md)] bg-[var(--surface-muted)] p-1">
       {opts.map(o => (
-        <button key={o.id} onClick={() => onChange(o.id)}
-          className={`flex-1 flex items-center justify-center p-2 rounded-[10px] transition-all duration-300 ${value === o.id ? CHIP_ON : CHIP_OFF}`}>
-          <o.icon className="w-4 h-4" strokeWidth={value === o.id ? 2.5 : 2} />
+        <button key={o.id} onClick={() => onChange(o.id)} aria-pressed={value === o.id} aria-label={`Align ${o.id}`}
+          className={`flex flex-1 items-center justify-center rounded-[var(--radius-sm)] p-2 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${value === o.id ? CHIP_ON : CHIP_OFF}`}>
+          <o.icon className="h-4 w-4" strokeWidth={value === o.id ? 2.5 : 2} />
         </button>
       ))}
     </div>

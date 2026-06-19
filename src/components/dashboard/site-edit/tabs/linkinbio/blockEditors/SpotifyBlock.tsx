@@ -10,7 +10,7 @@ export default function SpotifyBlock({ link, updateMeta }: BlockEditorProps) {
         <input type="url" value={link.metadata?.spotify_url || ''}
           onChange={e => updateMeta('spotify_url', e.target.value)}
           className={INPUT} placeholder="https://open.spotify.com/track/..." />
-        <p className="text-[10px] text-gray-400 mt-1">Paste a Spotify track, album, playlist, or artist URL</p>
+        <p className="mt-1 text-[10px] text-[var(--text-tertiary)]">Paste a Spotify track, album, playlist, or artist URL</p>
       </div>
       <div>
         <FieldLabel>Type</FieldLabel>

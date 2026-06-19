@@ -1,6 +1,6 @@
 import React from 'react';
 import { Plus, Package } from 'lucide-react';
-import { FieldLabel, INPUT, Chip } from './_shared';
+import { FieldLabel, INPUT, Chip, SEG, ACCENT_BTN } from './_shared';
 import type { BlockEditorProps } from './types';
 
 export default function ProductBlock({ link, update, updateMeta, openImagePicker, products }: BlockEditorProps) {
@@ -13,7 +13,7 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
         <div className="flex items-center justify-between mb-1">
           <FieldLabel>Product</FieldLabel>
           <a href="/dashboard/products/new" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1 text-[10px] font-semibold text-pink-600 dark:text-pink-400 hover:underline transition">
+            className="flex items-center gap-1 text-[10px] font-semibold text-[var(--brand)] hover:underline transition">
             <Plus className="w-3 h-3" /> New Product
           </a>
         </div>
@@ -41,18 +41,18 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
 
             {/* Selected product preview card */}
             {sel && (
-              <div className="mt-2 flex items-center gap-3 p-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl">
+              <div className="mt-2 flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] p-2.5">
                 {sel.thumbnail_url ? (
-                  <img src={sel.thumbnail_url} alt={sel.name} className="w-12 h-12 rounded-lg object-cover border border-gray-200 dark:border-[var(--border)] shrink-0" />
+                  <img src={sel.thumbnail_url} alt={sel.name} className="h-12 w-12 shrink-0 rounded-[var(--radius-md)] border border-[var(--border)] object-cover" />
                 ) : (
-                  <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0">
-                    <Package className="w-5 h-5 text-gray-400" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface)]">
+                    <Package className="w-5 h-5 text-[var(--text-tertiary)]" />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{sel.name}</p>
-                  <p className="text-xs text-pink-600 dark:text-pink-400 font-medium">{'₹'}{sel.price.toLocaleString('en-IN')}</p>
-                  {sel.is_published === false && <span className="text-[10px] text-amber-600 dark:text-amber-400">Draft</span>}
+                  <p className="text-xs text-[var(--brand)] font-medium">{'₹'}{sel.price.toLocaleString('en-IN')}</p>
+                  {sel.is_published === false && <span className="text-[10px] text-[var(--warning)]">Draft</span>}
                 </div>
                 <button
                   type="button"
@@ -60,7 +60,7 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
                     title: sel.name,
                     thumbnail_url: sel.thumbnail_url || link.thumbnail_url,
                   })}
-                  className="shrink-0 text-[10px] font-semibold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 hover:bg-pink-100 dark:hover:bg-pink-500/20 px-2.5 py-1 rounded-lg transition"
+                  className="shrink-0 rounded-[var(--radius-sm)] bg-[var(--brand)]/10 px-2.5 py-1 text-[10px] font-semibold text-[var(--brand)] transition hover:bg-[var(--brand)]/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
                   Auto-fill
                 </button>
@@ -68,10 +68,10 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
             )}
           </>
         ) : (
-          <div className="p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
-            <p className="text-xs text-amber-700 dark:text-amber-400">No products yet.</p>
+          <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--warning)]/20 bg-[var(--warning-bg)] p-3">
+            <p className="text-xs text-[var(--warning)]">No products yet.</p>
             <a href="/dashboard/products/new" target="_blank" rel="noopener noreferrer"
-              className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 underline">
+              className="text-[11px] font-semibold text-[var(--warning)] underline">
               Create one →
             </a>
           </div>
@@ -85,14 +85,12 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
           <input type="url" value={link.thumbnail_url}
             onChange={e => update({ thumbnail_url: e.target.value })}
             className={`${INPUT} flex-1`} placeholder="Image URL or pick below…" />
-          <button type="button"
-            onClick={() => openImagePicker('thumbnail_url')}
-            className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-pink-50 dark:bg-pink-500/10 hover:bg-pink-100 dark:hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-500/30 rounded-lg text-[11px] font-semibold transition">
-            <Package className="w-3.5 h-3.5" /> Pick
+          <button type="button" onClick={() => openImagePicker('thumbnail_url')} className={ACCENT_BTN}>
+            <Package className="h-3.5 w-3.5" /> Pick
           </button>
         </div>
         {link.thumbnail_url && (
-          <div className="mt-2 rounded-xl overflow-hidden border border-gray-200 dark:border-[var(--border)] bg-[var(--bg-secondary)]">
+          <div className="mt-2 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)]">
             <img src={link.thumbnail_url} alt="" className="w-full h-28 object-cover" />
           </div>
         )}
@@ -135,7 +133,7 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
       <div className="grid grid-cols-2 gap-3">
         <div>
           <FieldLabel>Card Layout</FieldLabel>
-          <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
+          <div className={SEG}>
             {[{ id: 'horizontal', label: 'Row' }, { id: 'split', label: 'Split' }, { id: 'vertical', label: 'Card' }].map(l => (
               <Chip key={l.id}
                 active={(link.metadata?.layout || 'horizontal') === l.id}
@@ -147,7 +145,7 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
         </div>
         <div>
           <FieldLabel>Button Position</FieldLabel>
-          <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
+          <div className={SEG}>
             {[{ id: 'right', label: 'Right' }, { id: 'center', label: 'Center' }, { id: 'full', label: 'Full' }].map(b => (
               <Chip key={b.id}
                 active={(link.metadata?.button_position || 'right') === b.id}
@@ -162,17 +160,20 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
       {/* ── Price controls ── */}
       <div className="space-y-2">
         {/* Show price toggle */}
-        <div className="flex items-center justify-between px-3 py-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl">
+        <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5">
           <div>
-            <p className="text-xs font-medium text-gray-700 dark:text-[var(--text-secondary)]">Show Price</p>
-            <p className="text-[10px] text-gray-400">Display product price on card</p>
+            <p className="text-xs font-medium text-[var(--text-secondary)]">Show Price</p>
+            <p className="text-[10px] text-[var(--text-tertiary)]">Display product price on card</p>
           </div>
           <button
             type="button"
+            role="switch"
+            aria-checked={link.metadata?.show_price ?? true}
+            aria-label="Show price"
             onClick={() => updateMeta('show_price', !(link.metadata?.show_price ?? true))}
-            className={`relative shrink-0 w-9 h-5 rounded-full transition-colors ${(link.metadata?.show_price ?? true) ? 'bg-pink-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+            className={`relative h-5 w-9 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${(link.metadata?.show_price ?? true) ? 'bg-[var(--brand)]' : 'border border-[var(--border)] bg-[var(--surface-muted)]'}`}
           >
-            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${(link.metadata?.show_price ?? true) ? 'translate-x-4' : 'translate-x-0'}`} />
+            <span className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${(link.metadata?.show_price ?? true) ? 'translate-x-4' : 'translate-x-0'}`} />
           </button>
         </div>
 
@@ -181,7 +182,7 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
           <div className="grid grid-cols-2 gap-2">
             <div>
               <FieldLabel>Price Position</FieldLabel>
-              <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
+              <div className={SEG}>
                 {[{ id: 'below', label: 'Below title' }, { id: 'inline', label: 'Right of title' }].map(p => (
                   <Chip key={p.id}
                     active={(link.metadata?.price_position || 'below') === p.id}
@@ -201,7 +202,7 @@ export default function ProductBlock({ link, update, updateMeta, openImagePicker
                 className={INPUT}
                 placeholder="e.g. 999"
               />
-              <p className="text-[10px] text-gray-400 mt-0.5">Shows crossed-out next to price</p>
+              <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Shows crossed-out next to price</p>
             </div>
           </div>
         )}

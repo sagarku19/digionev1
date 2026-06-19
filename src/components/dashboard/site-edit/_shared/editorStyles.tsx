@@ -7,6 +7,7 @@ import React from 'react';
 export type EditorAccent = { focusBorder: string; focusRing: string };
 
 export const EDITOR_ACCENTS = {
+  brand: { focusBorder: 'focus:border-[var(--brand)]', focusRing: 'focus:ring-[var(--brand)]/10' },
   pink: { focusBorder: 'focus:border-pink-500', focusRing: 'focus:ring-pink-500/10' },
   purple: { focusBorder: 'focus:border-purple-500', focusRing: 'focus:ring-purple-500/10' },
   emerald: { focusBorder: 'focus:border-emerald-500', focusRing: 'focus:ring-emerald-500/10' },

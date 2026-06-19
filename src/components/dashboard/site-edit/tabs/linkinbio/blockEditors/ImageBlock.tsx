@@ -1,6 +1,6 @@
 import React from 'react';
 import { ImagePlus } from 'lucide-react';
-import { FieldLabel, INPUT, Chip } from './_shared';
+import { FieldLabel, INPUT, Chip, ACCENT_BTN } from './_shared';
 import type { BlockEditorProps } from './types';
 
 export default function ImageBlock({ link, update, updateMeta, openImagePicker }: BlockEditorProps) {
@@ -11,13 +11,12 @@ export default function ImageBlock({ link, update, updateMeta, openImagePicker }
         <div className="flex gap-2">
           <input type="url" value={link.thumbnail_url} onChange={e => update({ thumbnail_url: e.target.value })}
             className={`${INPUT} flex-1`} placeholder="https://..." />
-          <button type="button" onClick={() => openImagePicker('thumbnail_url')}
-            className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 bg-pink-50 dark:bg-pink-500/10 hover:bg-pink-100 dark:hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-500/30 rounded-lg text-[11px] font-semibold transition">
-            <ImagePlus className="w-3.5 h-3.5" /> Add Image
+          <button type="button" onClick={() => openImagePicker('thumbnail_url')} className={ACCENT_BTN}>
+            <ImagePlus className="h-3.5 w-3.5" /> Add Image
           </button>
         </div>
         {link.thumbnail_url && (
-          <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 dark:border-[var(--border)]">
+          <div className="mt-2 overflow-hidden rounded-[var(--radius-md)] border border-[var(--border)]">
             <img src={link.thumbnail_url} alt="" className="w-full h-24 object-cover" />
           </div>
         )}

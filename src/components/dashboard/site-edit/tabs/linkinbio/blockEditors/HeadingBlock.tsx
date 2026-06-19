@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldLabel, INPUT, Chip, AlignPicker } from './_shared';
+import { FieldLabel, INPUT, Chip, AlignPicker, SEG } from './_shared';
 import type { BlockEditorProps } from './types';
 
 export default function HeadingBlock({ link, updateMeta }: BlockEditorProps) {
@@ -13,7 +13,7 @@ export default function HeadingBlock({ link, updateMeta }: BlockEditorProps) {
       <div className="flex items-center gap-4">
         <div className="flex-1">
           <FieldLabel>Size</FieldLabel>
-          <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-xl items-center">
+          <div className={SEG}>
             {['sm', 'md', 'lg'].map(s => (
               <Chip key={s} active={(link.metadata?.size || 'md') === s} onClick={() => updateMeta('size', s)}>
                 {s.toUpperCase()}
@@ -29,8 +29,8 @@ export default function HeadingBlock({ link, updateMeta }: BlockEditorProps) {
       <label className="flex items-center gap-2 cursor-pointer">
         <input type="checkbox" checked={link.metadata?.show_divider ?? false}
           onChange={e => updateMeta('show_divider', e.target.checked)}
-          className="w-4 h-4 rounded border-gray-300 text-pink-500 focus:ring-pink-500" />
-        <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show line below</span>
+          className="h-4 w-4 rounded border-[var(--border)] accent-[var(--brand)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]" />
+        <span className="text-xs text-[var(--text-secondary)]">Show line below</span>
       </label>
     </>
   );

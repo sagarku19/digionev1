@@ -30,30 +30,30 @@ export default function LeadFormBlock({ link, updateMeta }: BlockEditorProps) {
         <FieldLabel>Form Fields</FieldLabel>
         <div className="space-y-2">
           {fields.map((field, fi) => (
-            <div key={fi} className="flex items-center gap-2 p-2.5 bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl">
-              <GripVertical className="w-3.5 h-3.5 text-gray-300 shrink-0 cursor-grab" />
-              <div className="flex-1 min-w-0 grid grid-cols-2 gap-2">
+            <div key={fi} className="flex items-center gap-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] p-2.5">
+              <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-[var(--text-tertiary)]" />
+              <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
                 <input type="text" value={field.label}
                   onChange={e => { const n = [...fields]; n[fi] = { ...n[fi], label: e.target.value }; setFields(n); }}
-                  className="px-2 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
+                  className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs outline-none focus:border-[var(--border-strong)] focus:ring-2 focus:ring-[var(--brand)]/20"
                   placeholder="Label" />
                 <input type="text" value={field.placeholder}
                   onChange={e => { const n = [...fields]; n[fi] = { ...n[fi], placeholder: e.target.value }; setFields(n); }}
-                  className="px-2 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs outline-none focus:ring-2 focus:ring-pink-500"
+                  className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-xs outline-none focus:border-[var(--border-strong)] focus:ring-2 focus:ring-[var(--brand)]/20"
                   placeholder="Placeholder" />
               </div>
               <button
                 onClick={() => { const n = [...fields]; n[fi] = { ...n[fi], required: !n[fi].required }; setFields(n); }}
-                className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-semibold transition ${field.required
-                    ? 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400'
-                    : 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-400'
+                className={`shrink-0 rounded-[var(--radius-sm)] px-2 py-1 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${field.required
+                    ? 'bg-[var(--brand)]/10 text-[var(--brand)]'
+                    : 'bg-[var(--surface)] text-[var(--text-tertiary)]'
                   }`}
                 title={field.required ? 'Required' : 'Optional'}
               >
                 {field.required ? 'Required' : 'Optional'}
               </button>
-              <button onClick={() => setFields(fields.filter((_, i) => i !== fi))}
-                className="shrink-0 p-1 text-gray-400 hover:text-red-500 transition">
+              <button onClick={() => setFields(fields.filter((_, i) => i !== fi))} aria-label="Remove field"
+                className="shrink-0 rounded-[var(--radius-sm)] p-1 text-[var(--text-tertiary)] transition hover:bg-[var(--danger-bg)] hover:text-[var(--danger)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -67,11 +67,11 @@ export default function LeadFormBlock({ link, updateMeta }: BlockEditorProps) {
               <button key={preset.type}
                 disabled={alreadyUsed}
                 onClick={() => setFields([...fields, { type: preset.type, label: preset.label, required: preset.type === 'email', placeholder: preset.placeholder }])}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${alreadyUsed
-                    ? 'bg-gray-100 dark:bg-[var(--bg-secondary)] text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                    : 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-500/20 border border-pink-200 dark:border-pink-500/30'
+                className={`inline-flex items-center gap-1 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-[11px] font-medium transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${alreadyUsed
+                    ? 'cursor-not-allowed bg-[var(--surface-muted)] text-[var(--text-tertiary)] opacity-60'
+                    : 'border border-[var(--brand)]/30 bg-[var(--brand)]/10 text-[var(--brand)] hover:bg-[var(--brand)]/20'
                   }`}>
-                <Plus className="w-3 h-3" /> {preset.label}
+                <Plus className="h-3 w-3" /> {preset.label}
               </button>
             );
           })}

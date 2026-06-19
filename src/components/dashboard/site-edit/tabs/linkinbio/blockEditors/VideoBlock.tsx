@@ -9,7 +9,7 @@ export default function VideoBlock({ link, updateMeta }: BlockEditorProps) {
         <FieldLabel>Embed URL</FieldLabel>
         <input type="url" value={link.metadata?.embed_url || ''} onChange={e => updateMeta('embed_url', e.target.value)}
           className={INPUT} placeholder="https://youtube.com/embed/..." />
-        <p className="text-[10px] text-gray-400 mt-1">Use the embed URL, not the regular video URL</p>
+        <p className="mt-1 text-[10px] text-[var(--text-tertiary)]">Use the embed URL, not the regular video URL</p>
       </div>
       <div>
         <FieldLabel>Aspect Ratio</FieldLabel>

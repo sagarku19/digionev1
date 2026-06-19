@@ -1,17 +1,13 @@
-﻿'use client';
-// BioAppearanceEditor V2 — full theme control for Link in Bio.
-// New: font family, card style, animation, border radius, spacing.
-// Enhanced: full 5-color palette editor, more gradient presets.
+'use client';
+// BioAppearanceEditor — full theme control for Link in Bio.
+// font family, card style, animation, border radius, spacing, palette, background.
 
 import React, { useState } from 'react';
-import {
-  Palette, Sparkles,
-  Type, Zap, Space, ImagePlus,
-} from 'lucide-react';
+import { Palette, Sparkles, Type, Zap, Space, ImagePlus } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
-const INPUT = editorInput(EDITOR_ACCENTS.pink);
+const INPUT = editorInput(EDITOR_ACCENTS.brand);
 
 export type BioAppearanceData = {
   layoutStyle: string;
@@ -28,16 +24,22 @@ export type BioAppearanceData = {
 };
 
 // ─── Selection helpers ───────────────────────────────────
-const CHIP_ON = 'bg-white dark:bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm ring-2 ring-pink-500 scale-100 border-transparent';
-const CHIP_OFF = 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-50 hover:bg-white dark:bg-[var(--bg-secondary)]/50 dark:hover:bg-[var(--bg-secondary)] scale-[0.98] hover:scale-100 border border-[var(--border)]';
+const CHIP_ON = 'border-[var(--brand)] bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]';
+const CHIP_OFF = 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]';
 
 function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
   return (
-    <label className="flex items-center justify-between cursor-pointer">
-      <span className="text-sm text-gray-700 dark:text-[var(--text-secondary)]">{label}</span>
-      <button onClick={onToggle}
-        className={`relative w-10 h-5 rounded-full transition ${on ? 'bg-pink-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
-        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${on ? 'left-5' : 'left-0.5'}`} />
+    <label className="flex cursor-pointer items-center justify-between">
+      <span className="text-sm text-[var(--text-secondary)]">{label}</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label={label}
+        onClick={onToggle}
+        className={`relative h-5 w-10 rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${on ? 'bg-[var(--brand)]' : 'border border-[var(--border)] bg-[var(--surface-muted)]'}`}
+      >
+        <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${on ? 'left-5' : 'left-0.5'}`} />
       </button>
     </label>
   );
@@ -47,12 +49,12 @@ function SectionCard({ icon: Icon, title, desc, children }: {
   icon: React.ElementType; title: string; desc?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] p-6 space-y-5 shadow-[var(--shadow-card)]">
+    <div className="space-y-5 rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
       <div>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <Icon className="w-4 h-4 text-pink-500" /> {title}
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <Icon className="h-4 w-4 text-[var(--brand)]" /> {title}
         </h3>
-        {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
+        {desc && <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{desc}</p>}
       </div>
       {children}
     </div>
@@ -136,8 +138,12 @@ export default function BioAppearanceEditor({
   palette?: Record<string, string>;
   onPaletteChange?: (key: string, value: string) => void;
 }) {
-  const set = (key: keyof BioAppearanceData, value: any) => onChange({ ...data, [key]: value });
+  const set = (key: keyof BioAppearanceData, value: string | boolean) => onChange({ ...data, [key]: value });
   const [bgImagePicker, setBgImagePicker] = useState(false);
+
+  const HEX = 'w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 font-mono text-[11px] text-[var(--text-secondary)] outline-none focus:border-[var(--border-strong)] focus:ring-2 focus:ring-[var(--brand)]/20';
+  const chipBtn = (sel: boolean) =>
+    `rounded-[var(--radius-md)] border-2 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${sel ? CHIP_ON : CHIP_OFF}`;
 
   return (
     <div className="space-y-5">
@@ -148,10 +154,9 @@ export default function BioAppearanceEditor({
           {FONTS.map(f => {
             const sel = (data.fontFamily || 'system') === f.id;
             return (
-              <button key={f.id} onClick={() => set('fontFamily', f.id)}
-                className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <p className={`text-sm font-semibold ${f.preview} ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-700 dark:text-[var(--text-secondary)]'}`}>Aa</p>
-                <p className={`text-[10px] mt-0.5 ${sel ? 'text-pink-600 dark:text-pink-400' : 'text-gray-400'}`}>{f.label}</p>
+              <button key={f.id} onClick={() => set('fontFamily', f.id)} className={`p-2.5 text-center ${chipBtn(sel)}`}>
+                <p className={`text-sm font-semibold ${f.preview} ${sel ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>Aa</p>
+                <p className={`mt-0.5 text-[10px] ${sel ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)]'}`}>{f.label}</p>
               </button>
             );
           })}
@@ -164,25 +169,24 @@ export default function BioAppearanceEditor({
           {BORDER_RADII.map(br => {
             const sel = (data.borderRadius || 'md') === br.id;
             return (
-              <button key={br.id} onClick={() => set('borderRadius', br.id)}
-                className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <div className={`w-8 h-6 bg-gray-300 dark:bg-gray-600 ${br.preview}`} />
-                <span className={`text-[10px] font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-500'}`}>{br.label}</span>
+              <button key={br.id} onClick={() => set('borderRadius', br.id)} className={`flex flex-1 flex-col items-center gap-1.5 p-2.5 ${chipBtn(sel)}`}>
+                <div className={`h-6 w-8 bg-[var(--text-tertiary)] ${br.preview}`} />
+                <span className={`text-[10px] font-semibold ${sel ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)]'}`}>{br.label}</span>
               </button>
             );
           })}
         </div>
       </SectionCard>
+
       {/* ─── Card Style ─── */}
       <SectionCard icon={Sparkles} title="Card Style" desc="How link cards look">
         <div className="grid grid-cols-2 gap-2">
           {CARD_STYLES.map(cs => {
             const sel = (data.cardStyle || 'solid') === cs.id;
             return (
-              <button key={cs.id} onClick={() => set('cardStyle', cs.id)}
-                className={`p-3 rounded-xl border-2 text-left transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-[var(--text-secondary)]'}`}>{cs.label}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{cs.desc}</p>
+              <button key={cs.id} onClick={() => set('cardStyle', cs.id)} className={`p-3 text-left ${chipBtn(sel)}`}>
+                <p className={`text-xs font-semibold ${sel ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{cs.label}</p>
+                <p className="mt-0.5 text-[10px] text-[var(--text-tertiary)]">{cs.desc}</p>
               </button>
             );
           })}
@@ -194,21 +198,21 @@ export default function BioAppearanceEditor({
         <SectionCard icon={Palette} title="Colors" desc="Customize the global theme palette.">
           <div className="grid grid-cols-2 gap-4">
             {PALETTE_COLORS.map(pc => (
-              <div key={pc.key} className="flex flex-col gap-2 p-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 rounded-[1.25rem] border border-[var(--border)] focus-within:ring-2 focus-within:ring-pink-500/20 transition-all">
+              <div key={pc.key} className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] p-3 transition-shadow focus-within:ring-2 focus-within:ring-[var(--brand)]/20">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[12px] font-semibold text-[var(--text-primary)]">{pc.label}</p>
-                    <p className="text-[10px] text-gray-400">{pc.desc}</p>
+                    <p className="text-[10px] text-[var(--text-tertiary)]">{pc.desc}</p>
                   </div>
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-inner ring-1 ring-black/5 dark:ring-white/10 shrink-0">
-                    <input type="color" value={palette[pc.key] || '#EC4899'}
+                  <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full shadow-inner ring-1 ring-[var(--border)]">
+                    <input type="color" value={palette[pc.key] || '#E83A2E'}
                       onChange={e => onPaletteChange(pc.key, e.target.value)}
-                      className="absolute -inset-4 w-16 h-16 cursor-pointer border-0 p-0" />
+                      className="absolute -inset-4 h-16 w-16 cursor-pointer border-0 p-0" />
                   </div>
                 </div>
                 <input type="text" value={palette[pc.key] || ''}
                   onChange={e => onPaletteChange(pc.key, e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-[11px] font-mono text-gray-600 dark:text-[var(--text-secondary)] outline-none focus:border-pink-500" />
+                  className={HEX} />
               </div>
             ))}
           </div>
@@ -217,43 +221,43 @@ export default function BioAppearanceEditor({
 
       {/* ─── Background ─── */}
       <SectionCard icon={Palette} title="Background">
-        <div className="flex gap-1.5 p-1 bg-gray-100/80 dark:bg-[var(--bg-secondary)]/50 rounded-[1.25rem]">
+        <div className="flex gap-1.5 rounded-[var(--radius-md)] bg-[var(--surface-muted)] p-1">
           {BG_TYPES.map(bt => {
             const sel = data.backgroundType === bt.id;
             return (
               <button key={bt.id} onClick={() => onChange({ ...data, backgroundType: bt.id, backgroundValue: '' })}
-                className={`flex-1 py-2 rounded-xl text-[12px] font-semibold text-center transition-all duration-300 ${sel ? 'bg-white dark:bg-gray-700 text-[var(--text-primary)] shadow-sm ring-1 ring-black/5 dark:ring-white/10 scale-100'
-                    : 'text-gray-500 hover:text-gray-800 dark:hover:text-[var(--text-primary)] scale-95 hover:scale-100'
-                  }`}>{bt.label}</button>
+                className={`flex-1 rounded-[var(--radius-sm)] py-2 text-center text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${sel ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
+                {bt.label}
+              </button>
             );
           })}
         </div>
 
         {data.backgroundType === 'solid' && onPaletteChange && palette && (
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[var(--bg-secondary)]/30 rounded-[1.25rem] border border-[var(--border)]">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden shadow-inner ring-1 ring-black/5 dark:ring-white/10 shrink-0">
+          <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] p-3">
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full shadow-inner ring-1 ring-[var(--border)]">
               <input type="color" value={palette.background || '#FFFFFF'}
                 onChange={e => onPaletteChange('background', e.target.value)}
-                className="absolute -inset-4 w-16 h-16 cursor-pointer border-0 p-0" />
+                className="absolute -inset-4 h-16 w-16 cursor-pointer border-0 p-0" />
             </div>
             <input type="text" value={palette.background || '#FFFFFF'}
               onChange={e => onPaletteChange('background', e.target.value)}
-              className="flex-1 px-3 py-2 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs font-mono text-gray-700 dark:text-[var(--text-secondary)] outline-none focus:ring-2 focus:ring-pink-500" />
+              className={`${HEX} flex-1`} />
           </div>
         )}
 
         {data.backgroundType === 'gradient' && (
           <div className="space-y-3">
-            <p className="text-xs font-medium text-gray-500">Presets</p>
+            <p className="text-xs font-medium text-[var(--text-secondary)]">Presets</p>
             <div className="grid grid-cols-4 gap-2">
               {PRESET_GRADIENTS.map((g, i) => (
                 <button key={i} onClick={() => onChange({ ...data, backgroundValue: g })}
-                  className={`h-10 rounded-lg border-2 transition ${data.backgroundValue === g ? 'border-pink-500 ring-2 ring-pink-500/20' : 'border-transparent'
-                    }`} style={{ background: g }} />
+                  className={`h-10 rounded-[var(--radius-sm)] border-2 transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${data.backgroundValue === g ? 'border-[var(--brand)] ring-2 ring-[var(--brand)]/20' : 'border-transparent'}`}
+                  style={{ background: g }} />
               ))}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Custom CSS gradient</label>
+              <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">Custom CSS gradient</label>
               <input type="text" value={data.backgroundValue}
                 onChange={e => onChange({ ...data, backgroundValue: e.target.value })}
                 className={INPUT} placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
@@ -263,19 +267,19 @@ export default function BioAppearanceEditor({
 
         {data.backgroundType === 'image' && (
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Background Image</label>
+            <label className="mb-1 block text-xs font-medium text-[var(--text-secondary)]">Background Image</label>
             <div className="flex gap-2">
               <input type="url" value={data.backgroundValue}
                 onChange={e => onChange({ ...data, backgroundValue: e.target.value })}
                 className={`${INPUT} flex-1`} placeholder="https://..." />
               <button type="button" onClick={() => setBgImagePicker(true)}
-                className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-pink-50 dark:bg-pink-500/10 hover:bg-pink-100 dark:hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 border border-pink-200 dark:border-pink-500/30 rounded-lg text-xs font-semibold transition">
-                <ImagePlus className="w-3.5 h-3.5" /> Add Image
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--brand)]/30 bg-[var(--brand)]/10 px-3 py-2 text-xs font-semibold text-[var(--brand)] transition hover:bg-[var(--brand)]/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+                <ImagePlus className="h-3.5 w-3.5" /> Add Image
               </button>
             </div>
             {data.backgroundValue && (
-              <div className="mt-2 h-20 rounded-lg overflow-hidden">
-                <img src={data.backgroundValue} alt="Background preview" className="w-full h-full object-cover" />
+              <div className="mt-2 h-20 overflow-hidden rounded-[var(--radius-md)]">
+                <img src={data.backgroundValue} alt="Background preview" className="h-full w-full object-cover" />
               </div>
             )}
           </div>
@@ -288,9 +292,8 @@ export default function BioAppearanceEditor({
           {ANIMATIONS.map(a => {
             const sel = (data.animation || 'none') === a.id;
             return (
-              <button key={a.id} onClick={() => set('animation', a.id)}
-                className={`py-2 rounded-lg border-2 text-xs font-semibold text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <span className={sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-[var(--text-secondary)]'}>{a.label}</span>
+              <button key={a.id} onClick={() => set('animation', a.id)} className={`py-2 text-center text-xs font-semibold ${chipBtn(sel)}`}>
+                <span className={sel ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)]'}>{a.label}</span>
               </button>
             );
           })}
@@ -303,10 +306,9 @@ export default function BioAppearanceEditor({
           {SPACINGS.map(sp => {
             const sel = (data.spacing || 'default') === sp.id;
             return (
-              <button key={sp.id} onClick={() => set('spacing', sp.id)}
-                className={`p-2.5 rounded-xl border-2 text-center transition ${sel ? CHIP_ON : CHIP_OFF}`}>
-                <p className={`text-xs font-semibold ${sel ? 'text-pink-700 dark:text-pink-300' : 'text-gray-600 dark:text-[var(--text-secondary)]'}`}>{sp.label}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{sp.desc}</p>
+              <button key={sp.id} onClick={() => set('spacing', sp.id)} className={`p-2.5 text-center ${chipBtn(sel)}`}>
+                <p className={`text-xs font-semibold ${sel ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{sp.label}</p>
+                <p className="mt-0.5 text-[10px] text-[var(--text-tertiary)]">{sp.desc}</p>
               </button>
             );
           })}

@@ -30,10 +30,10 @@ export default function BannerBlock({ link, updateMeta }: BlockEditorProps) {
         <div className="flex items-center gap-2">
           <input type="color" value={link.metadata?.bg_color || '#EC4899'}
             onChange={e => updateMeta('bg_color', e.target.value)}
-            className="w-8 h-8 rounded-lg border border-gray-200 dark:border-[var(--border)] cursor-pointer p-0.5" />
+            className="h-8 w-8 cursor-pointer rounded-[var(--radius-sm)] border border-[var(--border)] p-0.5" />
           <input type="text" value={link.metadata?.bg_color || ''}
             onChange={e => updateMeta('bg_color', e.target.value)}
-            className="flex-1 px-2.5 py-1.5 bg-white dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg text-xs font-mono text-gray-700 dark:text-[var(--text-secondary)] outline-none focus:ring-2 focus:ring-pink-500"
+            className="flex-1 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 font-mono text-xs text-[var(--text-secondary)] outline-none focus:border-[var(--border-strong)] focus:ring-2 focus:ring-[var(--brand)]/20"
             placeholder="Leave blank for theme color" />
         </div>
       </div>
