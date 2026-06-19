@@ -3,24 +3,7 @@
 import React from 'react';
 import { Code, Mail, Phone, Terminal, MessageCircle, ExternalLink, FileCode } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
-import { editorInput, EDITOR_ACCENTS, FieldLabel } from '../../_shared/editorStyles';
-
-const INPUT = editorInput(EDITOR_ACCENTS.purple);
-
-function SectionCard({ icon: Icon, title, desc, color = 'purple', children }: { icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode }) {
-  const colors: Record<string, string> = { purple: 'text-purple-500', emerald: 'text-emerald-500', blue: 'text-blue-500', amber: 'text-amber-500' };
-  return (
-    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-      <div>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${colors[color] ?? 'text-purple-500'}`} /> {title}
-        </h3>
-        {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
+import { INPUT, FieldLabel, SectionCard } from './_shared';
 
 export default function SinglePageAdvancedEditor({
   data,
@@ -37,7 +20,7 @@ export default function SinglePageAdvancedEditor({
         <div>
           <FieldLabel>Email Address</FieldLabel>
           <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-gray-400 shrink-0" />
+            <Mail className="w-4 h-4 text-[var(--text-tertiary)] shrink-0" />
             <input type="email" value={data.contactEmail || ''} onChange={e => onChange({ ...data, contactEmail: e.target.value })}
               className={`${INPUT} flex-1`} placeholder="hello@yoursite.com" />
           </div>
@@ -45,7 +28,7 @@ export default function SinglePageAdvancedEditor({
         <div>
           <FieldLabel>Mobile Number</FieldLabel>
           <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+            <Phone className="w-4 h-4 text-[var(--text-tertiary)] shrink-0" />
             <input type="tel" value={data.contactMobile || ''} onChange={e => onChange({ ...data, contactMobile: e.target.value })}
               className={`${INPUT} flex-1`} placeholder="+91 98765 43210" />
           </div>
@@ -53,11 +36,11 @@ export default function SinglePageAdvancedEditor({
         <div>
           <FieldLabel>WhatsApp Number</FieldLabel>
           <div className="flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-gray-400 shrink-0" />
+            <MessageCircle className="w-4 h-4 text-[var(--text-tertiary)] shrink-0" />
             <input type="tel" value={data.contactWhatsApp || ''} onChange={e => onChange({ ...data, contactWhatsApp: e.target.value })}
               className={`${INPUT} flex-1`} placeholder="+91 98765 43210" />
           </div>
-          <p className="text-[10px] text-gray-400 mt-1">If set, a floating WhatsApp button will appear on the page.</p>
+          <p className="text-[10px] text-[var(--text-tertiary)] mt-1">If set, a floating WhatsApp button will appear on the page.</p>
         </div>
       </SectionCard>
 
@@ -67,7 +50,7 @@ export default function SinglePageAdvancedEditor({
           <FieldLabel>Redirect URL</FieldLabel>
           <input type="url" value={data.redirectAfterPurchase || ''} onChange={e => onChange({ ...data, redirectAfterPurchase: e.target.value })}
             className={INPUT} placeholder="https://yourdomain.com/thank-you" />
-          <p className="text-[10px] text-gray-400 mt-1">Leave blank to use the default thank-you page.</p>
+          <p className="text-[10px] text-[var(--text-tertiary)] mt-1">Leave blank to use the default thank-you page.</p>
         </div>
       </SectionCard>
 
@@ -78,7 +61,7 @@ export default function SinglePageAdvancedEditor({
           <textarea rows={5} value={data.customHeadTags || ''} onChange={e => onChange({ ...data, customHeadTags: e.target.value })}
             className={`${INPUT} resize-none font-mono text-xs`}
             placeholder={'<meta name="google-site-verification" content="..." />\n<script type="application/ld+json">...</script>'} />
-          <p className="text-[10px] text-gray-400 mt-1">Tags are inserted into the &lt;head&gt; of your page.</p>
+          <p className="text-[10px] text-[var(--text-tertiary)] mt-1">Tags are inserted into the &lt;head&gt; of your page.</p>
         </div>
       </SectionCard>
 
@@ -89,7 +72,7 @@ export default function SinglePageAdvancedEditor({
           <textarea rows={8} value={data.customCss || ''} onChange={e => onChange({ ...data, customCss: e.target.value })}
             className={`${INPUT} resize-none font-mono text-xs`}
             placeholder={`.my-page {\n  /* your custom styles */\n}`} />
-          <p className="text-[10px] text-gray-400 mt-1.5">Styles are injected into the page head. Use with caution.</p>
+          <p className="text-[10px] text-[var(--text-tertiary)] mt-1.5">Styles are injected into the page head. Use with caution.</p>
         </div>
       </SectionCard>
 
@@ -100,7 +83,7 @@ export default function SinglePageAdvancedEditor({
           <textarea rows={8} value={data.customJs || ''} onChange={e => onChange({ ...data, customJs: e.target.value })}
             className={`${INPUT} resize-none font-mono text-xs`}
             placeholder={`// Analytics, pixels, etc.\nconsole.log('Page loaded');`} />
-          <p className="text-[10px] text-amber-500 mt-1.5">Scripts run on page load. Test carefully before publishing.</p>
+          <p className="text-[10px] text-[var(--warning)] mt-1.5">Scripts run on page load. Test carefully before publishing.</p>
         </div>
       </SectionCard>
 

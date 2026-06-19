@@ -3,24 +3,7 @@
 import React from 'react';
 import { ShoppingCart, AlignLeft, AlignCenter, AlignRight, Shield, CreditCard, Plus, X } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
-import { editorInput, EDITOR_ACCENTS, FieldLabel } from '../../_shared/editorStyles';
-
-const INPUT = editorInput(EDITOR_ACCENTS.orange);
-
-function SectionCard({ icon: Icon, title, desc, color = 'orange', children }: { icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode }) {
-  const colors: Record<string, string> = { orange: 'text-orange-500', emerald: 'text-emerald-500', blue: 'text-blue-500' };
-  return (
-    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-      <div>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${colors[color] ?? 'text-orange-500'}`} /> {title}
-        </h3>
-        {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
+import { INPUT, FieldLabel, SectionCard } from './_shared';
 
 const DEFAULT_TRUST_BADGES = [
   'Guaranteed Safe',
@@ -55,7 +38,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={s} onClick={() => onChange({ ...data, checkoutStyle: s })}
                   className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-300' : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
+                    active ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                   }`}>
                   <span className="text-xs font-semibold">{labels[s]}</span>
                   <span className="text-[10px] opacity-60">{descs[s]}</span>
@@ -77,7 +60,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={a.id} onClick={() => onChange({ ...data, checkoutAlignment: a.id })}
                   className={`p-2.5 rounded-xl border-2 transition-all ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-300' : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
+                    active ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                   }`}>
                   <a.icon className="w-4 h-4" />
                 </button>
@@ -108,7 +91,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={s} onClick={() => onChange({ ...data, ctaButtonStyle: s })}
                   className={`py-2 rounded-xl text-[11px] font-semibold border-2 transition-all capitalize ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600' : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
+                    active ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]' : 'border-[var(--border)] text-[var(--text-secondary)]'
                   }`}>
                   {s}
                 </button>
@@ -126,7 +109,7 @@ export default function SinglePageCheckoutEditor({
               return (
                 <button key={s} onClick={() => onChange({ ...data, ctaButtonSize: s })}
                   className={`flex-1 py-2 rounded-xl text-[11px] font-semibold border-2 transition-all ${
-                    active ? 'border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600' : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
+                    active ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]' : 'border-[var(--border)] text-[var(--text-secondary)]'
                   }`}>
                   {labels[s]}
                 </button>
@@ -141,8 +124,8 @@ export default function SinglePageCheckoutEditor({
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={data.showTrustBadges !== false}
             onChange={e => onChange({ ...data, showTrustBadges: e.target.checked })}
-            className="w-4 h-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
-          <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show trust badges below checkout</span>
+            className="h-4 w-4 rounded border-[var(--border)] accent-[var(--brand)]" />
+          <span className="text-xs text-[var(--text-secondary)]">Show trust badges below checkout</span>
         </label>
 
         {data.showTrustBadges !== false && (
@@ -150,12 +133,12 @@ export default function SinglePageCheckoutEditor({
             <div className="space-y-2">
               {trustBadges.map((badge, i) => (
                 <div key={i} className="flex items-center gap-2 group">
-                  <Shield className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <Shield className="w-3.5 h-3.5 text-[var(--success)] shrink-0" />
                   <input type="text" value={badge}
                     onChange={e => onChange({ ...data, trustBadges: trustBadges.map((b, idx) => idx === i ? e.target.value : b) })}
                     className={`${INPUT} flex-1`} placeholder="Trust badge text..." />
                   <button onClick={() => onChange({ ...data, trustBadges: trustBadges.filter((_, idx) => idx !== i) })}
-                    className="p-1.5 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                    className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--danger)] opacity-0 group-hover:opacity-100 transition-all">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -164,12 +147,12 @@ export default function SinglePageCheckoutEditor({
 
             {/* Quick add presets */}
             <div>
-              <p className="text-[11px] font-medium text-gray-500 mb-2">Quick Add:</p>
+              <p className="text-[11px] font-medium text-[var(--text-secondary)] mb-2">Quick Add:</p>
               <div className="flex flex-wrap gap-1.5">
                 {DEFAULT_TRUST_BADGES.filter(b => !trustBadges.includes(b)).map(badge => (
                   <button key={badge}
                     onClick={() => onChange({ ...data, trustBadges: [...trustBadges, badge] })}
-                    className="flex items-center gap-1 px-2.5 py-1.5 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-lg text-[10px] font-medium text-gray-500 hover:text-emerald-500 hover:border-emerald-300 transition-all">
+                    className="flex items-center gap-1 px-2.5 py-1.5 border border-dashed border-[var(--border)] rounded-lg text-[10px] font-medium text-[var(--text-secondary)] hover:text-[var(--brand)] hover:border-[var(--brand)]/40 transition-all">
                     <Plus className="w-2.5 h-2.5" />
                     {badge}
                   </button>
@@ -178,7 +161,7 @@ export default function SinglePageCheckoutEditor({
             </div>
 
             <button onClick={() => onChange({ ...data, trustBadges: [...trustBadges, ''] })}
-              className="flex items-center justify-center w-full gap-2 py-2.5 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-xl text-[13px] font-semibold text-gray-500 hover:text-emerald-500 hover:border-emerald-300 transition-all">
+              className="flex items-center justify-center w-full gap-2 py-2.5 border border-dashed border-[var(--border)] rounded-xl text-[13px] font-semibold text-[var(--text-secondary)] hover:text-[var(--brand)] hover:border-[var(--brand)]/40 transition-all">
               <Plus className="w-4 h-4" /> Add Custom Badge
             </button>
           </>
@@ -190,10 +173,10 @@ export default function SinglePageCheckoutEditor({
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={data.showPaymentIcons ?? true}
             onChange={e => onChange({ ...data, showPaymentIcons: e.target.checked })}
-            className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500" />
-          <span className="text-xs text-gray-600 dark:text-[var(--text-secondary)]">Show payment method icons (UPI, Cards, Wallet)</span>
+            className="h-4 w-4 rounded border-[var(--border)] accent-[var(--brand)]" />
+          <span className="text-xs text-[var(--text-secondary)]">Show payment method icons (UPI, Cards, Wallet)</span>
         </label>
-        <p className="text-[11px] text-gray-400">Icons for UPI, Visa, Mastercard, and wallet will appear near checkout when enabled.</p>
+        <p className="text-[11px] text-[var(--text-tertiary)]">Icons for UPI, Visa, Mastercard, and wallet will appear near checkout when enabled.</p>
       </SectionCard>
 
     </div>

@@ -3,9 +3,7 @@
 import React from 'react';
 import { Share2, Plus, X, Globe, Instagram, Twitter, Youtube, Linkedin, Github, Music, MessageCircle, Send, Phone, AtSign } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
-import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
-
-const INPUT = editorInput(EDITOR_ACCENTS.gray);
+import { INPUT, SectionCard } from './_shared';
 
 const PLATFORMS = [
   { id: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/you' },
@@ -20,19 +18,6 @@ const PLATFORMS = [
   { id: 'website', label: 'Website', icon: Globe, placeholder: 'https://your-site.com' },
 ];
 
-function SectionCard({ icon: Icon, title, desc, children }: { icon: React.ElementType; title: string; desc?: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-      <div>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <Icon className="w-4 h-4 text-gray-500" /> {title}
-        </h3>
-        {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 export default function SinglePageSocialEditor({
   data,
@@ -73,15 +58,15 @@ export default function SinglePageSocialEditor({
               const PIcon = pInfo?.icon || Globe;
               return (
                 <div key={i} className="flex items-center gap-3 group">
-                  <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0">
-                    <PIcon className="w-4 h-4 text-gray-500" />
+                  <div className="w-9 h-9 rounded-xl bg-[var(--surface-muted)] flex items-center justify-center shrink-0">
+                    <PIcon className="w-4 h-4 text-[var(--text-secondary)]" />
                   </div>
                   <input type="url" value={link.url}
                     onChange={e => updateLink(i, e.target.value)}
                     className={`${INPUT} flex-1`}
                     placeholder={pInfo?.placeholder || 'https://...'} />
                   <button onClick={() => removeLink(i)}
-                    className="p-1.5 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                    className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--danger)] opacity-0 group-hover:opacity-100 transition-all">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -93,7 +78,7 @@ export default function SinglePageSocialEditor({
         <div className="flex flex-wrap gap-2 pt-2">
           {PLATFORMS.filter(p => !usedPlatforms.has(p.id)).map(p => (
             <button key={p.id} onClick={() => addLink(p.id)}
-              className="flex items-center gap-1.5 px-3 py-2 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-xl text-xs font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)]/50 transition-all">
+              className="flex items-center gap-1.5 px-3 py-2 border border-dashed border-[var(--border)] rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-all">
               <Plus className="w-3 h-3" />
               {p.label}
             </button>
@@ -104,7 +89,7 @@ export default function SinglePageSocialEditor({
       {/* ── Display Options ── */}
       <SectionCard icon={Share2} title="Display Style" desc="How social links appear on your page.">
         <div>
-          <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-2">Icon Style</label>
+          <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-2">Icon Style</label>
           <div className="flex gap-2">
             {([
               { id: 'icons-only', label: 'Icons Only', desc: 'Clean minimal icons' },
@@ -116,7 +101,7 @@ export default function SinglePageSocialEditor({
                 <button key={s.id}
                   onClick={() => onChange({ ...data, socialDisplayStyle: s.id })}
                   className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 transition-all ${
-                    active ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)]' : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
+                    active ? 'border-[var(--brand)] bg-[var(--surface)] text-[var(--text-primary)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                   }`}>
                   <span className="text-[11px] font-semibold">{s.label}</span>
                   <span className="text-[9px] opacity-60">{s.desc}</span>
@@ -127,7 +112,7 @@ export default function SinglePageSocialEditor({
         </div>
 
         <div>
-          <label className="block text-[13px] font-medium text-gray-700 dark:text-[var(--text-secondary)] mb-2">Position</label>
+          <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-2">Position</label>
           <div className="flex gap-2">
             {([
               { id: 'header', label: 'Header' },
@@ -139,7 +124,7 @@ export default function SinglePageSocialEditor({
                 <button key={p.id}
                   onClick={() => onChange({ ...data, socialPosition: p.id })}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border-2 transition-all ${
-                    active ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-[var(--bg-secondary)] text-[var(--text-primary)]' : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
+                    active ? 'border-[var(--brand)] bg-[var(--surface)] text-[var(--text-primary)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                   }`}>
                   {p.label}
                 </button>

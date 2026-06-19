@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { useProducts } from '@/hooks/useProducts';
@@ -22,62 +21,57 @@ import SinglePageSocialEditor from '@/src/components/dashboard/site-edit/tabs/si
 import SinglePageCheckoutEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageCheckoutEditor';
 import SinglePageSettingsEditor, { type SinglePageSettingsData } from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageSettingsEditor';
 import SinglePageAdvancedEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageAdvancedEditor';
+import EditorShell from '@/src/components/dashboard/site-edit/editor/EditorShell';
+import SitePreviewPane from '@/src/components/dashboard/site-edit/editor/SitePreviewPane';
+import { type SidebarItem } from '@/src/components/dashboard/site-edit/editor/EditorSidebar';
 import {
-  Layers, Settings, Palette,
-  ArrowLeft, Save, Loader2, CheckCircle2, ExternalLink,
-  Monitor, Tablet, Smartphone, RefreshCw,
-  XCircle, Copy, Check, Globe2, Search, Sparkles,
-  LayoutDashboard, Package, Store, Plus, Moon, Sun, HelpCircle,
-  Undo2, Redo2, ImagePlus, ShieldCheck, ListChecks,
-  Image, FileText, Share2, ShoppingCart, Terminal
+  Image, Package, FileText, Sparkles, Palette, Share2, ShoppingCart, Settings, Terminal,
+  Globe2, Search, Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
-import { useTheme } from '@/contexts/DashboardThemeContext';
-import { motion, AnimatePresence } from 'framer-motion';
 
-type Tab = 'logo' | 'product' | 'content' | 'template' | 'appearance' | 'social' | 'checkout' | 'settings' | 'advanced';
-
-const TABS: { id: Tab; label: string; icon: any; activeBg: string; activeColor: string; activeBorder: string }[] = [
-  { id: 'logo', label: 'Logo', icon: Image, activeBg: 'bg-[var(--surface-muted)]', activeColor: 'text-[var(--text-secondary)]', activeBorder: 'border border-[var(--border)] dark:border-gray-600' },
-  { id: 'product', label: 'Product', icon: Package, activeBg: 'bg-blue-50 dark:bg-blue-500/10', activeColor: 'text-blue-600 dark:text-blue-300', activeBorder: 'border border-blue-200 dark:border-blue-500/30' },
-  { id: 'content', label: 'Content', icon: FileText, activeBg: 'bg-emerald-50 dark:bg-emerald-500/10', activeColor: 'text-emerald-600 dark:text-emerald-300', activeBorder: 'border border-emerald-200 dark:border-emerald-500/30' },
-  { id: 'template', label: 'Template', icon: Sparkles, activeBg: 'bg-[var(--surface-muted)]', activeColor: 'text-[var(--text-secondary)]', activeBorder: 'border border-[var(--border)] dark:border-gray-600' },
-  { id: 'appearance', label: 'Appearance', icon: Palette, activeBg: 'bg-rose-50 dark:bg-rose-500/10', activeColor: 'text-rose-600 dark:text-rose-300', activeBorder: 'border border-rose-200 dark:border-rose-500/30' },
-  { id: 'social', label: 'Social', icon: Share2, activeBg: 'bg-[var(--surface-muted)]', activeColor: 'text-[var(--text-secondary)]', activeBorder: 'border border-[var(--border)] dark:border-gray-600' },
-  { id: 'checkout', label: 'Checkout', icon: ShoppingCart, activeBg: 'bg-orange-50 dark:bg-orange-500/10', activeColor: 'text-orange-600 dark:text-orange-300', activeBorder: 'border border-orange-200 dark:border-orange-500/30' },
-  { id: 'settings', label: 'Settings', icon: Settings, activeBg: 'bg-[var(--surface-muted)]', activeColor: 'text-[var(--text-primary)]', activeBorder: 'border border-[var(--border)] dark:border-gray-600' },
-  { id: 'advanced', label: 'Advanced', icon: Terminal, activeBg: 'bg-[var(--surface-muted)]', activeColor: 'text-[var(--text-secondary)]', activeBorder: 'border border-[var(--border)] dark:border-gray-600' },
+const NAV: SidebarItem[] = [
+  { id: 'logo', label: 'Logo', icon: Image, group: 'main' },
+  { id: 'product', label: 'Product', icon: Package, group: 'main' },
+  { id: 'content', label: 'Content', icon: FileText, group: 'main' },
+  { id: 'template', label: 'Template', icon: Sparkles, group: 'main' },
+  { id: 'appearance', label: 'Appearance', icon: Palette, group: 'main' },
+  { id: 'social', label: 'Social', icon: Share2, group: 'main' },
+  { id: 'checkout', label: 'Checkout', icon: ShoppingCart, group: 'main' },
+  { id: 'settings', label: 'Settings', icon: Settings, group: 'main' },
+  { id: 'advanced', label: 'Advanced', icon: Terminal, group: 'main' },
 ];
+
+const SECTION_META: Record<string, string> = {
+  logo: 'Logo, header, and page identity.',
+  product: 'The product this page sells.',
+  content: 'Hero, sections, and trust elements.',
+  template: 'Pick a starting design.',
+  appearance: 'Theme, colors, and fonts.',
+  social: 'Social links and placement.',
+  checkout: 'Checkout style and call-to-action.',
+  settings: 'URL, SEO, and visibility.',
+  advanced: 'Custom code and tracking.',
+};
+
+const INPUT =
+  'w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none transition-shadow focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)]';
+const SETTINGS_CARD = 'rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]';
 
 export default function EditSinglePagePage() {
   const params = useParams();
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const { products } = useProducts();
 
-  const previewWrapperRef = useRef<HTMLDivElement>(null);
-  const [previewW, setPreviewW] = useState(0);
-
-  useEffect(() => {
-    const ob = new ResizeObserver(entries => {
-      setPreviewW(entries[0]?.contentRect.width || 0);
-    });
-    const current = previewWrapperRef.current;
-    if (current) ob.observe(current);
-    return () => ob.disconnect();
-  }, []);
-
   // ── UI state ──
-  const [activeTab, setActiveTab] = useState<Tab>('logo');
-  const [device, setDevice] = useState<string>('mobile');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
-  const [copied, setCopied] = useState(false);
 
   // ── Site data ──
   const [site, setSite] = useState<any>(null);
@@ -93,83 +87,30 @@ export default function EditSinglePagePage() {
 
   // ── Content state ──
   const [content, setContent] = useState<SinglePageContentData>({
-    title: '',
-    description: '',
-    heroImage: '',
-    videoUrl: '',
-    stats: [],
-    productId: null,
-    upsellProductIds: [],
-    fakePrice: 0,
-    features: [],
-    whatsIncluded: [],
-    contentBlocks: [],
-    creatorProfile: { name: '', avatarUrl: '', bio: '' },
-    faqs: [],
-    testimonials: [],
-    logoUrl: '',
-    logoShape: 'free',
-    headerText: '',
-    headerAlignment: 'center',
-    showLogo: true,
-    headerStyle: 'standard',
-    logoPlacement: 'top-bar',
-    logoHeaderGap: 'md',
-    headerDivider: false,
-    headerWidth: 'full',
-    socialLinks: [],
-    socialDisplayStyle: 'icons-only',
-    socialPosition: 'footer',
-    checkoutStyle: 'embedded',
-    checkoutAlignment: 'center',
-    ctaText: '',
-    ctaSubtext: '',
-    ctaButtonStyle: 'solid',
-    ctaButtonSize: 'lg',
-    showTrustBadges: true,
-    trustBadges: [],
-    showPaymentIcons: true,
-    customCss: '',
-    customJs: '',
-    customHeadTags: '',
-    contactEmail: '',
-    contactMobile: '',
-    contactWhatsApp: '',
-    redirectAfterPurchase: '',
-    passwordProtection: false,
-    pagePassword: '',
-    analyticsGoogleId: '',
-    analyticsFbPixelId: '',
+    title: '', description: '', heroImage: '', videoUrl: '', stats: [],
+    productId: null, upsellProductIds: [], fakePrice: 0, features: [], whatsIncluded: [],
+    contentBlocks: [], creatorProfile: { name: '', avatarUrl: '', bio: '' }, faqs: [], testimonials: [],
+    logoUrl: '', logoShape: 'free', headerText: '', headerAlignment: 'center', showLogo: true,
+    headerStyle: 'standard', logoPlacement: 'top-bar', logoHeaderGap: 'md', headerDivider: false, headerWidth: 'full',
+    socialLinks: [], socialDisplayStyle: 'icons-only', socialPosition: 'footer',
+    checkoutStyle: 'embedded', checkoutAlignment: 'center', ctaText: '', ctaSubtext: '',
+    ctaButtonStyle: 'solid', ctaButtonSize: 'lg', showTrustBadges: true, trustBadges: [], showPaymentIcons: true,
+    customCss: '', customJs: '', customHeadTags: '', contactEmail: '', contactMobile: '', contactWhatsApp: '',
+    redirectAfterPurchase: '', passwordProtection: false, pagePassword: '', analyticsGoogleId: '', analyticsFbPixelId: '',
   });
 
   // ── Settings state ──
   const [siteSettings, setSiteSettings] = useState<SinglePageSettingsData>({
-    showBuyNow: true,
-    showAddToCart: true,
-    enableReviews: false,
-    countdownEnd: '',
-    passwordProtection: false,
-    pagePassword: '',
-    analyticsGoogleId: '',
-    analyticsFbPixelId: '',
+    showBuyNow: true, showAddToCart: true, enableReviews: false, countdownEnd: '',
+    passwordProtection: false, pagePassword: '', analyticsGoogleId: '', analyticsFbPixelId: '',
   });
 
   // ── Appearance state ──
   const [appearance, setAppearance] = useState<BioAppearanceData>({
-    layoutStyle: 'classic',
-    buttonStyle: 'rounded',
-    backgroundType: 'solid',
-    backgroundValue: '',
-    showWatermark: true,
-    showShareButton: true,
-    fontFamily: 'system',
-    cardStyle: 'solid',
-    animation: 'none',
-    borderRadius: 'md',
-    spacing: 'default',
-    headingStyle: 'minimal',
-    sectionSpacing: 'comfortable',
-    shadowIntensity: 'medium',
+    layoutStyle: 'classic', buttonStyle: 'rounded', backgroundType: 'solid', backgroundValue: '',
+    showWatermark: true, showShareButton: true, fontFamily: 'system', cardStyle: 'solid',
+    animation: 'none', borderRadius: 'md', spacing: 'default',
+    headingStyle: 'minimal', sectionSpacing: 'comfortable', shadowIntensity: 'medium',
   });
 
   // ── SEO ──
@@ -180,9 +121,10 @@ export default function EditSinglePagePage() {
   const historyRef = useRef<EditorSnapshot[]>([]);
   const historyIndexRef = useRef(-1);
   const isRestoringRef = useRef(false);
+  const [historyVersion, setHistoryVersion] = useState(0);
+  const bumpHistoryUi = useCallback(() => setHistoryVersion((v) => v + 1), []);
 
   const pushSnapshot = useCallback(() => {
-    if (isRestoringRef.current) return;
     const snap: EditorSnapshot = {
       content: JSON.parse(JSON.stringify(content)),
       settings: JSON.parse(JSON.stringify(siteSettings)),
@@ -195,44 +137,42 @@ export default function EditSinglePagePage() {
     historyRef.current.push(snap);
     if (historyRef.current.length > 50) historyRef.current.shift();
     historyIndexRef.current = historyRef.current.length - 1;
-  }, [content, siteSettings, appearance, palette, seo]);
+    bumpHistoryUi();
+  }, [content, siteSettings, appearance, palette, seo, bumpHistoryUi]);
 
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (loading) return;
+    if (isRestoringRef.current) { isRestoringRef.current = false; return; }
     if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
     pushTimerRef.current = setTimeout(pushSnapshot, 400);
     return () => { if (pushTimerRef.current) clearTimeout(pushTimerRef.current); };
   }, [content, siteSettings, appearance, palette, seo, loading, pushSnapshot]);
 
-  const canUndo = historyIndexRef.current > 0;
+  const canUndo = historyVersion >= 0 && historyIndexRef.current > 0;
   const canRedo = historyIndexRef.current < historyRef.current.length - 1;
+
+  const restoreSnapshot = useCallback((snap: EditorSnapshot) => {
+    isRestoringRef.current = true;
+    setContent(snap.content);
+    setSiteSettings(snap.settings);
+    setAppearance(snap.appearance);
+    setPalette(snap.palette);
+    setSeo(snap.seo);
+    bumpHistoryUi();
+  }, [bumpHistoryUi]);
 
   const handleUndo = useCallback(() => {
     if (historyIndexRef.current <= 0) return;
-    isRestoringRef.current = true;
     historyIndexRef.current -= 1;
-    const snap = historyRef.current[historyIndexRef.current];
-    setContent(snap.content);
-    setSiteSettings(snap.settings);
-    setAppearance(snap.appearance);
-    setPalette(snap.palette);
-    setSeo(snap.seo);
-    requestAnimationFrame(() => { isRestoringRef.current = false; });
-  }, []);
+    restoreSnapshot(historyRef.current[historyIndexRef.current]);
+  }, [restoreSnapshot]);
 
   const handleRedo = useCallback(() => {
     if (historyIndexRef.current >= historyRef.current.length - 1) return;
-    isRestoringRef.current = true;
     historyIndexRef.current += 1;
-    const snap = historyRef.current[historyIndexRef.current];
-    setContent(snap.content);
-    setSiteSettings(snap.settings);
-    setAppearance(snap.appearance);
-    setPalette(snap.palette);
-    setSeo(snap.seo);
-    requestAnimationFrame(() => { isRestoringRef.current = false; });
-  }, []);
+    restoreSnapshot(historyRef.current[historyIndexRef.current]);
+  }, [restoreSnapshot]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -247,8 +187,6 @@ export default function EditSinglePagePage() {
   // ── Load data ──
   const queryClient = useQueryClient();
   const { data: loaded, isError } = useSinglePageSiteQuery(siteId);
-  // Hydrate local state from cache exactly once per siteId. Background refetches
-  // must not clobber unsaved user edits.
   const hydratedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -359,6 +297,14 @@ export default function EditSinglePagePage() {
     setLoading(false);
   }, [loaded, siteId, isError]);
 
+  // ── Mark dirty on user edits (skip initial hydrate) ──
+  const dirtyInitRef = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    if (!dirtyInitRef.current) { dirtyInitRef.current = true; return; }
+    setDirty(true);
+  }, [content, siteSettings, appearance, palette, seo, slug, isPublished, loading]);
+
   // ── Slug availability check ──
   useEffect(() => {
     if (!slug || slug === originalSlug) { setSlugStatus('idle'); return; }
@@ -396,9 +342,9 @@ export default function EditSinglePagePage() {
       } catch { /* cross-origin guard */ }
     }, 16);
     return () => clearTimeout(sendTimerRef.current);
-  }); // intentionally no deps — runs every render, debounced to ~1 frame
+  });
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!siteId) return;
     if (slugStatus === 'taken' || slugStatus === 'invalid' || slugStatus === 'checking') {
       alert('Please fix your URL and try again.');
@@ -408,18 +354,14 @@ export default function EditSinglePagePage() {
     setSaved(false);
 
     try {
-      // 1. Update slug & active status
       if (slug !== originalSlug || isPublished !== site?.is_active) {
         await supabase.from('sites').update({
-          slug,
-          is_active: isPublished,
-          updated_at: new Date().toISOString()
+          slug, is_active: isPublished, updated_at: new Date().toISOString(),
         }).eq('id', siteId);
         setOriginalSlug(slug);
         setSite((prev: any) => ({ ...prev, slug, is_active: isPublished }));
       }
 
-      // 2. Upsert tokens
       const { data: currentTokens } = await supabase.from('site_design_tokens').select('id').eq('site_id', siteId).maybeSingle();
       if (currentTokens) {
         await supabase.from('site_design_tokens').update({ color_palette: palette }).eq('id', currentTokens.id);
@@ -430,7 +372,6 @@ export default function EditSinglePagePage() {
         }
       }
 
-      // 3. Upsert site_singlepage
       const { data: existingSp } = await supabase.from('site_singlepage').select('id').eq('site_id', siteId).maybeSingle();
 
       const payload = {
@@ -501,466 +442,220 @@ export default function EditSinglePagePage() {
       }
 
       setSaved(true);
+      setDirty(false);
       setTimeout(() => setSaved(false), 2500);
 
-      // Revalidate the public slug page ISR cache
-      if (site) {
-        revalidateStorefrontPaths([getSitePublicPath(site)]).catch(() => {});
-      }
+      if (site) revalidateStorefrontPaths([getSitePublicPath(site)]).catch(() => {});
 
       setPreviewKey(Date.now());
       queryClient.invalidateQueries({ queryKey: ['sites', 'singlepage', siteId] });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Save failed', e);
       alert('Failed to save changes.');
     } finally {
       setSaving(false);
     }
-  };
+  }, [siteId, slugStatus, slug, originalSlug, isPublished, site, palette, content, siteSettings, seo, appearance, supabase, queryClient]);
 
-  const getResponsiveWidth = () => {
-    if (device === 'mobile') return '375px';
-    if (device === 'tablet') return '768px';
-    return '100%';
-  };
+  // ── Leave guard ──
+  const [pendingNav, setPendingNav] = useState<string | null>(null);
+  const guardedNavigate = useCallback((href: string) => {
+    if (dirty) setPendingNav(href);
+    else router.push(href);
+  }, [dirty, router]);
+  const discardAndLeave = useCallback(() => {
+    const href = pendingNav;
+    setPendingNav(null);
+    if (href) router.push(href);
+  }, [pendingNav, router]);
+  const saveAndLeave = useCallback(async () => {
+    await handleSave();
+    const href = pendingNav;
+    setPendingNav(null);
+    if (href) router.push(href);
+  }, [handleSave, pendingNav, router]);
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-[var(--bg-primary)]">
-      {/* ═══ BODY — full height, panels own their headers ═══ */}
-      <div className="flex-1 flex min-h-0">
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirty]);
 
+  // ── Derived ──
+  const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
+  const displayUrl = site ? getSiteDisplayUrl(site) : null;
+  const displayTitle = site?.name || slug || 'Untitled Page';
 
+  // ── Section bodies ──
+  const settingsSection = (
+    <div className="space-y-5">
+      {/* Public URL */}
+      <div className={`${SETTINGS_CARD} space-y-3`}>
+        <div>
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+            <Globe2 className="h-4 w-4 text-[var(--brand)]" /> Public URL
+          </h3>
+          <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Your landing page address</p>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 transition-shadow focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--focus-ring)]">
+          <span className="shrink-0 select-none text-sm text-[var(--text-tertiary)]">digione.ai/site/</span>
+          <input
+            type="text"
+            value={slug}
+            onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
+            placeholder="launch-deal"
+          />
+        </div>
+        <div className="flex min-h-5 items-center gap-2 text-xs">
+          {slugStatus === 'checking' && <span className="flex items-center gap-1 text-[var(--text-tertiary)]"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</span>}
+          {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
+            <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" /> Your current URL</span>
+          )}
+          {slugStatus === 'available' && (
+            <span className="flex items-center gap-1 text-[var(--success)]"><CheckCircle2 className="h-3.5 w-3.5" /> Available — save to apply</span>
+          )}
+          {slugStatus === 'taken' && (
+            <span className="flex items-center gap-1 text-[var(--danger)]"><XCircle className="h-3.5 w-3.5" /> Already taken</span>
+          )}
+          {slugStatus === 'invalid' && (
+            <span className="text-[var(--danger)]">3+ chars, letters, numbers, hyphens only</span>
+          )}
+        </div>
+      </div>
 
-        {/* ═══ LEFT PANEL ═══ */}
-        <div className="w-full md:w-[calc(50%+5.5rem)] shrink-0 border-r border-[var(--border)] flex flex-col bg-[var(--bg-primary)] z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_-10px_rgba(0,0,0,0.5)]">
-          {/* Header */}
-          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center justify-between px-4 bg-[var(--bg-primary)]">
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard/sites" className="p-2 -ml-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition">
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <div>
-                <h1 className="text-sm font-semibold text-[var(--text-primary)] truncate max-w-[200px]">
-                  {site?.name || slug || 'Untitled Page'}
-                </h1>
-                {!loading && <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">All changes autosaved locally</p>}
-              </div>
-            </div>
+      <SinglePageSettingsEditor data={siteSettings} onChange={setSiteSettings} />
 
-            <div className="flex items-center gap-3">
-              {/* Theme Toggle */}
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                title="Toggle Theme"
-                className="p-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/50 hover:bg-white dark:hover:bg-[var(--bg-secondary)] transition-all duration-200 shadow-sm"
-              >
-                {theme === 'dark' ? <Sun className="w-4 h-4 text-[var(--text-secondary)] hover:text-white transition-colors" /> : <Moon className="w-4 h-4 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" />}
-              </button>
-
-              {/* Undo/Redo */}
-              <div className="flex items-center gap-1 border border-[var(--border)] rounded-xl bg-[var(--bg-secondary)]/50 p-1">
-                <button onClick={handleUndo} disabled={!canUndo} title="Undo (Ctrl+Z)"
-                  className={`p-1.5 rounded-lg transition-all ${canUndo ? 'text-[var(--text-secondary)] dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-[var(--text-tertiary)] dark:text-gray-700 opacity-50'}`}>
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-                <div className="w-[1px] h-4 bg-gray-200 dark:bg-[var(--bg-secondary)]" />
-                <button onClick={handleRedo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)"
-                  className={`p-1.5 rounded-lg transition-all ${canRedo ? 'text-[var(--text-secondary)] dark:text-[var(--text-primary)] hover:bg-white dark:hover:bg-gray-700 shadow-sm' : 'text-[var(--text-tertiary)] dark:text-gray-700 opacity-50'}`}>
-                  <ArrowLeft className="w-4 h-4 rotate-180" />
-                </button>
-              </div>
-
-              {/* Save Button */}
-              <button
-                onClick={handleSave}
-                disabled={saving || loading}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all focus:ring-4 focus:ring-pink-500/20 active:scale-95 ${saved
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-900'
-                  }`}
-              >
-                {saving ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : saved ? (
-                  <CheckCircle2 className="w-4 h-4" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                {saved ? 'Saved!' : 'Save'}
-              </button>
-            </div>
+      {/* SEO & Social Sharing */}
+      <div className={`${SETTINGS_CARD} space-y-4`}>
+        <div>
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+            <Search className="h-4 w-4 text-[var(--brand)]" /> SEO &amp; Social Sharing
+          </h3>
+          <p className="mt-0.5 text-xs text-[var(--text-secondary)]">How your page looks on search engines and WhatsApp.</p>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Page Title</label>
+            <input type="text" value={seo.title} onChange={e => setSeo(s => ({ ...s, title: e.target.value }))} maxLength={70}
+              className={INPUT} placeholder={content.title || 'Landing Page Title'} />
           </div>
-
-          {/* ── Body: tab sidebar + scrollable editor ── */}
-          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
-
-            {/* Tab Sidebar */}
-            <div className="shrink-0 flex flex-row md:flex-col overflow-x-auto md:overflow-visible border-b md:border-b-0 md:border-r border-[var(--border)] bg-gray-50/80 dark:bg-[var(--bg-secondary)] w-full md:w-44 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              
-              {/* Tab buttons */}
-              <div className="flex flex-row md:flex-col gap-1.5 md:gap-1 px-2 py-2 md:py-4 min-w-max md:min-w-0">
-                {TABS.map(tab => {
-                  const active = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      title={tab.label}
-                      className={`flex items-center gap-2 md:gap-3 px-3 md:px-2.5 py-2 md:py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200 shrink-0 ${active
-                        ? `${tab.activeBg} ${tab.activeColor} ${tab.activeBorder} shadow-sm`
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] hover:bg-gray-200/50 dark:hover:bg-[var(--bg-secondary)]/50'
-                        } justify-center md:justify-start`}
-                    >
-                      <tab.icon className="w-4 h-4 shrink-0" strokeWidth={active ? 2.5 : 2} />
-                      <span className="truncate">{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Scrollable editor content */}
-            <div className="flex-1 overflow-x-hidden overflow-y-auto p-5">
-              {loading ? (
-                <div className="w-full space-y-8 opacity-70">
-                  <div className="space-y-3">
-                    <div className="h-4 w-28 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
-                    <div className="h-11 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
-                  </div>
-                  <div className="space-y-3">
-                    <div className="h-4 w-32 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
-                    <div className="h-28 w-full bg-gray-200 dark:bg-[var(--bg-secondary)] rounded-lg animate-pulse" />
-                  </div>
-                  <div className="space-y-3">
-                    <div className="h-4 w-40 bg-gray-200 dark:bg-[var(--bg-secondary)] rounded animate-pulse" />
-                    <div className="flex gap-4">
-                      <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
-                      <div className="h-24 flex-1 rounded-xl bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse" />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                  >                  {/* ── Logo Tab ── */}
-                  {activeTab === 'logo' && (
-                    <SinglePageLogoEditor data={content} onChange={setContent} />
-                  )}
-
-                  {/* ── Product Tab ── */}
-                  {activeTab === 'product' && (
-                    <SinglePageProductEditor data={content} onChange={setContent} products={products} />
-                  )}
-
-                  {/* ── Content Tab ── */}
-                  {activeTab === 'content' && (
-                    <div className="space-y-5">
-                      <SinglePageHeroEditor data={content} onChange={setContent} />
-                      <SinglePageContentEditor data={content} onChange={setContent} />
-                      <SinglePageTrustEditor data={content} onChange={setContent} />
-                    </div>
-                  )}
-
-                  {/* ── Template Tab ── */}
-                  {activeTab === 'template' && (
-                    <SinglePageTemplateEditor
-                      currentAppearance={appearance}
-                      currentPalette={palette}
-                      onApply={(newPalette, newAppearance) => {
-                        setPalette(newPalette);
-                        setAppearance(newAppearance);
-                      }}
-                    />
-                  )}
-
-                  {/* ── Appearance Tab ── */}
-                  {activeTab === 'appearance' && (
-                    <BioAppearanceEditor
-                      data={appearance}
-                      onChange={setAppearance}
-                      palette={palette}
-                      onPaletteChange={(key, value) => setPalette(prev => ({ ...prev, [key]: value }))}
-                    />
-                  )}
-
-                  {/* ── Social Tab ── */}
-                  {activeTab === 'social' && (
-                    <SinglePageSocialEditor data={content} onChange={setContent} />
-                  )}
-
-                  {/* ── Checkout Tab ── */}
-                  {activeTab === 'checkout' && (
-                    <SinglePageCheckoutEditor data={content} onChange={setContent} />
-                  )}
-
-                  {/* ── Settings Tab ── */}
-                  {activeTab === 'settings' && (
-                    <div className="space-y-5">
-
-                      {/* URL Slug */}
-                      <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-                        <div>
-                          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                            <Globe2 className="w-4 h-4 text-pink-500" /> Public URL
-                          </h3>
-                          <p className="text-[13px] text-[var(--text-secondary)] mt-1">Your landing page address</p>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5 px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl mb-2 focus-within:border-pink-500 focus-within:ring-4 focus-within:ring-pink-500/10 transition-all duration-300">
-                            <span className="text-[13px] font-medium text-[var(--text-tertiary)] shrink-0 select-none">digione.ai/site/</span>
-                            <input
-                              type="text"
-                              value={slug}
-                              onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                              className="flex-1 bg-transparent text-[13px] font-semibold outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] min-w-0"
-                              placeholder="launch-deal"
-                            />
-                          </div>
-                          <div className="flex items-center gap-2 min-h-5">
-                            {slugStatus === 'checking' && <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--text-tertiary)]" />}
-                            {slugStatus === 'idle' && slug === originalSlug && slug.length > 0 && (
-                              <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Your current URL</span>
-                            )}
-                            {slugStatus === 'available' && (
-                              <span className="flex items-center gap-1 text-xs text-emerald-600"><CheckCircle2 className="w-3.5 h-3.5" /> Available — save to apply</span>
-                            )}
-                            {slugStatus === 'taken' && (
-                              <span className="flex items-center gap-1 text-xs text-red-500"><XCircle className="w-3.5 h-3.5" /> Already taken</span>
-                            )}
-                            {slugStatus === 'invalid' && (
-                              <span className="text-xs text-red-500">3+ chars, letters, numbers, hyphens only</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <SinglePageSettingsEditor data={siteSettings} onChange={setSiteSettings} />
-
-                      {/* SEO & Social Sharing */}
-                      <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-                        <div>
-                          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                            <Search className="w-4 h-4 text-pink-500" /> SEO & Social Sharing
-                          </h3>
-                          <p className="text-[13px] text-[var(--text-secondary)] mt-1">How your page looks on search engines and WhatsApp.</p>
-                        </div>
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
-                              Page Title
-                            </label>
-                            <input
-                              type="text"
-                              value={seo.title}
-                              onChange={e => setSeo(s => ({ ...s, title: e.target.value }))}
-                              maxLength={70}
-                              className="w-full px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all duration-300"
-                              placeholder={content.title || 'Landing Page Title'}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
-                              Meta Description
-                            </label>
-                            <textarea
-                              value={seo.description}
-                              onChange={e => setSeo(s => ({ ...s, description: e.target.value }))}
-                              maxLength={160}
-                              rows={2}
-                              className="w-full px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all duration-300 resize-none"
-                              placeholder={content.description || 'A short pitch...'}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-[13px] font-medium text-[var(--text-secondary)] mb-1.5">
-                              Share Preview Image
-                            </label>
-                            <input
-                              type="url"
-                              value={seo.image}
-                              onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
-                              className="w-full px-4 py-3 bg-[var(--surface-muted)]/30 border border-[var(--border)] rounded-xl text-[13px] focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 outline-none text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-all duration-300"
-                              placeholder="https://... (defaults to hero image)"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Activate / Deactivate Link */}
-                      <div className="bg-[var(--surface)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-                              {isPublished ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-[var(--text-tertiary)]" />}
-                              {isPublished ? 'Link is Active' : 'Link is Inactive'}
-                            </h3>
-                            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                              {isPublished ? 'Your page is live and accessible to visitors.' : 'Your page is hidden. Visitors will see a 404 page.'}
-                            </p>
-                          </div>
-                          <button
-                            role="switch"
-                            aria-checked={isPublished}
-                            aria-label={isPublished ? 'Deactivate link' : 'Activate link'}
-                            onClick={() => setIsPublished(!isPublished)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isPublished ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'
-                              }`}
-                          >
-                            <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${isPublished ? 'translate-x-6' : 'translate-x-1'
-                              }`} />
-                          </button>
-                        </div>
-                      </div>
-
-                    </div>
-                  )}
-
-                  {/* ── Advanced Tab ── */}
-                  {activeTab === 'advanced' && (
-                    <SinglePageAdvancedEditor data={content} onChange={setContent} />
-                  )}
-                  </motion.div>
-                </AnimatePresence>
-              )}
-            </div>{/* end scrollable editor */}
-          </div>{/* end body flex (tab sidebar + editor) */}
-        </div>{/* end LEFT PANEL */}
-
-        {/* ═══ RIGHT PANEL — full-height preview ═══ */}
-        <div className="flex-1 flex flex-col bg-[var(--surface-muted)]">
-
-          {/* ── Preview Header ── */}
-          <div className="shrink-0 h-14 border-b border-[var(--border)] flex items-center px-4 gap-3 relative">
-            {/* Open in Browser */}
-            <a
-              href={site ? `https://${getSiteDisplayUrl(site)}` : undefined}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 ${!site ? 'opacity-40 pointer-events-none' : ''}`}
-              title="Open in browser"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Open
-            </a>
-            {/* Copy link */}
-            <button
-              onClick={() => {
-                if (site) {
-                  navigator.clipboard.writeText(`https://${getSiteDisplayUrl(site)}`);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }
-              }}
-              disabled={!site}
-              className="flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] dark:hover:text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] hover:border-pink-400 dark:hover:border-pink-600 px-3 py-1.5 rounded-lg transition-all shrink-0 disabled:opacity-40"
-              title="Copy page link"
-            >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? 'Copied!' : 'Link'}
-            </button>
-            {/* Preview label — truly centered */}
-            <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none">
-              <span className="text-xs font-semibold text-[var(--text-tertiary)] dark:text-gray-500 uppercase tracking-widest">
-                Website Preview
-              </span>
-            </div>
-            <div className="flex-1" />
-            {/* Device toggles */}
-            <div className="flex items-center gap-1 bg-[var(--surface)] p-1 rounded-lg border border-[var(--border)] shrink-0">
-              {[
-                { id: 'desktop', icon: Monitor, label: 'Desktop' },
-                { id: 'tablet', icon: Tablet, label: 'Tablet' },
-                { id: 'mobile', icon: Smartphone, label: 'Mobile' },
-              ].map(dev => (
-                <button
-                  key={dev.id}
-                  onClick={() => setDevice(dev.id)}
-                  className={`p-1.5 rounded-md transition ${device === dev.id
-                    ? 'bg-[var(--surface-muted)] text-[var(--text-primary)] shadow-sm'
-                    : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-tertiary)]'
-                    }`}
-                  title={dev.label}
-                >
-                  <dev.icon className="w-4 h-4" />
-                </button>
-              ))}
-            </div>
+          <div>
+            <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Meta Description</label>
+            <textarea value={seo.description} onChange={e => setSeo(s => ({ ...s, description: e.target.value }))} maxLength={160} rows={2}
+              className={`${INPUT} resize-none`} placeholder={content.description || 'A short pitch...'} />
           </div>
+          <div>
+            <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">Share Preview Image</label>
+            <input type="url" value={seo.image} onChange={e => setSeo(s => ({ ...s, image: e.target.value }))}
+              className={INPUT} placeholder="https://... (defaults to hero image)" />
+          </div>
+        </div>
+      </div>
 
-          {/* Preview iframe */}
-          {(() => {
-            const DESKTOP_W = 1280;
-            const DESKTOP_H = Math.round(DESKTOP_W * 10 / 16); // 16:10 aspect ratio = 800px
-            const isDesktop = device === 'desktop';
-            const isMobile = device === 'mobile';
-            const devicePx = isDesktop ? DESKTOP_W : isMobile ? 375 : 768;
-            const zoom = isDesktop ? Math.min(1, previewW / DESKTOP_W) : 1;
-
-            const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
-
-            const BrowserChrome = () => (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-[var(--surface-muted)] border-b border-[var(--border)] shrink-0">
-                <div className="flex gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-400" />
-                  <span className="w-3 h-3 rounded-full bg-amber-400" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                </div>
-                <div className="flex-1 px-3 py-1 bg-[var(--surface)] rounded-md border border-[var(--border)]">
-                  <p className="text-[10px] text-[var(--text-tertiary)] font-mono truncate">
-                    {site ? `https://${getSiteDisplayUrl(site)}` : 'Loading...'}
-                  </p>
-                </div>
-                <button onClick={() => setPreviewKey(Date.now())}
-                  className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-tertiary)] transition" title="Refresh">
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            );
-
-            // Single container for all devices — avoids unmount/remount flash on device switch
-            return (
-              <div ref={previewWrapperRef} className={`flex-1 flex items-start justify-center px-6 pb-6 overflow-y-auto overflow-x-hidden ${isDesktop ? 'pt-16' : 'pt-6'}`}>
-                <div
-                  className="bg-[var(--surface)] rounded-xl shadow-2xl border border-[var(--border)] overflow-hidden flex flex-col"
-                  style={{
-                    width: devicePx,
-                    maxWidth: '100%',
-                    height: isDesktop ? DESKTOP_H : '100%',
-                    zoom: isDesktop ? zoom : undefined,
-                    transformOrigin: 'top left',
-                  }}
-                >
-                  <BrowserChrome />
-                  {loading ? (
-                    <div className="flex-1 flex flex-col items-center pt-24 px-6 gap-5 bg-[var(--surface)] border-0">
-                      <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
-                      <div className="w-48 h-6 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0" />
-                      <div className="w-64 h-3 rounded-md bg-gray-200 dark:bg-[var(--bg-secondary)] animate-pulse shrink-0 mt-1" />
-
-                      <div className="w-full max-w-[320px] mt-10 space-y-3.5">
-                        <div className="w-full h-14 rounded-xl bg-[var(--surface-muted)] animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-[var(--surface-muted)] animate-pulse" />
-                        <div className="w-full h-14 rounded-xl bg-[var(--surface-muted)] animate-pulse" />
-                      </div>
-                    </div>
-                  ) : previewUrl ? (
-                    <iframe ref={iframeRef} key={previewKey} src={previewUrl}
-                      className="w-full flex-1 border-0" title="Landing Page Preview" />
-                  ) : (
-                    <div className="flex items-center justify-center flex-1 text-sm text-[var(--text-tertiary)]">No preview available</div>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
-
+      {/* Activate / Deactivate */}
+      <div className={SETTINGS_CARD}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+              {isPublished ? <CheckCircle2 className="h-4 w-4 text-[var(--success)]" /> : <XCircle className="h-4 w-4 text-[var(--text-tertiary)]" />}
+              {isPublished ? 'Link is Active' : 'Link is Inactive'}
+            </h3>
+            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+              {isPublished ? 'Your page is live and accessible to visitors.' : 'Your page is hidden. Visitors will see a 404 page.'}
+            </p>
+          </div>
+          <button
+            role="switch"
+            aria-checked={isPublished}
+            aria-label={isPublished ? 'Deactivate link' : 'Activate link'}
+            onClick={() => setIsPublished(!isPublished)}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${isPublished ? 'bg-[var(--success)]' : 'border border-[var(--border)] bg-[var(--surface-muted)]'}`}
+          >
+            <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${isPublished ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
         </div>
       </div>
     </div>
+  );
+
+  const sections: Record<string, React.ReactNode> = {
+    logo: <SinglePageLogoEditor data={content} onChange={setContent} />,
+    product: <SinglePageProductEditor data={content} onChange={setContent} products={products} />,
+    content: (
+      <div className="space-y-5">
+        <SinglePageHeroEditor data={content} onChange={setContent} />
+        <SinglePageContentEditor data={content} onChange={setContent} />
+        <SinglePageTrustEditor data={content} onChange={setContent} />
+      </div>
+    ),
+    template: (
+      <SinglePageTemplateEditor
+        currentAppearance={appearance}
+        currentPalette={palette}
+        onApply={(newPalette, newAppearance) => { setPalette(newPalette); setAppearance(newAppearance); }}
+      />
+    ),
+    appearance: (
+      <BioAppearanceEditor
+        data={appearance}
+        onChange={setAppearance}
+        palette={palette}
+        onPaletteChange={(key, value) => setPalette(prev => ({ ...prev, [key]: value }))}
+      />
+    ),
+    social: <SinglePageSocialEditor data={content} onChange={setContent} />,
+    checkout: <SinglePageCheckoutEditor data={content} onChange={setContent} />,
+    settings: settingsSection,
+    advanced: <SinglePageAdvancedEditor data={content} onChange={setContent} />,
+  };
+
+  return (
+    <>
+      <EditorShell
+        siteType="single"
+        storageKey="singlepage-editor-sidebar"
+        nav={NAV}
+        sectionMeta={SECTION_META}
+        sections={sections}
+        defaultActive="logo"
+        previewWidthClass="lg:w-[480px]"
+        title={displayTitle}
+        typeLabel="Single page"
+        typeIcon={FileText}
+        onBack={() => guardedNavigate('/dashboard/sites')}
+        onNavigate={guardedNavigate}
+        saving={saving}
+        saved={saved}
+        dirty={dirty}
+        onSave={handleSave}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        preview={
+          <SitePreviewPane
+            previewUrl={previewUrl} displayUrl={displayUrl} iframeRef={iframeRef}
+            previewKey={previewKey} onRefresh={() => setPreviewKey(Date.now())}
+          />
+        }
+      />
+
+      {pendingNav && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <button aria-label="Stay on page" tabIndex={-1} onClick={() => setPendingNav(null)} className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm" />
+          <div role="dialog" aria-modal="true" aria-label="Unsaved changes" className="relative z-10 w-full max-w-sm rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card-lg)]">
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">Unsaved changes</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">You have unsaved changes. Save them to apply live, or discard them before leaving.</p>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button onClick={() => setPendingNav(null)} className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
+              <button onClick={discardAndLeave} className="rounded-[var(--radius-sm)] px-3.5 py-2 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger-bg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Discard changes</button>
+              <button onClick={saveAndLeave} disabled={saving} className="rounded-[var(--radius-sm)] bg-[var(--brand)] px-3.5 py-2 text-sm font-semibold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50">{saving ? 'Saving…' : 'Save & leave'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

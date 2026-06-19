@@ -3,30 +3,9 @@
 import React from 'react';
 import { User, MessageSquare, HelpCircle, Plus, X, Star } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
-import { editorInput, EDITOR_ACCENTS, FieldLabel } from '../../_shared/editorStyles';
+import { INPUT, FieldLabel, SectionCard } from './_shared';
 
 export type { SinglePageContentData };
-
-const INPUT = editorInput(EDITOR_ACCENTS.amber);
-
-function SectionCard({ icon: Icon, title, desc, color = 'amber', children }: { icon: React.ElementType; title: string; desc?: string; color?: string; children: React.ReactNode }) {
-  const colors: Record<string, string> = {
-    amber: 'text-amber-500',
-    rose: 'text-rose-500',
-    emerald: 'text-emerald-500',
-  };
-  return (
-    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-      <div>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${colors[color] ?? 'text-amber-500'}`} /> {title}
-        </h3>
-        {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 interface Props {
   data: SinglePageContentData;
@@ -44,17 +23,17 @@ export default function SinglePageTrustEditor({ data, onChange }: Props) {
         <div className="flex gap-4 items-start">
           {cp.avatarUrl ? (
             <div className="relative group shrink-0">
-              <img src={cp.avatarUrl} alt="Creator avatar" className="w-20 h-20 rounded-full object-cover border-2 border-gray-100 dark:border-[var(--border)] shadow-md" />
+              <img src={cp.avatarUrl} alt="Creator avatar" className="w-20 h-20 rounded-full object-cover border-2 border-[var(--border)] shadow-md" />
               <button
                 onClick={() => onChange({ ...data, creatorProfile: { ...cp, avatarUrl: '' } })}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--danger)] rounded-full text-[var(--text-on-brand)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
               >
                 <X className="w-3 h-3" />
               </button>
             </div>
           ) : (
-            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-[var(--bg-secondary)] flex items-center justify-center shrink-0 border-2 border-dashed border-gray-300 dark:border-[var(--border)]">
-              <User className="w-8 h-8 text-gray-300" />
+            <div className="w-20 h-20 rounded-full bg-[var(--surface-muted)] flex items-center justify-center shrink-0 border-2 border-dashed border-[var(--border)]">
+              <User className="w-8 h-8 text-[var(--text-tertiary)]" />
             </div>
           )}
           <div className="flex-1 space-y-3">
@@ -96,10 +75,10 @@ export default function SinglePageTrustEditor({ data, onChange }: Props) {
       <SectionCard icon={MessageSquare} title="Testimonials" desc="Social proof from happy customers. Avatars are optional." color="rose">
         <div className="space-y-4">
           {data.testimonials.map((t, i) => (
-            <div key={i} className="p-4 bg-gray-50/80 dark:bg-[var(--bg-secondary)]/20 rounded-2xl border border-[var(--border)] group relative">
+            <div key={i} className="p-4 bg-[var(--surface-muted)] rounded-2xl border border-[var(--border)] group relative">
               <button
                 onClick={() => onChange({ ...data, testimonials: data.testimonials.filter((_, idx) => idx !== i) })}
-                className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10"
+                className="absolute top-3 right-3 p-1.5 text-[var(--text-tertiary)] hover:text-[var(--danger)] opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-[var(--danger-bg)]"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -164,7 +143,7 @@ export default function SinglePageTrustEditor({ data, onChange }: Props) {
         </div>
         <button
           onClick={() => onChange({ ...data, testimonials: [...data.testimonials, { name: '', role: '', text: '', avatarUrl: '' }] })}
-          className="flex items-center justify-center w-full gap-2 py-3 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-2xl text-[13px] font-semibold text-gray-500 hover:text-rose-500 hover:border-rose-300 dark:hover:border-rose-500/30 hover:bg-rose-50/50 dark:hover:bg-rose-500/5 transition-all"
+          className="flex items-center justify-center w-full gap-2 py-3 border border-dashed border-[var(--border)] rounded-2xl text-[13px] font-semibold text-[var(--text-secondary)] hover:text-[var(--brand)] hover:border-[var(--brand)]/40 hover:bg-[var(--surface-hover)] transition-all"
         >
           <Plus className="w-4 h-4" /> Add Testimonial
         </button>
@@ -174,10 +153,10 @@ export default function SinglePageTrustEditor({ data, onChange }: Props) {
       <SectionCard icon={HelpCircle} title="FAQ" desc="Answer common objections before they arise." color="amber">
         <div className="space-y-4">
           {data.faqs.map((faq, i) => (
-            <div key={i} className="p-4 bg-gray-50/80 dark:bg-[var(--bg-secondary)]/20 rounded-2xl border border-[var(--border)] group relative">
+            <div key={i} className="p-4 bg-[var(--surface-muted)] rounded-2xl border border-[var(--border)] group relative">
               <button
                 onClick={() => onChange({ ...data, faqs: data.faqs.filter((_, idx) => idx !== i) })}
-                className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10"
+                className="absolute top-3 right-3 p-1.5 text-[var(--text-tertiary)] hover:text-[var(--danger)] opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-[var(--danger-bg)]"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -208,7 +187,7 @@ export default function SinglePageTrustEditor({ data, onChange }: Props) {
         </div>
         <button
           onClick={() => onChange({ ...data, faqs: [...data.faqs, { question: '', answer: '' }] })}
-          className="flex items-center justify-center w-full gap-2 py-3 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-2xl text-[13px] font-semibold text-gray-500 hover:text-amber-500 hover:border-amber-300 dark:hover:border-amber-500/30 hover:bg-amber-50/50 dark:hover:bg-amber-500/5 transition-all"
+          className="flex items-center justify-center w-full gap-2 py-3 border border-dashed border-[var(--border)] rounded-2xl text-[13px] font-semibold text-[var(--text-secondary)] hover:text-[var(--brand)] hover:border-[var(--brand)]/40 hover:bg-[var(--surface-hover)] transition-all"
         >
           <Plus className="w-4 h-4" /> Add FAQ
         </button>

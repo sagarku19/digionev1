@@ -3,23 +3,7 @@
 import React from 'react';
 import { Plus, X, GripVertical, Type, Image, Code, Minus, Heading1, Play, MousePointerClick, Space, Quote, ChevronUp, ChevronDown } from 'lucide-react';
 import type { SinglePageContentData, ContentBlock } from './singlepage-types';
-import { editorInput, EDITOR_ACCENTS, FieldLabel } from '../../_shared/editorStyles';
-
-const INPUT = editorInput(EDITOR_ACCENTS.emerald);
-
-function SectionCard({ icon: Icon, title, desc, children }: { icon: React.ElementType; title: string; desc?: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
-      <div>
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <Icon className="w-4 h-4 text-emerald-500" /> {title}
-        </h3>
-        {desc && <p className="text-[13px] text-gray-500 mt-1">{desc}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
+import { INPUT, FieldLabel, SectionCard } from './_shared';
 
 const BLOCK_TYPES: { id: ContentBlock['type']; label: string; icon: React.ElementType }[] = [
   { id: 'heading', label: 'Heading', icon: Heading1 },
@@ -100,23 +84,23 @@ export default function SinglePageContentEditor({
               const TypeIcon = typeInfo?.icon || Type;
               const meta = block.metadata || {};
               return (
-                <div key={block.id} className="bg-gray-50 dark:bg-[var(--bg-secondary)]/30 border border-[var(--border)] rounded-xl p-4 group relative">
+                <div key={block.id} className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-xl p-4 group relative">
                   <div className="flex items-center gap-2 mb-3">
                     {/* Reorder */}
                     <div className="flex flex-col gap-0.5 shrink-0">
                       <button onClick={() => moveBlock(blockIdx, -1)} disabled={blockIdx === 0}
-                        className="p-0.5 text-gray-300 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30 transition">
+                        className="p-0.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 transition">
                         <ChevronUp className="w-3 h-3" />
                       </button>
                       <button onClick={() => moveBlock(blockIdx, 1)} disabled={blockIdx === blocks.length - 1}
-                        className="p-0.5 text-gray-300 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30 transition">
+                        className="p-0.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 transition">
                         <ChevronDown className="w-3 h-3" />
                       </button>
                     </div>
-                    <TypeIcon className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                    <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">{typeInfo?.label}</span>
+                    <TypeIcon className="w-3.5 h-3.5 text-[var(--text-secondary)] shrink-0" />
+                    <span className="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">{typeInfo?.label}</span>
                     <button onClick={() => removeBlock(block.id)}
-                      className="ml-auto p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                      className="ml-auto p-1 text-[var(--text-tertiary)] hover:text-[var(--danger)] opacity-0 group-hover:opacity-100 transition-all">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -136,7 +120,7 @@ export default function SinglePageContentEditor({
                         onChange={e => updateBlock(block.id, { content: e.target.value })}
                         className={`${INPUT} resize-none font-mono text-xs`}
                         placeholder='<div>Your custom HTML...</div>' />
-                      <p className="text-[10px] text-amber-500">HTML is rendered directly. Be careful with scripts.</p>
+                      <p className="text-[10px] text-[var(--warning)]">HTML is rendered directly. Be careful with scripts.</p>
                     </div>
                   )}
 
@@ -152,8 +136,8 @@ export default function SinglePageContentEditor({
                             onClick={() => updateBlockMeta(block.id, 'size', hs.id)}
                             className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold border transition ${
                               (meta.size || 'h2') === hs.id
-                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300'
-                                : 'border-gray-200 dark:border-[var(--border)] text-gray-500 hover:border-gray-300'
+                                ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]'
+                                : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]'
                             }`}>
                             {hs.label}
                           </button>
@@ -172,7 +156,7 @@ export default function SinglePageContentEditor({
                         onChange={e => updateBlockMeta(block.id, 'alt', e.target.value)}
                         className={INPUT} placeholder="Alt text (for accessibility)" />
                       {block.content && (
-                        <img src={block.content} alt={meta.alt || ''} className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-[var(--border)]" />
+                        <img src={block.content} alt={meta.alt || ''} className="w-full h-32 object-cover rounded-lg border border-[var(--border)]" />
                       )}
                     </div>
                   )}
@@ -183,10 +167,10 @@ export default function SinglePageContentEditor({
                       <input type="url" value={block.content}
                         onChange={e => updateBlock(block.id, { content: e.target.value })}
                         className={INPUT} placeholder="https://youtube.com/watch?v=... or Vimeo URL" />
-                      <p className="text-[10px] text-gray-400">Supports YouTube & Vimeo links. Auto-embeds the player.</p>
+                      <p className="text-[10px] text-[var(--text-tertiary)]">Supports YouTube & Vimeo links. Auto-embeds the player.</p>
                       {block.content && (
-                        <div className="w-full aspect-video bg-black/10 dark:bg-white/5 rounded-lg flex items-center justify-center border border-gray-200 dark:border-[var(--border)]">
-                          <Play className="w-8 h-8 text-gray-400" />
+                        <div className="w-full aspect-video bg-[var(--surface-muted)] rounded-lg flex items-center justify-center border border-[var(--border)]">
+                          <Play className="w-8 h-8 text-[var(--text-tertiary)]" />
                         </div>
                       )}
                     </div>
@@ -215,8 +199,8 @@ export default function SinglePageContentEditor({
                               onClick={() => updateBlockMeta(block.id, 'style', s)}
                               className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold border transition capitalize ${
                                 (meta.style || 'solid') === s
-                                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                                  : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
+                                  ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]'
+                                  : 'border-[var(--border)] text-[var(--text-secondary)]'
                               }`}>
                               {s}
                             </button>
@@ -231,8 +215,8 @@ export default function SinglePageContentEditor({
                               onClick={() => updateBlockMeta(block.id, 'size', s)}
                               className={`flex-1 py-1.5 rounded-lg text-[10px] font-semibold border transition uppercase ${
                                 (meta.size || 'md') === s
-                                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                                  : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
+                                  ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]'
+                                  : 'border-[var(--border)] text-[var(--text-secondary)]'
                               }`}>
                               {s}
                             </button>
@@ -262,14 +246,14 @@ export default function SinglePageContentEditor({
                         onChange={e => updateBlock(block.id, { content: e.target.value })}
                         className={`${INPUT} resize-none font-mono text-xs`}
                         placeholder='<iframe src="https://..." width="100%" height="400"></iframe>' />
-                      <p className="text-[10px] text-gray-400">Paste any embed code — Google Forms, maps, Calendly, etc.</p>
+                      <p className="text-[10px] text-[var(--text-tertiary)]">Paste any embed code — Google Forms, maps, Calendly, etc.</p>
                     </div>
                   )}
 
                   {/* ── Divider ── */}
                   {block.type === 'divider' && (
                     <div className="flex items-center justify-center py-2">
-                      <hr className="w-full border-gray-200 dark:border-[var(--border)]" />
+                      <hr className="w-full border-[var(--border)]" />
                     </div>
                   )}
 
@@ -281,8 +265,8 @@ export default function SinglePageContentEditor({
                           onClick={() => updateBlockMeta(block.id, 'size', sp.id)}
                           className={`flex-1 py-2 rounded-lg text-[10px] font-semibold border transition ${
                             (meta.size || 'md') === sp.id
-                              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                              : 'border-gray-200 dark:border-[var(--border)] text-gray-500'
+                              ? 'border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--brand)]'
+                              : 'border-[var(--border)] text-[var(--text-secondary)]'
                           }`}>
                           {sp.label} ({sp.px})
                         </button>
@@ -297,8 +281,8 @@ export default function SinglePageContentEditor({
 
         {blocks.length === 0 && (
           <div className="py-8 text-center border-2 border-dashed border-[var(--border)] rounded-xl">
-            <p className="text-sm text-gray-400">No content blocks yet</p>
-            <p className="text-xs text-gray-400 mt-1">Add blocks below to build your page content</p>
+            <p className="text-sm text-[var(--text-tertiary)]">No content blocks yet</p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">Add blocks below to build your page content</p>
           </div>
         )}
 
@@ -306,7 +290,7 @@ export default function SinglePageContentEditor({
         <div className="grid grid-cols-5 gap-2 pt-2">
           {BLOCK_TYPES.map(bt => (
             <button key={bt.id} onClick={() => addBlock(bt.id)}
-              className="flex flex-col items-center gap-1.5 py-3 border border-dashed border-gray-300 dark:border-[var(--border)] rounded-xl text-gray-500 hover:text-emerald-500 hover:border-emerald-300 dark:hover:border-emerald-500/30 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5 transition-all">
+              className="flex flex-col items-center gap-1.5 py-3 border border-dashed border-[var(--border)] rounded-xl text-[var(--text-secondary)] hover:text-[var(--brand)] hover:border-[var(--brand)]/40 hover:bg-[var(--surface-hover)] transition-all">
               <bt.icon className="w-4 h-4" />
               <span className="text-[10px] font-semibold">{bt.label}</span>
             </button>

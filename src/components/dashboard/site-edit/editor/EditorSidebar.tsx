@@ -12,6 +12,34 @@ export type SidebarItem = {
   comingSoon?: boolean;
 };
 
+export type EditorSiteType = 'linkinbio' | 'single';
+
+// Per-type config for the header page-switcher dropdown.
+type SwitcherConfig = {
+  match: string;
+  editBase: string;
+  heading: string;
+  label: (s: import('@/hooks/useSites').SiteWithMain) => string;
+  url: (s: import('@/hooks/useSites').SiteWithMain) => string;
+};
+
+const SWITCHER: Record<EditorSiteType, SwitcherConfig> = {
+  linkinbio: {
+    match: 'linkinbio',
+    editBase: 'linkinbio',
+    heading: 'Your link-in-bio pages',
+    label: (s) => s.linkinbio_pages?.display_name || s.slug || 'Untitled',
+    url: (s) => (s.slug ? `/link/${s.slug}` : 'No URL'),
+  },
+  single: {
+    match: 'single',
+    editBase: 'singlepage',
+    heading: 'Your single pages',
+    label: (s) => s.site_singlepage?.title || s.slug || 'Untitled',
+    url: (s) => (s.slug ? `/site/${s.slug}` : 'No URL'),
+  },
+};
+
 type Props = {
   items: SidebarItem[];
   active: string;
@@ -23,6 +51,7 @@ type Props = {
   typeIcon: ElementType;
   onBack: () => void;
   onNavigate?: (href: string) => void;
+  siteType?: EditorSiteType;
   canUndo?: boolean;
   canRedo?: boolean;
   onUndo?: () => void;
@@ -31,17 +60,18 @@ type Props = {
 
 export default function EditorSidebar({
   items, active, onSelect, collapsed, onToggleCollapse, title, typeLabel, typeIcon: TypeIcon, onBack,
-  onNavigate, canUndo, canRedo, onUndo, onRedo,
+  onNavigate, siteType = 'linkinbio', canUndo, canRedo, onUndo, onRedo,
 }: Props) {
   const main = items.filter((i) => i.group === 'main');
   const tools = items.filter((i) => i.group === 'tools');
   const width = collapsed ? 'w-[64px]' : 'w-[210px]';
 
+  const switcher = SWITCHER[siteType];
   const router = useRouter();
   const params = useParams();
   const currentId = params?.id as string | undefined;
   const { sites } = useSites();
-  const bioPages = sites.filter((s) => s.site_type === 'linkinbio');
+  const pages = sites.filter((s) => s.site_type === switcher.match);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,7 +87,7 @@ export default function EditorSidebar({
   const goToPage = (id: string) => {
     setMenuOpen(false);
     if (id === currentId) return;
-    const href = `/dashboard/sites/edit/linkinbio/${id}`;
+    const href = `/dashboard/sites/edit/${switcher.editBase}/${id}`;
     if (onNavigate) onNavigate(href);
     else router.push(href);
   };
@@ -103,7 +133,7 @@ export default function EditorSidebar({
           >
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              title="Switch link-in-bio page"
+              title="Switch page"
               aria-haspopup="listbox"
               aria-expanded={menuOpen}
               className="flex w-full items-center gap-1.5 rounded-[var(--radius-md)] px-1.5 py-1 text-left transition-colors hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
@@ -122,13 +152,12 @@ export default function EditorSidebar({
                 role="listbox"
                 className="absolute left-full top-3 z-30 ml-3 max-h-80 w-60 overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-[var(--shadow-lg)]"
               >
-                <p className="mb-1 border-b border-[var(--border-subtle)] px-2 pb-1.5 pt-1 text-[9px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Your link-in-bio pages</p>
-                {bioPages.length === 0 && (
+                <p className="mb-1 border-b border-[var(--border-subtle)] px-2 pb-1.5 pt-1 text-[9px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{switcher.heading}</p>
+                {pages.length === 0 && (
                   <p className="px-2 py-2 text-xs text-[var(--text-tertiary)]">No pages found</p>
                 )}
-                {bioPages.map((p) => {
+                {pages.map((p) => {
                   const isCurrent = p.id === currentId;
-                  const label = p.linkinbio_pages?.display_name || p.slug || 'Untitled';
                   return (
                     <button
                       key={p.id}
@@ -138,8 +167,8 @@ export default function EditorSidebar({
                       className={`flex w-full items-center gap-2 rounded-[var(--radius-sm)] px-2 py-1.5 text-left transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${isCurrent ? 'bg-[var(--surface-hover)]' : 'hover:bg-[var(--surface-hover)]'}`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-[var(--text-primary)]">{label}</p>
-                        <p className="truncate text-[11px] text-[var(--text-tertiary)]">{p.slug ? `/link/${p.slug}` : 'No URL'}</p>
+                        <p className="truncate text-sm font-medium text-[var(--text-primary)]">{switcher.label(p)}</p>
+                        <p className="truncate text-[11px] text-[var(--text-tertiary)]">{switcher.url(p)}</p>
                       </div>
                       {isCurrent && <Check className="h-4 w-4 shrink-0 text-[var(--brand)]" />}
                     </button>

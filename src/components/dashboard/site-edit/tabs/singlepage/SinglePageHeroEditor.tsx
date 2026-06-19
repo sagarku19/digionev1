@@ -3,11 +3,9 @@
 import React from 'react';
 import { ImageIcon } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
-import { editorInput, EDITOR_ACCENTS, FieldLabel } from '../../_shared/editorStyles';
+import { INPUT, FieldLabel } from './_shared';
 
 export type { SinglePageContentData };
-
-const INPUT = editorInput(EDITOR_ACCENTS.indigo);
 
 interface Props {
   data: SinglePageContentData;
@@ -16,12 +14,12 @@ interface Props {
 
 export default function SinglePageHeroEditor({ data, onChange }: Props) {
   return (
-    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="space-y-5 rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
       <div>
         <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-indigo-500" /> Hero Image
+          <ImageIcon className="w-4 h-4 text-[var(--brand)]" /> Hero Image
         </h3>
-        <p className="text-[13px] text-gray-500 mt-1">The main visual shown at the top of your page.</p>
+        <p className="text-[13px] text-[var(--text-secondary)] mt-1">The main visual shown at the top of your page.</p>
       </div>
 
       <div>
@@ -42,7 +40,7 @@ export default function SinglePageHeroEditor({ data, onChange }: Props) {
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <button
               onClick={() => onChange({ ...data, heroImage: '' })}
-              className="px-4 py-2 bg-red-500 text-white rounded-full text-xs font-semibold hover:scale-105 transition-transform shadow-md"
+              className="px-4 py-2 bg-[var(--danger)] text-[var(--text-on-brand)] rounded-full text-xs font-semibold hover:scale-105 transition-transform shadow-md"
             >
               Remove Image
             </button>
