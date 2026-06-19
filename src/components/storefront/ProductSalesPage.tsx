@@ -47,7 +47,11 @@ interface SinglePageMeta {
   header_divider?: boolean;
   header_width?: string;
   contact_whatsapp?: string;
+  checkout_show_login?: boolean;
+  checkout_fields?: { name?: string; email?: string; phone?: string };
 }
+
+type UpsellProduct = { id: string; name: string; price: number; thumbnail_url: string | null };
 
 interface SinglePageTheme {
   buttonStyle?: string;
@@ -120,6 +124,8 @@ interface LiveContent {
   headerWidth?: string;
   contactWhatsApp?: string;
   fakePrice?: number;
+  checkoutShowLogin?: boolean;
+  checkoutFields?: { name?: string; email?: string; phone?: string };
 }
 
 interface LiveAppearance {
@@ -518,10 +524,12 @@ function SocialLinksFooter({ socialLinks, position, displayStyle }: SocialLinksF
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function ProductSalesPage({ singlePage, palette }: {
+export default function ProductSalesPage({ singlePage, palette, isPreview, upsellProducts: upsellProductsProp }: {
   siteId?: string;
   singlePage: SinglePageData | null;
   palette?: Record<string, string>;
+  isPreview?: boolean;
+  upsellProducts?: UpsellProduct[];
 }) {
   // All hooks must run unconditionally before any early return.
   const router = useRouter();
@@ -534,20 +542,27 @@ export default function ProductSalesPage({ singlePage, palette }: {
   const [liveContent, setLiveContent] = useState<LiveContent | null>(null);
   const [liveAppearance, setLiveAppearance] = useState<LiveAppearance | null>(null);
   const [livePalette, setLivePalette] = useState<Record<string, string> | null>(null);
+  const [liveUpsell, setLiveUpsell] = useState<UpsellProduct[] | null>(null);
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
       // reason: postMessage data is untyped at the DOM boundary; cast once and rely on optional chaining.
-      const msg = e.data as { type?: string; content?: LiveContent; appearance?: LiveAppearance; palette?: Record<string, string> } | null;
+      const msg = e.data as { type?: string; content?: LiveContent; appearance?: LiveAppearance; palette?: Record<string, string>; upsellProducts?: UpsellProduct[]; target?: string } | null;
       if (!msg || typeof msg !== 'object') return;
       if (msg.type === 'sp-content-update') {
         if (msg.content) setLiveContent(msg.content);
         if (msg.appearance) setLiveAppearance(msg.appearance);
         if (msg.palette) setLivePalette(msg.palette);
+        if (msg.upsellProducts) setLiveUpsell(msg.upsellProducts);
       }
       if (msg.type === 'theme-update' && msg.palette) {
         setLivePalette(msg.palette);
+      }
+      if (msg.type === 'sp-scroll' && msg.target === 'checkout') {
+        const scroll = () => document.getElementById('checkout')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        scroll();
+        setTimeout(scroll, 200);
       }
     };
     window.addEventListener('message', handler);
@@ -585,6 +600,7 @@ export default function ProductSalesPage({ singlePage, palette }: {
   const product = Array.isArray(singlePage.products) ? singlePage.products[0] : singlePage.products;
 
   const handleBuyNow = () => {
+    if (isPreview) return; // visual only in the editor preview
     if (!product?.id) return;
     addItem({
       id: product.id,
@@ -640,6 +656,11 @@ export default function ProductSalesPage({ singlePage, palette }: {
 
   // Fake price (for strike-through)
   const fakePrice: number = c?.fakePrice || 0;
+
+  // ── Checkout form config ──
+  const checkoutShowLogin: boolean = c?.checkoutShowLogin ?? meta.checkout_show_login ?? true;
+  const checkoutFields = (c?.checkoutFields ?? meta.checkout_fields ?? { name: 'required', email: 'required', phone: 'optional' }) as { name?: string; email?: string; phone?: string };
+  const upsellProducts: UpsellProduct[] = liveUpsell ?? upsellProductsProp ?? [];
 
   // ── Styles ──
   const getButtonRadius = () => ({ pill: 'rounded-full', sharp: 'rounded-none' } as Record<string, string>)[buttonStyle] ?? 'rounded-2xl';
@@ -755,6 +776,80 @@ export default function ProductSalesPage({ singlePage, palette }: {
 
         {/* ─── FAQ ─── */}
         <FaqSection faqs={faqs} openFaq={openFaq} setOpenFaq={setOpenFaq} />
+
+        {/* ─── CHECKOUT ─── */}
+        {showBuyNow && (
+          <section id="checkout" className="scroll-mt-6 space-y-5 rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)]/60 p-5 sm:p-6 backdrop-blur-sm">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">Checkout</h2>
+              <p className="text-sm text-[var(--text-secondary)]">Complete your purchase securely.</p>
+            </div>
+
+            {checkoutShowLogin && (
+              <div className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-sm">
+                <span className="text-[var(--text-secondary)]">Already have an account?</span>
+                <a href="/login" className="font-semibold text-[var(--brand-primary)] hover:opacity-80">Log in</a>
+              </div>
+            )}
+
+            {/* Contact fields (visual — purchase is completed on /checkout) */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(['name', 'email', 'phone'] as const).map((key) => {
+                const mode = checkoutFields[key] ?? (key === 'phone' ? 'optional' : 'required');
+                if (mode === 'off') return null;
+                const label = key === 'name' ? 'Full name' : key === 'email' ? 'Email' : 'Phone';
+                const type = key === 'email' ? 'email' : key === 'phone' ? 'tel' : 'text';
+                return (
+                  <div key={key} className={key === 'name' ? 'sm:col-span-2' : ''}>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-secondary)]">
+                      {label}{mode === 'required' && <span className="text-[var(--brand-primary)]"> *</span>}
+                    </label>
+                    <input
+                      type={type}
+                      placeholder={label}
+                      className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-colors focus:border-[var(--brand-primary)]"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Upsell products */}
+            {upsellProducts.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">Frequently bought together</p>
+                {upsellProducts.map((u) => (
+                  <label key={u.id} className="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-3">
+                    <input type="checkbox" className="h-4 w-4 accent-[var(--brand-primary)]" />
+                    {u.thumbnail_url ? (
+                      <img src={u.thumbnail_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-lg bg-[var(--bg-secondary)]" />
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--text-primary)]">{u.name}</span>
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">{u.price === 0 ? 'Free' : formatINR(u.price)}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {/* Total + pay */}
+            <div className="flex items-center justify-between border-t border-[var(--border-color)] pt-4">
+              <span className="text-sm text-[var(--text-secondary)]">Total</span>
+              <span className="text-2xl font-bold text-[var(--text-primary)]">{price === 0 ? 'Free' : formatINR(price)}</span>
+            </div>
+            <button
+              onClick={handleBuyNow}
+              className={cn(
+                'flex w-full items-center justify-center gap-2 bg-[var(--brand-primary)] py-4 text-base font-bold text-[var(--brand-foreground)] shadow-[0_8px_20px_-8px_var(--brand-primary)] transition-all hover:opacity-90',
+                getButtonRadius()
+              )}
+            >
+              <ShoppingCart className="h-4 w-4" /> {price === 0 ? 'Get it Free' : 'Proceed to Pay'}
+            </button>
+            <p className="text-center text-[11px] text-[var(--text-secondary)]">Secure checkout · UPI · Cards · Wallets</p>
+          </section>
+        )}
 
       </div>
 

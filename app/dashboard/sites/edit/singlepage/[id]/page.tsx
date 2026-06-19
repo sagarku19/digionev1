@@ -19,6 +19,7 @@ import SinglePageTemplateEditor from '@/src/components/dashboard/site-edit/tabs/
 import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageAppearanceEditor';
 import SinglePageSocialEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageSocialEditor';
 import SinglePageCheckoutEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageCheckoutEditor';
+import SinglePageCheckoutSettingsEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageCheckoutSettingsEditor';
 import SinglePageSettingsEditor, { type SinglePageSettingsData } from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageSettingsEditor';
 import SinglePageAdvancedEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageAdvancedEditor';
 import EditorShell from '@/src/components/dashboard/site-edit/editor/EditorShell';
@@ -26,7 +27,7 @@ import PreviewPane from '@/src/components/dashboard/site-edit/editor/PreviewPane
 import { type SidebarItem } from '@/src/components/dashboard/site-edit/editor/EditorSidebar';
 import {
   Image, Package, FileText, Sparkles, Palette, Share2, ShoppingCart, Settings, Terminal,
-  Globe2, Search, Loader2, CheckCircle2, XCircle,
+  Globe2, Search, Loader2, CheckCircle2, XCircle, SlidersHorizontal,
 } from 'lucide-react';
 
 const NAV: SidebarItem[] = [
@@ -36,7 +37,8 @@ const NAV: SidebarItem[] = [
   { id: 'template', label: 'Template', icon: Sparkles, group: 'main' },
   { id: 'appearance', label: 'Appearance', icon: Palette, group: 'main' },
   { id: 'social', label: 'Social', icon: Share2, group: 'main' },
-  { id: 'checkout', label: 'Checkout', icon: ShoppingCart, group: 'main' },
+  { id: 'checkout-page', label: 'Checkout Page', icon: ShoppingCart, group: 'checkout', groupLabel: 'Checkout' },
+  { id: 'checkout-settings', label: 'Checkout Settings', icon: SlidersHorizontal, group: 'checkout', groupLabel: 'Checkout' },
   { id: 'settings', label: 'Settings', icon: Settings, group: 'main' },
   { id: 'advanced', label: 'Advanced', icon: Terminal, group: 'main' },
 ];
@@ -48,7 +50,8 @@ const SECTION_META: Record<string, string> = {
   template: 'Pick a starting design.',
   appearance: 'Theme, colors, and fonts.',
   social: 'Social links and placement.',
-  checkout: 'Checkout style and call-to-action.',
+  'checkout-page': 'Checkout style, CTA, and trust.',
+  'checkout-settings': 'Contact fields, login, and upsells.',
   settings: 'URL, SEO, and visibility.',
   advanced: 'Custom code and tracking.',
 };
@@ -72,6 +75,7 @@ export default function EditSinglePagePage() {
   const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
+  const [section, setSection] = useState('logo');
 
   // ── Site data ──
   const [site, setSite] = useState<any>(null);
@@ -95,6 +99,7 @@ export default function EditSinglePagePage() {
     socialLinks: [], socialDisplayStyle: 'icons-only', socialPosition: 'footer',
     checkoutStyle: 'embedded', checkoutAlignment: 'center', ctaText: '', ctaSubtext: '',
     ctaButtonStyle: 'solid', ctaButtonSize: 'lg', showTrustBadges: true, trustBadges: [], showPaymentIcons: true,
+    checkoutShowLogin: true, checkoutFields: { name: 'required', email: 'required', phone: 'optional' },
     customCss: '', customJs: '', customHeadTags: '', contactEmail: '', contactMobile: '', contactWhatsApp: '',
     redirectAfterPurchase: '', passwordProtection: false, pagePassword: '', analyticsGoogleId: '', analyticsFbPixelId: '',
   });
@@ -245,6 +250,8 @@ export default function EditSinglePagePage() {
         showTrustBadges: pageMeta?.show_trust_badges ?? true,
         trustBadges: pageMeta?.trust_badges || [],
         showPaymentIcons: pageMeta?.show_payment_icons ?? true,
+        checkoutShowLogin: pageMeta?.checkout_show_login ?? true,
+        checkoutFields: pageMeta?.checkout_fields || { name: 'required', email: 'required', phone: 'optional' },
         customCss: pageMeta?.custom_css || '',
         customJs: pageMeta?.custom_js || '',
         customHeadTags: pageMeta?.custom_head_tags || '',
@@ -297,6 +304,22 @@ export default function EditSinglePagePage() {
     setLoading(false);
   }, [loaded, siteId, isError]);
 
+  // ── When a Checkout section is open, scroll the preview to the checkout block ──
+  // Re-post a few times: the iframe may still be loading (listener not yet attached).
+  useEffect(() => {
+    if (loading) return;
+    if (section !== 'checkout-page' && section !== 'checkout-settings') return;
+    const post = () => {
+      try {
+        iframeRef.current?.contentWindow?.postMessage({ type: 'sp-scroll', target: 'checkout' }, window.location.origin);
+      } catch { /* cross-origin guard */ }
+    };
+    post();
+    const t1 = setTimeout(post, 300);
+    const t2 = setTimeout(post, 800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [section, loading, previewKey]);
+
   // ── Mark dirty on user edits (skip initial hydrate) ──
   const dirtyInitRef = useRef(false);
   useEffect(() => {
@@ -324,19 +347,23 @@ export default function EditSinglePagePage() {
 
   // ── Push live content to iframe (debounced, no dep array — fires every render) ──
   const sendTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const latestPreviewRef = useRef({ content, appearance, palette });
-  latestPreviewRef.current = { content, appearance, palette };
+  const latestPreviewRef = useRef({ content, appearance, palette, products });
+  latestPreviewRef.current = { content, appearance, palette, products };
 
   useEffect(() => {
     if (loading) return;
     clearTimeout(sendTimerRef.current);
     sendTimerRef.current = setTimeout(() => {
-      const { content, appearance, palette } = latestPreviewRef.current;
+      const { content, appearance, palette, products } = latestPreviewRef.current;
       const iframe = iframeRef.current;
       if (!iframe?.contentWindow) return;
+      const upsellProducts = (content.upsellProductIds || [])
+        .map((id) => products.find((p) => p.id === id))
+        .filter((p): p is NonNullable<typeof p> => Boolean(p))
+        .map((p) => ({ id: p.id, name: p.name, price: p.price, thumbnail_url: p.thumbnail_url }));
       try {
         iframe.contentWindow.postMessage(
-          { type: 'sp-content-update', content, appearance, palette },
+          { type: 'sp-content-update', content, appearance, palette, upsellProducts },
           window.location.origin,
         );
       } catch { /* cross-origin guard */ }
@@ -419,6 +446,8 @@ export default function EditSinglePagePage() {
           show_trust_badges: content.showTrustBadges,
           trust_badges: content.trustBadges,
           show_payment_icons: content.showPaymentIcons,
+          checkout_show_login: content.checkoutShowLogin,
+          checkout_fields: content.checkoutFields,
           custom_css: content.customCss,
           custom_js: content.customJs,
           custom_head_tags: content.customHeadTags,
@@ -606,7 +635,8 @@ export default function EditSinglePagePage() {
       />
     ),
     social: <SinglePageSocialEditor data={content} onChange={setContent} />,
-    checkout: <SinglePageCheckoutEditor data={content} onChange={setContent} />,
+    'checkout-page': <SinglePageCheckoutEditor data={content} onChange={setContent} />,
+    'checkout-settings': <SinglePageCheckoutSettingsEditor data={content} onChange={setContent} products={products} />,
     settings: settingsSection,
     advanced: <SinglePageAdvancedEditor data={content} onChange={setContent} />,
   };
@@ -620,6 +650,8 @@ export default function EditSinglePagePage() {
         sectionMeta={SECTION_META}
         sections={sections}
         defaultActive="logo"
+        active={section}
+        onActiveChange={setSection}
         title={displayTitle}
         typeLabel="Single page"
         typeIcon={FileText}

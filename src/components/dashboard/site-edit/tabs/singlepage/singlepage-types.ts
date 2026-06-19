@@ -48,6 +48,9 @@ export type SinglePageContentData = {
   showTrustBadges?: boolean;
   trustBadges?: string[];
   showPaymentIcons?: boolean;
+  // Checkout form (visual config — rendered in the #checkout section)
+  checkoutShowLogin?: boolean;
+  checkoutFields?: { name: CheckoutFieldMode; email: CheckoutFieldMode; phone: CheckoutFieldMode };
 
   // Advanced
   customCss: string;
@@ -62,6 +65,8 @@ export type SinglePageContentData = {
   analyticsGoogleId?: string;
   analyticsFbPixelId?: string;
 };
+
+export type CheckoutFieldMode = 'off' | 'optional' | 'required';
 
 export type ContentBlock = {
   id: string;

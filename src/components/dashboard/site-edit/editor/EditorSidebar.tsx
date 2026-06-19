@@ -1,6 +1,6 @@
 'use client';
 import { ArrowLeft, ChevronsLeft, Undo2, Redo2, ChevronDown, Check } from 'lucide-react';
-import { useState, useRef, type ElementType } from 'react';
+import { useState, useRef, Fragment, type ElementType } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSites } from '@/hooks/useSites';
 
@@ -8,7 +8,8 @@ export type SidebarItem = {
   id: string;
   label: string;
   icon: ElementType;
-  group: 'main' | 'tools';
+  group: string; // 'main' renders headingless; any other group renders a heading
+  groupLabel?: string; // heading text for non-'main' groups (defaults: tools→"Tools")
   comingSoon?: boolean;
 };
 
@@ -62,8 +63,6 @@ export default function EditorSidebar({
   items, active, onSelect, collapsed, onToggleCollapse, title, typeLabel, typeIcon: TypeIcon, onBack,
   onNavigate, siteType = 'linkinbio', canUndo, canRedo, onUndo, onRedo,
 }: Props) {
-  const main = items.filter((i) => i.group === 'main');
-  const tools = items.filter((i) => i.group === 'tools');
   const width = collapsed ? 'w-[64px]' : 'w-[210px]';
 
   const switcher = SWITCHER[siteType];
@@ -181,14 +180,21 @@ export default function EditorSidebar({
       </div>
 
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-2.5">
-        {main.map(Row)}
-        {tools.length > 0 && (
-          <>
-            {!collapsed && <p className="px-2.5 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">Tools</p>}
-            {collapsed && <div className="my-2 h-px bg-[var(--border)]" />}
-            {tools.map(Row)}
-          </>
-        )}
+        {(() => {
+          let lastGroup = 'main';
+          return items.map((it) => {
+            const newGroup = it.group !== 'main' && it.group !== lastGroup;
+            lastGroup = it.group;
+            const heading = it.groupLabel ?? (it.group === 'tools' ? 'Tools' : it.group);
+            return (
+              <Fragment key={it.id}>
+                {newGroup && !collapsed && <p className="px-2.5 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">{heading}</p>}
+                {newGroup && collapsed && <div className="my-2 h-px bg-[var(--border)]" />}
+                {Row(it)}
+              </Fragment>
+            );
+          });
+        })()}
       </div>
       <div className="p-2.5">
         <div className={`flex gap-1.5 ${collapsed ? 'flex-col items-stretch' : ''}`}>

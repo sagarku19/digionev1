@@ -10,7 +10,7 @@
 | Type | URL | Slug page (server) | Renderer | Type/section source |
 |---|---|---|---|---|
 | link-in-bio | `/link/[username]` | `app/(storefront)/link/[username]/page.tsx` | `src/components/storefront/LinkInBioPage.tsx` | `src/components/storefront/linkinbio/blockRenderers/registry.tsx` (block list below) |
-| single-page | `/site/[slug]` | `app/(storefront)/site/[slug]/page.tsx` | `src/components/storefront/ProductSalesPage.tsx` (fixed template) | inline sub-sections |
+| single-page | `/site/[slug]` | `app/(storefront)/site/[slug]/page.tsx` (also fetches upsell products by id from `metadata.upsell_product_ids`; passes `isPreview`) | `src/components/storefront/ProductSalesPage.tsx` (fixed template; bottom `#checkout` section: login prompt + configurable name/email/phone fields + upsell list + Pay — visual, real purchase still routes via `/checkout`; listens for `sp-content-update`/`sp-scroll` postMessages from the editor) | inline sub-sections + `#checkout` |
 | store | `/store/[slug]` | `app/(storefront)/store/[slug]/page.tsx` | `src/components/storefront/SectionRenderer.tsx` | `section-defs.ts` (sections below) |
 | payment | `/pay/[siteId]` | `app/(storefront)/pay/[siteId]/page.tsx` | `src/components/storefront/PaymentLinkPage.tsx` | n/a |
 

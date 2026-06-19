@@ -118,5 +118,17 @@ export default async function SingleSitePage({
   // reason: color_palette is jsonb (typed Json); narrow once at the read boundary
   const palette = (tokens?.color_palette as Record<string, string>) || {};
 
-  return <ProductSalesPage siteId={site.id} singlePage={sp} palette={palette} />;
+  // Upsell products (ids live in site_singlepage.metadata.upsell_product_ids)
+  const spMeta = (sp?.metadata as Record<string, unknown>) || {};
+  const upsellIds = Array.isArray(spMeta.upsell_product_ids) ? (spMeta.upsell_product_ids as string[]) : [];
+  let upsellProducts: { id: string; name: string; price: number; thumbnail_url: string | null }[] = [];
+  if (upsellIds.length > 0) {
+    const { data: ups } = await supabase
+      .from('products')
+      .select('id, name, price, thumbnail_url')
+      .in('id', upsellIds);
+    if (ups) upsellProducts = ups;
+  }
+
+  return <ProductSalesPage siteId={site.id} singlePage={sp} palette={palette} isPreview={isPreview} upsellProducts={upsellProducts} />;
 }
