@@ -15,6 +15,7 @@ export const linkinbioRegistry: SectionRegistry<BioLink> = {
         label: t.label,
         icon: t.icon,
         categoryId: cat.label,
+        description: t.desc,
         summarize: summarizeBlock,
       };
     }

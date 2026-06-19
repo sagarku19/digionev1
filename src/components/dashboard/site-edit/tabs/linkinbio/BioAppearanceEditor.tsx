@@ -47,7 +47,7 @@ function SectionCard({ icon: Icon, title, desc, children }: {
   icon: React.ElementType; title: string; desc?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-5 shadow-sm">
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] p-6 space-y-5 shadow-[var(--shadow-card)]">
       <div>
         <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Icon className="w-4 h-4 text-pink-500" /> {title}

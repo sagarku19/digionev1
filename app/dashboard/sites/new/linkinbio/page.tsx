@@ -112,7 +112,7 @@ export default function CreateLinkInBioPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Failed to create Link in Bio');
-      router.push(`/dashboard/sites/edit/linkinbio/${json.siteId}`);
+      router.push(`/dashboard/sites/edit/linkinbio/${json.siteId}?setup=1`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unexpected error');
     } finally {

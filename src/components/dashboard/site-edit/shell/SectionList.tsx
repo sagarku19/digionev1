@@ -13,13 +13,14 @@ type Props<TItem extends SectionItem> = {
   onToggleVisible: (id: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
-  onAdd: (type: string) => void;
+  onAdd: (type: string) => string;
+  onCancelAdded: (id: string) => void;
   renderEditor: (item: TItem) => ReactNode;
   pinned?: ReactNode;
 };
 
 export default function SectionList<TItem extends SectionItem>({
-  items, registry, typeOf, onReorder, onToggleVisible, onDuplicate, onDelete, onAdd, renderEditor, pinned,
+  items, registry, typeOf, onReorder, onToggleVisible, onDuplicate, onDelete, onAdd, onCancelAdded, renderEditor, pinned,
 }: Props<TItem>) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
@@ -89,7 +90,11 @@ export default function SectionList<TItem extends SectionItem>({
       {adding && (
         <AddSectionPicker
           registry={registry}
-          onPick={(type) => { onAdd(type); setAdding(false); }}
+          items={items}
+          typeOf={typeOf}
+          onPick={onAdd}
+          onCancelAdded={onCancelAdded}
+          renderEditor={renderEditor}
           onClose={() => setAdding(false)}
         />
       )}

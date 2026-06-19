@@ -11,7 +11,7 @@ import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
 const INPUT = editorInput(EDITOR_ACCENTS.pink);
-const CARD = 'bg-[var(--bg-primary)] border border-gray-200/60 dark:border-[var(--border)]/60 rounded-3xl p-6 space-y-6 shadow-sm';
+const CARD = 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] p-6 space-y-6 shadow-[var(--shadow-card)]';
 
 export type SocialLink = { platform: string; url: string; is_visible: boolean };
 

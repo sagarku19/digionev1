@@ -9,6 +9,8 @@ import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import BioProfileEditor, { type BioProfileData, type SocialLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioProfileEditor';
 import { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioLinksEditor';
 import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioAppearanceEditor';
+import BioTemplates from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioTemplates';
+import BioSetupWizard from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioSetupWizard';
 import {
   Link2, Globe2, Search,
   Loader2, CheckCircle2, XCircle,
@@ -18,7 +20,6 @@ import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import LinkInBioShell from '@/components/dashboard/site-edit/editor/LinkInBioShell';
 import ProfileCard from '@/components/dashboard/site-edit/editor/ProfileCard';
-import ProfilePreviewCard from '@/components/dashboard/site-edit/editor/ProfilePreviewCard';
 import SectionList from '@/components/dashboard/site-edit/shell/SectionList';
 import { moveItem } from '@/components/dashboard/site-edit/shell/reorder';
 import { linkinbioRegistry } from '@/components/dashboard/site-edit/tabs/linkinbio/sectionRegistry';
@@ -251,6 +252,83 @@ const TEMPLATES: BioTemplate[] = [
   },
 ];
 
+// ─── Design templates (colour + style only — no content blocks) ──────────
+type DesignTemplate = {
+  name: string;
+  tag?: string;
+  preview: { bg: string; accent: string; text: string; card: string };
+  palette: Record<string, string>;
+  layoutStyle: string;
+  buttonStyle: string;
+  backgroundType: string;
+  backgroundValue: string;
+  fontFamily?: string;
+  cardStyle?: string;
+  animation?: string;
+  borderRadius?: string;
+  spacing?: string;
+  profileShape?: 'circular' | 'rounded' | 'square';
+};
+
+const DESIGN_TEMPLATES: DesignTemplate[] = [
+  {
+    name: 'Minimal',
+    preview: { bg: '#FFFFFF', accent: '#111111', text: '#111111', card: '#F4F4F5' },
+    palette: { primary: '#111111', text: '#111111', surface: '#F4F4F5', muted: '#6B7280', background: '#FFFFFF' },
+    layoutStyle: 'classic', buttonStyle: 'sharp', backgroundType: 'solid', backgroundValue: '#FFFFFF',
+    fontFamily: 'space-grotesk', cardStyle: 'bordered', borderRadius: 'none', spacing: 'compact',
+  },
+  {
+    name: 'Midnight', tag: 'Dark',
+    preview: { bg: '#0A0A0A', accent: '#22FF88', text: '#E5FFE5', card: '#141414' },
+    palette: { primary: '#22FF88', text: '#E5FFE5', surface: '#141414', muted: '#6EE7B7', background: '#0A0A0A' },
+    layoutStyle: 'classic', buttonStyle: 'outline', backgroundType: 'solid', backgroundValue: '#0A0A0A',
+    fontFamily: 'space-grotesk', cardStyle: 'bordered', borderRadius: 'sm',
+  },
+  {
+    name: 'Ocean',
+    preview: { bg: '#1E3A8A', accent: '#38BDF8', text: '#F0F9FF', card: '#1E40AF' },
+    palette: { primary: '#38BDF8', text: '#F0F9FF', surface: '#1E40AF', muted: '#93C5FD', background: '#1E3A8A' },
+    layoutStyle: 'classic', buttonStyle: 'rounded', backgroundType: 'gradient', backgroundValue: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    fontFamily: 'inter', cardStyle: 'glass', borderRadius: 'lg',
+  },
+  {
+    name: 'Sunset',
+    preview: { bg: '#7A1F3D', accent: '#FB7185', text: '#FFF1F2', card: '#9F1239' },
+    palette: { primary: '#FB7185', text: '#FFF1F2', surface: '#9F1239', muted: '#FDA4AF', background: '#7A1F3D' },
+    layoutStyle: 'classic', buttonStyle: 'pill', backgroundType: 'gradient', backgroundValue: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    fontFamily: 'poppins', cardStyle: 'glass', borderRadius: 'lg', spacing: 'relaxed',
+  },
+  {
+    name: 'Forest',
+    preview: { bg: '#0F2417', accent: '#34D399', text: '#ECFDF5', card: '#14321F' },
+    palette: { primary: '#34D399', text: '#ECFDF5', surface: '#14321F', muted: '#6EE7B7', background: '#0F2417' },
+    layoutStyle: 'classic', buttonStyle: 'rounded', backgroundType: 'solid', backgroundValue: '#0F2417',
+    fontFamily: 'dm-sans', cardStyle: 'solid', borderRadius: 'md',
+  },
+  {
+    name: 'Royal', tag: 'Glass',
+    preview: { bg: '#2E1065', accent: '#C084FC', text: '#F5F3FF', card: '#4C1D95' },
+    palette: { primary: '#C084FC', text: '#F5F3FF', surface: '#4C1D95', muted: '#D8B4FE', background: '#2E1065' },
+    layoutStyle: 'classic', buttonStyle: 'pill', backgroundType: 'gradient', backgroundValue: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    fontFamily: 'poppins', cardStyle: 'glass', borderRadius: 'lg', spacing: 'relaxed',
+  },
+  {
+    name: 'Editorial',
+    preview: { bg: '#FAF5EF', accent: '#B45309', text: '#292524', card: '#FFFFFF' },
+    palette: { primary: '#B45309', text: '#292524', surface: '#FFFFFF', muted: '#78716C', background: '#FAF5EF' },
+    layoutStyle: 'classic', buttonStyle: 'rounded', backgroundType: 'solid', backgroundValue: '#FAF5EF',
+    fontFamily: 'playfair', cardStyle: 'solid', borderRadius: 'sm', spacing: 'relaxed', profileShape: 'rounded',
+  },
+  {
+    name: 'Candy',
+    preview: { bg: '#FDF2F8', accent: '#C084FC', text: '#4C1D95', card: '#FFFFFF' },
+    palette: { primary: '#C084FC', text: '#4C1D95', surface: '#FFFFFF', muted: '#A78BFA', background: '#FDF2F8' },
+    layoutStyle: 'classic', buttonStyle: 'pill', backgroundType: 'gradient', backgroundValue: 'linear-gradient(135deg, #FDF2F8 0%, #EDE9FE 50%, #DBEAFE 100%)',
+    fontFamily: 'poppins', cardStyle: 'solid', borderRadius: 'lg', spacing: 'relaxed',
+  },
+];
+
 export default function EditLinkInBioPage() {
   const params = useParams();
   const router = useRouter();
@@ -261,6 +339,7 @@ export default function EditLinkInBioPage() {
   // ── UI state ──
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
 
@@ -318,9 +397,12 @@ export default function EditLinkInBioPage() {
   const historyRef = useRef<EditorSnapshot[]>([]);
   const historyIndexRef = useRef(-1);
   const isRestoringRef = useRef(false);
+  // Bumped whenever the history position changes so canUndo/canRedo re-render
+  // (the refs above don't trigger renders on their own).
+  const [historyVersion, setHistoryVersion] = useState(0);
+  const bumpHistoryUi = useCallback(() => setHistoryVersion((v) => v + 1), []);
 
   const pushSnapshot = useCallback(() => {
-    if (isRestoringRef.current) return;
     const snap: EditorSnapshot = {
       profile: JSON.parse(JSON.stringify(profile)),
       links: JSON.parse(JSON.stringify(links)),
@@ -335,46 +417,53 @@ export default function EditLinkInBioPage() {
     // Cap at 50 snapshots
     if (historyRef.current.length > 50) historyRef.current.shift();
     historyIndexRef.current = historyRef.current.length - 1;
-  }, [profile, links, appearance, palette, seo]);
+    bumpHistoryUi();
+  }, [profile, links, appearance, palette, seo, bumpHistoryUi]);
 
-  // Push snapshot on meaningful state changes (debounced)
+  // Push snapshot on meaningful state changes (debounced). A state change caused
+  // by undo/redo sets isRestoringRef — skip recording it (and clear the flag) so
+  // the redo future isn't trimmed.
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (loading) return;
+    if (isRestoringRef.current) { isRestoringRef.current = false; return; }
     if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
     pushTimerRef.current = setTimeout(pushSnapshot, 400);
     return () => { if (pushTimerRef.current) clearTimeout(pushTimerRef.current); };
   }, [profile, links, appearance, palette, seo, loading, pushSnapshot]);
 
-  const canUndo = historyIndexRef.current > 0;
+  // Mark the editor dirty on any user edit (skip the initial post-load hydrate).
+  const dirtyInitRef = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    if (!dirtyInitRef.current) { dirtyInitRef.current = true; return; }
+    setDirty(true);
+  }, [profile, links, appearance, palette, seo, slug, isPublished, loading]);
+
+  const canUndo = historyVersion >= 0 && historyIndexRef.current > 0;
   const canRedo = historyIndexRef.current < historyRef.current.length - 1;
+
+  const restoreSnapshot = useCallback((snap: EditorSnapshot) => {
+    isRestoringRef.current = true;
+    setProfile(snap.profile);
+    setLinks(snap.links);
+    setAppearance(snap.appearance);
+    setPalette(snap.palette);
+    setSeo(snap.seo);
+    bumpHistoryUi();
+  }, [bumpHistoryUi]);
 
   const handleUndo = useCallback(() => {
     if (historyIndexRef.current <= 0) return;
-    isRestoringRef.current = true;
     historyIndexRef.current -= 1;
-    const snap = historyRef.current[historyIndexRef.current];
-    setProfile(snap.profile);
-    setLinks(snap.links);
-    setAppearance(snap.appearance);
-    setPalette(snap.palette);
-    setSeo(snap.seo);
-    // Allow new snapshots again after state settles
-    requestAnimationFrame(() => { isRestoringRef.current = false; });
-  }, []);
+    restoreSnapshot(historyRef.current[historyIndexRef.current]);
+  }, [restoreSnapshot]);
 
   const handleRedo = useCallback(() => {
     if (historyIndexRef.current >= historyRef.current.length - 1) return;
-    isRestoringRef.current = true;
     historyIndexRef.current += 1;
-    const snap = historyRef.current[historyIndexRef.current];
-    setProfile(snap.profile);
-    setLinks(snap.links);
-    setAppearance(snap.appearance);
-    setPalette(snap.palette);
-    setSeo(snap.seo);
-    requestAnimationFrame(() => { isRestoringRef.current = false; });
-  }, []);
+    restoreSnapshot(historyRef.current[historyIndexRef.current]);
+  }, [restoreSnapshot]);
 
   // Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts
   useEffect(() => {
@@ -509,6 +598,34 @@ export default function EditLinkInBioPage() {
       } catch { /* cross-origin guard */ }
       return next;
     });
+  }, []);
+
+  // ── Apply a DESIGN template (palette + appearance only — keeps content) ──
+  const applyDesign = useCallback((tpl: DesignTemplate) => {
+    setPalette(tpl.palette);
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'theme-update', palette: tpl.palette },
+        window.location.origin,
+      );
+    } catch { /* cross-origin guard */ }
+
+    setAppearance(prev => ({
+      ...prev,
+      layoutStyle: tpl.layoutStyle,
+      buttonStyle: tpl.buttonStyle,
+      backgroundType: tpl.backgroundType,
+      backgroundValue: tpl.backgroundValue,
+      fontFamily: tpl.fontFamily ?? prev.fontFamily,
+      cardStyle: tpl.cardStyle ?? prev.cardStyle,
+      animation: tpl.animation ?? prev.animation,
+      borderRadius: tpl.borderRadius ?? prev.borderRadius,
+      spacing: tpl.spacing ?? prev.spacing,
+    }));
+
+    if (tpl.profileShape) {
+      setProfile(prev => ({ ...prev, avatarShape: tpl.profileShape }));
+    }
   }, []);
 
   // ── Apply a full template (palette + layout + button + background) ──
@@ -846,12 +963,54 @@ export default function EditLinkInBioPage() {
 
       queryClient.invalidateQueries({ queryKey: ['sites', 'linkinbio', siteId] });
       setSaved(true);
+      setDirty(false);
       setPreviewKey(Date.now());
       setTimeout(() => setSaved(false), 3000);
     } finally {
       setSaving(false);
     }
   }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo, isPublished, queryClient]);
+
+  // ── Leave guard: warn before navigating away with unsaved changes ──
+  const [pendingNav, setPendingNav] = useState<string | null>(null);
+  const guardedNavigate = useCallback((href: string) => {
+    if (dirty) setPendingNav(href);
+    else router.push(href);
+  }, [dirty, router]);
+  const discardAndLeave = useCallback(() => {
+    const href = pendingNav;
+    setPendingNav(null);
+    if (href) router.push(href);
+  }, [pendingNav, router]);
+  const saveAndLeave = useCallback(async () => {
+    await handleSave();
+    const href = pendingNav;
+    setPendingNav(null);
+    if (href) router.push(href);
+  }, [handleSave, pendingNav, router]);
+
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [dirty]);
+
+  // ── First-run setup wizard (shown for newly created sites via ?setup=1) ──
+  const [setupRequested, setSetupRequested] = useState(false);
+  const [setupDone, setSetupDone] = useState(false);
+  useEffect(() => {
+    setSetupRequested(new URLSearchParams(window.location.search).get('setup') === '1');
+  }, []);
+  const showSetup = !loading && setupRequested && !setupDone;
+  const closeSetup = useCallback(() => {
+    setSetupDone(true);
+    router.replace(`/dashboard/sites/edit/linkinbio/${siteId}`);
+  }, [router, siteId]);
+  const finishSetup = useCallback(async () => {
+    await handleSave();
+    closeSetup();
+  }, [handleSave, closeSetup]);
 
   // ── Section-list helpers (operate on the `links` block array) ──
   const reindex = (ls: BioLink[]) => ls.map((l, i) => ({ ...l, sort_order: i + 1 }));
@@ -876,7 +1035,7 @@ export default function EditLinkInBioPage() {
       next.splice(idx + 1, 0, clone);
       return reindex(next);
     });
-  const handleAddBlock = (type: string) => {
+  const handleAddBlock = (type: string): string => {
     const meta: Record<string, any> = {
       social_icons: { links: [], style: 'circle', size: 'md', alignment: 'center' },
       header: { subtitle: '', alignment: 'center', size: 'xl', show_divider: false },
@@ -910,7 +1069,8 @@ export default function EditLinkInBioPage() {
       sort_order: links.length + 1,
       metadata: meta[type] ?? {},
     };
-    setLinks(prev => [...prev, newLink]);
+    setLinks(prev => [...prev, { ...newLink, sort_order: prev.length + 1 }]);
+    return newLink.id;
   };
   const updateBlock = (id: string, updates: Partial<BioLink>) =>
     setLinks(prev => prev.map(l => (l.id === id ? { ...l, ...updates } : l)));
@@ -926,17 +1086,7 @@ export default function EditLinkInBioPage() {
   const INPUT_CLS =
     'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow';
 
-  const profileSection = (
-    <div className="space-y-5">
-      <ProfilePreviewCard
-        name={profile.displayName}
-        bio={profile.bioText}
-        avatarUrl={profile.avatarUrl}
-        socialLinks={profile.socialLinks}
-      />
-      <BioProfileEditor data={profile} onChange={setProfile} />
-    </div>
-  );
+  const profileSection = <BioProfileEditor data={profile} onChange={setProfile} />;
 
   const contentSlot = (
     <SectionList
@@ -948,12 +1098,14 @@ export default function EditLinkInBioPage() {
       onDuplicate={handleDuplicateBlock}
       onDelete={handleDeleteBlock}
       onAdd={handleAddBlock}
+      onCancelAdded={handleDeleteBlock}
       pinned={
         <ProfileCard
           name={profile.displayName}
           username={site?.slug ?? ''}
           bio={profile.bioText}
           avatarUrl={profile.avatarUrl}
+          socialLinks={profile.socialLinks}
           onEdit={() => setSection('profile')}
         />
       }
@@ -970,31 +1122,12 @@ export default function EditLinkInBioPage() {
   );
 
   const templateSlot = (
-    <div className="grid grid-cols-2 gap-3">
-      {TEMPLATES.map((tpl) => {
-        const primary = tpl.palette.primary ?? tpl.preview.accent;
-        return (
-          <button
-            key={tpl.name}
-            onClick={() => applyTemplate(tpl)}
-            className="group flex flex-col overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] text-left shadow-[var(--shadow-card)] transition hover:shadow-[var(--shadow-card-lg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            {/* skeleton mockup tinted with the template palette */}
-            <div className="flex flex-col items-center gap-1.5 px-4 pb-3 pt-4" style={{ backgroundColor: tpl.preview.bg }}>
-              <span className="h-7 w-7 rounded-full" style={{ backgroundColor: primary }} />
-              <span className="h-1.5 w-12 rounded-full" style={{ backgroundColor: tpl.preview.text, opacity: 0.25 }} />
-              <span className="mt-1 h-4 w-full rounded-md" style={{ backgroundColor: primary, opacity: 0.85 }} />
-              <span className="h-4 w-full rounded-md" style={{ backgroundColor: tpl.preview.text, opacity: 0.12 }} />
-              <span className="h-4 w-full rounded-md" style={{ backgroundColor: tpl.preview.text, opacity: 0.12 }} />
-            </div>
-            <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-              <span className="block min-w-0 truncate text-sm font-semibold text-[var(--text-primary)]">{tpl.name}</span>
-              {tpl.tag && <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">{tpl.tag}</span>}
-            </div>
-          </button>
-        );
-      })}
-    </div>
+    <BioTemplates
+      designTemplates={DESIGN_TEMPLATES.map((t) => ({ name: t.name, tag: t.tag, preview: t.preview }))}
+      contentTemplates={TEMPLATES.map((t) => ({ name: t.name, tag: t.tag, description: t.description, preview: t.preview }))}
+      onApplyDesign={(i) => applyDesign(DESIGN_TEMPLATES[i])}
+      onApplyContent={(i) => applyTemplate(TEMPLATES[i])}
+    />
   );
 
   const designSlot = (
@@ -1120,9 +1253,11 @@ export default function EditLinkInBioPage() {
         title={displayTitle}
         typeLabel="Link-in-bio"
         typeIcon={Link2}
-        onBack={() => router.push('/dashboard/sites')}
+        onBack={() => guardedNavigate('/dashboard/sites')}
+        onNavigate={guardedNavigate}
         saving={saving}
         saved={saved}
+        dirty={dirty}
         onSave={handleSave}
         canUndo={canUndo}
         canRedo={canRedo}
@@ -1147,6 +1282,63 @@ export default function EditLinkInBioPage() {
             else if (imagePicker.field === 'meta_link_url') updateBlockMeta(imagePicker.blockId, 'link_url', url);
           }}
         />
+      )}
+
+      {showSetup && (
+        <BioSetupWizard
+          profile={profile}
+          onChangeProfile={setProfile}
+          designTemplates={DESIGN_TEMPLATES.map((t) => ({ name: t.name, tag: t.tag, preview: t.preview }))}
+          contentTemplates={TEMPLATES.map((t) => ({ name: t.name, tag: t.tag, description: t.description, preview: t.preview }))}
+          onApplyDesign={(i) => applyDesign(DESIGN_TEMPLATES[i])}
+          onApplyContent={(i) => applyTemplate(TEMPLATES[i])}
+          onClose={closeSetup}
+          onSave={handleSave}
+          onFinish={finishSetup}
+        />
+      )}
+
+      {pendingNav && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <button
+            aria-label="Stay on page"
+            tabIndex={-1}
+            onClick={() => setPendingNav(null)}
+            className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Unsaved changes"
+            className="relative z-10 w-full max-w-sm rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card-lg)]"
+          >
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">Unsaved changes</h3>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">
+              You have unsaved changes. Save them to apply live, or discard them before leaving.
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setPendingNav(null)}
+                className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={discardAndLeave}
+                className="rounded-[var(--radius-sm)] px-3.5 py-2 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger-bg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                Discard changes
+              </button>
+              <button
+                onClick={saveAndLeave}
+                disabled={saving}
+                className="rounded-[var(--radius-sm)] bg-[var(--brand)] px-3.5 py-2 text-sm font-semibold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50"
+              >
+                {saving ? 'Saving…' : 'Save & leave'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, type ReactNode, type RefObject, type ElementType } from 'react';
-import { LayoutList, LayoutTemplate, User, Palette, Settings2, BarChart3, GraduationCap, Link2, CalendarDays, Undo2, Redo2, Save, Loader2, CheckCircle2 } from 'lucide-react';
+import { LayoutList, LayoutTemplate, User, Palette, Settings2, BarChart3, GraduationCap, Link2, CalendarDays, Save, Loader2, CheckCircle2 } from 'lucide-react';
 import PreviewPane from './PreviewPane';
 import EditorSidebar, { type SidebarItem } from './EditorSidebar';
 import ComingSoon from './ComingSoon';
@@ -38,7 +38,8 @@ const SECTION_META: Record<SectionId, string> = {
 type Props = {
   // top bar
   title: string; typeLabel: string; typeIcon: ElementType; onBack: () => void;
-  saving: boolean; saved: boolean; onSave: () => void;
+  onNavigate?: (href: string) => void;
+  saving: boolean; saved: boolean; dirty?: boolean; onSave: () => void;
   canUndo?: boolean; canRedo?: boolean; onUndo?: () => void; onRedo?: () => void;
   // preview
   previewUrl: string | null; displayUrl: string | null;
@@ -113,22 +114,38 @@ export default function LinkInBioShell(props: Props) {
         <EditorSidebar
           items={NAV} active={active} onSelect={setActive} collapsed={collapsed} onToggleCollapse={toggleCollapse}
           title={props.title} typeLabel={props.typeLabel} typeIcon={props.typeIcon} onBack={props.onBack}
+          onNavigate={props.onNavigate}
+          canUndo={props.canUndo} canRedo={props.canRedo} onUndo={props.onUndo} onRedo={props.onRedo}
         />
 
         {/* canvas */}
-        <div className={`min-w-0 flex-1 flex-col bg-[var(--bg-primary)] ${mobileTab === 'edit' ? 'flex' : 'hidden'} lg:flex`}>
-          {/* canvas toolbar: undo/redo (left) · Save (right) — aligned to the content column */}
-          <div className="shrink-0 py-2.5">
-            <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-5">
-              <div className="flex items-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--border)] p-1">
-                <button onClick={props.onUndo} disabled={!props.canUndo} title="Undo" aria-label="Undo" className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-secondary)] enabled:hover:bg-[var(--surface-hover)] disabled:opacity-40 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><Undo2 className="h-4 w-4" /></button>
-                <button onClick={props.onRedo} disabled={!props.canRedo} title="Redo" aria-label="Redo" className="rounded-[var(--radius-sm)] p-1.5 text-[var(--text-secondary)] enabled:hover:bg-[var(--surface-hover)] disabled:opacity-40 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><Redo2 className="h-4 w-4" /></button>
-              </div>
-              <button onClick={props.onSave} disabled={props.saving} className={`flex items-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-xs font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50 ${props.saved ? 'bg-[var(--success)] text-[var(--text-on-brand)]' : 'bg-[var(--accent)] text-[var(--accent-fg)] hover:bg-[var(--accent-hover)]'}`}>
-                {props.saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : props.saved ? <CheckCircle2 className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-                {props.saved ? 'Saved!' : 'Save'}
-              </button>
-            </div>
+        <div
+          className={`relative min-w-0 flex-1 flex-col bg-[var(--editor-bg)] ${mobileTab === 'edit' ? 'flex' : 'hidden'} lg:flex`}
+          style={{
+            backgroundImage: 'radial-gradient(var(--border) 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }}
+        >
+          {/* floating Save — no header bar */}
+          <div className="absolute right-4 top-6 z-20 flex flex-col items-end gap-1.5">
+            <button
+              onClick={props.onSave}
+              disabled={props.saving || !props.dirty}
+              className={`flex items-center gap-2 rounded-[var(--radius-md)] px-4 py-2 text-xs font-semibold shadow-[var(--shadow-sm)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                props.dirty
+                  ? 'bg-[var(--brand)] text-[var(--text-on-brand)] hover:bg-[var(--brand-hover)]'
+                  : props.saved
+                    ? 'cursor-default bg-[var(--success)] text-[var(--text-on-brand)]'
+                    : 'cursor-not-allowed border border-[var(--border)] bg-[var(--surface)] text-[var(--text-tertiary)]'
+              }`}
+            >
+              {props.saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : props.dirty ? <Save className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+              {props.saving ? 'Saving…' : props.dirty ? 'Save' : props.saved ? 'Saved!' : 'Saved'}
+            </button>
+            <span className="flex items-center gap-1.5">
+              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${props.dirty ? 'bg-[var(--warning)]' : 'bg-[var(--success)]'}`} />
+              <span className="font-mono text-[11px] text-[var(--text-tertiary)]">{props.dirty ? 'Save to apply live' : 'All changes saved'}</span>
+            </span>
           </div>
           <div className="flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-2xl p-5">

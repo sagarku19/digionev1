@@ -11,6 +11,7 @@ export type SectionDef<TItem extends SectionItem> = {
   label: string;
   icon: React.ElementType;
   categoryId: string;
+  description?: string;
   summarize: (item: TItem) => string;
 };
 
