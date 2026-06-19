@@ -29,7 +29,13 @@ export default function SitePreviewPane({ previewUrl, displayUrl, iframeRef, pre
   const frameWidth = device === 'mobile' ? 'max-w-[390px]' : 'max-w-none';
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-[var(--bg-primary)] px-6 pb-6 pt-6">
+    <div
+      className="flex flex-1 flex-col overflow-hidden bg-[var(--editor-bg)] px-6 pb-6 pt-6"
+      style={{
+        backgroundImage: 'radial-gradient(var(--border) 1px, transparent 1px)',
+        backgroundSize: '20px 20px',
+      }}
+    >
       {/* toolbar: device toggle (left) · refresh/open (right) */}
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 rounded-[var(--radius-md)] bg-[var(--surface-muted)] p-1">
