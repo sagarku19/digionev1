@@ -40,7 +40,7 @@ export default function SitePreviewPane({ previewUrl, displayUrl, iframeRef, pre
 
   return (
     <div
-      className="flex flex-1 flex-col overflow-hidden bg-[var(--editor-bg)] px-6 pb-6 pt-6"
+      className="flex flex-1 flex-col overflow-hidden bg-[var(--editor-bg)] px-6 pb-8 pt-6"
       style={{
         backgroundImage: 'radial-gradient(var(--border) 1px, transparent 1px)',
         backgroundSize: '20px 20px',

@@ -620,7 +620,6 @@ export default function EditSinglePagePage() {
         sectionMeta={SECTION_META}
         sections={sections}
         defaultActive="logo"
-        previewWidthClass="lg:w-[480px]"
         title={displayTitle}
         typeLabel="Single page"
         typeIcon={FileText}
