@@ -14,16 +14,19 @@ import { load } from '@cashfreepayments/cashfree-js';
 type PaymentSiteMain = { title?: string | null; meta_description?: string | null } | null;
 type LinkedProduct = { id: string; name: string; price: number; thumbnail_url: string | null } | null;
 
-export default function PaymentLinkPage({ siteId, siteMain, fixedAmount, product }: {
+export default function PaymentLinkPage({ siteId, siteMain, fixedAmount, isFlexible: isFlexibleProp, product }: {
   siteId: string;
   siteMain: PaymentSiteMain;
   fixedAmount?: number | null;
+  isFlexible?: boolean;
   product?: LinkedProduct;
 }) {
   const title       = siteMain?.title ?? 'Pay securely';
   const description = siteMain?.meta_description ?? '';
   const amount      = fixedAmount ?? undefined;
-  const isFlexible  = !amount;
+  // Honor the explicit flag; fall back to "flexible when no fixed amount set"
+  // (a fixed ₹0 must stay fixed, so don't derive from `!amount`).
+  const isFlexible  = isFlexibleProp ?? (fixedAmount === null || fixedAmount === undefined);
 
   const [name,    setName]    = useState('');
   const [email,   setEmail]   = useState('');

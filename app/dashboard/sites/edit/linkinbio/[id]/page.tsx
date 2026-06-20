@@ -6,6 +6,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
+import { useEditorHistory } from '@/hooks/site-editor/useEditorHistory';
+import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
+import { useSlugCheck } from '@/hooks/site-editor/useSlugCheck';
+import { saveDesignTokens } from '@/hooks/site-editor/saveDesignTokens';
+import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/UnsavedChangesDialog';
 import BioProfileEditor, { type BioProfileData, type SocialLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioProfileEditor';
 import { type BioLink } from '@/src/components/dashboard/site-edit/tabs/linkinbio/blockEditors/types';
 import BioAppearanceEditor, { type BioAppearanceData } from '@/src/components/dashboard/site-edit/tabs/linkinbio/BioAppearanceEditor';
@@ -339,7 +344,6 @@ export default function EditLinkInBioPage() {
   // ── UI state ──
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
 
@@ -354,7 +358,6 @@ export default function EditLinkInBioPage() {
   // ── Slug ──
   const [slug, setSlug] = useState('');
   const [originalSlug, setOriginalSlug] = useState<string | null>(null);
-  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
 
   // ── Theme ──
   const [palette, setPalette] = useState<Record<string, string>>({});
@@ -392,89 +395,38 @@ export default function EditLinkInBioPage() {
   // ── Products ──
   const [products, setProducts] = useState<{ id: string; name: string; price: number; thumbnail_url: string | null }[]>([]);
 
-  // ── Undo / Redo ──
+  // ── Undo / Redo + dirty (shared hook; snapshot tracks content fields) ──
   type EditorSnapshot = { profile: BioProfileData; links: BioLink[]; appearance: BioAppearanceData; palette: Record<string, string>; seo: { title: string; description: string; image: string } };
-  const historyRef = useRef<EditorSnapshot[]>([]);
-  const historyIndexRef = useRef(-1);
-  const isRestoringRef = useRef(false);
-  // Bumped whenever the history position changes so canUndo/canRedo re-render
-  // (the refs above don't trigger renders on their own).
-  const [historyVersion, setHistoryVersion] = useState(0);
-  const bumpHistoryUi = useCallback(() => setHistoryVersion((v) => v + 1), []);
+  const buildSnapshot = useCallback((): EditorSnapshot => ({
+    profile: JSON.parse(JSON.stringify(profile)),
+    links: JSON.parse(JSON.stringify(links)),
+    appearance: { ...appearance },
+    palette: { ...palette },
+    seo: { ...seo },
+  }), [profile, links, appearance, palette, seo]);
 
-  const pushSnapshot = useCallback(() => {
-    const snap: EditorSnapshot = {
-      profile: JSON.parse(JSON.stringify(profile)),
-      links: JSON.parse(JSON.stringify(links)),
-      appearance: { ...appearance },
-      palette: { ...palette },
-      seo: { ...seo },
-    };
-    const idx = historyIndexRef.current;
-    // Trim any future states if we diverged
-    historyRef.current = historyRef.current.slice(0, idx + 1);
-    historyRef.current.push(snap);
-    // Cap at 50 snapshots
-    if (historyRef.current.length > 50) historyRef.current.shift();
-    historyIndexRef.current = historyRef.current.length - 1;
-    bumpHistoryUi();
-  }, [profile, links, appearance, palette, seo, bumpHistoryUi]);
-
-  // Push snapshot on meaningful state changes (debounced). A state change caused
-  // by undo/redo sets isRestoringRef — skip recording it (and clear the flag) so
-  // the redo future isn't trimmed.
-  const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (loading) return;
-    if (isRestoringRef.current) { isRestoringRef.current = false; return; }
-    if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
-    pushTimerRef.current = setTimeout(pushSnapshot, 400);
-    return () => { if (pushTimerRef.current) clearTimeout(pushTimerRef.current); };
-  }, [profile, links, appearance, palette, seo, loading, pushSnapshot]);
-
-  // Mark the editor dirty on any user edit (skip the initial post-load hydrate).
-  const dirtyInitRef = useRef(false);
-  useEffect(() => {
-    if (loading) return;
-    if (!dirtyInitRef.current) { dirtyInitRef.current = true; return; }
-    setDirty(true);
-  }, [profile, links, appearance, palette, seo, slug, isPublished, loading]);
-
-  const canUndo = historyVersion >= 0 && historyIndexRef.current > 0;
-  const canRedo = historyIndexRef.current < historyRef.current.length - 1;
-
-  const restoreSnapshot = useCallback((snap: EditorSnapshot) => {
-    isRestoringRef.current = true;
+  const applySnapshot = useCallback((snap: EditorSnapshot) => {
     setProfile(snap.profile);
     setLinks(snap.links);
     setAppearance(snap.appearance);
     setPalette(snap.palette);
     setSeo(snap.seo);
-    bumpHistoryUi();
-  }, [bumpHistoryUi]);
+  }, []);
 
-  const handleUndo = useCallback(() => {
-    if (historyIndexRef.current <= 0) return;
-    historyIndexRef.current -= 1;
-    restoreSnapshot(historyRef.current[historyIndexRef.current]);
-  }, [restoreSnapshot]);
+  const { canUndo, canRedo, undo: handleUndo, redo: handleRedo, dirty, setDirty } = useEditorHistory<EditorSnapshot>({
+    build: buildSnapshot,
+    apply: applySnapshot,
+    deps: [profile, links, appearance, palette, seo],
+    enabled: !loading,
+  });
 
-  const handleRedo = useCallback(() => {
-    if (historyIndexRef.current >= historyRef.current.length - 1) return;
-    historyIndexRef.current += 1;
-    restoreSnapshot(historyRef.current[historyIndexRef.current]);
-  }, [restoreSnapshot]);
-
-  // Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts
+  // Slug/publish aren't in the snapshot — mark dirty on their change.
+  const settingsDirtyInit = useRef(false);
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); handleUndo(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) { e.preventDefault(); handleRedo(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); handleRedo(); }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [handleUndo, handleRedo]);
+    if (loading) return;
+    if (!settingsDirtyInit.current) { settingsDirtyInit.current = true; return; }
+    setDirty(true);
+  }, [slug, isPublished, loading, setDirty]);
 
   // ── Load data ──
   const queryClient = useQueryClient();
@@ -570,21 +522,7 @@ export default function EditLinkInBioPage() {
   }, [loaded, siteId, isError]);
 
   // ── Slug availability check ──
-  useEffect(() => {
-    if (!slug || slug === originalSlug) { setSlugStatus('idle'); return; }
-    if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) || slug.length < 3) {
-      setSlugStatus('invalid'); return;
-    }
-    setSlugStatus('checking');
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/sites/check-slug?slug=${encodeURIComponent(slug)}&type=linkinbio`);
-        const json = await res.json();
-        setSlugStatus(json.available ? 'available' : 'taken');
-      } catch { setSlugStatus('idle'); }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [slug, originalSlug]);
+  const slugStatus = useSlugCheck(slug, originalSlug, 'linkinbio');
 
   // ── Update palette (single key) and push to iframe ──
   const updatePalette = useCallback((key: string, value: string) => {
@@ -746,15 +684,15 @@ export default function EditLinkInBioPage() {
 
   // ── Save all ──
   const handleSave = useCallback(async () => {
+    if (slugStatus === 'taken' || slugStatus === 'invalid' || slugStatus === 'checking') {
+      alert('Please fix your URL and try again.');
+      return;
+    }
     setSaving(true);
     setSaved(false);
     try {
       // Design tokens
-      if (Object.keys(palette).length > 0) {
-        await supabase
-          .from('site_design_tokens')
-          .upsert({ site_id: siteId, color_palette: palette, creator_id: site?.creator_id } as any, { onConflict: 'site_id' });
-      }
+      await saveDesignTokens(siteId, palette, site?.creator_id);
 
       // Slug + published status
       const siteUpdates: Record<string, any> = { is_active: isPublished };
@@ -807,10 +745,11 @@ export default function EditLinkInBioPage() {
         pageId = existingPage.id;
         await (supabase.from('linkinbio_pages' as any) as any).update(pagePayload).eq('id', pageId);
       } else {
-        const { data: newPage } = await (supabase.from('linkinbio_pages' as any) as any)
+        const { data: newPage, error: newPageError } = await (supabase.from('linkinbio_pages' as any) as any)
           .insert({ site_id: siteId, ...pagePayload })
           .select('id')
           .single();
+        if (newPageError || !newPage) throw newPageError ?? new Error('Failed to create page');
         pageId = newPage.id;
       }
 
@@ -966,35 +905,16 @@ export default function EditLinkInBioPage() {
       setDirty(false);
       setPreviewKey(Date.now());
       setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      console.error('Save failed', e);
+      alert('Failed to save changes. Please try again.');
     } finally {
       setSaving(false);
     }
-  }, [supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo, isPublished, queryClient]);
+  }, [slugStatus, supabase, siteId, palette, slug, originalSlug, profile, appearance, links, seo, isPublished, queryClient, site?.creator_id, setDirty]);
 
   // ── Leave guard: warn before navigating away with unsaved changes ──
-  const [pendingNav, setPendingNav] = useState<string | null>(null);
-  const guardedNavigate = useCallback((href: string) => {
-    if (dirty) setPendingNav(href);
-    else router.push(href);
-  }, [dirty, router]);
-  const discardAndLeave = useCallback(() => {
-    const href = pendingNav;
-    setPendingNav(null);
-    if (href) router.push(href);
-  }, [pendingNav, router]);
-  const saveAndLeave = useCallback(async () => {
-    await handleSave();
-    const href = pendingNav;
-    setPendingNav(null);
-    if (href) router.push(href);
-  }, [handleSave, pendingNav, router]);
-
-  useEffect(() => {
-    if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  const { pendingNav, guardedNavigate, cancel, discardAndLeave, saveAndLeave } = useUnsavedChanges(dirty, handleSave);
 
   // ── First-run setup wizard (shown for newly created sites via ?setup=1) ──
   const [setupRequested, setSetupRequested] = useState(false);
@@ -1298,48 +1218,7 @@ export default function EditLinkInBioPage() {
         />
       )}
 
-      {pendingNav && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-          <button
-            aria-label="Stay on page"
-            tabIndex={-1}
-            onClick={() => setPendingNav(null)}
-            className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm"
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Unsaved changes"
-            className="relative z-10 w-full max-w-sm rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card-lg)]"
-          >
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Unsaved changes</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              You have unsaved changes. Save them to apply live, or discard them before leaving.
-            </p>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setPendingNav(null)}
-                className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={discardAndLeave}
-                className="rounded-[var(--radius-sm)] px-3.5 py-2 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger-bg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-              >
-                Discard changes
-              </button>
-              <button
-                onClick={saveAndLeave}
-                disabled={saving}
-                className="rounded-[var(--radius-sm)] bg-[var(--brand)] px-3.5 py-2 text-sm font-semibold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50"
-              >
-                {saving ? 'Saving…' : 'Save & leave'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <UnsavedChangesDialog open={!!pendingNav} saving={saving} onCancel={cancel} onDiscard={discardAndLeave} onSave={saveAndLeave} />
     </>
   );
 }

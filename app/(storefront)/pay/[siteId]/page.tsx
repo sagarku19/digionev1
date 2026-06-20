@@ -31,11 +31,12 @@ export default async function PaymentPage({
     .from('site_main')
     .select('title, meta_description, metadata')
     .eq('site_id', site.id)
-    .single();
+    .maybeSingle();
 
   // Payment config lives in site_main.metadata
   const meta = (sm?.metadata as Record<string, unknown>) ?? {};
   const fixedAmount = typeof meta.fixed_amount === 'number' ? meta.fixed_amount : null;
+  const isFlexible = typeof meta.is_flexible === 'boolean' ? meta.is_flexible : fixedAmount === null;
   const productId = typeof meta.product_id === 'string' ? meta.product_id : null;
 
   let product: { id: string; name: string; price: number; thumbnail_url: string | null } | null = null;
@@ -48,5 +49,5 @@ export default async function PaymentPage({
     if (p) product = p;
   }
 
-  return <PaymentLinkPage siteId={site.id} siteMain={sm} fixedAmount={fixedAmount} product={product} />;
+  return <PaymentLinkPage siteId={site.id} siteMain={sm} fixedAmount={fixedAmount} isFlexible={isFlexible} product={product} />;
 }

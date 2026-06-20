@@ -6,10 +6,14 @@ export const revalidate = 60;
 
 export default async function MainStorefrontPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { slug } = await params;
+  const { preview } = await searchParams;
+  const isPreview = preview === '1';
   const supabase = await createClient();
 
   const { data: site } = await supabase
@@ -17,9 +21,9 @@ export default async function MainStorefrontPage({
     .select('id, site_type, is_active, creator_id')
     .eq('slug', slug)
     .eq('site_type', 'main')
-    .single();
+    .maybeSingle();
 
-  if (!site || !site.is_active) notFound();
+  if (!site || (!site.is_active && !isPreview)) notFound();
 
   const [{ data: config }, { data: assignments }, { data: siteMain }] = await Promise.all([
     supabase.from('site_sections_config').select('sections').eq('site_id', site.id).single(),

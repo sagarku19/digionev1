@@ -3,15 +3,20 @@
 // Footer · Template · Appearance · Settings · Advanced). Web + mobile preview.
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSiteEditQuery } from '@/hooks/useSiteEdit';
+import { useEditorHistory } from '@/hooks/site-editor/useEditorHistory';
+import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
+import { useSlugCheck } from '@/hooks/site-editor/useSlugCheck';
+import { saveDesignTokens } from '@/hooks/site-editor/saveDesignTokens';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { revalidateStorefrontPaths } from '@/app/actions/revalidate';
 
 import EditorShell from '@/components/dashboard/site-edit/editor/EditorShell';
 import PreviewPane from '@/components/dashboard/site-edit/editor/PreviewPane';
+import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/UnsavedChangesDialog';
 import { type SidebarItem } from '@/components/dashboard/site-edit/editor/EditorSidebar';
 import SectionManager from '@/components/dashboard/site-edit/SectionManager';
 import ProductAssigner from '@/components/dashboard/site-edit/ProductAssigner';
@@ -99,7 +104,6 @@ const STORE_TEMPLATES = [
 
 export default function EditMainStorePage() {
   const params = useParams();
-  const router = useRouter();
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -108,7 +112,6 @@ export default function EditMainStorePage() {
   const [activeTab, setActiveTab] = useState<string>('header');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
   const [heroBgPicker, setHeroBgPicker] = useState(false);
@@ -120,7 +123,6 @@ export default function EditMainStorePage() {
   // ── Slug ──
   const [slug, setSlug] = useState('');
   const [originalSlug, setOriginalSlug] = useState<string | null>(null);
-  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
 
   // ── Content ──
   const [title, setTitle] = useState('');
@@ -137,47 +139,20 @@ export default function EditMainStorePage() {
   const [customCss, setCustomCss] = useState('');
   const [customJs, setCustomJs] = useState('');
 
-  // ── Undo / Redo ──
-  const historyRef = useRef<Snapshot[]>([]);
-  const historyIndexRef = useRef(-1);
-  const isRestoringRef = useRef(false);
-  const [historyVersion, setHistoryVersion] = useState(0);
-  const bumpHistoryUi = useCallback(() => setHistoryVersion((v) => v + 1), []);
+  // ── Undo / Redo + dirty (shared hook; snapshot tracks content fields) ──
+  const buildSnapshot = useCallback((): Snapshot => ({
+    sections: JSON.parse(JSON.stringify(sections)),
+    assigned: Array.from(assigned),
+    title, description,
+    headerData: { ...headerData, navItems: [...headerData.navItems] },
+    footerData: JSON.parse(JSON.stringify(footerData)),
+    palette: { ...palette },
+    heroData: { ...heroData },
+    appearance: { ...appearance },
+    customCss, customJs,
+  }), [sections, assigned, title, description, headerData, footerData, palette, heroData, appearance, customCss, customJs]);
 
-  const pushSnapshot = useCallback(() => {
-    const snap: Snapshot = {
-      sections: JSON.parse(JSON.stringify(sections)),
-      assigned: Array.from(assigned),
-      title, description,
-      headerData: { ...headerData, navItems: [...headerData.navItems] },
-      footerData: JSON.parse(JSON.stringify(footerData)),
-      palette: { ...palette },
-      heroData: { ...heroData },
-      appearance: { ...appearance },
-      customCss, customJs,
-    };
-    const idx = historyIndexRef.current;
-    historyRef.current = historyRef.current.slice(0, idx + 1);
-    historyRef.current.push(snap);
-    if (historyRef.current.length > 50) historyRef.current.shift();
-    historyIndexRef.current = historyRef.current.length - 1;
-    bumpHistoryUi();
-  }, [sections, assigned, title, description, headerData, footerData, palette, heroData, appearance, customCss, customJs, bumpHistoryUi]);
-
-  const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (loading) return;
-    if (isRestoringRef.current) { isRestoringRef.current = false; return; }
-    if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
-    pushTimerRef.current = setTimeout(pushSnapshot, 400);
-    return () => { if (pushTimerRef.current) clearTimeout(pushTimerRef.current); };
-  }, [sections, assigned, title, description, headerData, footerData, palette, heroData, appearance, customCss, customJs, loading, pushSnapshot]);
-
-  const canUndo = historyVersion >= 0 && historyIndexRef.current > 0;
-  const canRedo = historyIndexRef.current < historyRef.current.length - 1;
-
-  const restoreSnapshot = useCallback((snap: Snapshot) => {
-    isRestoringRef.current = true;
+  const applySnapshot = useCallback((snap: Snapshot) => {
     setSections(snap.sections);
     setAssigned(new Set(snap.assigned));
     setTitle(snap.title);
@@ -189,29 +164,14 @@ export default function EditMainStorePage() {
     setAppearance(snap.appearance);
     setCustomCss(snap.customCss);
     setCustomJs(snap.customJs);
-    bumpHistoryUi();
-  }, [bumpHistoryUi]);
+  }, []);
 
-  const handleUndo = useCallback(() => {
-    if (historyIndexRef.current <= 0) return;
-    historyIndexRef.current -= 1;
-    restoreSnapshot(historyRef.current[historyIndexRef.current]);
-  }, [restoreSnapshot]);
-  const handleRedo = useCallback(() => {
-    if (historyIndexRef.current >= historyRef.current.length - 1) return;
-    historyIndexRef.current += 1;
-    restoreSnapshot(historyRef.current[historyIndexRef.current]);
-  }, [restoreSnapshot]);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); handleUndo(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) { e.preventDefault(); handleRedo(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); handleRedo(); }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [handleUndo, handleRedo]);
+  const { canUndo, canRedo, undo: handleUndo, redo: handleRedo, dirty, setDirty } = useEditorHistory<Snapshot>({
+    build: buildSnapshot,
+    apply: applySnapshot,
+    deps: [sections, assigned, title, description, headerData, footerData, palette, heroData, appearance, customCss, customJs],
+    enabled: !loading,
+  });
 
   // ── Load data ──
   const queryClient = useQueryClient();
@@ -246,9 +206,9 @@ export default function EditMainStorePage() {
       legal: (sm?.legal_pages as Record<string, boolean>) ?? { about: false, terms: false, privacy: false, refund: false },
       contactEmail: sm?.contact_email ?? '', contactPhone: sm?.contact_mobile ?? '', copyrightText: nav?.footer_bottom_text ?? '',
     });
-    setSettingsData({ metaTitle: sm?.meta_keywords ?? '', metaDesc: sm?.meta_description ?? '', customDomain: s?.custom_domain ?? '', slug: s?.slug ?? '', originalSlug: s?.slug ?? null });
+    const meta = (sm?.metadata ?? {}) as { hero?: Partial<HeroData>; appearance?: Partial<BioAppearanceData>; customCss?: string; customJs?: string; seo?: { title?: string; description?: string } };
+    setSettingsData({ metaTitle: meta.seo?.title ?? sm?.meta_keywords ?? '', metaDesc: meta.seo?.description ?? '', customDomain: s?.custom_domain ?? '', slug: s?.slug ?? '', originalSlug: s?.slug ?? null });
 
-    const meta = (sm?.metadata ?? {}) as { hero?: Partial<HeroData>; appearance?: Partial<BioAppearanceData>; customCss?: string; customJs?: string };
     if (meta.hero) setHeroData((prev) => ({ ...prev, ...meta.hero }));
     if (meta.appearance) setAppearance((prev) => ({ ...prev, ...meta.appearance }));
     setCustomCss(meta.customCss ?? '');
@@ -261,28 +221,16 @@ export default function EditMainStorePage() {
     setLoading(false);
   }, [editData, siteId, isError]);
 
-  // ── Mark dirty on edits (skip initial hydrate) ──
-  const dirtyInitRef = useRef(false);
+  // Settings/slug/publish aren't in the snapshot — mark dirty on their change.
+  const settingsDirtyInit = useRef(false);
   useEffect(() => {
     if (loading) return;
-    if (!dirtyInitRef.current) { dirtyInitRef.current = true; return; }
+    if (!settingsDirtyInit.current) { settingsDirtyInit.current = true; return; }
     setDirty(true);
-  }, [sections, assigned, title, description, headerData, footerData, palette, heroData, appearance, customCss, customJs, slug, isPublished, settingsData, loading]);
+  }, [slug, isPublished, settingsData, loading, setDirty]);
 
   // ── Slug availability ──
-  useEffect(() => {
-    if (!slug || slug === originalSlug) { setSlugStatus('idle'); return; }
-    if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) || slug.length < 3) { setSlugStatus('invalid'); return; }
-    setSlugStatus('checking');
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/sites/check-slug?slug=${encodeURIComponent(slug)}&type=main`);
-        const json = await res.json();
-        setSlugStatus(json.available ? 'available' : 'taken');
-      } catch { setSlugStatus('idle'); }
-    }, 400);
-    return () => clearTimeout(t);
-  }, [slug, originalSlug]);
+  const slugStatus = useSlugCheck(slug, originalSlug, 'main');
 
   // ── Live theme → iframe ──
   const sendTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -304,44 +252,43 @@ export default function EditMainStorePage() {
     if (slugStatus === 'taken' || slugStatus === 'invalid' || slugStatus === 'checking') { alert('Please fix your URL and try again.'); return; }
     setSaving(true);
     setSaved(false);
+    // Throw on any Supabase error so the catch reports it instead of falsely showing "Saved!".
+    const req = <T extends { error: unknown }>(res: T): T => { if (res.error) throw res.error; return res; };
     try {
-      if (slug !== originalSlug || isPublished !== site?.is_active) {
-        await supabase.from('sites').update({ slug, is_active: isPublished, updated_at: new Date().toISOString() }).eq('id', siteId);
+      const newCustomDomain = settingsData.customDomain || null;
+      const domainChanged = newCustomDomain !== (site?.custom_domain ?? null);
+      if (slug !== originalSlug || isPublished !== site?.is_active || domainChanged) {
+        req(await supabase.from('sites').update({ slug, is_active: isPublished, custom_domain: newCustomDomain, updated_at: new Date().toISOString() }).eq('id', siteId));
         setOriginalSlug(slug);
-        setSite((prev) => (prev ? { ...prev, slug, is_active: isPublished } : prev));
+        setSite((prev) => (prev ? { ...prev, slug, is_active: isPublished, custom_domain: newCustomDomain } : prev));
       }
       const smPayload = {
-        title, meta_description: description, meta_keywords: settingsData.metaTitle,
+        title, meta_description: description,
         social_links: footerData.social, legal_pages: footerData.legal,
         logo_url: headerData.logoUrl || null, contact_email: footerData.contactEmail || null, contact_mobile: footerData.contactPhone || null,
-        metadata: { hero: heroData, appearance, customCss, customJs },
+        metadata: { hero: heroData, appearance, customCss, customJs, seo: { title: settingsData.metaTitle, description: settingsData.metaDesc } },
       };
-      const { data: existingSm } = await supabase.from('site_main').select('site_id').eq('site_id', siteId).maybeSingle();
-      if (existingSm) await supabase.from('site_main').update(smPayload).eq('site_id', siteId);
-      else await supabase.from('site_main').insert({ site_id: siteId, ...smPayload } as Database['public']['Tables']['site_main']['Insert']);
+      const { data: existingSm } = req(await supabase.from('site_main').select('site_id').eq('site_id', siteId).maybeSingle());
+      if (existingSm) req(await supabase.from('site_main').update(smPayload).eq('site_id', siteId));
+      else req(await supabase.from('site_main').insert({ site_id: siteId, ...smPayload } as Database['public']['Tables']['site_main']['Insert']));
 
-      await supabase.from('site_navigation').upsert({
+      req(await supabase.from('site_navigation').upsert({
         site_id: siteId, nav_items: headerData.navItems, show_search: headerData.showSearch, show_cart_icon: headerData.showCart,
         sticky_header: headerData.stickyHeader, header_logo_url: headerData.logoUrl || null, header_logo_alt: headerData.logoAlt || null,
         footer_bottom_text: footerData.copyrightText || null,
-      }, { onConflict: 'site_id' });
+      }, { onConflict: 'site_id' }));
 
-      const { data: configExists } = await supabase.from('site_sections_config').select('site_id').eq('site_id', siteId).maybeSingle();
-      if (configExists) await supabase.from('site_sections_config').update({ sections: sections as unknown as Json }).eq('site_id', siteId);
-      else await supabase.from('site_sections_config').insert({ site_id: siteId, site_type: 'main', sections: sections as unknown as Json });
+      const { data: configExists } = req(await supabase.from('site_sections_config').select('site_id').eq('site_id', siteId).maybeSingle());
+      if (configExists) req(await supabase.from('site_sections_config').update({ sections: sections as unknown as Json }).eq('site_id', siteId));
+      else req(await supabase.from('site_sections_config').insert({ site_id: siteId, site_type: 'main', sections: sections as unknown as Json }));
 
-      await supabase.from('site_product_assignments').delete().eq('site_id', siteId);
+      req(await supabase.from('site_product_assignments').delete().eq('site_id', siteId));
       if (assigned.size > 0) {
         const rows = Array.from(assigned).map((product_id, i) => ({ site_id: siteId, product_id, sort_order: i + 1 }));
-        await supabase.from('site_product_assignments').insert(rows);
+        req(await supabase.from('site_product_assignments').insert(rows));
       }
 
-      const { data: tkn } = await supabase.from('site_design_tokens').select('id').eq('site_id', siteId).maybeSingle();
-      if (tkn) await supabase.from('site_design_tokens').update({ color_palette: palette }).eq('id', tkn.id);
-      else {
-        const { data: user } = await supabase.auth.getUser();
-        if (user.user?.id) await supabase.from('site_design_tokens').insert({ site_id: siteId, creator_id: user.user.id, color_palette: palette, spacing_scale: {}, typography: {}, border_radius_scale: {} });
-      }
+      await saveDesignTokens(siteId, palette, site?.creator_id);
 
       try { await revalidateStorefrontPaths([`/store/${slug}`, '/']); } catch { /* non-fatal */ }
       queryClient.invalidateQueries({ queryKey: ['sites', 'edit-state', siteId] });
@@ -350,22 +297,16 @@ export default function EditMainStorePage() {
       setSaved(true);
       setDirty(false);
       setTimeout(() => setSaved(false), 2500);
+    } catch (e) {
+      console.error('Save failed', e);
+      alert('Failed to save changes. Please try again.');
     } finally {
       setSaving(false);
     }
-  }, [slugStatus, slug, originalSlug, isPublished, site, title, description, settingsData, footerData, headerData, heroData, appearance, customCss, customJs, sections, assigned, palette, supabase, siteId, queryClient]);
+  }, [slugStatus, slug, originalSlug, isPublished, site, title, description, settingsData, footerData, headerData, heroData, appearance, customCss, customJs, sections, assigned, palette, supabase, siteId, queryClient, setDirty]);
 
   // ── Leave guard ──
-  const [pendingNav, setPendingNav] = useState<string | null>(null);
-  const guardedNavigate = useCallback((href: string) => { if (dirty) setPendingNav(href); else router.push(href); }, [dirty, router]);
-  const discardAndLeave = useCallback(() => { const h = pendingNav; setPendingNav(null); if (h) router.push(h); }, [pendingNav, router]);
-  const saveAndLeave = useCallback(async () => { await handleSave(); const h = pendingNav; setPendingNav(null); if (h) router.push(h); }, [handleSave, pendingNav, router]);
-  useEffect(() => {
-    if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  const { pendingNav, guardedNavigate, cancel, discardAndLeave, saveAndLeave } = useUnsavedChanges(dirty, handleSave);
 
   // ── Derived ──
   const urlInfo = site
@@ -594,20 +535,7 @@ export default function EditMainStorePage() {
         <ImagePickerModal open onSelect={(url) => { setHeroData(h => ({ ...h, imageUrl: url })); setHeroBgPicker(false); }} onClose={() => setHeroBgPicker(false)} />
       )}
 
-      {pendingNav && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-          <button aria-label="Stay on page" tabIndex={-1} onClick={() => setPendingNav(null)} className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm" />
-          <div role="dialog" aria-modal="true" aria-label="Unsaved changes" className="relative z-10 w-full max-w-sm rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card-lg)]">
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Unsaved changes</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">Save them before leaving, or discard them.</p>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <button onClick={() => setPendingNav(null)} className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
-              <button onClick={discardAndLeave} className="rounded-[var(--radius-sm)] px-3.5 py-2 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger-bg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Discard</button>
-              <button onClick={saveAndLeave} disabled={saving} className="rounded-[var(--radius-sm)] bg-[var(--brand)] px-3.5 py-2 text-sm font-semibold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50">{saving ? 'Saving…' : 'Save & leave'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <UnsavedChangesDialog open={!!pendingNav} saving={saving} onCancel={cancel} onDiscard={discardAndLeave} onSave={saveAndLeave} />
     </>
   );
 }

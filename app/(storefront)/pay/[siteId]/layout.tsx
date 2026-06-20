@@ -14,12 +14,13 @@ export default async function PaymentSiteLayout({
   const { siteId } = await params;
   const supabase = await createClient();
 
+  // Existence + type only — the page enforces is_active (with a ?preview=1 bypass).
+  // Layouts can't read searchParams, so an is_active filter here would 404 previews.
   const { data: site } = await supabase
     .from('sites')
     .select('id')
     .eq('id', siteId)
     .eq('site_type', 'payment')
-    .eq('is_active', true)
     .maybeSingle();
 
   if (!site) notFound();

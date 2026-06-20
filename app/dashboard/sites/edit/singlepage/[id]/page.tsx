@@ -1,13 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { useProducts } from '@/hooks/useProducts';
 import { revalidateStorefrontPaths } from '@/app/actions/revalidate';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSinglePageSiteQuery } from '@/hooks/useSinglePageSite';
+import { useEditorHistory } from '@/hooks/site-editor/useEditorHistory';
+import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
+import { useSlugCheck } from '@/hooks/site-editor/useSlugCheck';
+import { saveDesignTokens } from '@/hooks/site-editor/saveDesignTokens';
+import UnsavedChangesDialog from '@/src/components/dashboard/site-edit/editor/UnsavedChangesDialog';
 
 import type { SinglePageContentData } from '@/src/components/dashboard/site-edit/tabs/singlepage/singlepage-types';
 import SinglePageLogoEditor from '@/src/components/dashboard/site-edit/tabs/singlepage/SinglePageLogoEditor';
@@ -62,7 +67,6 @@ const SETTINGS_CARD = 'rounded-[var(--radius-xl)] border border-[var(--border)] 
 
 export default function EditSinglePagePage() {
   const params = useParams();
-  const router = useRouter();
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -72,7 +76,6 @@ export default function EditSinglePagePage() {
   // ── UI state ──
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewKey, setPreviewKey] = useState(Date.now());
   const [section, setSection] = useState('logo');
@@ -84,7 +87,6 @@ export default function EditSinglePagePage() {
   // ── Slug ──
   const [slug, setSlug] = useState('');
   const [originalSlug, setOriginalSlug] = useState<string | null>(null);
-  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
 
   // ── Theme ──
   const [palette, setPalette] = useState<Record<string, string>>({});
@@ -121,73 +123,30 @@ export default function EditSinglePagePage() {
   // ── SEO ──
   const [seo, setSeo] = useState({ title: '', description: '', image: '' });
 
-  // ── Undo / Redo ──
+  // ── Undo / Redo + dirty (shared hook; snapshot tracks content fields) ──
   type EditorSnapshot = { content: SinglePageContentData; settings: SinglePageSettingsData; appearance: BioAppearanceData; palette: Record<string, string>; seo: { title: string; description: string; image: string } };
-  const historyRef = useRef<EditorSnapshot[]>([]);
-  const historyIndexRef = useRef(-1);
-  const isRestoringRef = useRef(false);
-  const [historyVersion, setHistoryVersion] = useState(0);
-  const bumpHistoryUi = useCallback(() => setHistoryVersion((v) => v + 1), []);
+  const buildSnapshot = useCallback((): EditorSnapshot => ({
+    content: JSON.parse(JSON.stringify(content)),
+    settings: JSON.parse(JSON.stringify(siteSettings)),
+    appearance: { ...appearance },
+    palette: { ...palette },
+    seo: { ...seo },
+  }), [content, siteSettings, appearance, palette, seo]);
 
-  const pushSnapshot = useCallback(() => {
-    const snap: EditorSnapshot = {
-      content: JSON.parse(JSON.stringify(content)),
-      settings: JSON.parse(JSON.stringify(siteSettings)),
-      appearance: { ...appearance },
-      palette: { ...palette },
-      seo: { ...seo },
-    };
-    const idx = historyIndexRef.current;
-    historyRef.current = historyRef.current.slice(0, idx + 1);
-    historyRef.current.push(snap);
-    if (historyRef.current.length > 50) historyRef.current.shift();
-    historyIndexRef.current = historyRef.current.length - 1;
-    bumpHistoryUi();
-  }, [content, siteSettings, appearance, palette, seo, bumpHistoryUi]);
-
-  const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (loading) return;
-    if (isRestoringRef.current) { isRestoringRef.current = false; return; }
-    if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
-    pushTimerRef.current = setTimeout(pushSnapshot, 400);
-    return () => { if (pushTimerRef.current) clearTimeout(pushTimerRef.current); };
-  }, [content, siteSettings, appearance, palette, seo, loading, pushSnapshot]);
-
-  const canUndo = historyVersion >= 0 && historyIndexRef.current > 0;
-  const canRedo = historyIndexRef.current < historyRef.current.length - 1;
-
-  const restoreSnapshot = useCallback((snap: EditorSnapshot) => {
-    isRestoringRef.current = true;
+  const applySnapshot = useCallback((snap: EditorSnapshot) => {
     setContent(snap.content);
     setSiteSettings(snap.settings);
     setAppearance(snap.appearance);
     setPalette(snap.palette);
     setSeo(snap.seo);
-    bumpHistoryUi();
-  }, [bumpHistoryUi]);
+  }, []);
 
-  const handleUndo = useCallback(() => {
-    if (historyIndexRef.current <= 0) return;
-    historyIndexRef.current -= 1;
-    restoreSnapshot(historyRef.current[historyIndexRef.current]);
-  }, [restoreSnapshot]);
-
-  const handleRedo = useCallback(() => {
-    if (historyIndexRef.current >= historyRef.current.length - 1) return;
-    historyIndexRef.current += 1;
-    restoreSnapshot(historyRef.current[historyIndexRef.current]);
-  }, [restoreSnapshot]);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); handleUndo(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) { e.preventDefault(); handleRedo(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); handleRedo(); }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [handleUndo, handleRedo]);
+  const { canUndo, canRedo, undo: handleUndo, redo: handleRedo, dirty, setDirty } = useEditorHistory<EditorSnapshot>({
+    build: buildSnapshot,
+    apply: applySnapshot,
+    deps: [content, siteSettings, appearance, palette, seo],
+    enabled: !loading,
+  });
 
   // ── Load data ──
   const queryClient = useQueryClient();
@@ -320,30 +279,16 @@ export default function EditSinglePagePage() {
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [section, loading, previewKey]);
 
-  // ── Mark dirty on user edits (skip initial hydrate) ──
-  const dirtyInitRef = useRef(false);
+  // Slug/publish aren't in the snapshot — mark dirty on their change.
+  const settingsDirtyInit = useRef(false);
   useEffect(() => {
     if (loading) return;
-    if (!dirtyInitRef.current) { dirtyInitRef.current = true; return; }
+    if (!settingsDirtyInit.current) { settingsDirtyInit.current = true; return; }
     setDirty(true);
-  }, [content, siteSettings, appearance, palette, seo, slug, isPublished, loading]);
+  }, [slug, isPublished, loading, setDirty]);
 
   // ── Slug availability check ──
-  useEffect(() => {
-    if (!slug || slug === originalSlug) { setSlugStatus('idle'); return; }
-    if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) || slug.length < 3) {
-      setSlugStatus('invalid'); return;
-    }
-    setSlugStatus('checking');
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/sites/check-slug?slug=${encodeURIComponent(slug)}&type=singlepage`);
-        const json = await res.json();
-        setSlugStatus(json.available ? 'available' : 'taken');
-      } catch { setSlugStatus('idle'); }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [slug, originalSlug]);
+  const slugStatus = useSlugCheck(slug, originalSlug, 'singlepage');
 
   // ── Push live content to iframe (debounced, no dep array — fires every render) ──
   const sendTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -389,15 +334,7 @@ export default function EditSinglePagePage() {
         setSite((prev: any) => ({ ...prev, slug, is_active: isPublished }));
       }
 
-      const { data: currentTokens } = await supabase.from('site_design_tokens').select('id').eq('site_id', siteId).maybeSingle();
-      if (currentTokens) {
-        await supabase.from('site_design_tokens').update({ color_palette: palette }).eq('id', currentTokens.id);
-      } else {
-        const { data: user } = await supabase.auth.getUser();
-        if (user.user?.id) {
-          await supabase.from('site_design_tokens').insert({ site_id: siteId, creator_id: user.user.id, color_palette: palette, spacing_scale: {}, typography: {}, border_radius_scale: {} });
-        }
-      }
+      await saveDesignTokens(siteId, palette, site?.creator_id);
 
       const { data: existingSp } = await supabase.from('site_singlepage').select('id').eq('site_id', siteId).maybeSingle();
 
@@ -412,7 +349,7 @@ export default function EditSinglePagePage() {
         show_buy_now: siteSettings.showBuyNow,
         show_add_to_cart: siteSettings.showAddToCart,
         enable_reviews: siteSettings.enableReviews,
-        countdown_end_at: siteSettings.countdownEnd || undefined,
+        countdown_end_at: siteSettings.countdownEnd || null,
         meta_description: seo.description,
         metadata: {
           custom_title: seo.title,
@@ -474,7 +411,7 @@ export default function EditSinglePagePage() {
       setDirty(false);
       setTimeout(() => setSaved(false), 2500);
 
-      if (site) revalidateStorefrontPaths([getSitePublicPath(site)]).catch(() => {});
+      if (site) revalidateStorefrontPaths([getSitePublicPath({ ...site, slug })]).catch(() => {});
 
       setPreviewKey(Date.now());
       queryClient.invalidateQueries({ queryKey: ['sites', 'singlepage', siteId] });
@@ -484,32 +421,10 @@ export default function EditSinglePagePage() {
     } finally {
       setSaving(false);
     }
-  }, [siteId, slugStatus, slug, originalSlug, isPublished, site, palette, content, siteSettings, seo, appearance, supabase, queryClient]);
+  }, [siteId, slugStatus, slug, originalSlug, isPublished, site, palette, content, siteSettings, seo, appearance, supabase, queryClient, setDirty]);
 
   // ── Leave guard ──
-  const [pendingNav, setPendingNav] = useState<string | null>(null);
-  const guardedNavigate = useCallback((href: string) => {
-    if (dirty) setPendingNav(href);
-    else router.push(href);
-  }, [dirty, router]);
-  const discardAndLeave = useCallback(() => {
-    const href = pendingNav;
-    setPendingNav(null);
-    if (href) router.push(href);
-  }, [pendingNav, router]);
-  const saveAndLeave = useCallback(async () => {
-    await handleSave();
-    const href = pendingNav;
-    setPendingNav(null);
-    if (href) router.push(href);
-  }, [handleSave, pendingNav, router]);
-
-  useEffect(() => {
-    if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  const { pendingNav, guardedNavigate, cancel, discardAndLeave, saveAndLeave } = useUnsavedChanges(dirty, handleSave);
 
   // ── Derived ──
   const previewUrl = site ? `${getSitePublicPath(site)}?preview=1&t=${previewKey}` : null;
@@ -673,20 +588,7 @@ export default function EditSinglePagePage() {
         }
       />
 
-      {pendingNav && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-          <button aria-label="Stay on page" tabIndex={-1} onClick={() => setPendingNav(null)} className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm" />
-          <div role="dialog" aria-modal="true" aria-label="Unsaved changes" className="relative z-10 w-full max-w-sm rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card-lg)]">
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Unsaved changes</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">You have unsaved changes. Save them to apply live, or discard them before leaving.</p>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <button onClick={() => setPendingNav(null)} className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
-              <button onClick={discardAndLeave} className="rounded-[var(--radius-sm)] px-3.5 py-2 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger-bg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Discard changes</button>
-              <button onClick={saveAndLeave} disabled={saving} className="rounded-[var(--radius-sm)] bg-[var(--brand)] px-3.5 py-2 text-sm font-semibold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50">{saving ? 'Saving…' : 'Save & leave'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <UnsavedChangesDialog open={!!pendingNav} saving={saving} onCancel={cancel} onDiscard={discardAndLeave} onSave={saveAndLeave} />
     </>
   );
 }

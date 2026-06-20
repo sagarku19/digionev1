@@ -87,20 +87,24 @@ export async function generateMetadata({
 
 export default async function LinkInBioStorefront({
   params,
+  searchParams,
 }: {
   params: Promise<{ username: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { username } = await params;
+  const { preview } = await searchParams;
+  const isPreview = preview === '1';
   const supabase = await createClient();
 
   // Fetch site
-  const { data: site } = await supabase
+  let siteQuery = supabase
     .from('sites')
-    .select('id, slug, creator_id')
+    .select('id, slug, creator_id, is_active')
     .eq('slug', username)
-    .eq('site_type', 'linkinbio')
-    .eq('is_active', true)
-    .maybeSingle();
+    .eq('site_type', 'linkinbio');
+  if (!isPreview) siteQuery = siteQuery.eq('is_active', true);
+  const { data: site } = await siteQuery.maybeSingle();
 
   if (!site) notFound();
 

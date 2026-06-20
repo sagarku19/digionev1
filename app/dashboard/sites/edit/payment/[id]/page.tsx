@@ -2,13 +2,16 @@
 // Edit page: Payment Link — premium EditorShell (Payment · Product · Theme · Settings).
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { useSiteEditQuery, useSiteEditMutations } from '@/hooks/useSiteEdit';
 import { useProducts } from '@/hooks/useProducts';
+import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
+import { saveDesignTokens } from '@/hooks/site-editor/saveDesignTokens';
 import EditorShell from '@/components/dashboard/site-edit/editor/EditorShell';
 import PreviewPane from '@/components/dashboard/site-edit/editor/PreviewPane';
+import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/UnsavedChangesDialog';
 import ThemeEditor from '@/components/dashboard/site-edit/tabs/ThemeEditor';
 import { type SidebarItem } from '@/components/dashboard/site-edit/editor/EditorSidebar';
 import {
@@ -36,7 +39,6 @@ const LABEL = 'mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]
 
 export default function EditPaymentPage() {
   const params = useParams();
-  const router = useRouter();
   const siteId = params.id as string;
   const supabase = createClient();
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -78,7 +80,7 @@ export default function EditPaymentPage() {
     setTitle(sm?.title ?? '');
     setDescription(sm?.meta_description ?? '');
     setAmount(typeof meta.fixed_amount === 'number' ? meta.fixed_amount : '');
-    setIsFlexible(meta.is_flexible !== false ? !meta.fixed_amount : false);
+    setIsFlexible(typeof meta.is_flexible === 'boolean' ? meta.is_flexible : typeof meta.fixed_amount !== 'number');
     setProductId(typeof meta.product_id === 'string' ? meta.product_id : null);
     setSeoTitle(typeof meta.seo_title === 'string' ? meta.seo_title : '');
     if (editData.tokens?.color_palette) setPalette(editData.tokens.color_palette as Record<string, string>);
@@ -115,9 +117,7 @@ export default function EditPaymentPage() {
           seo_title: seoTitle || null,
         },
       });
-      if (Object.keys(palette).length > 0) {
-        await supabase.from('site_design_tokens').upsert({ site_id: siteId, color_palette: palette } as never, { onConflict: 'site_id' });
-      }
+      await saveDesignTokens(siteId, palette);
       if (site && isPublished !== site.is_active) {
         await supabase.from('sites').update({ is_active: isPublished }).eq('id', siteId);
         setSite((prev) => (prev ? { ...prev, is_active: isPublished } : prev));
@@ -135,18 +135,7 @@ export default function EditPaymentPage() {
   }, [savePaymentConfig, title, description, productId, isFlexible, amount, seoTitle, palette, supabase, siteId, site, isPublished]);
 
   // ── Leave guard ──
-  const [pendingNav, setPendingNav] = useState<string | null>(null);
-  const guardedNavigate = useCallback((href: string) => {
-    if (dirty) setPendingNav(href); else router.push(href);
-  }, [dirty, router]);
-  const discardAndLeave = useCallback(() => { const h = pendingNav; setPendingNav(null); if (h) router.push(h); }, [pendingNav, router]);
-  const saveAndLeave = useCallback(async () => { await handleSave(); const h = pendingNav; setPendingNav(null); if (h) router.push(h); }, [handleSave, pendingNav, router]);
-  useEffect(() => {
-    if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  const { pendingNav, guardedNavigate, cancel, discardAndLeave, saveAndLeave } = useUnsavedChanges(dirty, handleSave);
 
   // ── Derived ──
   const previewSite = { id: siteId, slug: site?.slug ?? null, site_type: 'payment', creator_id: '', custom_domain: null };
@@ -335,20 +324,7 @@ export default function EditPaymentPage() {
         }
       />
 
-      {pendingNav && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
-          <button aria-label="Stay on page" tabIndex={-1} onClick={() => setPendingNav(null)} className="absolute inset-0 cursor-default bg-black/50 backdrop-blur-sm" />
-          <div role="dialog" aria-modal="true" aria-label="Unsaved changes" className="relative z-10 w-full max-w-sm rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card-lg)]">
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Unsaved changes</h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">Save them before leaving, or discard them.</p>
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <button onClick={() => setPendingNav(null)} className="rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
-              <button onClick={discardAndLeave} className="rounded-[var(--radius-sm)] px-3.5 py-2 text-sm font-medium text-[var(--danger)] transition hover:bg-[var(--danger-bg)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Discard</button>
-              <button onClick={saveAndLeave} disabled={saving} className="rounded-[var(--radius-sm)] bg-[var(--brand)] px-3.5 py-2 text-sm font-semibold text-[var(--text-on-brand)] transition hover:bg-[var(--brand-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-50">{saving ? 'Saving…' : 'Save & leave'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <UnsavedChangesDialog open={!!pendingNav} saving={saving} onCancel={cancel} onDiscard={discardAndLeave} onSave={saveAndLeave} />
     </>
   );
 }

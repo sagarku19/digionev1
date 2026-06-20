@@ -15,13 +15,13 @@ export default async function LinkInBioLayout({
   const { username } = await params;
   const supabase = await createClient();
 
-  // Look up site by slug (username) + linkinbio type
+  // Existence + type only — the page enforces is_active (with a ?preview=1 bypass).
+  // Layouts can't read searchParams, so an is_active filter here would 404 previews.
   const { data: site } = await supabase
     .from('sites')
     .select('id')
     .eq('slug', username)
     .eq('site_type', 'linkinbio')
-    .eq('is_active', true)
     .maybeSingle();
 
   if (!site) notFound();
