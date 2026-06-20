@@ -53,7 +53,6 @@ const HELP_SECTIONS: HelpSection[] = [
       { q: 'How do I create a new product?', a: 'Click "Add product" in the sidebar or go to Products → New Product. Fill in the title, description, price, and upload your digital file. Save and your product is live instantly.' },
       { q: 'What file types can I upload?', a: 'You can upload PDFs, ZIPs, MP3s, MP4s, images, and most common digital file formats. Maximum file size is 2 GB per product.' },
       { q: 'Can I offer free products?', a: 'Yes — set the price to ₹0 and buyers can download the product for free. This is great for lead magnets or sample content.' },
-      { q: 'How do I set up upsells?', a: 'Open a product and go to the Upsells tab. You can add post-purchase offers with a discounted price that appear right after checkout to increase average order value.' },
       { q: 'Can I limit how many times a product is sold?', a: 'Yes — enable "Limited stock" in the product settings and set a maximum quantity. The product will automatically stop selling once the limit is reached.' },
       { q: 'How do buyers access their downloads?', a: 'After a successful payment, buyers receive an email with a secure download link valid for 30 days. They can also access their purchases via their order receipt page.' },
     ],

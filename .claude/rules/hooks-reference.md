@@ -16,7 +16,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 |---|---|
 | `auth/` | `useAuthSession` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`) |
-| `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useUpsellPages` |
+| `products/` | `useProducts`, `useProductPage`, `useStoreProducts` |
 | `commerce/` | `useOrders`, `useCustomers`, `useEarnings`, `useCart`, `useLibrary` |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
 | `analytics/` | `useAnalytics` |
@@ -50,7 +50,6 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useAffiliates()` | Affiliate program data |
 | `useProductPage(creatorId, slug)` | Single published product by slug — used on product pages |
 | `useStoreProducts(creatorId)` | All published products for a creator's storefront |
-| `useUpsellPages()` | `{ upsellPages, createUpsellPage, updateUpsellPage, deleteUpsellPage }` |
 | `useAbTests()` | `{ tests }` — A/B tests for the logged-in creator; resolves `profiles.id` and selects `products(name)` |
 | `useLibrary()` | Logged-in buyer's purchased products |
 | `useGuestLeads(filterSiteId?)` | `{ leads }` — captured email leads, optionally filtered by site |
@@ -89,4 +88,3 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useSites()` | `['sites','list']` |
 | `useStorefront(slug)` | `['storefront','detail', slug]` |
 | `useStoreProducts(creatorId)` | `['products','store', creatorId]` |
-| `useUpsellPages()` | `['upsells','list']` / `['upsells','detail', id]` |

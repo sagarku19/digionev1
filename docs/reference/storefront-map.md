@@ -14,7 +14,7 @@
 | store | `/store/[slug]` | `app/(storefront)/store/[slug]/page.tsx` (gates `is_active` with a `?preview=1` bypass) | `src/components/storefront/SectionRenderer.tsx` | `section-defs.ts` (sections below) |
 | payment | `/pay/[siteId]` | `app/(storefront)/pay/[siteId]/page.tsx` (reads `site_main.metadata` for `fixed_amount`/`is_flexible`/`product_id`; fetches the linked product; gates `is_active` with a `?preview=1` bypass; passes an explicit `isFlexible` to the renderer). Layout renders **no** store header/footer — just theme CSS + `PreviewBridge`. | `src/components/storefront/PaymentLinkPage.tsx` (takes `fixedAmount` + explicit `isFlexible` prop — a fixed ₹0 stays fixed; linked product card on top + name/email/phone + amount; live theme via layout `PreviewBridge`) | n/a |
 
-Standalone pages: `app/(storefront)/upsells/[slug]/page.tsx`, `app/(storefront)/store/product/[productId]/page.tsx`.
+The public **product page is `/discover/[productId]`** (`app/(marketing)/discover/[productId]/page.tsx`) — it hosts the ledger-styled checkout (`discover/[productId]/BuyNowButton.tsx`). The old `app/(storefront)/store/product/[productId]` route and the `upsells/[slug]` route were both removed (upsells to be rebuilt under `/pay`). Dashboard "Preview"/"View" buttons, the buyer library, and link-in-bio product blocks all link to `/discover/{id}`.
 
 **Access-control convention (2026-06-20):** storefront **layouts** check existence + `site_type` only (they can't read `searchParams`); the **page** enforces `is_active` and bypasses it when `?preview=1` is present, so the editors' preview iframes can render unpublished sites. Applies to `link`, `site`, `store`, `pay` (the `store` layout was already existence-only; the `link` and `pay` layouts were tightened to match).
 

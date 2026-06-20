@@ -8,7 +8,6 @@ import { Database } from '@/types/database.types';
 import { revalidateStorefrontPaths } from '@/app/actions/revalidate';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
-type ProductRow = Database['public']['Tables']['products']['Row'];
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
 type ProductUpdate = Database['public']['Tables']['products']['Update'];
 
@@ -80,13 +79,32 @@ export function useProducts() {
     }
   });
 
+  // Soft delete: keep the row (orders/records reference it) but hide it everywhere.
+  // Storefront reads filter on `deleted_at IS NULL` + `is_published`.
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('products')
+        .update({ deleted_at: new Date().toISOString(), is_published: false })
+        .eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      revalidateStorefrontPaths(['/', '/dashboard/products']);
+    },
+  });
+
   return {
     products,
     isLoading,
     error,
     createProduct: createMutation.mutateAsync,
     updateProduct: updateMutation.mutateAsync,
+    deleteProduct: deleteMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 }

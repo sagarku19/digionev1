@@ -2,7 +2,7 @@
 //
 // URL scheme:
 //   Main store   → /store/{slug}
-//   Product      → /store/product/{productId}
+//   Product      → /discover/{productId}   (public product page)
 //   Payment      → /pay/{siteId}           (not renamable)
 //   Product Site → /site/{slug}            (renamable)
 
@@ -53,18 +53,6 @@ export function getSiteDisplayUrl(site: SiteUrlInfo): string {
 /** Shorten a UUID for display (first 8 chars) */
 function shortId(id: string): string {
   return id.substring(0, 8);
-}
-
-// ── Upsell page helpers ─────────────────────────────────────────
-
-/** Returns the public path for an upsell page */
-export function getUpsellPublicPath(slug: string): string {
-  return `/upsells/${slug}`;
-}
-
-/** Returns a display-friendly URL string for upsell pages */
-export function getUpsellDisplayUrl(slug: string): string {
-  return `digione.ai/upsells/${slug}`;
 }
 
 // ── Legacy helpers (kept for old-route redirects) ─────────────────

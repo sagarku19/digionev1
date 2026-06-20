@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
-  ArrowLeft, Package, BookOpen, Layout, Sparkles,
-  ShoppingCart, Share2, Heart, Star, User,
-  Clock, Shield, ChevronRight,
+  Package, BookOpen, Layout, Sparkles,
+  ShoppingCart, Share2, Heart, Star,
+  Clock, Shield, ArrowRight, Check,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { Rails } from '@/src/components/marketing/Ledger';
+import { BuyNowButton } from './BuyNowButton';
 
 interface Creator {
   id: string;
@@ -43,7 +45,23 @@ function getCreator(product: { profiles?: Creator | Creator[] | null }): Creator
 
 function formatPrice(price: number) {
   if (price === 0) return 'Free';
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+  return `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(price)}`;
+}
+
+/* Mono kicker row — `>>` + label + flexing hairline (matches the discover list). */
+function SectionKicker({ label, href }: { label: string; href?: string }) {
+  return (
+    <div className="flex items-center gap-4 font-ledger text-[11px] mb-6">
+      <span className="text-[#E83A2E] font-semibold">{'>>'}</span>
+      <span className="text-black/35 uppercase tracking-[0.18em]">{label}</span>
+      <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
+      {href && (
+        <Link href={href} className="font-sans text-[12px] text-black/45 hover:text-[#16130F] font-semibold flex items-center gap-1 transition-colors">
+          Browse all <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      )}
+    </div>
+  );
 }
 
 export default function DiscoverProductPage() {
@@ -86,6 +104,7 @@ export default function DiscoverProductPage() {
         .select('id, name, price, category, thumbnail_url, creator_id')
         .eq('creator_id', product.creator_id)
         .eq('is_published', true)
+        .eq('is_on_discover_page', true)
         .is('deleted_at', null)
         .neq('id', productId!)
         .limit(4);
@@ -105,51 +124,57 @@ export default function DiscoverProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg-primary)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="animate-pulse space-y-8">
-            <div className="h-6 bg-[var(--bg-tertiary)] rounded-lg w-32" />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              <div className="aspect-square bg-[var(--bg-secondary)] rounded-2xl" />
-              <div className="space-y-4">
-                <div className="h-8 bg-[var(--bg-tertiary)] rounded-lg w-3/4" />
-                <div className="h-4 bg-[var(--bg-secondary)] rounded-lg w-1/2" />
-                <div className="h-12 bg-[var(--bg-tertiary)] rounded-lg w-40" />
-                <div className="space-y-2 pt-4">
-                  {[1, 2, 3].map(i => <div key={i} className="h-3 bg-[var(--bg-secondary)] rounded-lg" />)}
+      <div className="min-h-screen bg-white">
+        <section className="relative bg-white">
+          <Rails className="pt-20 sm:pt-24">
+            <div className="px-5 sm:px-10 lg:px-14 pt-5 pb-12">
+              <div className="animate-pulse">
+                <div className="h-3 w-40 bg-black/[0.05] rounded mb-10" />
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14">
+                  <div className="lg:col-span-3 space-y-4">
+                    <div className="aspect-[16/10] bg-black/[0.05] rounded-xl" />
+                    <div className="h-4 bg-black/[0.05] rounded w-1/3 mt-8" />
+                    <div className="h-3 bg-black/[0.04] rounded w-full" />
+                    <div className="h-3 bg-black/[0.04] rounded w-5/6" />
+                  </div>
+                  <div className="lg:col-span-2 space-y-5">
+                    <div className="h-7 bg-black/[0.05] rounded w-3/4" />
+                    <div className="h-16 bg-black/[0.04] rounded-xl" />
+                    <div className="h-10 bg-black/[0.05] rounded w-32" />
+                    <div className="h-12 bg-black/[0.05] rounded-lg" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </Rails>
+        </section>
       </div>
     );
   }
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center">
-            <Package className="w-7 h-7 text-[var(--text-secondary)]" />
-          </div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Product Not Found</h2>
-          <p className="text-[var(--text-secondary)] mb-6">This product may have been removed or is no longer available.</p>
-          <Link
-            href="/discover"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-sm font-semibold transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Discover
-          </Link>
-        </div>
+      <div className="min-h-screen bg-white">
+        <section className="relative bg-white">
+          <Rails className="pt-20 sm:pt-24">
+            <div className="px-5 sm:px-10 lg:px-14 py-24 text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-lg bg-[#FAF8F6] border border-black/[0.07] flex items-center justify-center">
+                <Package className="w-6 h-6 text-black/35" />
+              </div>
+              <h2 className="text-[20px] font-bold tracking-[-0.02em] text-[#16130F] mb-1">Product not found</h2>
+              <p className="text-[13.5px] font-medium text-black/50 mb-7">This product may have been removed or is no longer available.</p>
+              <Link href="/discover" className="inline-flex items-center gap-2 px-5 py-3 bg-[#E83A2E] hover:bg-[#C92F24] text-white rounded-lg text-[14px] font-semibold transition-colors">
+                <ArrowRight className="w-4 h-4 rotate-180" /> Back to Discover
+              </Link>
+            </div>
+          </Rails>
+        </section>
       </div>
     );
   }
 
   const creator = getCreator(product);
   const catInfo = CATEGORIES[product.category || 'other'] || CATEGORIES.other;
-  const CatIcon = catInfo.icon;
   const allImages: string[] = [];
   if (product.thumbnail_url) allImages.push(product.thumbnail_url);
   if (Array.isArray(product.images)) {
@@ -159,6 +184,8 @@ export default function DiscoverProductPage() {
     });
   }
 
+  const buyLabel = product.price === 0 ? 'Get for Free' : `Buy Now — ${formatPrice(product.price)}`;
+
   const handleShare = async () => {
     try {
       await navigator.share({ title: product.name, url: window.location.href });
@@ -167,299 +194,230 @@ export default function DiscoverProductPage() {
     }
   };
 
+  const PERKS = [
+    { icon: Package, t: 'Instant Access', s: 'Delivered immediately after purchase' },
+    { icon: Clock, t: 'Lifetime Access', s: 'Yours to keep, forever' },
+    { icon: Shield, t: 'Secure Checkout', s: 'Safe & encrypted payment' },
+    { icon: Star, t: 'Quality Guaranteed', s: 'Handpicked by DigiOne' },
+  ];
+
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm mb-8">
-          <Link href="/discover" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Discover</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
-          <span className="text-[var(--text-secondary)]">{catInfo.label}</span>
-          <ChevronRight className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
-          <span className="text-[var(--text-primary)] truncate max-w-[200px]">{product.name}</span>
-        </nav>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14">
-
-          {/* Left: Images */}
-          <div className="lg:col-span-3 space-y-4">
-            {/* Main Image */}
-            <div className="aspect-[16/10] bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl overflow-hidden relative">
-              {allImages.length > 0 ? (
-                <img
-                  src={allImages[activeImage] || allImages[0]}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package className="w-16 h-16 text-[var(--text-secondary)]" />
-                </div>
-              )}
+    <div className="flex flex-col w-full overflow-hidden bg-white">
+      {/* ── Main product ── */}
+      <section className="relative bg-white">
+        <Rails className="pt-20 sm:pt-24">
+          <div className="px-5 sm:px-10 lg:px-14 pt-5 pb-12 sm:pb-16">
+            {/* Breadcrumb */}
+            <div className="font-ledger text-[11px] flex items-center gap-2 text-black/35 mb-6">
+              <Link href="/discover" className="hover:text-[#16130F] transition-colors">/discover</Link>
+              <span className="text-black/20">/</span>
+              <span className="text-black/45">{catInfo.label.toLowerCase()}</span>
+              <span className="text-black/20">/</span>
+              <span className="text-[#16130F] truncate max-w-[220px]">{product.name}</span>
             </div>
 
-            {/* Thumbnail gallery */}
-            {allImages.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {allImages.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImage(i)}
-                    className={`w-20 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
-                      activeImage === i ? 'border-[var(--text-primary)]' : 'border-[var(--border)] hover:border-[var(--text-secondary)]'
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Description */}
-            {product.description && (
-              <div className="pt-6">
-                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-3">About this product</h3>
-                <div className="text-sm text-[var(--text-secondary)] leading-relaxed whitespace-pre-wrap">
-                  {product.description}
-                </div>
-              </div>
-            )}
-
-            {/* What you get */}
-            <div className="pt-6 space-y-4">
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">What you get</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
-                  <Package className="w-5 h-5 text-[var(--text-secondary)] mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">Instant Access</p>
-                    <p className="text-xs text-[var(--text-secondary)]">Get the product immediately after purchase</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
-                  <Clock className="w-5 h-5 text-[var(--text-secondary)] mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">Lifetime Access</p>
-                    <p className="text-xs text-[var(--text-secondary)]">Access your purchase forever</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
-                  <Shield className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">Secure Checkout</p>
-                    <p className="text-xs text-[var(--text-secondary)]">Safe & encrypted payment</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
-                  <Star className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">Quality Guaranteed</p>
-                    <p className="text-xs text-[var(--text-secondary)]">Handpicked by DigiOne</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Product Info + Buy */}
-          <div className="lg:col-span-2">
-            <div className="lg:sticky lg:top-24 space-y-6">
-              {/* Category */}
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-lg text-[var(--text-secondary)] text-xs font-medium">
-                  <CatIcon className="w-3.5 h-3.5" />
-                  {catInfo.label}
-                </span>
-              </div>
-
-              {/* Title */}
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)] leading-tight">{product.name}</h1>
-
-              {/* Creator */}
-              {creator && (
-                <div className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
-                    {creator.avatar_url ? (
-                      <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-white text-sm font-bold">
-                        {(creator.full_name || 'C').charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{creator.full_name || 'Creator'}</p>
-                    <p className="text-xs text-[var(--text-secondary)]">DigiOne Creator</p>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border)] flex items-center justify-center">
-                    <User className="w-4 h-4 text-[var(--text-secondary)]" />
-                  </div>
-                </div>
-              )}
-
-              {/* Price */}
-              <div className="flex items-baseline gap-3">
-                <span className={`text-4xl font-extrabold ${product.price === 0 ? 'text-emerald-600' : 'text-[var(--text-primary)]'}`}>
-                  {formatPrice(product.price)}
-                </span>
-                {product.price > 0 && (
-                  <span className="text-sm text-[var(--text-secondary)]">one-time payment</span>
-                )}
-              </div>
-
-              {/* CTA Button */}
-              {product.product_link ? (
-                <a
-                  href={product.product_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-base font-bold transition-all shadow-sm"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  {product.price === 0 ? 'Get for Free' : `Buy Now — ${formatPrice(product.price)}`}
-                </a>
-              ) : (
-                <button
-                  className="flex items-center justify-center gap-2 w-full py-4 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-base font-bold transition-all shadow-sm"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  {product.price === 0 ? 'Get for Free' : `Buy Now — ${formatPrice(product.price)}`}
-                </button>
-              )}
-
-              {/* Action buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setLiked(l => !l)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    liked
-                      ? 'bg-red-50 border-red-200 text-red-600'
-                      : 'bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                  }`}
-                >
-                  <Heart className={`w-4 h-4 ${liked ? 'fill-red-500' : ''}`} />
-                  {liked ? 'Saved' : 'Save'}
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] text-sm font-medium transition-all"
-                >
-                  <Share2 className="w-4 h-4" />
-                  Share
-                </button>
-              </div>
-
-              {/* Trust Signals */}
-              <div className="p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl space-y-3">
-                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                  <Shield className="w-4 h-4 text-emerald-600" />
-                  <span>Secure payment powered by DigiOne</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                  <Package className="w-4 h-4 text-[var(--text-secondary)]" />
-                  <span>Instant digital delivery</span>
-                </div>
-                {product.created_at && (
-                  <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                    <Clock className="w-4 h-4 text-[var(--text-secondary)]" />
-                    <span>Published {new Date(product.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* More from Creator */}
-        {creator && creatorProducts.length > 0 && (
-          <section className="mt-20 pt-12 border-t border-[var(--border)]">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--brand)] to-violet-600 flex items-center justify-center shrink-0 overflow-hidden">
-                  {creator.avatar_url ? (
-                    <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14">
+              {/* Left: gallery + copy */}
+              <div className="lg:col-span-3 space-y-5">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-black/[0.07] bg-[#FAF8F6]">
+                  {allImages.length > 0 ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={allImages[activeImage] || allImages[0]} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-white text-sm font-bold">{(creator.full_name || 'C').charAt(0)}</span>
+                    <div className="w-full h-full flex items-center justify-center"><Package className="w-16 h-16 text-black/20" /></div>
                   )}
+                  {/* category badge — same language as the discover card */}
+                  <div className="absolute top-3 left-3">
+                    <span className="font-ledger px-2.5 py-1 bg-[#16130F]/85 backdrop-blur-md text-white text-[9px] font-medium uppercase tracking-[0.14em] rounded-md">
+                      {catInfo.label}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-[var(--text-primary)]">More from {creator.full_name || 'this creator'}</h2>
-                  <p className="text-xs text-[var(--text-secondary)]">Other products by this creator</p>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {creatorProducts.map(p => (
-                <MiniProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          </section>
-        )}
 
-        {/* Related Products */}
-        {related.length > 0 && (
-          <section className="mt-16 pt-12 border-t border-[var(--border)] pb-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-xl font-bold text-[var(--text-primary)]">You might also like</h2>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">Similar products you may be interested in</p>
+                {allImages.length > 1 && (
+                  <div className="flex gap-2.5 overflow-x-auto pb-1">
+                    {allImages.map((img, i) => (
+                      <button
+                        key={i} onClick={() => setActiveImage(i)}
+                        className={`w-20 h-16 rounded-lg overflow-hidden border-2 shrink-0 transition-colors ${activeImage === i ? 'border-[#E83A2E]' : 'border-black/[0.08] hover:border-black/[0.25]'}`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {product.description && (
+                  <div className="pt-6">
+                    <h3 className="text-[17px] font-bold tracking-[-0.02em] text-[#16130F] mb-3">About this product</h3>
+                    <div className="text-[15px] font-medium text-black/55 leading-relaxed whitespace-pre-wrap">{product.description}</div>
+                  </div>
+                )}
+
+                <div className="pt-6">
+                  <h3 className="text-[17px] font-bold tracking-[-0.02em] text-[#16130F] mb-4">What you get</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 border-t border-l border-black/[0.07] rounded-xl overflow-hidden">
+                    {PERKS.map((p) => (
+                      <div key={p.t} className="flex items-start gap-3 p-4 border-b border-r border-black/[0.07] hover:bg-[#FAF8F6] transition-colors">
+                        <p.icon className="w-[18px] h-[18px] text-[#E83A2E] mt-0.5 shrink-0" strokeWidth={1.8} />
+                        <div>
+                          <p className="text-[14px] font-semibold text-[#16130F]">{p.t}</p>
+                          <p className="text-[12.5px] font-medium text-black/45 mt-0.5">{p.s}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <Link href="/discover" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium flex items-center gap-1">
-                Browse all <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+
+              {/* Right: sticky buy panel */}
+              <div className="lg:col-span-2">
+                <div className="lg:sticky lg:top-24 space-y-5">
+                  <h1 className="text-[28px] sm:text-[32px] font-bold tracking-[-0.03em] leading-[1.1] text-[#16130F]">{product.name}</h1>
+
+                  {creator && (
+                    <div className="flex items-center gap-3 p-3 bg-white border border-black/[0.08] rounded-xl">
+                      <div className="w-9 h-9 rounded-md bg-[#E83A2E] flex items-center justify-center shrink-0 overflow-hidden">
+                        {creator.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white text-[13px] font-bold">{(creator.full_name || 'C').charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] font-semibold text-[#16130F] truncate">{creator.full_name || 'Creator'}</p>
+                        <p className="font-ledger text-[10px] text-black/35 uppercase tracking-[0.14em]">DigiOne creator</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-baseline gap-3 pt-1">
+                    <span className={`font-ledger text-[40px] font-semibold tracking-tight leading-none ${product.price === 0 ? 'text-emerald-600' : 'text-[#16130F]'}`}>
+                      {formatPrice(product.price)}
+                    </span>
+                    {product.price > 0 && <span className="text-[13px] font-medium text-black/40">one-time</span>}
+                  </div>
+
+                  {product.product_link ? (
+                    <a
+                      href={product.product_link} target="_blank" rel="noopener noreferrer"
+                      className="group flex items-center justify-center gap-2 w-full py-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white rounded-lg text-[15px] font-semibold transition-colors"
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      {buyLabel}
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                  ) : (
+                    <BuyNowButton productId={product.id} price={product.price} label={buyLabel} />
+                  )}
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setLiked((l) => !l)}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border text-[13.5px] font-semibold transition-colors ${liked ? 'bg-[#E83A2E]/[0.06] border-[#E83A2E]/30 text-[#E83A2E]' : 'bg-white border-black/[0.1] text-black/55 hover:border-black/[0.25] hover:text-[#16130F]'}`}
+                    >
+                      <Heart className={`w-4 h-4 ${liked ? 'fill-[#E83A2E]' : ''}`} />
+                      {liked ? 'Saved' : 'Save'}
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-white border border-black/[0.1] text-black/55 hover:border-black/[0.25] hover:text-[#16130F] text-[13.5px] font-semibold transition-colors"
+                    >
+                      <Share2 className="w-4 h-4" /> Share
+                    </button>
+                  </div>
+
+                  <div className="border border-black/[0.07] rounded-xl divide-y divide-black/[0.06]">
+                    {[
+                      { icon: Shield, t: 'Secure payment powered by DigiOne', em: true },
+                      { icon: Check, t: 'Instant digital delivery', em: false },
+                      ...(product.created_at ? [{ icon: Clock, t: `Published ${new Date(product.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`, em: false }] : []),
+                    ].map((r, i) => (
+                      <div key={i} className="flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium text-black/55">
+                        <r.icon className={`w-4 h-4 shrink-0 ${r.em ? 'text-emerald-600' : 'text-black/35'}`} strokeWidth={1.8} />
+                        <span>{r.t}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {related.slice(0, 4).map(p => (
-                <MiniProductCard key={p.id} product={p} />
-              ))}
+          </div>
+        </Rails>
+      </section>
+
+      {/* ── More from creator + related ── */}
+      {((creator && creatorProducts.length > 0) || related.length > 0) && (
+        <section className="relative bg-white">
+          <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
+          <Rails>
+            <div className="px-5 sm:px-10 lg:px-14 py-12 sm:py-16 space-y-14">
+              {creator && creatorProducts.length > 0 && (
+                <div>
+                  <SectionKicker label={`More from ${creator.full_name || 'this creator'}`} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {creatorProducts.map((p) => <MiniProductCard key={p.id} product={p} />)}
+                  </div>
+                </div>
+              )}
+              {related.length > 0 && (
+                <div>
+                  <SectionKicker label="You might also like" href="/discover" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {related.slice(0, 4).map((p) => <MiniProductCard key={p.id} product={p} />)}
+                  </div>
+                </div>
+              )}
             </div>
-          </section>
-        )}
-      </div>
+          </Rails>
+        </section>
+      )}
     </div>
   );
 }
 
-/* ── Mini Product Card ────────────────────────────────────────── */
+/* ── Mini Product Card — matches the discover list card ───────────── */
 function MiniProductCard({ product }: { product: RelatedProduct }) {
-  const creator = product.profiles ? getCreator(product as any) : null;
+  const creator = product.profiles ? getCreator(product) : null;
   const catLabel = CATEGORIES[product.category || 'other']?.label || 'Digital';
 
   return (
     <Link
       href={`/discover/${product.id}`}
-      className="group flex flex-col bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-[var(--text-secondary)] hover:shadow-md transition-all"
+      className="group flex flex-col bg-white border border-black/[0.07] rounded-xl overflow-hidden hover:border-black/[0.2] transition-colors duration-200"
     >
-      <div className="aspect-[4/3] relative overflow-hidden bg-[var(--bg-tertiary)]">
+      <div className="aspect-[4/3] relative overflow-hidden bg-[#FAF8F6] border-b border-black/[0.05]">
         {product.thumbnail_url ? (
-          <img
-            src={product.thumbnail_url}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-8 h-8 text-[var(--text-secondary)]" />
-          </div>
+          <div className="w-full h-full flex items-center justify-center"><Package className="w-10 h-10 text-black/20" /></div>
         )}
-        <div className="absolute bottom-2 right-2">
-          <span className={`px-2 py-0.5 backdrop-blur-md text-xs font-bold rounded-md ${
-            product.price === 0 ? 'bg-emerald-500/80 text-white' : 'bg-black/60 text-white'
-          }`}>
+        <div className="absolute top-3 left-3">
+          <span className="font-ledger px-2.5 py-1 bg-[#16130F]/85 backdrop-blur-md text-white text-[9px] font-medium uppercase tracking-[0.14em] rounded-md">{catLabel}</span>
+        </div>
+        <div className="absolute bottom-3 right-3">
+          <span className={`font-ledger px-2.5 py-1 backdrop-blur-md text-[13px] font-semibold rounded-md ${product.price === 0 ? 'bg-emerald-600/85 text-white' : 'bg-[#16130F]/85 text-white'}`}>
             {formatPrice(product.price)}
           </span>
         </div>
       </div>
-      <div className="p-3.5">
-        <p className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-medium mb-1">{catLabel}</p>
-        <h4 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-2 group-hover:text-[var(--text-secondary)] transition-colors">
-          {product.name}
-        </h4>
+      <div className="p-4 flex flex-col flex-1">
+        <h4 className="text-[14.5px] font-bold text-[#16130F] line-clamp-2 mb-1 group-hover:text-[#E83A2E] transition-colors">{product.name}</h4>
         {creator && (
-          <p className="text-xs text-[var(--text-secondary)] mt-2 truncate">by {creator.full_name || 'Creator'}</p>
+          <div className="mt-auto pt-3 border-t border-black/[0.05] flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-[#E83A2E] flex items-center justify-center shrink-0 overflow-hidden">
+              {creator.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white text-[9px] font-bold">{(creator.full_name || 'C').charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <span className="text-[12px] font-medium text-black/45 truncate">{creator.full_name || 'Creator'}</span>
+          </div>
         )}
       </div>
     </Link>

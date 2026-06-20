@@ -17,12 +17,12 @@ export default function ProductBlock({ link, bio, palette, productsMap, siteId, 
   const buttonPos = link.metadata?.button_position || 'right';
   const ctaText = link.metadata?.cta_text || 'Buy Now';
   const badge = link.metadata?.badge || null;
-  const href = product ? `/store/product/${product.id}` : (link.url || '#');
+  const href = product ? `/discover/${product.id}` : (link.url || '#');
   const rClass = getRadiusClass(bio.border_radius);
   const pri = palette.primary || '#EC4899';
 
-  // ── Shared price block ──
-  const PriceBlock = ({ className = '' }: { className?: string }) => showPrice && displayPrice !== undefined ? (
+  // ── Shared price element (render fn, not a nested component) ──
+  const priceEl = (className = '') => showPrice && displayPrice !== undefined ? (
     <span className={`flex items-center gap-1.5 ${className}`}>
       <span className="font-bold" style={{ color: pri }}>
         {'₹'}{displayPrice.toLocaleString('en-IN')}
@@ -61,12 +61,12 @@ export default function ProductBlock({ link, bio, palette, productsMap, siteId, 
           {pricePos === 'inline' ? (
             <div className="flex items-center justify-between gap-2 min-w-0">
               <p className="text-sm font-semibold leading-snug truncate flex-1" style={{ color: palette.text || '#0F172A' }}>{displayTitle}</p>
-              <PriceBlock className="text-sm shrink-0" />
+              {priceEl('text-sm shrink-0')}
             </div>
           ) : (
             <>
               <p className="text-sm font-semibold leading-snug" style={{ color: palette.text || '#0F172A' }}>{displayTitle}</p>
-              <PriceBlock className="text-sm" />
+              {priceEl('text-sm')}
             </>
           )}
           {link.description && (
@@ -112,12 +112,12 @@ export default function ProductBlock({ link, bio, palette, productsMap, siteId, 
             {pricePos === 'inline' ? (
               <div className="flex items-start justify-between gap-1 min-w-0">
                 <p className="text-sm font-semibold leading-snug flex-1" style={{ color: palette.text || '#0F172A' }}>{displayTitle}</p>
-                <PriceBlock className="text-xs shrink-0 mt-0.5" />
+                {priceEl('text-xs shrink-0 mt-0.5')}
               </div>
             ) : (
               <>
                 <p className="text-sm font-semibold leading-snug" style={{ color: palette.text || '#0F172A' }}>{displayTitle}</p>
-                <PriceBlock className="text-xs" />
+                {priceEl('text-xs')}
               </>
             )}
             {link.description && (
@@ -160,12 +160,12 @@ export default function ProductBlock({ link, bio, palette, productsMap, siteId, 
         {pricePos === 'inline' ? (
           <div className="flex items-center justify-between gap-1 min-w-0">
             <p className="text-sm font-semibold truncate flex-1" style={{ color: palette.text || '#0F172A' }}>{displayTitle}</p>
-            <PriceBlock className="text-xs shrink-0" />
+            {priceEl('text-xs shrink-0')}
           </div>
         ) : (
           <>
             <p className="text-sm font-semibold truncate" style={{ color: palette.text || '#0F172A' }}>{displayTitle}</p>
-            <PriceBlock className="text-xs mt-0.5" />
+            {priceEl('text-xs mt-0.5')}
           </>
         )}
         {link.description && (

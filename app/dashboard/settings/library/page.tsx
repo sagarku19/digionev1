@@ -126,7 +126,7 @@ export default function LibraryPage() {
                       </span>
                     )}
                     <a
-                      href={`/store/product/${product.id}`}
+                      href={`/discover/${product.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-8 h-8 flex items-center justify-center bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
