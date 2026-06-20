@@ -11,7 +11,7 @@ import {
   BookOpen, Code, Globe, Layers, Lightbulb, TrendingUp, Users,
   MessageCircle,
 } from 'lucide-react';
-import { useCart } from '@/hooks/useCart';
+import { useCart } from '@/hooks/commerce/useCart';
 import type { Database } from '@/types/database.types';
 
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');

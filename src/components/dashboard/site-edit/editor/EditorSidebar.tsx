@@ -2,7 +2,7 @@
 import { ArrowLeft, ChevronsLeft, Undo2, Redo2, ChevronDown, Check } from 'lucide-react';
 import { useState, useRef, Fragment, type ElementType } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useSites } from '@/hooks/useSites';
+import { useSites } from '@/hooks/sites/useSites';
 
 export type SidebarItem = {
   id: string;
@@ -17,15 +17,15 @@ export type EditorSiteType = 'linkinbio' | 'single' | 'payment' | 'main';
 
 // Per-type config for the header page-switcher dropdown.
 // A real, custom slug — not the id fallback some sites get when no slug was set.
-const cleanSlug = (s: import('@/hooks/useSites').SiteWithMain): string | null =>
+const cleanSlug = (s: import('@/hooks/sites/useSites').SiteWithMain): string | null =>
   s.slug && s.slug !== s.id ? s.slug : null;
 
 type SwitcherConfig = {
   match: string;
   editBase: string;
   heading: string;
-  label: (s: import('@/hooks/useSites').SiteWithMain) => string;
-  url: (s: import('@/hooks/useSites').SiteWithMain) => string;
+  label: (s: import('@/hooks/sites/useSites').SiteWithMain) => string;
+  url: (s: import('@/hooks/sites/useSites').SiteWithMain) => string;
 };
 
 const SWITCHER: Record<EditorSiteType, SwitcherConfig> = {

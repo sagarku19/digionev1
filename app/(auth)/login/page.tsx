@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import { useAuthSession, useLoginMutation } from '@/hooks/useAuthSession';
+import { useAuthSession, useLoginMutation } from '@/hooks/auth/useAuthSession';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';

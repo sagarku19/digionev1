@@ -3,7 +3,7 @@
 // DB: coupons (via useCoupons hook + direct supabase for toggle/delete)
 
 import React, { useState } from 'react';
-import { useCoupons } from '@/hooks/useCoupons';
+import { useCoupons } from '@/hooks/marketing/useCoupons';
 import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import {

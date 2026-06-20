@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useMarketingStats } from '@/hooks/useMarketingStats';
+import { useMarketingStats } from '@/hooks/marketing/useMarketingStats';
 import {
   Ticket, Users, Share2, Calendar, Megaphone,
   ChevronRight, TrendingUp, ArrowUpRight, Zap,

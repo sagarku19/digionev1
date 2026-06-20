@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { useSiteEditQuery } from '@/hooks/useSiteEdit';
+import { useSiteEditQuery } from '@/hooks/sites/useSiteEdit';
 import { useEditorHistory } from '@/hooks/site-editor/useEditorHistory';
 import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
 import { useSlugCheck } from '@/hooks/site-editor/useSlugCheck';

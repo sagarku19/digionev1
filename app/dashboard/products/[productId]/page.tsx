@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/products/useProducts';
 import {
   FileText, DollarSign, HardDrive, Megaphone, Settings,
   ArrowLeft, Save, UploadCloud, Image as ImageIcon,

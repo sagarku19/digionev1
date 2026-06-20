@@ -3,7 +3,7 @@
 // DB: affiliates (via useAffiliates hook)
 
 import React, { useState } from 'react';
-import { useAffiliates } from '@/hooks/useAffiliates';
+import { useAffiliates } from '@/hooks/marketing/useAffiliates';
 import { StatusPill } from '@/components/ui/StatusPill';
 import {
   Network, Plus, X, Copy, Check, Trash2, ToggleLeft, ToggleRight,

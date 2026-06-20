@@ -3,7 +3,7 @@
 // DB: referral_codes, order_referrals (direct Supabase)
 
 import React, { useState } from 'react';
-import { useReferrals, type ReferralCode } from '@/hooks/useReferrals';
+import { useReferrals, type ReferralCode } from '@/hooks/marketing/useReferrals';
 import {
   Gift, Plus, X, Copy, Check, Trash2, ToggleLeft, ToggleRight,
   AlertCircle, RefreshCw, Loader2, Users, TrendingUp, IndianRupee,

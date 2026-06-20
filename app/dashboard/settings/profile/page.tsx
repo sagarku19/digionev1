@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
-import { useProfileQuery, useProfileMutations } from '@/hooks/useProfile';
+import { useProfileQuery, useProfileMutations } from '@/hooks/creator/useProfile';
 import {
   Save, CheckCircle2, User, Loader2, AlertCircle,
   Twitter, Instagram, Youtube, Globe, Camera, BadgeCheck,

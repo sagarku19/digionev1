@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useProfileQuery, useProfileMutations } from '@/hooks/useProfile';
+import { useProfileQuery, useProfileMutations } from '@/hooks/creator/useProfile';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 import { User as UserIcon, Mail, Camera, Loader2, Save } from 'lucide-react';
 import { Rails, Cross, Kicker } from '@/src/components/marketing/Ledger';

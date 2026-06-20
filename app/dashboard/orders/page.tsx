@@ -2,7 +2,7 @@
 // Orders dashboard — all orders for this creator with detail drawer.
 
 import React, { useState, useMemo } from 'react';
-import { useOrders, type Order } from '@/hooks/useOrders';
+import { useOrders, type Order } from '@/hooks/commerce/useOrders';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';

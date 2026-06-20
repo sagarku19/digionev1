@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Download, Library, ExternalLink, Package, FileText, BookOpen, Tag, Search } from 'lucide-react';
-import { useLibrary } from '@/hooks/useLibrary';
+import { useLibrary } from '@/hooks/commerce/useLibrary';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';

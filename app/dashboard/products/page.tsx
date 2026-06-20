@@ -4,8 +4,8 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useProducts } from '@/hooks/useProducts';
-import { useUpsellPages } from '@/hooks/useUpsellPages';
+import { useProducts } from '@/hooks/products/useProducts';
+import { useUpsellPages } from '@/hooks/products/useUpsellPages';
 import { getUpsellPublicPath, getUpsellDisplayUrl } from '@/lib/site-urls';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';

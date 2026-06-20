@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useCart, useCartTotal } from '@/hooks/useCart';
+import { useCart, useCartTotal } from '@/hooks/commerce/useCart';
 import { Trash2, ArrowRight, Tag, ShieldCheck } from 'lucide-react';
 
 export default function CartPage() {

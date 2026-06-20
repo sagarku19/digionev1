@@ -3,7 +3,7 @@
 // DB: services, service_bookings (tables from migration)
 
 import React, { useState, useEffect } from 'react';
-import { useServices, type Service, type Booking } from '@/hooks/useServices';
+import { useServices, type Service, type Booking } from '@/hooks/marketing/useServices';
 import {
   Video, Briefcase, FileSearch, Plus, X, Trash2, ToggleLeft, ToggleRight,
   AlertCircle, Loader2, Calendar, Users, IndianRupee, Clock, CheckCircle2,

@@ -10,7 +10,7 @@ You are a Backend Agent auditing this project's AI documentation against the act
 Run these checks in parallel:
 
 ### 1. Hooks — `.claude/rules/hooks-reference.md`
-- Glob `src/hooks/use*.ts` and list every exported hook.
+- Glob `src/hooks/**/use*.ts` (hooks live in domain subfolders) and list every exported hook.
 - Compare against the table in `.claude/rules/hooks-reference.md`.
 - Report hooks in code missing from the doc, and hooks in the doc that no longer exist.
 

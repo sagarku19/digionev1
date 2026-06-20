@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useCart } from '@/hooks/useCart';
+import { useCart } from '@/hooks/commerce/useCart';
 
 /** Clears the cart once on mount — used after successful product checkout */
 export function CartClearer() {

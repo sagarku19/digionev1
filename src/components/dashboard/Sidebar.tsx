@@ -11,8 +11,8 @@ import {
   Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, MessageCircle, HelpCircle,
   Instagram, Zap, Server, Calendar, ShoppingBag, Sparkles,
 } from 'lucide-react';
-import { useCreator } from '@/hooks/useCreator';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useCreator } from '@/hooks/creator/useCreator';
+import { useNotifications } from '@/hooks/notifications/useNotifications';
 
 // ─── Types ───────────────────────────────────────────────────
 type NavChild = { label: string; href: string; icon: React.ElementType };

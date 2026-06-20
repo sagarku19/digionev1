@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotifications } from '@/hooks/notifications/useNotifications';
 import { useRouter } from 'next/navigation';
 import {
   Bell, BellOff, CheckCheck, ShoppingBag, DollarSign,

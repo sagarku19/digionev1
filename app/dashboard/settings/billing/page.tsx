@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useEarnings } from '@/hooks/useEarnings';
+import { useEarnings } from '@/hooks/commerce/useEarnings';
 import {
   ShieldCheck, ShieldAlert, Building2, AlertCircle, Clock,
   ChevronRight, User, Eye, EyeOff,

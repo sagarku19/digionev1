@@ -4,9 +4,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut, User, Bell, Search, Sun, Moon, Settings, Sparkles } from 'lucide-react';
-import { useCreator } from '@/hooks/useCreator';
-import { useNotifications } from '@/hooks/useNotifications';
-import { useProducts } from '@/hooks/useProducts';
+import { useCreator } from '@/hooks/creator/useCreator';
+import { useNotifications } from '@/hooks/notifications/useNotifications';
+import { useProducts } from '@/hooks/products/useProducts';
 import { supabase } from '@/lib/supabase/client';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 

@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSites, SiteWithMain } from '@/hooks/useSites';
+import { useSites, SiteWithMain } from '@/hooks/sites/useSites';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Plus, ExternalLink, MoreVertical, Store, Layers,

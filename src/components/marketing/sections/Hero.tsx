@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { Rails } from '@/src/components/marketing/Ledger';
 
 const METRICS = [

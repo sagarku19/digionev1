@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useEarnings } from '@/hooks/useEarnings';
+import { useEarnings } from '@/hooks/commerce/useEarnings';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';

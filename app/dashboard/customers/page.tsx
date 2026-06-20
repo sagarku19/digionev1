@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useCustomers, Customer } from '@/hooks/useCustomers';
+import { useCustomers, Customer } from '@/hooks/commerce/useCustomers';
 import { DataTable, ColumnDef } from '@/components/ui/DataTable';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';

@@ -21,7 +21,7 @@ import {
   Loader2, CheckCircle2, XCircle,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useLinkInBioSiteQuery } from '@/hooks/useLinkInBioSite';
+import { useLinkInBioSiteQuery } from '@/hooks/sites/useLinkInBioSite';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
 import LinkInBioShell from '@/components/dashboard/site-edit/editor/LinkInBioShell';
 import ProfileCard from '@/components/dashboard/site-edit/editor/ProfileCard';

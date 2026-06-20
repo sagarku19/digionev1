@@ -7,7 +7,7 @@ import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
 
 interface UserProfile {
   full_name: string | null;

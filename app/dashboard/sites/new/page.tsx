@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useSites } from '@/hooks/useSites';
+import { useSites } from '@/hooks/sites/useSites';
 import {
   Store, Layers, CreditCard, Link2, ArrowLeft,
 } from 'lucide-react';

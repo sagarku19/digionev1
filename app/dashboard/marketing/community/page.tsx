@@ -4,8 +4,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useCreator } from '@/hooks/useCreator';
-import { useCommunity, type CommunityPost } from '@/hooks/useCommunity';
+import { useCreator } from '@/hooks/creator/useCreator';
+import { useCommunity, type CommunityPost } from '@/hooks/marketing/useCommunity';
 import {
   MessageCircle, Send, ThumbsUp, Pin, Share2,
   X, Loader2, AlertCircle, Zap, ChevronRight,

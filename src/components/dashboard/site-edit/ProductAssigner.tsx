@@ -3,7 +3,7 @@
 // Parent manages assigned set; changes propagate immediately. DB save happens on parent Save.
 
 import React from 'react';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/products/useProducts';
 import { Package } from 'lucide-react';
 
 export default function ProductAssigner({

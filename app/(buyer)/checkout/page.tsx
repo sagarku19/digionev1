@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { load } from '@cashfreepayments/cashfree-js';
-import { useCart, useCartTotal } from '@/hooks/useCart';
+import { useCart, useCartTotal } from '@/hooks/commerce/useCart';
 import { Loader2, ShieldCheck, Package, Trash2, AlertTriangle } from 'lucide-react';
 
 export default function CheckoutPage() {

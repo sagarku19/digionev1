@@ -8,6 +8,25 @@ tags: []
 
 Always use TanStack Query via custom hooks — never raw Supabase in client components.
 
+## Folder structure (2026-06-20)
+
+Hooks live in domain subfolders under `src/hooks/` — import with the full path:
+
+| Subfolder | Hooks |
+|---|---|
+| `auth/` | `useAuthSession` |
+| `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`) |
+| `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useUpsellPages` |
+| `commerce/` | `useOrders`, `useCustomers`, `useEarnings`, `useCart`, `useLibrary` |
+| `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
+| `analytics/` | `useAnalytics` |
+| `notifications/` | `useNotifications` |
+| `sites/` | `useSites`, `useSiteEdit`, `useLinkInBioSite`, `useSinglePageSite` |
+| `site-editor/` | `useEditorHistory`, `useUnsavedChanges`, `useSlugCheck`, `saveDesignTokens` (editor-internal logic) |
+| `storefront/` | `useStorefront` |
+
+Example: `import { useProducts } from '@/hooks/products/useProducts'`.
+
 ## Query key convention
 
 All hooks use hierarchical keys: `[domain, kind, ...identifiers]`. Examples:

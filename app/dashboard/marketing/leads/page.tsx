@@ -3,7 +3,7 @@
 // DB: lead_form joined with forms, sites via useGuestLeads hook
 
 import React, { useState, useMemo } from 'react';
-import { useGuestLeads } from '@/hooks/useGuestLeads';
+import { useGuestLeads } from '@/hooks/marketing/useGuestLeads';
 import {
   Users, Mail, ArrowDownToLine, Send, X, Filter,
   MailOpen, AlertCircle, CheckCircle2, Search,

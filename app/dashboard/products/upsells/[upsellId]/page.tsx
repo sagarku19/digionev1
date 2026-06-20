@@ -4,8 +4,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useUpsellPage, useUpsellPages } from '@/hooks/useUpsellPages';
-import { useProducts } from '@/hooks/useProducts';
+import { useUpsellPage, useUpsellPages } from '@/hooks/products/useUpsellPages';
+import { useProducts } from '@/hooks/products/useProducts';
 import { getUpsellDisplayUrl, getUpsellPublicPath } from '@/lib/site-urls';
 import {
   ArrowLeft, Settings, Package, Mail, Palette, Globe, Shield,

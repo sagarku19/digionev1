@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import InView from '@/src/components/marketing/InView';
 import { ArrowRight } from 'lucide-react';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { Rails, Kicker, Cross } from '@/src/components/marketing/Ledger';
 
 export default function CtaBanner() {

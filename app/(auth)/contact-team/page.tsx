@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, CheckCircle2, Lock } from 'lucide-react';
-import { useAuthSession } from '@/hooks/useAuthSession';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
 
 const INPUT =
   'w-full px-4 py-3 rounded-lg border border-black/[0.1] bg-white text-[14px] text-[#16130F] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#E83A2E]/15 focus:border-[#E83A2E] transition-all';

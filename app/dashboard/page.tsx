@@ -2,10 +2,10 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { useProducts } from '@/hooks/useProducts';
-import { useOrders, type Order } from '@/hooks/useOrders';
-import { useSites } from '@/hooks/useSites';
+import { useAnalytics } from '@/hooks/analytics/useAnalytics';
+import { useProducts } from '@/hooks/products/useProducts';
+import { useOrders, type Order } from '@/hooks/commerce/useOrders';
+import { useSites } from '@/hooks/sites/useSites';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { StatCard } from '@/components/ui/StatCard';
 import { StatusPill } from '@/components/ui/StatusPill';
