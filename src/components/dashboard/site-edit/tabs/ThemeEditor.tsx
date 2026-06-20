@@ -25,12 +25,12 @@ export default function ThemeEditor({
       {THEME_FIELDS.map(f => {
         const val = palette[f.key] ?? f.default;
         return (
-          <div key={f.key} className="flex items-center gap-4 p-4 bg-[var(--bg-primary)] border border-[var(--border)] rounded-xl">
+          <div key={f.key} className="flex items-center gap-4 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)]">
             <input
               type="color"
               value={val}
               onChange={e => onChange({ ...palette, [f.key]: e.target.value })}
-              className="w-12 h-12 rounded-xl cursor-pointer border border-gray-200 dark:border-[var(--border)] p-0.5 bg-white dark:bg-[var(--bg-secondary)] shrink-0"
+              className="w-12 h-12 rounded-[var(--radius-md)] cursor-pointer border border-[var(--border)] p-0.5 bg-[var(--surface-muted)] shrink-0"
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-[var(--text-primary)]">{f.label}</p>
@@ -38,10 +38,10 @@ export default function ThemeEditor({
                 type="text"
                 value={val}
                 onChange={e => onChange({ ...palette, [f.key]: e.target.value })}
-                className="text-xs text-gray-400 bg-transparent border-none outline-none w-full mt-0.5 font-mono"
+                className="text-xs text-[var(--text-tertiary)] bg-transparent border-none outline-none w-full mt-0.5 font-mono"
               />
             </div>
-            <div className="w-8 h-8 rounded-lg shrink-0 border border-gray-200 dark:border-[var(--border)] shadow-inner" style={{ backgroundColor: val }} />
+            <div className="w-8 h-8 rounded-[var(--radius-sm)] shrink-0 border border-[var(--border)] shadow-inner" style={{ backgroundColor: val }} />
           </div>
         );
       })}

@@ -5,18 +5,18 @@
 import React, { useState, useCallback } from 'react';
 import {
   Plus, Trash2, Eye, EyeOff, GripVertical, Pencil, X,
-  ChevronUp, ChevronDown, Layout, Search,
+  ChevronUp, ChevronDown, Layout,
 } from 'lucide-react';
 import {
-  SECTION_TYPES, SECTION_FIELDS, type Section, type FieldDef,
+  SECTION_TYPES, SECTION_FIELDS, type Section,
   getNestedValue, setNestedValue, PI,
 } from './section-defs';
 
 // ─── Items Editor ─────────────────────────────────────────────
 function ItemsEditor({ items, fieldDefs, onChange }: {
-  items: any[];
+  items: Record<string, string>[];
   fieldDefs: { key: string; label: string; multiline?: boolean }[];
-  onChange: (items: any[]) => void;
+  onChange: (items: Record<string, string>[]) => void;
 }) {
   const add    = () => onChange([...items, {}]);
   const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
@@ -29,10 +29,10 @@ function ItemsEditor({ items, fieldDefs, onChange }: {
   return (
     <div className="space-y-2.5">
       {items.map((item, i) => (
-        <div key={i} className="p-3 bg-white dark:bg-[var(--bg-secondary)] rounded-xl border border-gray-200 dark:border-[var(--border)] space-y-2">
+        <div key={i} className="p-3 bg-[var(--surface)] rounded-xl border border-[var(--border)] space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Item {i + 1}</span>
-            <button onClick={() => remove(i)} className="text-xs text-red-400 hover:text-red-600 transition">Remove</button>
+            <span className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wide">Item {i + 1}</span>
+            <button onClick={() => remove(i)} className="text-xs text-[var(--danger)] hover:opacity-80 transition">Remove</button>
           </div>
           {fieldDefs.map(f => f.multiline ? (
             <textarea
@@ -41,7 +41,7 @@ function ItemsEditor({ items, fieldDefs, onChange }: {
               onChange={e => update(i, f.key, e.target.value)}
               placeholder={f.label}
               rows={2}
-              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg resize-none outline-none focus:ring-1 focus:ring-[var(--accent)] text-[var(--text-primary)] placeholder-gray-400"
+              className="w-full px-3 py-2 text-xs bg-[var(--surface-muted)] border border-[var(--border)] rounded-lg resize-none outline-none focus:ring-1 focus:ring-[var(--accent)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
             />
           ) : (
             <input
@@ -50,14 +50,14 @@ function ItemsEditor({ items, fieldDefs, onChange }: {
               value={item[f.key] ?? ''}
               onChange={e => update(i, f.key, e.target.value)}
               placeholder={f.label}
-              className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)] text-[var(--text-primary)] placeholder-gray-400"
+              className="w-full px-3 py-2 text-xs bg-[var(--surface-muted)] border border-[var(--border)] rounded-lg outline-none focus:ring-1 focus:ring-[var(--accent)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
             />
           ))}
         </div>
       ))}
       <button
         onClick={add}
-        className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-gray-200 dark:border-[var(--border)] text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] hover:border-[var(--accent)] rounded-xl text-xs font-semibold transition"
+        className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-[var(--border)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:border-[var(--brand)] rounded-[var(--radius-md)] text-xs font-semibold transition"
       >
         <Plus className="w-3.5 h-3.5" /> Add item
       </button>
@@ -89,14 +89,14 @@ function SettingsPanel({ section, onUpdate, onClose }: {
             {React.createElement(meta.icon, { className: 'w-4 h-4 text-[var(--text-secondary)]' })}
             <h2 className="font-bold text-[var(--text-primary)]">{meta.label}</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] p-1 rounded-lg transition">
+          <button onClick={onClose} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 rounded-lg transition">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {fields.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-8">No configurable settings for this section type.</p>
+            <p className="text-sm text-[var(--text-tertiary)] text-center py-8">No configurable settings for this section type.</p>
           )}
 
           {fields.map(field => {
@@ -105,7 +105,7 @@ function SettingsPanel({ section, onUpdate, onClose }: {
                 <div key={field.key}>
                   <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide mb-2">{field.label}</label>
                   <ItemsEditor
-                    items={(get(field.key) as any[]) ?? []}
+                    items={(get(field.key) as Record<string, string>[]) ?? []}
                     fieldDefs={field.fields}
                     onChange={val => set(field.key, val)}
                   />
@@ -126,11 +126,11 @@ function SettingsPanel({ section, onUpdate, onClose }: {
               const checked = !!(get(field.key));
               return (
                 <div key={field.key} className="flex items-center justify-between py-1">
-                  <label className="text-sm font-medium text-gray-700 dark:text-[var(--text-secondary)]">{field.label}</label>
+                  <label className="text-sm font-medium text-[var(--text-secondary)]">{field.label}</label>
                   <button
                     type="button"
                     onClick={() => set(field.key, !checked)}
-                    className={`relative w-10 h-5 rounded-full transition-colors ${checked ? 'bg-[var(--accent)]' : 'bg-gray-300 dark:bg-gray-700'}`}
+                    className={`relative w-10 h-5 rounded-full transition-colors ${checked ? 'bg-[var(--brand)]' : 'bg-[var(--border-strong)]'}`}
                   >
                     <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
@@ -156,7 +156,7 @@ function SettingsPanel({ section, onUpdate, onClose }: {
                 <div key={field.key}>
                   <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide mb-1.5">{field.label}</label>
                   <div className="flex items-center gap-2.5">
-                    <input type="color" value={val} onChange={e => set(field.key, e.target.value)} className="w-11 h-11 rounded-xl cursor-pointer border border-gray-200 dark:border-[var(--border)] p-0.5 bg-white dark:bg-[var(--bg-secondary)]" />
+                    <input type="color" value={val} onChange={e => set(field.key, e.target.value)} className="w-11 h-11 rounded-xl cursor-pointer border border-[var(--border)] p-0.5 bg-[var(--surface)]" />
                     <input type="text" value={val} onChange={e => set(field.key, e.target.value)} className={`${PI} flex-1`} placeholder="#6366f1" />
                   </div>
                 </div>
@@ -177,7 +177,7 @@ function SettingsPanel({ section, onUpdate, onClose }: {
         </div>
 
         <div className="p-5 border-t border-[var(--border)] shrink-0 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 dark:border-[var(--border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--text-secondary)] hover:bg-gray-50 dark:hover:bg-[var(--bg-secondary)] transition">
+          <button onClick={onClose} className="flex-1 py-2.5 border border-[var(--border)] rounded-[var(--radius-md)] text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition">
             Cancel
           </button>
           <button onClick={handleApply} className="flex-1 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-xl text-sm font-bold transition shadow-lg">
@@ -207,12 +207,12 @@ function SectionRow({ section, index, total, onMove, onToggle, onDelete, onEdit 
         ? 'border-[var(--border)] hover:border-[var(--accent)]'
         : 'border-dashed border-[var(--border)] opacity-60'
     }`}>
-      <div className="flex flex-col items-center gap-0.5 text-gray-300 dark:text-gray-700 shrink-0">
-        <button onClick={() => onMove(index, index - 1)} disabled={index === 0} className="p-0.5 rounded hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition">
+      <div className="flex flex-col items-center gap-0.5 text-[var(--text-tertiary)] shrink-0">
+        <button onClick={() => onMove(index, index - 1)} disabled={index === 0} className="p-0.5 rounded hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition">
           <ChevronUp className="w-3.5 h-3.5" />
         </button>
         <GripVertical className="w-4 h-4" />
-        <button onClick={() => onMove(index, index + 1)} disabled={index === total - 1} className="p-0.5 rounded hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition">
+        <button onClick={() => onMove(index, index + 1)} disabled={index === total - 1} className="p-0.5 rounded hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition">
           <ChevronDown className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -223,13 +223,13 @@ function SectionRow({ section, index, total, onMove, onToggle, onDelete, onEdit 
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{meta.label}</p>
-        <p className="text-xs text-gray-400 truncate">{meta.desc}</p>
+        <p className="text-xs text-[var(--text-tertiary)] truncate">{meta.desc}</p>
       </div>
 
       <span className={`hidden sm:inline text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
         section.is_visible
-          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400'
-          : 'bg-gray-100 text-gray-500 dark:bg-[var(--bg-secondary)] dark:text-gray-500'
+          ? 'bg-[var(--success-bg)] text-[var(--success)]'
+          : 'bg-[var(--surface-muted)] text-[var(--text-tertiary)]'
       }`}>
         {section.is_visible ? 'Visible' : 'Hidden'}
       </span>
@@ -238,16 +238,16 @@ function SectionRow({ section, index, total, onMove, onToggle, onDelete, onEdit 
         {hasSettings && (
           <button
             onClick={() => onEdit(section)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-[var(--text-primary)] dark:hover:text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition"
+            className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition"
             title="Edit settings"
           >
             <Pencil className="w-4 h-4" />
           </button>
         )}
-        <button onClick={() => onToggle(section.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] hover:bg-gray-100 dark:hover:bg-[var(--bg-secondary)] transition" title={section.is_visible ? 'Hide' : 'Show'}>
+        <button onClick={() => onToggle(section.id)} className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition" title={section.is_visible ? 'Hide' : 'Show'}>
           {section.is_visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
-        <button onClick={() => onDelete(section.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition" title="Delete">
+        <button onClick={() => onDelete(section.id)} className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition" title="Delete">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -265,16 +265,16 @@ function AddSectionPanel({ onAdd, onClose }: { onAdd: (type: string) => void; on
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-[var(--bg-primary)] border border-gray-200 dark:border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
+      <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] shrink-0">
           <h3 className="font-bold text-[var(--text-primary)]">Add a section</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 dark:hover:text-[var(--text-primary)] transition text-xl font-light leading-none">&times;</button>
+          <button onClick={onClose} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition text-xl font-light leading-none">&times;</button>
         </div>
         <div className="px-4 pt-3 shrink-0">
           <input
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search sections..."
-            className="w-full px-3 py-2 text-sm bg-[var(--bg-secondary)] border border-gray-200 dark:border-[var(--border)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-primary)] placeholder-gray-400"
+            className="w-full px-3 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--accent)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
           />
         </div>
         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -291,13 +291,13 @@ function AddSectionPanel({ onAdd, onClose }: { onAdd: (type: string) => void; on
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--text-primary)] truncate">{meta.label}</p>
-                  <p className="text-xs text-gray-400 truncate">{meta.desc}</p>
+                  <p className="text-xs text-[var(--text-tertiary)] truncate">{meta.desc}</p>
                 </div>
               </button>
             );
           })}
           {entries.length === 0 && (
-            <p className="col-span-2 text-center text-sm text-gray-400 py-8">No sections match &ldquo;{search}&rdquo;</p>
+            <p className="col-span-2 text-center text-sm text-[var(--text-tertiary)] py-8">No sections match &ldquo;{search}&rdquo;</p>
           )}
         </div>
       </div>
@@ -358,10 +358,10 @@ export default function SectionManager({
 
       <div className="space-y-2.5">
         {sections.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-[var(--border)] rounded-2xl text-center">
-            <Layout className="w-10 h-10 text-gray-300 dark:text-gray-700 mb-3" />
-            <p className="text-sm font-medium text-gray-500">No sections yet</p>
-            <p className="text-xs text-gray-400 mt-1">Add your first section below to start building.</p>
+          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-[var(--border)] rounded-[var(--radius-lg)] text-center">
+            <Layout className="w-10 h-10 text-[var(--text-tertiary)] mb-3" />
+            <p className="text-sm font-medium text-[var(--text-secondary)]">No sections yet</p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">Add your first section below to start building.</p>
           </div>
         ) : (
           sections.map((section, index) => (

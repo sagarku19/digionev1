@@ -13,7 +13,7 @@ export type SidebarItem = {
   comingSoon?: boolean;
 };
 
-export type EditorSiteType = 'linkinbio' | 'single' | 'payment';
+export type EditorSiteType = 'linkinbio' | 'single' | 'payment' | 'main';
 
 // Per-type config for the header page-switcher dropdown.
 // A real, custom slug — not the id fallback some sites get when no slug was set.
@@ -49,6 +49,13 @@ const SWITCHER: Record<EditorSiteType, SwitcherConfig> = {
     heading: 'Your payment links',
     label: (s) => s.site_main?.title || 'Untitled',
     url: (s) => `/pay/${s.id.slice(0, 8)}…`,
+  },
+  main: {
+    match: 'main',
+    editBase: 'main',
+    heading: 'Your stores',
+    label: (s) => s.site_main?.title || cleanSlug(s) || 'Untitled',
+    url: (s) => (cleanSlug(s) ? `/store/${cleanSlug(s)}` : 'No URL set'),
   },
 };
 
