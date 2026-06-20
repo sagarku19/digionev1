@@ -13,9 +13,13 @@ export type SidebarItem = {
   comingSoon?: boolean;
 };
 
-export type EditorSiteType = 'linkinbio' | 'single';
+export type EditorSiteType = 'linkinbio' | 'single' | 'payment';
 
 // Per-type config for the header page-switcher dropdown.
+// A real, custom slug — not the id fallback some sites get when no slug was set.
+const cleanSlug = (s: import('@/hooks/useSites').SiteWithMain): string | null =>
+  s.slug && s.slug !== s.id ? s.slug : null;
+
 type SwitcherConfig = {
   match: string;
   editBase: string;
@@ -29,15 +33,22 @@ const SWITCHER: Record<EditorSiteType, SwitcherConfig> = {
     match: 'linkinbio',
     editBase: 'linkinbio',
     heading: 'Your link-in-bio pages',
-    label: (s) => s.linkinbio_pages?.display_name || s.slug || 'Untitled',
-    url: (s) => (s.slug ? `/link/${s.slug}` : 'No URL'),
+    label: (s) => s.linkinbio_pages?.display_name || cleanSlug(s) || 'Untitled',
+    url: (s) => (cleanSlug(s) ? `/link/${cleanSlug(s)}` : 'No URL set'),
   },
   single: {
     match: 'single',
     editBase: 'singlepage',
     heading: 'Your single pages',
-    label: (s) => s.site_singlepage?.title || s.slug || 'Untitled',
-    url: (s) => (s.slug ? `/site/${s.slug}` : 'No URL'),
+    label: (s) => s.site_singlepage?.title || cleanSlug(s) || 'Untitled',
+    url: (s) => (cleanSlug(s) ? `/site/${cleanSlug(s)}` : 'No URL set'),
+  },
+  payment: {
+    match: 'payment',
+    editBase: 'payment',
+    heading: 'Your payment links',
+    label: (s) => s.site_main?.title || 'Untitled',
+    url: (s) => `/pay/${s.id.slice(0, 8)}…`,
   },
 };
 

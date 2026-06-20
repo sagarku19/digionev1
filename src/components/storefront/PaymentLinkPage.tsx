@@ -11,12 +11,18 @@ function formatINR(n: number) {
 
 import { load } from '@cashfreepayments/cashfree-js';
 
-type PaymentSiteMain = { title?: string | null; meta_description?: string | null; fixed_amount?: number | null } | null;
+type PaymentSiteMain = { title?: string | null; meta_description?: string | null } | null;
+type LinkedProduct = { id: string; name: string; price: number; thumbnail_url: string | null } | null;
 
-export default function PaymentLinkPage({ siteId, siteMain }: { siteId: string; siteMain: PaymentSiteMain }) {
+export default function PaymentLinkPage({ siteId, siteMain, fixedAmount, product }: {
+  siteId: string;
+  siteMain: PaymentSiteMain;
+  fixedAmount?: number | null;
+  product?: LinkedProduct;
+}) {
   const title       = siteMain?.title ?? 'Pay securely';
   const description = siteMain?.meta_description ?? '';
-  const amount      = siteMain?.fixed_amount ?? undefined;
+  const amount      = fixedAmount ?? undefined;
   const isFlexible  = !amount;
 
   const [name,    setName]    = useState('');
@@ -66,6 +72,21 @@ export default function PaymentLinkPage({ siteId, siteMain }: { siteId: string; 
   return (
     <div className="min-h-screen bg-[--creator-bg] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-xl">
+        {/* Linked product (shown at the top) */}
+        {product && (
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/40 p-3">
+            {product.thumbnail_url ? (
+              <img src={product.thumbnail_url} alt={product.name} className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+            ) : (
+              <div className="h-14 w-14 shrink-0 rounded-xl bg-[--creator-primary]/10" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-[--creator-text]">{product.name}</p>
+              <p className="text-sm font-semibold text-[--creator-primary]">{product.price === 0 ? 'Free' : formatINR(product.price)}</p>
+            </div>
+          </div>
+        )}
+
         <h1 className="text-2xl font-extrabold text-[--creator-text] mb-2">{title}</h1>
         {description && <p className="text-sm text-[--creator-text-muted] mb-6">{description}</p>}
 

@@ -12,7 +12,7 @@
 | link-in-bio | `/link/[username]` | `app/(storefront)/link/[username]/page.tsx` | `src/components/storefront/LinkInBioPage.tsx` | `src/components/storefront/linkinbio/blockRenderers/registry.tsx` (block list below) |
 | single-page | `/site/[slug]` | `app/(storefront)/site/[slug]/page.tsx` (also fetches upsell products by id from `metadata.upsell_product_ids`; passes `isPreview`) | `src/components/storefront/ProductSalesPage.tsx` (fixed template; bottom `#checkout` section: login prompt + configurable name/email/phone fields + upsell list + Pay — visual, real purchase still routes via `/checkout`; listens for `sp-content-update`/`sp-scroll` postMessages from the editor) | inline sub-sections + `#checkout` |
 | store | `/store/[slug]` | `app/(storefront)/store/[slug]/page.tsx` | `src/components/storefront/SectionRenderer.tsx` | `section-defs.ts` (sections below) |
-| payment | `/pay/[siteId]` | `app/(storefront)/pay/[siteId]/page.tsx` | `src/components/storefront/PaymentLinkPage.tsx` | n/a |
+| payment | `/pay/[siteId]` | `app/(storefront)/pay/[siteId]/page.tsx` (reads `site_main.metadata` for `fixed_amount`/`product_id`; fetches the linked product; supports `?preview=1`). Layout renders **no** store header/footer — just theme CSS + `PreviewBridge`. | `src/components/storefront/PaymentLinkPage.tsx` (linked product card on top + name/email/phone + amount; live theme via layout `PreviewBridge`) | n/a |
 
 Standalone pages: `app/(storefront)/upsells/[slug]/page.tsx`, `app/(storefront)/store/product/[productId]/page.tsx`.
 
