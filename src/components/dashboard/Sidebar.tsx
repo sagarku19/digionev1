@@ -166,8 +166,8 @@ export default function Sidebar() {
       <aside
         onTransitionEnd={handleTransitionEnd}
         className={`
-          fixed top-0 left-0 h-full bg-[var(--bg-primary)]
-          border-r border-[var(--border)]
+          fixed top-0 left-0 h-full bg-[var(--sidebar-bg)]
+          border-r border-[var(--border-strong)]
           w-[256px] flex flex-col shadow-[var(--shadow-lg)] md:shadow-none
           transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
           ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -176,7 +176,7 @@ export default function Sidebar() {
       >
 
         {/* ── Logo ── */}
-        <div className="h-[52px] flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1 bg-[var(--bg-primary)]/50">
+        <div className="h-[52px] flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1">
           <Link href="/dashboard" onClick={close} className="flex items-center gap-2 shrink-0 group">
             {/* Light mode logo */}
             <DigiOneLogo width={26} height={26} className="block dark:hidden group-hover:scale-105 transition-transform" />

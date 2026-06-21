@@ -3,10 +3,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut, User, Bell, Search, Sun, Moon, Settings, Sparkles } from 'lucide-react';
+import { LogOut, User, Bell, Search, Sun, Moon, Settings, Sparkles, ExternalLink } from 'lucide-react';
 import { useCreator } from '@/hooks/creator/useCreator';
 import { useNotifications } from '@/hooks/notifications/useNotifications';
 import { useProducts } from '@/hooks/products/useProducts';
+import { useSites } from '@/hooks/sites/useSites';
+import { getSitePublicPath } from '@/lib/site-urls';
 import { supabase } from '@/lib/supabase/client';
 import { useTheme } from '@/contexts/DashboardThemeContext';
 
@@ -21,36 +23,96 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, onClose: () =
 }
 
 /* ── Breadcrumb helper ── */
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+type Crumb = { label: string; href?: string; external?: boolean };
+
 function PageBreadcrumb({ pathname }: { pathname: string | null }) {
   const { products } = useProducts();
-  const raw = pathname?.split('/dashboard')[1] || '';
-  const segments = raw.split('/').filter(Boolean);
-  const lastSeg = segments[segments.length - 1];
+  const { sites } = useSites();
 
-  let label = 'Overview';
-  if (lastSeg) {
-    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(lastSeg);
-    const prevSeg = segments.length > 1 ? segments[segments.length - 2] : '';
+  const segs = (pathname?.split('/dashboard')[1] || '').split('/').filter(Boolean);
 
-    if (isUUID) {
-      if (prevSeg === 'products') {
-        const product = products?.find((p) => p.id === lastSeg);
-        label = product?.name || 'Edit Product';
-      } else {
-        label = 'Details';
-      }
-    } else if (lastSeg === 'new' && prevSeg === 'products') {
-      label = 'New Product';
-    } else {
-      label = lastSeg.charAt(0).toUpperCase() + lastSeg.slice(1).replace(/-/g, ' ');
+  const crumbs: Crumb[] = (() => {
+    if (segs.length === 0) return [{ label: 'Overview' }];
+
+    // Site editors → /sites/{siteName ≤10}, name links to the live storefront
+    if (segs[0] === 'sites' && segs[1] === 'edit' && segs[3]) {
+      const site = sites.find((s) => s.id === segs[3]);
+      const name =
+        site?.site_main?.title ||
+        site?.site_singlepage?.title ||
+        site?.linkinbio_pages?.display_name ||
+        (site?.slug && site.slug !== site.id ? site.slug : null) ||
+        'site';
+      const display = cap(name);
+      const short = display.length > 10 ? `${display.slice(0, 10)}…` : display;
+      const live = site
+        ? getSitePublicPath({ id: site.id, site_type: site.site_type, slug: site.slug, creator_id: site.creator_id, custom_domain: site.custom_domain })
+        : null;
+      return [
+        { label: 'Sites', href: '/dashboard/sites' },
+        live ? { label: short, href: live, external: true } : { label: short },
+      ];
     }
-  }
+
+    // Product detail → /products/{name}, name links to the live product page
+    if (segs[0] === 'products' && UUID_RE.test(segs[1] ?? '')) {
+      const product = products?.find((p) => p.id === segs[1]);
+      return [
+        { label: 'Products', href: '/dashboard/products' },
+        { label: cap(product?.name || 'Product') },
+      ];
+    }
+
+    // Generic path — each segment links to its cumulative dashboard route
+    let acc = '/dashboard';
+    return segs.map((seg, i) => {
+      acc += `/${seg}`;
+      const isLast = i === segs.length - 1;
+      const label = UUID_RE.test(seg) ? 'Details' : cap(seg);
+      return isLast ? { label } : { label, href: acc };
+    });
+  })();
 
   return (
-    <span className="text-[15px] md:text-[20px] font-semibold text-[var(--text-primary)] tracking-tight md:pl-6 truncate max-w-[200px] sm:max-w-xs md:max-w-md">
-      {label}
-    </span>
+    <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm md:text-[15px] md:pl-6">
+      {crumbs.map((c, i) => (
+        <React.Fragment key={`${c.label}-${i}`}>
+          {i > 0 && <span className="text-[var(--text-tertiary)]" aria-hidden>/</span>}
+          <Crumb crumb={c} current={i === crumbs.length - 1 && !c.external} />
+        </React.Fragment>
+      ))}
+    </nav>
   );
+}
+
+function Crumb({ crumb, current }: { crumb: Crumb; current: boolean }) {
+  const base = 'truncate max-w-[110px] sm:max-w-[160px] rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]';
+
+  if (current) {
+    return <span className={`${base} font-semibold text-[var(--text-primary)]`} title={crumb.label}>{crumb.label}</span>;
+  }
+  if (crumb.external && crumb.href) {
+    return (
+      <a
+        href={crumb.href} target="_blank" rel="noopener noreferrer" title={`Open ${crumb.label}`}
+        className={`${base} inline-flex items-center gap-0.5 font-semibold text-[var(--text-primary)] hover:text-[var(--brand)]`}
+      >
+        <span className="truncate">{crumb.label}</span>
+        <ExternalLink className="h-3 w-3 shrink-0" />
+      </a>
+    );
+  }
+  if (crumb.href) {
+    return (
+      <Link href={crumb.href} title={crumb.label} className={`${base} text-[var(--text-secondary)] underline-offset-2 hover:text-[var(--text-primary)] hover:underline`}>
+        {crumb.label}
+      </Link>
+    );
+  }
+  return <span className={`${base} text-[var(--text-secondary)]`}>{crumb.label}</span>;
 }
 
 export default function TopBar() {
@@ -66,6 +128,15 @@ export default function TopBar() {
 
   const profileRef = useRef<HTMLDivElement>(null);
   useClickOutside(profileRef, () => setShowDropdown(false));
+
+  // Hover open/close (with a small grace delay so the cursor can travel into the menu)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openMenu = () => { if (closeTimer.current) clearTimeout(closeTimer.current); setShowDropdown(true); };
+  const scheduleClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setShowDropdown(false), 160);
+  };
+  useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -83,7 +154,7 @@ export default function TopBar() {
 
   return (
     <>
-    <header className="h-[52px] w-full flex items-center justify-between px-4 sm:px-5 sticky top-0 z-30 bg-[var(--bg-primary)] border-b border-[var(--border-subtle)]">
+    <header className="h-[52px] w-full flex items-center justify-between px-4 sm:px-5 sticky top-0 z-30 bg-[var(--sidebar-bg)] border-b border-[var(--border-strong)]">
 
       {/* ── Left: Breadcrumb ── */}
       <div className="flex items-center gap-3 pl-[52px] md:pl-0">
@@ -108,18 +179,6 @@ export default function TopBar() {
           </kbd>
         </div>
 
-        {/* Theme toggle — desktop only */}
-        <div className="hidden lg:flex items-center h-8 bg-[var(--surface-muted)] rounded-[var(--radius-sm)] border border-[var(--border)] p-0.75 gap-0.75">
-          <ThemeBtn active={theme === 'light'} onClick={() => setTheme('light')} title="Light">
-            <Sun className="w-3.5 h-3.5" />
-            <span className="text-[12px] font-medium">Light</span>
-          </ThemeBtn>
-          <ThemeBtn active={theme === 'dark'} onClick={() => setTheme('dark')} title="Dark">
-            <Moon className="w-3.5 h-3.5" />
-            <span className="text-[12px] font-medium">Dark</span>
-          </ThemeBtn>
-        </div>
-
         {/* Notifications — desktop only */}
         <Link
           href="/dashboard/notifications"
@@ -138,7 +197,7 @@ export default function TopBar() {
         <div className="hidden lg:block w-px h-4 bg-[var(--border)] mx-1" />
 
         {/* Profile dropdown */}
-        <div className="relative" ref={profileRef}>
+        <div className="relative" ref={profileRef} onMouseEnter={openMenu} onMouseLeave={scheduleClose}>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
             className={`flex items-center gap-2 h-8 pl-1 pr-2.5 rounded-[var(--radius-sm)] transition-colors ${
@@ -230,35 +289,21 @@ export default function TopBar() {
                 />
               </div>
 
-              {/* Theme toggle — mobile only */}
-              <div className="lg:hidden px-1.5 mt-0.5">
+              {/* Appearance — Theme toggle */}
+              <div className="h-px bg-[var(--border-subtle)] mx-2 my-1" />
+              <div className="px-1.5">
                 <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)]">
                   <span className="text-[var(--text-tertiary)]">
-                    {theme === 'light' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                    {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
                   </span>
-                  <span className="flex-1 text-left text-[12.5px] font-medium text-[var(--text-secondary)]">Theme</span>
-                  <div className="flex items-center h-7 bg-[var(--surface-muted)] rounded-[var(--radius-sm)] border border-[var(--border)] p-0.5 gap-0.5">
-                    <button
-                      onClick={() => setTheme('light')}
-                      className={`h-6 px-2 gap-1 rounded flex items-center justify-center text-[11px] font-medium transition-all duration-150 ${
-                        theme === 'light'
-                          ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] border border-[var(--border)]'
-                          : 'text-[var(--text-tertiary)]'
-                      }`}
-                    >
-                      <Sun className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => setTheme('dark')}
-                      className={`h-6 px-2 gap-1 rounded flex items-center justify-center text-[11px] font-medium transition-all duration-150 ${
-                        theme === 'dark'
-                          ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] border border-[var(--border)]'
-                          : 'text-[var(--text-tertiary)]'
-                      }`}
-                    >
-                      <Moon className="w-3 h-3" />
-                    </button>
-                  </div>
+                  <span className="flex-1 text-[12.5px] font-medium text-[var(--text-secondary)]">Theme</span>
+                  <button
+                    type="button" role="switch" aria-checked={theme === 'dark'} aria-label="Toggle dark mode"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${theme === 'dark' ? 'bg-[var(--brand)]' : 'border border-[var(--border)] bg-[var(--surface-muted)]'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${theme === 'dark' ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                  </button>
                 </div>
               </div>
 
@@ -311,26 +356,6 @@ export default function TopBar() {
 }
 
 /* ── Sub-components ── */
-
-function ThemeBtn({
-  active, onClick, title, children,
-}: {
-  active: boolean; onClick: () => void; title: string; children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      className={`h-6.5 px-3 gap-1.5 rounded-[var(--radius-sm)] flex items-center justify-center transition-all duration-150 ${
-        active
-          ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)] border border-[var(--border)]'
-          : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
 
 function DropdownItem({
   icon, label, onClick, badge,
