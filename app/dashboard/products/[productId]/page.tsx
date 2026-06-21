@@ -168,8 +168,17 @@ function ProductPreview({ data }: { data: ProductRow }) {
 
   return (
     <div>
-      <div className="mb-2.5 flex items-center gap-1.5 text-[15px] font-semibold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">
-        <Eye className="h-3 w-3" /> Live preview
+      <div className="mb-3 flex items-center justify-between">
+        <span className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <Eye className="h-4 w-4 text-[var(--text-secondary)]" /> Live preview
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-tertiary)]">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
+          </span>
+          Auto-updating
+        </span>
       </div>
       <div className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
         <div className="relative flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-[var(--brand)]/10 to-[var(--brand)]/[0.03]">
