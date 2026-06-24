@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleReset} className="space-y-4">
         <div>
-          <label className="block text-[13px] font-semibold text-[#16130F] mb-1.5">Email address</label>
+          <label className="block text-[13px] font-semibold text-[#16130F] mb-1.5">Email address <span className="text-[#E83A2E]">*</span></label>
           <input
             type="email"
             required

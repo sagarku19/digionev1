@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, ArrowRight, Store, ShoppingBag, MailCheck } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, MailCheck } from 'lucide-react';
 
 function GoogleIcon() {
   return (
@@ -31,10 +31,11 @@ export default function SignupPage() {
   const supabase = createClient();
 
   const [fullName, setFullName] = useState('');
+  const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [role, setRole] = useState<'creator' | 'buyer'>('creator');
+  const role = 'creator';
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -62,10 +63,12 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true); setError(null);
     if (fullName.length < 2) { setError('Full name must be at least 2 characters'); setLoading(false); return; }
+    const mobileDigits = mobile.replace(/\D/g, '');
+    if (mobileDigits.length < 10) { setError('Enter a valid 10-digit mobile number'); setLoading(false); return; }
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email, password,
-      options: { data: { full_name: fullName, role } },
+      options: { data: { full_name: fullName, role, mobile: mobileDigits } },
     });
     if (signUpError) { setError(signUpError.message); setLoading(false); return; }
 
@@ -76,6 +79,7 @@ export default function SignupPage() {
 
     if (data.session && data.user) {
       try {
+        await supabase.from('profiles').update({ mobile: mobileDigits }).eq('user_id', data.user.id);
         const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', data.user.id).maybeSingle();
         if (profile?.id) await supabase.from('notifications').insert({ recipient_creator_id: profile.id, title: '👋 Welcome to DigiOne!', message: "You're all set! Start by creating your first product.", type: 'welcome', action_url: '/dashboard/products' } as any);
       } catch { /* non-critical */ }
@@ -118,43 +122,29 @@ export default function SignupPage() {
         <p className="text-[12.5px] text-black/50 font-medium mt-0.5">Free forever plan · No credit card needed</p>
       </div>
 
-      {/* Role toggle */}
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        {([['creator', 'Creator', Store, 'Sell / Buy products'], ['buyer', 'Buyer', ShoppingBag, 'Buy products']] as const).map(([val, label, Icon, sub]) => (
-          <button
-            key={val}
-            type="button"
-            onClick={() => setRole(val)}
-            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-colors text-left ${
-              role === val ? 'border-[#E83A2E] bg-[#E83A2E]/[0.04] text-[#E83A2E]' : 'border-black/[0.1] bg-white text-black/50 hover:border-black/[0.25]'
-            }`}
-          >
-            <Icon className="w-4 h-4 shrink-0" />
-            <span className="leading-tight">
-              <span className="block text-[11px] sm:text-[12px] font-bold">{label}</span>
-              <span className="block text-[9px] sm:text-[10.5px] opacity-60">{sub}</span>
-            </span>
-          </button>
-        ))}
-      </div>
-
       {/* Form */}
       <form onSubmit={handleSignup} className="space-y-2.5">
         {/* Name */}
         <div>
-          <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Full name</label>
+          <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Full name <span className="text-[#E83A2E]">*</span></label>
           <input type="text" required placeholder="Rahul Sharma" className={inputCls} value={fullName} onChange={e => setFullName(e.target.value)} />
+        </div>
+
+        {/* Mobile */}
+        <div>
+          <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Mobile number <span className="text-[#E83A2E]">*</span></label>
+          <input type="tel" required inputMode="numeric" placeholder="9876543210" className={inputCls} value={mobile} onChange={e => setMobile(e.target.value)} />
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Email</label>
+          <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Email <span className="text-[#E83A2E]">*</span></label>
           <input type="email" required placeholder="you@example.com" className={inputCls} value={email} onChange={e => setEmail(e.target.value)} />
         </div>
 
         {/* Password + Referral stacked */}
         <div>
-          <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Password</label>
+          <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Password <span className="text-[#E83A2E]">*</span></label>
           <div className="relative">
             <input type={showPassword ? 'text' : 'password'} required placeholder="Min. 6 chars" className={`${inputCls} pr-9`} value={password} onChange={e => setPassword(e.target.value)} />
             <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-black/35 hover:text-[#16130F] transition-colors" onClick={() => setShowPassword(!showPassword)}>
@@ -216,6 +206,10 @@ export default function SignupPage() {
         <p className="text-[12px] text-black/50 mb-3">
           Already have an account?{' '}
           <Link href="/login" className="text-[#E83A2E] font-semibold hover:underline">Log in →</Link>
+        </p>
+        <p className="font-ledger text-[11px] text-black/35 mb-3">
+          Just want to buy?{' '}
+          <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
         </p>
         <p className="font-ledger text-[10px] text-black/35">
           By continuing you agree to our{' '}

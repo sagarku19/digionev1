@@ -163,7 +163,7 @@ function LoginContent() {
       {/* Email / password form */}
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="block text-[13px] font-semibold text-[#16130F] mb-1.5">Email</label>
+          <label className="block text-[13px] font-semibold text-[#16130F] mb-1.5">Email <span className="text-[#E83A2E]">*</span></label>
           <input
             type="email"
             required
@@ -176,7 +176,7 @@ function LoginContent() {
 
         <div>
           <div className="flex justify-between items-center mb-1.5">
-            <label className="block text-[13px] font-semibold text-[#16130F]">Password</label>
+            <label className="block text-[13px] font-semibold text-[#16130F]">Password <span className="text-[#E83A2E]">*</span></label>
             <Link href="/forgot-password" className="text-[12px] font-semibold text-[#E83A2E] hover:underline transition-all">
               Forgot password?
             </Link>
@@ -243,6 +243,10 @@ function LoginContent() {
         <p className="text-[12px] text-black/50 mb-3">
           Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-[#E83A2E] font-semibold hover:underline">Sign up free →</Link>
+        </p>
+        <p className="font-ledger text-[11px] text-black/35 mb-3">
+          Just want to buy?{' '}
+          <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
         </p>
         <p className="font-ledger text-[10px] text-black/35">
           By continuing you agree to our{' '}

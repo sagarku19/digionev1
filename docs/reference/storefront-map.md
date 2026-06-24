@@ -1,6 +1,6 @@
 # Storefront Reference Map
 
-> Last synced: 2026-06-20
+> Last synced: 2026-06-25
 > Generated from: `app/(storefront)/**/page.tsx`, `src/components/storefront/**`, the block/section registries
 > Regenerate / audit: `/sync-docs`
 > Read this FIRST for any storefront task. Styling uses creator vars (`var(--creator-primary)`, `var(--creator-text)`, `var(--creator-bg)`, …) — NOT dashboard `--bg-*`/`--text-*` tokens.
@@ -17,6 +17,8 @@
 The public **product page is `/discover/[productId]`** (`app/(marketing)/discover/[productId]/page.tsx`) — it hosts the ledger-styled checkout (`discover/[productId]/BuyNowButton.tsx`). The old `app/(storefront)/store/product/[productId]` route and the `upsells/[slug]` route were both removed (upsells to be rebuilt under `/pay`). Dashboard "Preview"/"View" buttons, the buyer library, and link-in-bio product blocks all link to `/discover/{id}`.
 
 **Access-control convention (2026-06-20):** storefront **layouts** check existence + `site_type` only (they can't read `searchParams`); the **page** enforces `is_active` and bypasses it when `?preview=1` is present, so the editors' preview iframes can render unpublished sites. Applies to `link`, `site`, `store`, `pay` (the `store` layout was already existence-only; the `link` and `pay` layouts were tightened to match).
+
+**Buyer auth on storefronts (2026-06-25):** `StorefrontHeader.tsx`'s "Log In" button opens the global centered buyer-auth modal (`src/components/auth/BuyerAuthModal.tsx`, mounted once via `BuyerAuthProvider` in `app/providers.tsx`, driven by the `useBuyerAuth` Zustand store) — no navigation away. When logged in it becomes a "My Library" link to `/account/library`. Buyer accounts are low-friction (no email verification); guest purchases are saved by email (`guest_entitlements`) and claimed on sign-in. See `.claude/rules/api-routes.md` → `/api/auth/buyer-signup`, `/api/account/claim-entitlements`.
 
 ## Link-in-bio block types
 

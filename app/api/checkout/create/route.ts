@@ -5,6 +5,7 @@ import { validateCoupon } from '@/lib/server/coupons';
 import { validateReferral } from '@/lib/server/referrals';
 import { fulfillOrder } from '@/lib/server/fulfillment';
 import { rateLimit } from '@/lib/server/rate-limit';
+import { normalizeEmail } from '@/lib/shared/email';
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -18,6 +19,10 @@ export async function POST(req: Request) {
 
     const supabase = createServiceClient();
     const { items, buyerId, couponCode, contact, upsellPageId, referralCode } = await req.json();
+
+    // Normalize the contact email up front so the order's customer_email (the key
+    // for guest_entitlements) always matches the claim at sign-in.
+    const customerEmail = contact?.email ? normalizeEmail(contact.email) : null;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Empty cart' }, { status: 400 });
@@ -101,7 +106,7 @@ export async function POST(req: Request) {
       total_amount: total,
       status: 'pending',
       customer_name: contact?.name ?? null,
-      customer_email: contact?.email ?? null,
+      customer_email: customerEmail,
       customer_phone: contact?.phone ?? null,
       metadata: orderMeta,
     });
@@ -151,7 +156,7 @@ export async function POST(req: Request) {
         customer_details: {
           customer_id: orderId,
           customer_name: contact?.name || 'Customer',
-          customer_email: contact?.email || 'noreply@digione.ai',
+          customer_email: customerEmail || 'noreply@digione.ai',
           customer_phone: contact?.phone || '0000000000',
         },
         order_meta: {

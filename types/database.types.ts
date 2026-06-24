@@ -906,6 +906,53 @@ export type Database = {
           },
         ]
       }
+      guest_entitlements: {
+        Row: {
+          claimed_at: string | null
+          claimed_by_user_id: string | null
+          created_at: string
+          email: string
+          id: string
+          order_id: string
+          product_id: string
+          product_link: string
+          product_name: string
+          product_price: number
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          order_id: string
+          product_id: string
+          product_link?: string
+          product_name: string
+          product_price?: number
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          product_link?: string
+          product_name?: string
+          product_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_entitlements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_leads: {
         Row: {
           created_at: string | null

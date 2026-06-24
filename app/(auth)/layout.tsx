@@ -111,10 +111,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <Link
           href="/"
-          className="absolute top-4 left-4 sm:top-6 sm:left-6 inline-flex items-center gap-2 px-2.5 sm:px-3.5 py-2 rounded-lg bg-white border border-black/[0.1] text-black/55 hover:text-[#16130F] hover:border-black/[0.25] transition-colors duration-200 z-10"
+          aria-label="Back to home"
+          className="group absolute top-4 left-4 sm:top-6 sm:left-6 z-10 inline-flex items-center justify-center gap-2 h-10 w-10 sm:w-auto rounded-full sm:rounded-lg sm:px-3.5 bg-white/90 backdrop-blur border border-black/[0.1] text-[13px] font-semibold text-black/60 hover:text-[#16130F] hover:border-black/[0.25] active:scale-[0.95] sm:active:scale-[0.97] transition-all duration-200 shadow-[0_2px_12px_-6px_rgba(22,19,15,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/20"
         >
-          <ArrowLeft className="w-4 h-4 shrink-0" />
-          <span className="hidden sm:inline text-[13px] font-semibold">Back to home</span>
+          <ArrowLeft className="w-4 h-4 shrink-0 group-hover:-translate-x-0.5 transition-transform duration-200" />
+          <span className="hidden sm:inline">Back to home</span>
         </Link>
 
         {/* Mobile logo */}

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
-import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine } from 'lucide-react';
+import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine, Store } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
@@ -46,6 +46,20 @@ export default function MarketingNav() {
   const queryClient = useQueryClient();
   const { isLoggedIn, userEmail, profile } = useAuthSession();
   const userProfile: UserProfile | null = profile ? { full_name: profile.full_name, avatar_url: profile.avatar_url, email: userEmail } : null;
+
+  // Resolve role so logged-in buyers (not creators) are offered the upgrade.
+  const [isBuyer, setIsBuyer] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!isLoggedIn) { if (!cancelled) setIsBuyer(false); return; }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+      const { data } = await supabase.from('users').select('role').eq('auth_provider_id', user.id).maybeSingle();
+      if (!cancelled) setIsBuyer(!(data?.role === 'creator' || data?.role === 'super_admin'));
+    })();
+    return () => { cancelled = true; };
+  }, [isLoggedIn]);
 
   // Hide on scroll down, reveal on scroll up (modern auto-hiding nav)
   const [navHidden, setNavHidden] = useState(false);
@@ -242,14 +256,25 @@ export default function MarketingNav() {
                           <BookOpen className="w-4 h-4 text-black/35" />
                           Library
                         </Link>
-                        <Link
-                          href="/dashboard"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
-                        >
-                          <LayoutDashboard className="w-4 h-4 text-black/35" />
-                          Dashboard
-                        </Link>
+                        {isBuyer ? (
+                          <Link
+                            href="/account/library"
+                            onClick={() => setProfileDropdownOpen(false)}
+                            className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-semibold text-[#E83A2E] hover:bg-[#E83A2E]/[0.06] transition-colors rounded-lg"
+                          >
+                            <Store className="w-4 h-4" />
+                            Become a creator
+                          </Link>
+                        ) : (
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setProfileDropdownOpen(false)}
+                            className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
+                          >
+                            <LayoutDashboard className="w-4 h-4 text-black/35" />
+                            Dashboard
+                          </Link>
+                        )}
                       </div>
                       <div className="p-1.5 border-t border-black/[0.06]">
                         <button
@@ -387,9 +412,15 @@ export default function MarketingNav() {
             >
               {isLoggedIn ? (
                 <>
-                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#16130F] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
-                    <LayoutDashboard className="w-4 h-4" /> Dashboard
-                  </Link>
+                  {isBuyer ? (
+                    <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#E83A2E] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
+                      <Store className="w-4 h-4" /> Become a creator
+                    </Link>
+                  ) : (
+                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#16130F] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
+                      <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    </Link>
+                  )}
                   <button onClick={() => setShowSignOutConfirm(true)} className="w-full flex items-center justify-center gap-2 text-[14px] font-semibold text-[#E83A2E] py-3 active:scale-[0.98] transition-all">
                     <LogOut className="w-4 h-4" /> Sign out
                   </button>

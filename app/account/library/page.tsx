@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Library, ArrowRight } from 'lucide-react';
 import { Rails, Cross, Kicker } from '@/src/components/marketing/Ledger';
+import LibraryAccountActions from '@/components/account/LibraryAccountActions';
 
 export default function BuyerLibraryPage() {
   return (
@@ -63,6 +64,8 @@ export default function BuyerLibraryPage() {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
               </Link>
             </div>
+
+            <LibraryAccountActions />
           </div>
         </Rails>
       </section>

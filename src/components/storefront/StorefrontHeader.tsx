@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useBuyerAuth } from '@/stores/buyerAuth';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
 
 type HeaderNav = {
   header_logo_url?: string | null;
@@ -20,6 +22,9 @@ export default function StorefrontHeader({ navConfig, siteMain }: { navConfig: R
   const navItems = nav?.nav_items || [{ label: "Home", url: "/" }];
   const showSearch = nav?.show_search ?? false;
   const showCart = nav?.show_cart_icon ?? true;
+
+  const openBuyerAuth = useBuyerAuth((s) => s.open);
+  const { isLoggedIn } = useAuthSession();
 
   // Render minimal standard storefront header using tailwind utilities
   return (
@@ -60,9 +65,18 @@ export default function StorefrontHeader({ navConfig, siteMain }: { navConfig: R
               </div>
             )}
 
-            <button className="hidden sm:inline-flex bg-[--creator-primary] hover:opacity-90 transition-opacity text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
-              Log In
-            </button>
+            {isLoggedIn ? (
+              <Link href="/account/library" className="hidden sm:inline-flex bg-[--creator-primary] hover:opacity-90 transition-opacity text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
+                My Library
+              </Link>
+            ) : (
+              <button
+                onClick={() => openBuyerAuth('login')}
+                className="hidden sm:inline-flex bg-[--creator-primary] hover:opacity-90 transition-opacity text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm"
+              >
+                Log In
+              </button>
+            )}
           </div>
           
         </div>

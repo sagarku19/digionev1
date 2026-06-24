@@ -7,6 +7,8 @@ import crypto from 'crypto';
 import { createServiceClient } from '@/lib/supabase/service';
 import { getPlatformFeeRate } from './platform-fee';
 import { computeReferralCommission } from './referrals';
+import { recordGuestEntitlement } from './entitlements';
+import { normalizeEmail } from '@/lib/shared/email';
 
 export interface FulfillResult {
   fulfilled: boolean;
@@ -29,7 +31,7 @@ export async function fulfillOrder(
     })
     .eq('id', orderId)
     .eq('status', 'pending')
-    .select('id, user_id, total_amount, creator_id, metadata')
+    .select('id, user_id, total_amount, creator_id, metadata, customer_email')
     .maybeSingle();
 
   if (claimErr) throw claimErr;
@@ -83,9 +85,14 @@ export async function fulfillOrder(
     console.error('[fulfillment] ledger insert failed for order', orderId, ledgerErr.message);
   }
 
-  // 4. Grant durable access for logged-in buyers (guests keep status-page links)
+  // 4. Grant durable access. Logged-in buyers get a user_product_access row now;
+  // guests get an email-keyed guest_entitlements row, claimed on later sign-in.
   const buyerUserId = claimed.user_id;
-  if (buyerUserId) {
+  const guestEmail = !buyerUserId && claimed.customer_email
+    ? normalizeEmail(claimed.customer_email)
+    : null;
+
+  if (buyerUserId || guestEmail) {
     const { data: items, error: itemsErr } = await db
       .from('order_items')
       .select('product_id, price_at_purchase, products(name, product_link)')
@@ -98,19 +105,34 @@ export async function fulfillOrder(
     for (const item of items ?? []) {
       if (!item.product_id) continue;
       const product = Array.isArray(item.products) ? item.products[0] : item.products;
-      const { error: accessErr } = await db.from('user_product_access').upsert(
-        {
-          user_id: buyerUserId,
-          order_id: orderId,
-          product_id: item.product_id,
-          product_name: product?.name ?? 'Product',
-          product_link: product?.product_link ?? '',
-          product_price: Number(item.price_at_purchase) || 0,
-        },
-        { onConflict: 'order_id,product_id', ignoreDuplicates: true }
-      );
-      if (accessErr) {
-        console.error('[fulfillment] access grant failed for order', orderId, 'product', item.product_id, accessErr.message);
+      const productName = product?.name ?? 'Product';
+      const productLink = product?.product_link ?? '';
+      const productPrice = Number(item.price_at_purchase) || 0;
+
+      if (buyerUserId) {
+        const { error: accessErr } = await db.from('user_product_access').upsert(
+          {
+            user_id: buyerUserId,
+            order_id: orderId,
+            product_id: item.product_id,
+            product_name: productName,
+            product_link: productLink,
+            product_price: productPrice,
+          },
+          { onConflict: 'order_id,product_id', ignoreDuplicates: true }
+        );
+        if (accessErr) {
+          console.error('[fulfillment] access grant failed for order', orderId, 'product', item.product_id, accessErr.message);
+        }
+      } else if (guestEmail) {
+        await recordGuestEntitlement({
+          orderId,
+          email: guestEmail,
+          productId: item.product_id,
+          productName,
+          productPrice,
+          productLink,
+        });
       }
     }
   }

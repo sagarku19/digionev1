@@ -12,8 +12,11 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 
 | Method | Path | Auth | Client | Writes to |
 |---|---|---|---|---|
-| GET | `/api/auth/callback` | OAuth/email-link code | server (cookie) | sets session cookie |
-| POST | `/api/checkout/create` | none (buyerId optional) | service role | `orders`, `order_items` |
+| GET | `/api/auth/callback` | OAuth/email-link code | server (cookie) | sets session cookie; claims guest entitlements |
+| POST | `/api/auth/buyer-signup` | none (public) | service role | `auth.users` (confirmed, no verification email) |
+| POST | `/api/account/claim-entitlements` | cookie session | server + service role | `user_product_access`, `guest_entitlements` |
+| POST | `/api/account/upgrade-to-creator` | cookie session | server + service role | `auth.users` (`app_metadata.role`), `users.role`, `profiles` |
+| POST | `/api/checkout/create` | none (buyerId optional) | service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
 | POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access` |
 | POST | `/api/coupons/validate` | none | service role | — |
@@ -42,6 +45,40 @@ Supabase email/OAuth confirm callback. Exchanges `code` for a session cookie and
 
 **Success:** `302 → {origin}{next}`
 **Failure:** `302 → /login?error=...`
+
+Also claims guest entitlements: after the session exists it calls `claimGuestEntitlements(user.email, user.id)` (see `src/lib/server/entitlements.ts`) so OAuth/email buyers inherit any purchases made under that email before signing up.
+
+---
+
+### `POST /api/auth/buyer-signup`
+
+Frictionless buyer account creation — **no verification email**. Uses the service role to `auth.admin.createUser({ email_confirm: true, user_metadata: { full_name, role: 'buyer' } })`, then promotes `app_metadata.role = 'buyer'` via `updateUserById` (the `handle_new_user` trigger reads `user_metadata.role` for `public.users.role`). The client signs in with `signInWithPassword` afterward; claiming runs once a session exists (library load / callback).
+
+```json
+// Request
+{ "email": "string", "password": "string (min 6)", "fullName": "string?" }
+```
+
+**Success:** `{ ok: true }`
+**Errors:** `400` (bad email / short password), `409` (email already registered), `429` (rate limit — 10/min/IP), `500`.
+
+---
+
+### `POST /api/account/claim-entitlements` (auth required)
+
+Copies every unclaimed `guest_entitlements` row matching the **verified JWT email** into `user_product_access`, then stamps the rows `claimed_by_user_id`. Idempotent + retryable. Email is read from `getUser()`, never the body. Triggered once on `/account/library` load and from the auth callback.
+
+**Success:** `{ claimed: number }`
+**Errors:** `401` (no session), `500`.
+
+---
+
+### `POST /api/account/upgrade-to-creator` (auth required)
+
+Promotes a logged-in buyer to creator. Updates **both** role stores: JWT `app_metadata.role` (proxy.ts dashboard gate) and `public.users.role` (login/reset redirect), and ensures a `profiles` row exists. The client then runs `refreshSession()` + invalidates `['auth','session']` + `router.refresh()` so no re-login is needed.
+
+**Success:** `{ ok: true }`
+**Errors:** `401` (no session), `500`.
 
 ---
 

@@ -5,15 +5,21 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { load } from '@cashfreepayments/cashfree-js';
 import { useCart, useCartTotal } from '@/hooks/commerce/useCart';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
+import { useBuyerAuth } from '@/stores/buyerAuth';
+import { getRememberedBuyerEmail, rememberBuyerEmail } from '@/lib/shared/buyer-email';
 import { Loader2, ShieldCheck, Package, Trash2, AlertTriangle } from 'lucide-react';
 
 export default function CheckoutPage() {
   const { items, removeItem } = useCart();
   const total = useCartTotal();
   const router = useRouter();
+  const { isLoggedIn, userEmail } = useAuthSession();
+  const openBuyerAuth = useBuyerAuth((s) => s.open);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +28,13 @@ export default function CheckoutPage() {
     if (items.length === 0) router.replace('/');
   }, [items, router]);
 
+  // Prefill priority: (1) authenticated user email, (2) remembered buyer email,
+  // (3) empty. Never clobber what the buyer is actively typing.
+  useEffect(() => {
+    if (emailTouched) return;
+    setEmail(userEmail || getRememberedBuyerEmail());
+  }, [userEmail, emailTouched]);
+
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
@@ -29,6 +42,7 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
+      rememberBuyerEmail(email.trim());
       const referralCode = typeof window !== 'undefined'
         ? new URLSearchParams(window.location.search).get('ref')
         : null;
@@ -109,7 +123,18 @@ export default function CheckoutPage() {
 
         {/* Contact Form + Pay */}
         <form onSubmit={handlePay} className="bg-white dark:bg-[#121226] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
-          <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Contact Details</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Contact Details</h2>
+            {!isLoggedIn && (
+              <button
+                type="button"
+                onClick={() => openBuyerAuth('login')}
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 transition"
+              >
+                Sign in
+              </button>
+            )}
+          </div>
 
           <div className="space-y-3">
             <input
@@ -124,7 +149,7 @@ export default function CheckoutPage() {
               type="email"
               required
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={e => { setEmail(e.target.value); setEmailTouched(true); }}
               placeholder="Email address"
               className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition"
             />

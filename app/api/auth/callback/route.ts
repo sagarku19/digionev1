@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { isSafeInternalPath } from '@/lib/safe-redirect';
+import { claimGuestEntitlements } from '@/lib/server/entitlements';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -28,6 +29,16 @@ export async function GET(request: Request) {
           console.error('[auth/callback] role promotion failed:', promoteErr);
         }
       }
+
+      // Session exists here — claim any guest purchases made under this email.
+      if (user?.email) {
+        try {
+          await claimGuestEntitlements(user.email, user.id);
+        } catch (claimErr) {
+          console.error('[auth/callback] entitlement claim failed:', claimErr);
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
     console.error('Callback error exchanging code:', error);
