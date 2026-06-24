@@ -1,12 +1,5 @@
 LEFT
 
-## form todo-later
-
-1, - no
-2, - no
-3, - no
-4, - no
-
 
 ## from Superpower/Plan
 
@@ -16,24 +9,10 @@ supabase - no
 dashboard-ui - yes
 
 
-## from Supabase DB
-
-baseline - already in DB
-marketing - in db without rls
-insta-dm - not in db
-rls-policy - not in db
-create-product-bucket - 
-private-st-bukt - 
-merge-prod-to-cp - 
-drop-legacy-st-bkt - 
-add-sum-bkt-bt-f-pre-rpc - the above five run by SP Terminal
-
-
 To Do -- - - -- - - - - -- - - - -
 
 
- 1. Dashboard - Code structure and its readibility improvement, production grade code so that in futre if any developer onboard it will be good to understand and eady to maintain and update and adding new featires- like waht a production grade code looks like.
-
+ 
   2. Developmemt plan for cretaing mobile apps
 
   3. Development Plans for Creating Admin Panel/ Other Production tools in nextjs,
@@ -41,8 +20,6 @@ To Do -- - - -- - - - - -- - - - -
   4. Learn - how to push code- to server for next js, code and api differnt or through coolify or vercel and also app server?
 
   5. Learn - How preview work and before production how to setup differnt db for all payment and other things tesing and new feature testing.
-
-  6. Impreove all 4 editor , ui and featutres
 
   7. Impreove all the slug page and payment, Checkout, Cart, wishlist.
 
@@ -55,8 +32,6 @@ To Do -- - - -- - - - - -- - - - -
   11. Dashboard Profile and KyC
 
   12. Login / Signup / Forgot-Password for Users
-
-  13. Oauth Integration
 
  14. Claudflare Security Integration
 
@@ -86,46 +61,46 @@ create all site skeleton with rich content in it, for use to preview., these typ
 
 
 
-Agent role: Storefront Agent (owns app/(storefront)/, src/components/storefront/).
-▎
-▎ Apply the same production-grade pass we did on the dashboard's link-in-bio editor to its public renderer, behavior- and visually-identical. Two files:
-▎
-▎ 1. app/(storefront)/link/[username]/page.tsx (server component, ~20 gratuitous any): remove the : any/as any over already-typed data (e.g. .filter((l: any) => l.link_type === 'product')) — type the link/site rows from types/database.types.ts (linkinbio_pages / sites Row types) or the data the query returns. Pure type cleanup, no behavior change.
-▎
-▎ 2. src/components/storefront/LinkInBioPage.tsx (967 lines, ~35 inline link_type branches — the public counterpart of the editor): split the link_type render switch into one file per block type under src/components/storefront/linkinbio/blockRenderers/ + a registry.ts (link_type → component), exactly mirroring the editor structure at src/components/dashboard/site-edit/tabs/linkinbio/blockEditors/. LinkInBioPage becomes layout + dispatch. Parity cross-check (read-only): confirm the renderer handles exactly the 13 block types the editor produces — diff the renderer's link_types against blockEditors/registry.tsx; flag any type the editor can create that the renderer doesn't render (or vice-versa).
-▎
-▎ Relevant CLAUDE.md rules: Storefront uses creator variables (var(--creator-primary), var(--creator-text), var(--creator-bg), etc.) — NOT the dashboard --bg-*/--text-* tokens; don't apply dashboard-design.md here. TypeScript strict (zero any without a documented reason). lucide-react only. No useEffect data-fetching. Verify with npx tsc --noEmit + npm run lint after each file; keep the rendered output identical (verbatim JSX in each extracted renderer, same props/data).
-▎
-▎ Don't touch: the editor side (blockEditors/**, BioLinksEditor.tsx) — read-only for the parity check; app/api/**, src/hooks/**, types/database.types.ts, dashboard files, and the other storefront slug pages (site/[slug], store/[slug], upsells/[slug]) unless I ask.
+### To do later Updates Audit 25-06-2026
 
----
-🔄 Alternative Approach
+Earning complete fix w db
 
-Do all storefront slug renderers for full consistency, not just link-in-bio: site/[slug] + store/[slug] render via src/components/storefront/SectionRenderer.tsx (a section-type switch, different from link blocks) — split that into per-section renderers + registry too, and sweep the any in store/[slug] (4), site/[slug] (2), upsells/[slug] (5). Bigger, but unifies the whole storefront render layer on the same file-per-type + registry pattern as the dashboard editors. Higher regression surface (no test suite) → gate each page with tsc + a manual click-through of a live storefront.
+Storage w aws + sample
 
----
-⚡ Minimal Version
+Insta w db
 
-▎ Storefront Agent. In app/(storefront)/link/[username]/page.tsx only, delete the ~20 gratuitous : any/as any over typed data (type via database.types Row types). Run npx tsc --noEmit. No structural split, no other files. Captures the type-safety win with near-zero risk.
+Db table name fix
 
----
-📝 Notes
+Automation 1 Telegram research and do
+Also gmail
 
-- Assumed: "the slug page" = the public link-in-bio page (link/[username]), and "check the editor, like you do" = mirror the blockEditors/ split we just built — because LinkInBioPage.tsx is the 967-line public renderer of the same 13 link_types the editor edits. If you instead meant site/[slug]/store/[slug], those render via SectionRenderer (sections, not link blocks) — different shape; tell me and I'll repoint.
-- Worth checking first: is LinkInBioPage.tsx a client or server component (affects how renderers get data/props)? And SectionRenderer.tsx if you go broad. Confirm the renderer's block set actually matches the editor's — a mismatch there is a real bug (a block a creator can add but that never renders), the highest-value thing this task can surface.
-- Don't reuse dashboard tokens here — the #1 trap. The editor uses --bg-*/--text-*; the storefront must use --creator-*. A blind copy from the editor blocks would break theming.
-- Clarifying question worth asking: do you want the full structural split (file-per-block + registry, like the editor) or just the any/cleanup pass? The split is the high-value "like you do" move but it's a 967-line extraction with no tests — same risk profile as the BioLinksEditor split.
-- This is already captured-adjacent to todo item context; if you want, I can also note the renderer/editor parity check in .claude/todo-later/7(left)-...md.
+Ai Integration
+
+Api rate limit and tracking w db
+
+Link shortener under- linkme.you(I will buy this or similar domain for this project it will be using same db or a pipelin that will connect)
+
+Security audit using cloudflare github docs
+
+cart on discover
+
+new header for slug-page/other page like discover 
+
+fix checkout page for both cart and direct buy method.
+
+and also subscription payment and its table
 
 
 
 
 
+next-
+Storage > Earning > Table Update
 
 
+Audit 25-06-2026- Do this after Coplete auth setup
+Now the claim Entitlement(From user to creator) have no securtiyy like otp or verifiacttion open a model to verify all required like mobile or Gmail and then convert. 
+also if a user signup on creator account using google auth c=verify mobile if asking..
 
-
-
-
-
+When any new user comes to dashboard for the forst ask something about their interests aand other type of question and save that to customize and get feeback time to time
 
