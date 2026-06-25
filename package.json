@@ -11,6 +11,8 @@
     "update-types": "npx supabase gen types typescript --project-id qcendfisvyjnwmefruba > types/database.types.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1075.0",
+    "@aws-sdk/s3-request-presigner": "^3.1075.0",
     "@cashfreepayments/cashfree-js": "^1.0.6",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
@@ -26,6 +28,7 @@
     "react-dom": "19.2.3",
     "react-easy-crop": "^5.5.7",
     "recharts": "^3.8.0",
+    "sharp": "^0.35.2",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
