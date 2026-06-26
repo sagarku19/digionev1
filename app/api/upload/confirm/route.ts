@@ -25,11 +25,14 @@ export async function POST(req: Request) {
     if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const body = await req.json().catch(() => null) as {
-      bucket?: unknown; objectKey?: unknown; productId?: unknown; kind?: unknown;
+      bucket?: unknown; objectKey?: unknown; productId?: unknown; kind?: unknown; mimeType?: unknown;
     } | null;
     if (!body) return json(reqId, { error: 'Invalid JSON body' }, 400);
 
-    const { bucket, objectKey, productId, kind } = body;
+    const { bucket, objectKey, productId, kind, mimeType } = body;
+    const resolvedMime = typeof mimeType === 'string' && mimeType.length > 0 && mimeType.length <= 255
+      ? mimeType
+      : null;
     if (typeof bucket !== 'string' || !VALID_BUCKETS.has(bucket as PrivateBucket)) return json(reqId, { error: 'Invalid bucket' }, 400);
     if (typeof objectKey !== 'string' || objectKey.includes('..') || objectKey.startsWith('/') || objectKey.includes('\\')) {
       return json(reqId, { error: 'Invalid objectKey' }, 400);
@@ -53,7 +56,7 @@ export async function POST(req: Request) {
       bucket: cfg.name,
       object_key: objectKey,
       file_name: fileName,
-      mime_type: head.contentType,
+      mime_type: resolvedMime ?? head.contentType,
       size: head.size,
       visibility: 'private',
       kind: typeof kind === 'string' ? kind : (bucket === 'creator-content' ? 'deliverable' : 'other'),
