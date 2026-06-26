@@ -5,12 +5,12 @@ import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { isUuid, sanitizeFilename } from '@/lib/upload-validators';
 import { resolveBucket, buildObjectKey, storage } from '@/lib/storage';
 import { sumOwnerBytes } from '@/lib/storage/files';
+import { CREATOR_CONTENT_QUOTA_BYTES } from '@/lib/storage/quota';
 import crypto from 'crypto';
 
 type PrivateBucket = 'creator-content' | 'creator-private';
 const VALID_BUCKETS: ReadonlySet<PrivateBucket> = new Set(['creator-content', 'creator-private']);
 const PRIVATE_CATEGORIES = new Set(['kyc', 'contracts', 'other']);
-const CREATOR_CONTENT_QUOTA_BYTES = 1 * 1024 * 1024 * 1024; // 1 GB (per-plan version still blocked)
 
 type LogLevel = 'warn' | 'error';
 function log(level: LogLevel, reqId: string, event: string, data?: Record<string, unknown>) {
