@@ -10,6 +10,7 @@ import { useCreator } from '@/hooks/creator/useCreator';
 import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
 import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/UnsavedChangesDialog';
 import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import DeliverablesUploader from '@/components/dashboard/products/DeliverablesUploader';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   FileText, IndianRupee, HardDrive, Megaphone, Settings,
@@ -537,6 +538,10 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
             {/* ── TAB: CONTENT FILES ── */}
             {activeTab === 'content' && (
               <div className="space-y-5">
+                <EditorCard icon={HardDrive} title="Deliverable Files" subtitle="Upload the files buyers download after purchase">
+                  <DeliverablesUploader productId={productId} />
+                </EditorCard>
+
                 <EditorCard icon={HardDrive} title="Product Access Link" subtitle="Where buyers go after a successful purchase">
                   <Field label="Post-Purchase URL" hint="Redirect buyers here after payment — e.g. a Google Drive link, Notion page, or your own page.">
                     <input type="url" value={formData.post_purchase_url || ''} onChange={(e) => patch({ post_purchase_url: e.target.value || null })} className={INPUT} placeholder="https://drive.google.com/file/..." />
