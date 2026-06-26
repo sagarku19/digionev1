@@ -9,10 +9,11 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
+import { resolveBucket, storage } from '@/lib/storage';
 import crypto from 'crypto';
 
-type PrivateBucket = 'creator-private' | 'creator-content';
-const VALID_BUCKETS: ReadonlySet<PrivateBucket> = new Set(['creator-private', 'creator-content']);
+type PrivateBucket = 'creator-content';
+const VALID_BUCKETS: ReadonlySet<PrivateBucket> = new Set(['creator-content']);
 const SIGNED_URL_TTL_SECONDS = 600; // 10 minutes
 
 type LogLevel = 'warn' | 'error';
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
 
     const { bucket, path } = body;
     if (typeof bucket !== 'string' || !VALID_BUCKETS.has(bucket as PrivateBucket)) {
-      return json(reqId, { error: 'Invalid bucket (must be creator-private or creator-content)' }, 400);
+      return json(reqId, { error: 'Invalid bucket (must be creator-content)' }, 400);
     }
     if (typeof path !== 'string' || path.length === 0) {
       return json(reqId, { error: 'path required' }, 400);
@@ -75,20 +76,14 @@ export async function POST(req: Request) {
       return json(reqId, { error: 'You do not own this file' }, 403);
     }
 
-    const { data, error } = await serviceDb.storage
-      .from(bucket as PrivateBucket)
-      .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
-    if (error || !data) {
-      log('error', reqId, 'storage_sign_failed', { bucket, path, message: error?.message });
+    const cfg = resolveBucket(bucket as PrivateBucket);
+    try {
+      const signedUrl = await storage.createDownloadUrl({ bucket: cfg.name, objectKey: path, ttlSeconds: SIGNED_URL_TTL_SECONDS });
+      return json(reqId, { bucket, path, signedUrl, ttlSeconds: SIGNED_URL_TTL_SECONDS }, 200);
+    } catch (e) {
+      log('error', reqId, 'storage_sign_failed', { bucket, path, message: e instanceof Error ? e.message : String(e) });
       return json(reqId, { error: 'Failed to create download URL' }, 502);
     }
-
-    return json(reqId, {
-      bucket,
-      path,
-      signedUrl: data.signedUrl,
-      ttlSeconds: SIGNED_URL_TTL_SECONDS,
-    }, 200);
   } catch (err) {
     log('error', reqId, 'unhandled', { message: err instanceof Error ? err.message : String(err) });
     return json(reqId, { error: 'Internal server error' }, 500);
