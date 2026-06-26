@@ -10,7 +10,6 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
-import { getCroppedImg } from '@/lib/crop-image';
 import { supabase } from '@/lib/supabase/client';
 import {
   X, Search, Upload, ImageIcon, Loader2, ZoomIn, ZoomOut,
@@ -23,7 +22,9 @@ export type ImagePickerProps = {
   onClose: () => void;
   onSelect: (url: string) => void;
   title?: string;
-  bucket?: string;
+  bucket?: 'creator-public' | 'public-asset';
+  kind?: string;            // cover | avatar | banner | linkinbio | gallery | other
+  currentUrl?: string;      // existing placement value — enables re-crop
 };
 
 type PublicImage = {
@@ -84,7 +85,9 @@ export default function ImagePickerModal({
   onClose,
   onSelect,
   title = 'Select Image',
-  bucket = 'public-asset',
+  bucket = 'creator-public',
+  kind = 'other',
+  currentUrl,
 }: ImagePickerProps) {
   // ── State ──
   const [tab, setTab] = useState<Tab>('library');
@@ -103,15 +106,18 @@ export default function ImagePickerModal({
   const [zoom, setZoom] = useState(1);
   const [aspectIdx, setAspectIdx] = useState(1); // default 1:1
   const croppedAreaRef = useRef<Area | null>(null);
-  const [cropping, setCropping] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   // Upload state
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const urlInputRef = useRef<HTMLInputElement>(null);
 
   const supabaseRef = useRef(supabase);
+
+  const pendingFileRef = useRef<File | null>(null);
+  const [originalFileId, setOriginalFileId] = useState<string | null>(null);
+  const [sourceUrl, setSourceUrl] = useState<string | null>(null);
+  const [replacesFileId, setReplacesFileId] = useState<string | null>(null);
 
   // ── Debounce search (300ms) ──
   useEffect(() => {
@@ -181,6 +187,9 @@ export default function ImagePickerModal({
   // ── File handling ──
   const handleFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return;
+    pendingFileRef.current = file;
+    setOriginalFileId(null);
+    setSourceUrl(null);
     const reader = new FileReader();
     reader.onload = () => {
       setCropSrc(reader.result as string);
@@ -204,6 +213,9 @@ export default function ImagePickerModal({
 
   // ── Select public image → go to crop ──
   const selectImage = useCallback((url: string) => {
+    setSourceUrl(url);
+    pendingFileRef.current = null;
+    setOriginalFileId(null);
     setCropSrc(url);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
@@ -214,64 +226,72 @@ export default function ImagePickerModal({
     croppedAreaRef.current = croppedPixels;
   }, []);
 
-  // ── Upload helper ──
-  const uploadBlob = useCallback(async (blob: Blob, ext = 'jpg'): Promise<string> => {
-    const filename = `crop_${Date.now()}.${ext}`;
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename, bucket }),
-    });
-    const { signedUrl, publicUrl } = await res.json();
+  // ── Upload original bytes; server converts to WebP + stores it ──
+  const uploadOriginal = useCallback(async (file: File): Promise<{ fileId: string; publicUrl: string }> => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('bucket', bucket);
+    fd.append('kind', kind);
+    const res = await fetch('/api/media/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Upload failed');
+    return data;
+  }, [bucket, kind]);
 
-    await fetch(signedUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': blob.type },
-      body: blob,
+  const deriveCropFrom = useCallback(async (
+    source: { sourceFileId?: string; sourceUrl?: string },
+    croppedArea: Area,
+  ): Promise<string> => {
+    const res = await fetch('/api/media/derive', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...source, crop: croppedArea, kind, replacesFileId }),
     });
-
-    return publicUrl;
-  }, [bucket]);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Crop failed');
+    return data.publicUrl as string;
+  }, [kind, replacesFileId]);
 
   // ── Crop & upload → return URL ──
   const handleCropAndAdd = useCallback(async () => {
-    if (!cropSrc || !croppedAreaRef.current) return;
-    setCropping(true);
+    if (!croppedAreaRef.current) return;
+    setUploading(true);
     try {
-      const blob = await getCroppedImg(cropSrc, croppedAreaRef.current);
-      setUploading(true);
-      const url = await uploadBlob(blob);
-      onSelect(url);
-      handleClose();
+      let fileId = originalFileId;
+      if (pendingFileRef.current && !fileId) {
+        const up = await uploadOriginal(pendingFileRef.current);
+        fileId = up.fileId;
+        setOriginalFileId(up.fileId);
+      }
+      const url = fileId
+        ? await deriveCropFrom({ sourceFileId: fileId }, croppedAreaRef.current)
+        : sourceUrl
+          ? await deriveCropFrom({ sourceUrl }, croppedAreaRef.current)
+          : null;
+      if (url) { onSelect(url); handleClose(); }
     } catch (err) {
       console.error('Crop/upload failed:', err);
     } finally {
-      setCropping(false);
       setUploading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cropSrc, uploadBlob, onSelect]);
+  }, [originalFileId, sourceUrl, uploadOriginal, deriveCropFrom, onSelect]);
 
   // ── Use original (skip crop) ──
   const handleUseOriginal = useCallback(async () => {
-    if (!cropSrc) return;
-    if (cropSrc.startsWith('data:')) {
-      setUploading(true);
-      try {
-        const res = await fetch(cropSrc);
-        const blob = await res.blob();
-        const url = await uploadBlob(blob);
-        onSelect(url);
-        handleClose();
-      } finally {
-        setUploading(false);
+    setUploading(true);
+    try {
+      if (pendingFileRef.current && !originalFileId) {
+        const up = await uploadOriginal(pendingFileRef.current);
+        onSelect(up.publicUrl);
+      } else if (sourceUrl) {
+        onSelect(sourceUrl);                 // uncropped stock/library reference
       }
-    } else {
-      onSelect(cropSrc);
       handleClose();
+    } finally {
+      setUploading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cropSrc, uploadBlob, onSelect]);
+  }, [originalFileId, sourceUrl, uploadOriginal, onSelect]);
 
   // ── Close + reset ──
   const handleClose = useCallback(() => {
@@ -284,8 +304,26 @@ export default function ImagePickerModal({
     setZoom(1);
     setAspectIdx(1);
     croppedAreaRef.current = null;
+    pendingFileRef.current = null;
+    setOriginalFileId(null);
+    setSourceUrl(null);
+    setReplacesFileId(null);
     onClose();
   }, [onClose]);
+
+  // ── Re-crop: load original when currentUrl is an existing derivative ──
+  useEffect(() => {
+    if (!open || !currentUrl) return;
+    (async () => {
+      const res = await fetch(`/api/media/resolve?url=${encodeURIComponent(currentUrl)}`);
+      const data = await res.json().catch(() => null);
+      if (data?.originalUrl) {
+        setSourceUrl(data.originalUrl);
+        setReplacesFileId(data.derivativeFileId ?? null);
+        setCropSrc(data.originalUrl);
+      }
+    })();
+  }, [open, currentUrl]);
 
   const currentAspect = ASPECT_RATIOS[aspectIdx];
 
@@ -527,36 +565,6 @@ export default function ImagePickerModal({
                     />
                   </div>
 
-                  <div className="mt-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-1 h-px bg-[var(--border)]" />
-                      <span className="text-[10px] text-[var(--text-tertiary)] font-semibold uppercase tracking-wider">or paste URL</span>
-                      <div className="flex-1 h-px bg-[var(--border)]" />
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        ref={urlInputRef}
-                        type="url"
-                        placeholder="https://example.com/image.jpg"
-                        className="flex-1 px-3 py-2 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] text-sm outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-shadow"
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            const val = (e.target as HTMLInputElement).value.trim();
-                            if (val) selectImage(val);
-                          }
-                        }}
-                      />
-                      <button
-                        onClick={() => {
-                          const val = urlInputRef.current?.value.trim();
-                          if (val) selectImage(val);
-                        }}
-                        className={BTN_PRIMARY}
-                      >
-                        Go
-                      </button>
-                    </div>
-                  </div>
                 </div>
               )}
             </>
@@ -583,10 +591,10 @@ export default function ImagePickerModal({
               </button>
               <button
                 onClick={handleCropAndAdd}
-                disabled={cropping || uploading}
+                disabled={uploading}
                 className={`${BTN_PRIMARY} flex items-center gap-1.5`}
               >
-                {(cropping || uploading) ? (
+                {uploading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
                   <Check className="w-3.5 h-3.5" />

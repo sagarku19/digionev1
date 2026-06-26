@@ -703,6 +703,8 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
         <ImagePickerModal
           open
           bucket="creator-public"
+          kind={picker === 'thumbnail' ? 'cover' : 'gallery'}
+          currentUrl={picker === 'thumbnail' ? (formData.thumbnail_url ?? undefined) : undefined}
           onClose={() => setPicker(null)}
           onSelect={(url) => {
             if (picker === 'thumbnail') patch({ thumbnail_url: url });
