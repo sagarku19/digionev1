@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { isUuid } from '@/lib/upload-validators';
+import { resolveBucket, storage } from '@/lib/storage';
 import crypto from 'crypto';
 
 const SIGNED_URL_TTL_SECONDS = 600; // 10 minutes
@@ -71,44 +72,32 @@ export async function GET(
       return json(reqId, { error: 'Product not found' }, 404);
     }
 
-    const folder = `${product.creator_id}/${productId}`;
-    const { data: objects, error: listError } = await serviceDb.storage
-      .from('creator-content')
-      .list(folder, { limit: MAX_FILES_RETURNED });
+    const cfg = resolveBucket('creator-content');
+    const { data: rows, error: listError } = await serviceDb
+      .from('storage_files')
+      .select('object_key, file_name, size, mime_type, created_at')
+      .eq('owner_id', product.creator_id)
+      .eq('bucket', cfg.name)
+      .eq('product_id', productId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(MAX_FILES_RETURNED);
     if (listError) {
-      log('error', reqId, 'storage_list_failed', { folder, message: listError.message });
+      log('error', reqId, 'files_list_failed', { productId, message: listError.message });
       return json(reqId, { error: 'Failed to list deliverables' }, 502);
     }
 
-    const files = await Promise.all(
-      (objects ?? [])
-        .filter((o) => o.name && !o.name.endsWith('/'))
-        .map(async (o) => {
-          const fullPath = `${folder}/${o.name}`;
-          const { data: signed, error: signError } = await serviceDb.storage
-            .from('creator-content')
-            .createSignedUrl(fullPath, SIGNED_URL_TTL_SECONDS);
-          if (signError || !signed) {
-            log('error', reqId, 'storage_sign_failed', { path: fullPath, message: signError?.message });
-            return null;
-          }
-          return {
-            name: o.name,
-            path: fullPath,
-            signedUrl: signed.signedUrl,
-            bytes: (o.metadata as { size?: number } | null)?.size ?? null,
-            mimeType: (o.metadata as { mimetype?: string } | null)?.mimetype ?? null,
-            createdAt: o.created_at,
-          };
-        })
-    );
+    const files = await Promise.all((rows ?? []).map(async (r) => {
+      try {
+        const signedUrl = await storage.createDownloadUrl({ bucket: cfg.name, objectKey: r.object_key, ttlSeconds: SIGNED_URL_TTL_SECONDS });
+        return { name: r.file_name, path: r.object_key, signedUrl, bytes: Number(r.size ?? 0), mimeType: r.mime_type, createdAt: r.created_at };
+      } catch (e) {
+        log('error', reqId, 'storage_sign_failed', { path: r.object_key, message: e instanceof Error ? e.message : String(e) });
+        return null;
+      }
+    }));
 
-    return json(reqId, {
-      productId,
-      productName: product.name,
-      ttlSeconds: SIGNED_URL_TTL_SECONDS,
-      files: files.filter((f) => f !== null),
-    }, 200);
+    return json(reqId, { productId, productName: product.name, ttlSeconds: SIGNED_URL_TTL_SECONDS, files: files.filter((f) => f !== null) }, 200);
   } catch (err) {
     log('error', reqId, 'unhandled', { message: err instanceof Error ? err.message : String(err) });
     return json(reqId, { error: 'Internal server error' }, 500);
