@@ -337,8 +337,6 @@ export type Database = {
           created_at: string | null
           creator_id: string
           dob: string | null
-          document_hashes: Json | null
-          document_urls: Json | null
           full_name: string | null
           gender: string | null
           id: string
@@ -383,8 +381,6 @@ export type Database = {
           created_at?: string | null
           creator_id: string
           dob?: string | null
-          document_hashes?: Json | null
-          document_urls?: Json | null
           full_name?: string | null
           gender?: string | null
           id?: string
@@ -429,8 +425,6 @@ export type Database = {
           created_at?: string | null
           creator_id?: string
           dob?: string | null
-          document_hashes?: Json | null
-          document_urls?: Json | null
           full_name?: string | null
           gender?: string | null
           id?: string
@@ -1000,6 +994,48 @@ export type Database = {
           },
         ]
       }
+      kyc_access_log: {
+        Row: {
+          admin_id: string
+          created_at: string
+          creator_id: string
+          file_id: string | null
+          id: string
+          object_key: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          creator_id: string
+          file_id?: string | null
+          id?: string
+          object_key: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          creator_id?: string
+          file_id?: string | null
+          id?: string
+          object_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_access_log_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kyc_access_log_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "storage_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_form: {
         Row: {
           created_at: string | null
@@ -1254,90 +1290,6 @@ export type Database = {
             columns: ["site_id"]
             isOneToOne: true
             referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      media_library: {
-        Row: {
-          alt_text: string | null
-          created_at: string | null
-          creator_id: string
-          description: string | null
-          duration_seconds: number | null
-          file_name: string
-          file_size: number
-          file_type: string
-          height: number | null
-          id: string
-          is_favorite: boolean | null
-          media_type: string
-          metadata: Json | null
-          storage_file_id: string | null
-          storage_url: string
-          tags: string[] | null
-          thumbnail_url: string | null
-          updated_at: string | null
-          usage_count: number | null
-          width: number | null
-        }
-        Insert: {
-          alt_text?: string | null
-          created_at?: string | null
-          creator_id: string
-          description?: string | null
-          duration_seconds?: number | null
-          file_name: string
-          file_size: number
-          file_type: string
-          height?: number | null
-          id?: string
-          is_favorite?: boolean | null
-          media_type: string
-          metadata?: Json | null
-          storage_file_id?: string | null
-          storage_url: string
-          tags?: string[] | null
-          thumbnail_url?: string | null
-          updated_at?: string | null
-          usage_count?: number | null
-          width?: number | null
-        }
-        Update: {
-          alt_text?: string | null
-          created_at?: string | null
-          creator_id?: string
-          description?: string | null
-          duration_seconds?: number | null
-          file_name?: string
-          file_size?: number
-          file_type?: string
-          height?: number | null
-          id?: string
-          is_favorite?: boolean | null
-          media_type?: string
-          metadata?: Json | null
-          storage_file_id?: string | null
-          storage_url?: string
-          tags?: string[] | null
-          thumbnail_url?: string | null
-          updated_at?: string | null
-          usage_count?: number | null
-          width?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_media_library_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_media_library_storage"
-            columns: ["storage_file_id"]
-            isOneToOne: false
-            referencedRelation: "storage_files"
             referencedColumns: ["id"]
           },
         ]
@@ -1709,121 +1661,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      product_files: {
-        Row: {
-          checksum: string | null
-          created_at: string | null
-          creator_id: string
-          download_count: number | null
-          file_label: string
-          file_size_bytes: number | null
-          file_type: string | null
-          id: string
-          is_primary: boolean | null
-          product_id: string
-          storage_file_id: string | null
-          storage_url: string
-          updated_at: string | null
-          version: string | null
-        }
-        Insert: {
-          checksum?: string | null
-          created_at?: string | null
-          creator_id: string
-          download_count?: number | null
-          file_label: string
-          file_size_bytes?: number | null
-          file_type?: string | null
-          id?: string
-          is_primary?: boolean | null
-          product_id: string
-          storage_file_id?: string | null
-          storage_url: string
-          updated_at?: string | null
-          version?: string | null
-        }
-        Update: {
-          checksum?: string | null
-          created_at?: string | null
-          creator_id?: string
-          download_count?: number | null
-          file_label?: string
-          file_size_bytes?: number | null
-          file_type?: string | null
-          id?: string
-          is_primary?: boolean | null
-          product_id?: string
-          storage_file_id?: string | null
-          storage_url?: string
-          updated_at?: string | null
-          version?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pf_creator"
-            columns: ["creator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pf_product"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pf_storage"
-            columns: ["storage_file_id"]
-            isOneToOne: false
-            referencedRelation: "storage_files"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_licenses: {
-        Row: {
-          expires_at: string | null
-          id: string
-          issued_at: string | null
-          license_key: string | null
-          license_type: string | null
-          order_id: string
-          order_item_id: string
-          product_id: string
-          snapshot: Json | null
-          status: string
-          user_id: string | null
-        }
-        Insert: {
-          expires_at?: string | null
-          id?: string
-          issued_at?: string | null
-          license_key?: string | null
-          license_type?: string | null
-          order_id: string
-          order_item_id: string
-          product_id: string
-          snapshot?: Json | null
-          status?: string
-          user_id?: string | null
-        }
-        Update: {
-          expires_at?: string | null
-          id?: string
-          issued_at?: string | null
-          license_key?: string | null
-          license_type?: string | null
-          order_id?: string
-          order_item_id?: string
-          product_id?: string
-          snapshot?: Json | null
-          status?: string
-          user_id?: string | null
-        }
-        Relationships: []
       }
       product_view_events: {
         Row: {
@@ -2718,115 +2555,75 @@ export type Database = {
           },
         ]
       }
-      storage_file_usages: {
-        Row: {
-          created_at: string | null
-          entity_id: string
-          entity_type: string
-          field_name: string | null
-          file_id: string
-          id: string
-        }
-        Insert: {
-          created_at?: string | null
-          entity_id: string
-          entity_type: string
-          field_name?: string | null
-          file_id: string
-          id?: string
-        }
-        Update: {
-          created_at?: string | null
-          entity_id?: string
-          entity_type?: string
-          field_name?: string | null
-          file_id?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_sfu_file"
-            columns: ["file_id"]
-            isOneToOne: false
-            referencedRelation: "storage_files"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       storage_files: {
         Row: {
-          cdn_url: string
-          checksum_sha256: string | null
-          created_at: string | null
+          bucket: string
+          created_at: string
+          crop: Json | null
           deleted_at: string | null
-          file_name: string | null
-          file_type: string | null
+          file_name: string
           id: string
-          metadata: Json | null
+          kind: string
           mime_type: string | null
-          owner_creator_id: string | null
-          owner_user_id: string | null
-          provider: Database["public"]["Enums"]["storage_provider_type"]
-          provider_bucket: string
-          provider_path: string
-          public_url: string | null
-          size_bytes: number | null
-          status: string
-          updated_at: string | null
+          object_key: string
+          owner_id: string
+          parent_file_id: string | null
+          product_id: string | null
+          size: number
+          visibility: string
         }
         Insert: {
-          cdn_url: string
-          checksum_sha256?: string | null
-          created_at?: string | null
+          bucket: string
+          created_at?: string
+          crop?: Json | null
           deleted_at?: string | null
-          file_name?: string | null
-          file_type?: string | null
+          file_name: string
           id?: string
-          metadata?: Json | null
+          kind?: string
           mime_type?: string | null
-          owner_creator_id?: string | null
-          owner_user_id?: string | null
-          provider?: Database["public"]["Enums"]["storage_provider_type"]
-          provider_bucket: string
-          provider_path: string
-          public_url?: string | null
-          size_bytes?: number | null
-          status?: string
-          updated_at?: string | null
+          object_key: string
+          owner_id: string
+          parent_file_id?: string | null
+          product_id?: string | null
+          size?: number
+          visibility?: string
         }
         Update: {
-          cdn_url?: string
-          checksum_sha256?: string | null
-          created_at?: string | null
+          bucket?: string
+          created_at?: string
+          crop?: Json | null
           deleted_at?: string | null
-          file_name?: string | null
-          file_type?: string | null
+          file_name?: string
           id?: string
-          metadata?: Json | null
+          kind?: string
           mime_type?: string | null
-          owner_creator_id?: string | null
-          owner_user_id?: string | null
-          provider?: Database["public"]["Enums"]["storage_provider_type"]
-          provider_bucket?: string
-          provider_path?: string
-          public_url?: string | null
-          size_bytes?: number | null
-          status?: string
-          updated_at?: string | null
+          object_key?: string
+          owner_id?: string
+          parent_file_id?: string | null
+          product_id?: string | null
+          size?: number
+          visibility?: string
         }
         Relationships: [
           {
-            foreignKeyName: "fk_sf_creator"
-            columns: ["owner_creator_id"]
+            foreignKeyName: "storage_files_owner_id_fkey"
+            columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_sf_user"
-            columns: ["owner_user_id"]
+            foreignKeyName: "storage_files_parent_file_id_fkey"
+            columns: ["parent_file_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "storage_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_files_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -3519,13 +3316,6 @@ export type Database = {
         | "sticky_cta"
         | "trust_badges"
         | "custom_html"
-      storage_provider_type:
-        | "supabase"
-        | "digitalocean"
-        | "aws_s3"
-        | "cloudflare_r2"
-        | "gcs"
-        | "bunny"
       subscription_plan_type: "free" | "plus" | "pro"
       user_role_type: "super_admin" | "creator" | "user"
       wallet_direction: "credit" | "debit"
@@ -3717,14 +3507,6 @@ export const Constants = {
         "sticky_cta",
         "trust_badges",
         "custom_html",
-      ],
-      storage_provider_type: [
-        "supabase",
-        "digitalocean",
-        "aws_s3",
-        "cloudflare_r2",
-        "gcs",
-        "bunny",
       ],
       subscription_plan_type: ["free", "plus", "pro"],
       user_role_type: ["super_admin", "creator", "user"],
