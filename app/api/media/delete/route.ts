@@ -27,8 +27,11 @@ export async function POST(req: Request) {
     const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, user.id);
     if (!creatorId) return json(reqId, { error: 'Creator profile not found' }, 403);
 
-    const { data: row } = await serviceDb.from('storage_files').select('id, owner_id').eq('id', body.fileId).maybeSingle();
+    const { data: row } = await serviceDb.from('storage_files').select('id, owner_id, parent_file_id').eq('id', body.fileId).maybeSingle();
     if (!row || row.owner_id !== creatorId) return json(reqId, { error: 'Not found' }, 404);
+    if (row.parent_file_id !== null) {
+      return json(reqId, { error: 'Cannot delete a derivative directly — delete the original to cascade' }, 400);
+    }
 
     const { removed } = await hardDeleteCascade(serviceDb, body.fileId);
     return json(reqId, { removed }, 200);

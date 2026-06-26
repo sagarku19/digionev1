@@ -25,8 +25,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ creatorI
     const serviceDb = createServiceClient();
     // Re-read the role from the DB (do not trust JWT metadata for an identity-doc action).
     const { data: pubUser } = await serviceDb.from('users').select('role').eq('auth_provider_id', user.id).maybeSingle();
-    const isAdmin = pubUser?.role === 'super_admin' || user.app_metadata?.role === 'super_admin';
-    if (!isAdmin) return json(reqId, { error: 'Forbidden' }, 403);
+    // DB role only — no JWT fallback for an identity-document action.
+    if (pubUser?.role !== 'super_admin') return json(reqId, { error: 'Forbidden' }, 403);
 
     const cfg = resolveBucket('creator-private');
     const { data: rows } = await serviceDb.from('storage_files').select('id, object_key, file_name, mime_type, created_at')

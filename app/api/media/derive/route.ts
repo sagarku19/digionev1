@@ -55,10 +55,10 @@ export async function POST(req: Request) {
       const { data: parent } = await serviceDb.from('storage_files').select('*').eq('id', body.sourceFileId).is('deleted_at', null).maybeSingle();
       if (!parent || parent.owner_id !== creatorId) return json(reqId, { error: 'Source not found' }, 404);
       parentFileId = parent.id;
-      const pub = parent.visibility === 'public'
-        ? publicUrlFor('creator-public', parent.object_key)
-        : await storage.createDownloadUrl({ bucket: parent.bucket, objectKey: parent.object_key });
-      sourceBuf = await fetchSource(pub!);
+      // A signed GET works for both public and private parent buckets, and uses
+      // the correct bucket regardless of which logical bucket the parent lives in.
+      const pub = await storage.createDownloadUrl({ bucket: parent.bucket, objectKey: parent.object_key });
+      sourceBuf = await fetchSource(pub);
     } else if (typeof body.sourceUrl === 'string' && isAllowedSourceUrl(body.sourceUrl)) {
       sourceUrl = body.sourceUrl;
       sourceBuf = await fetchSource(body.sourceUrl);
@@ -86,7 +86,7 @@ export async function POST(req: Request) {
     // Replace/re-crop: soft-delete the old derivative (orphan cleanup).
     if (typeof body.replacesFileId === 'string') {
       const { data: old } = await serviceDb.from('storage_files').select('id, owner_id').eq('id', body.replacesFileId).maybeSingle();
-      if (old && old.owner_id === creatorId) await softDelete(serviceDb, old.id);
+      if (old && old.owner_id === creatorId) await softDelete(serviceDb, old.id, creatorId);
     }
 
     return json(reqId, { fileId: row.id, publicUrl: publicUrlFor('creator-public', objectKey), objectKey }, 200);

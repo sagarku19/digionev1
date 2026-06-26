@@ -35,8 +35,12 @@ export async function findLiveByKey(db: Db, bucket: string, objectKey: string): 
   return data ?? null;
 }
 
-export async function softDelete(db: Db, fileId: string): Promise<void> {
-  const { error } = await db.from('storage_files').update({ deleted_at: new Date().toISOString() }).eq('id', fileId);
+// ownerId is required and chained into the update so a service-role caller can
+// never soft-delete a file it doesn't own, even with an unverified fileId.
+export async function softDelete(db: Db, fileId: string, ownerId: string): Promise<void> {
+  const { error } = await db.from('storage_files')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', fileId).eq('owner_id', ownerId);
   if (error) throw new Error(`[files] soft-delete failed: ${error.message}`);
 }
 
