@@ -235,6 +235,8 @@ export default function BioProfileEditor({
       {/* Image Picker Modal */}
       <ImagePickerModal
         open={imagePicker.open}
+        bucket="creator-public"
+        kind={imagePicker.field === 'avatar' ? 'avatar' : 'linkinbio'}
         onClose={() => setImagePicker(prev => ({ ...prev, open: false }))}
         onSelect={(url) => {
           if (imagePicker.field === 'avatar') {

@@ -1196,6 +1196,7 @@ export default function EditLinkInBioPage() {
       {imagePicker.open && (
         <ImagePickerModal
           open={imagePicker.open}
+          bucket="creator-public"
           onClose={() => setImagePicker(p => ({ ...p, open: false }))}
           onSelect={(url) => {
             if (imagePicker.field === 'thumbnail_url') updateBlock(imagePicker.blockId, { thumbnail_url: url });

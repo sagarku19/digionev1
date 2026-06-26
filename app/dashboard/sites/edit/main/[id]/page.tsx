@@ -532,7 +532,7 @@ export default function EditMainStorePage() {
       />
 
       {heroBgPicker && (
-        <ImagePickerModal open onSelect={(url) => { setHeroData(h => ({ ...h, imageUrl: url })); setHeroBgPicker(false); }} onClose={() => setHeroBgPicker(false)} />
+        <ImagePickerModal open bucket="creator-public" kind="banner" onSelect={(url) => { setHeroData(h => ({ ...h, imageUrl: url })); setHeroBgPicker(false); }} onClose={() => setHeroBgPicker(false)} />
       )}
 
       <UnsavedChangesDialog open={!!pendingNav} saving={saving} onCancel={cancel} onDiscard={discardAndLeave} onSave={saveAndLeave} />

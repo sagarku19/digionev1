@@ -235,6 +235,8 @@ export default function BioSetupWizard({
 
       <ImagePickerModal
         open={avatarPicker}
+        bucket="creator-public"
+        kind="avatar"
         onClose={() => setAvatarPicker(false)}
         onSelect={(url) => onChangeProfile({ ...profile, avatarUrl: url })}
         title="Select Profile Avatar"

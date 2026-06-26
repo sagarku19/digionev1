@@ -324,6 +324,8 @@ export default function BioAppearanceEditor({
       {/* Image Picker Modal for Background */}
       <ImagePickerModal
         open={bgImagePicker}
+        bucket="creator-public"
+        kind="banner"
         onClose={() => setBgImagePicker(false)}
         onSelect={(url) => onChange({ ...data, backgroundValue: url })}
         title="Select Background Image"
