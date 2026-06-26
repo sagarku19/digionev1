@@ -26,9 +26,16 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | GET | `/api/products/search` | none | service role | — |
 | GET | `/api/sites/check-slug` | none | service role | — |
 | POST | `/api/sites/create` | cookie session | server + service role | `sites`, `site_main`/`site_singlepage`/`linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` |
-| POST | `/api/upload` | cookie session | server + service role | Supabase Storage (signed URL) |
-| GET | `/api/deliverables/[productId]` | cookie session | server + service role | — (mints signed download URLs) |
-| POST | `/api/private/download` | cookie session | server + service role | — (mints signed download URL) |
+| POST | `/api/upload` | cookie session | server + service role | R2 presigned PUT (private buckets only); `storage_files` row written by `/confirm` |
+| POST | `/api/upload/confirm` | cookie session | server + service role | `storage_files` (writes metadata row after successful PUT) |
+| POST | `/api/media/upload` | cookie session | server + service role | R2 `digione-media`; `storage_files` |
+| POST | `/api/media/derive` | cookie session | server + service role | R2 `digione-media`; `storage_files` (derivative row); soft-delete of replaced file |
+| GET | `/api/media/resolve` | cookie session | server + service role | — (reads `storage_files`, returns original + crop) |
+| GET | `/api/media/list` | cookie session | server + service role | — (lists creator originals from `storage_files`) |
+| POST | `/api/media/delete` | cookie session | server + service role | R2 (object delete); `storage_files` (hard-cascade delete of original + derivatives) |
+| GET | `/api/deliverables/[productId]` | cookie session | server + service role | — (mints R2 signed download URLs via `storage_files`) |
+| POST | `/api/private/download` | cookie session | server + service role | — (mints R2 signed URL for `creator-content` only) |
+| GET | `/api/admin/kyc/[creatorId]/download` | cookie session (super_admin) | server + service role | `kyc_access_log` (writes on every mint) |
 
 ---
 
@@ -300,46 +307,149 @@ All four operations (KYC check, balance read, balance update, payout insert) key
 
 ## Storage
 
-### `POST /api/upload`
+All file storage is **Cloudflare R2** (S3-compatible). Routes call `storage.*` from `src/lib/storage/index.ts` — never the aws-sdk directly. The logical bucket names used in route bodies map to real R2 buckets via `src/lib/storage/buckets.ts`.
 
-Returns a signed upload URL for a Supabase Storage bucket.
+**Logical → R2 bucket mapping:**
+
+| Logical name | R2 bucket | Public? | Purpose |
+|---|---|---|---|
+| `public-asset` | `digione-public-assets` | yes | DigiOne platform stock assets |
+| `creator-public` | `digione-media` | yes | Creator covers, avatars, banners (images) |
+| `creator-content` | `digione-products` | no | Product deliverables |
+| `creator-private` | `digione-kyc-private` | no | KYC docs, contracts (write-only for creators) |
+
+Public URLs: `NEXT_PUBLIC_R2_MEDIA_URL` for `creator-public`; `NEXT_PUBLIC_R2_BUCKET_PUBLIC_URL` for `public-asset`.
+
+**`storage_files` metadata table:** every uploaded object has a row (`owner_id`, `bucket`, `object_key`, `file_name`, `mime_type`, `size`, `visibility`, `kind`, `product_id`, `parent_file_id`, `crop`, `created_at`, `deleted_at`). Partial unique on `(bucket, object_key) WHERE deleted_at IS NULL`. Quota = `SELECT sum(size) FROM storage_files WHERE owner_id = ? AND deleted_at IS NULL` via `sumOwnerBytes` in `src/lib/storage/files.ts`. RLS: owner SELECT + super_admin SELECT; writes are service-role only. The old `sum_bucket_bytes_for_prefix` RPC is **retired**.
+
+---
+
+### `POST /api/upload` (auth required)
+
+Issues a **presigned PUT URL** for **private buckets only** (`creator-content`, `creator-private`). Images go through `/api/media/upload` instead — this route is for non-image files (deliverables, KYC docs).
 
 ```json
 // Request
 {
   "filename": "string (sanitized: [A-Za-z0-9._-]+, max 200 chars, no leading dot)",
-  "bucket": "public-asset" | "creator-public" | "creator-content" | "creator-private",
-  "productId": "uuid (optional; creator-content uses 'unassigned' folder if omitted; format-validated when present)",
-  "kind": "'cover' | 'linkinbio' | 'avatar' | 'banner' | 'other' (defaults to 'other'; allowlist enforced when bucket is 'creator-public' or 'public-asset')",
+  "bucket": "creator-content" | "creator-private",
+  "productId": "uuid? (optional; creator-content uses 'unassigned' if omitted; UUID-format-validated when present)",
+  "kind": "string (defaults to 'other')",
   "category": "'kyc' | 'contracts' | 'other' (required when bucket === 'creator-private')"
 }
 ```
 
-`creatorId` is no longer accepted from the request body — it is derived server-side from the authenticated session via the 3-hop `auth.users → users → profiles` lookup.
-
-**File paths per bucket:**
-
-| Bucket | Public? | Owner | Path layout |
-|---|---|---|---|
-| `public-asset` | yes | **DigiOne** (platform-managed stock content, demo files, sample assets) | `digione/{kind}/{timestamp}_{filename}` |
-| `creator-public` | yes | Creator | `{creator_id}/{kind}/{timestamp}_{filename}` |
-| `creator-content` | **no** | Creator | `{creator_id}/{product_id or "unassigned"}/{timestamp}_{filename}` |
-| `creator-private` | **no** | Creator | `{creator_id}/{category}/{timestamp}_{filename}` |
-
-**`public-asset` ownership note:** intended as DigiOne-managed (admins or seed scripts populate it with stock images, sample link-in-bio backgrounds, demo files that creators reference but don't upload). The route currently still accepts creator writes to this bucket for link-in-bio backwards-compat — that's a deferred tighten-up. All net-new creator uploads should target `creator-public` instead.
-
-**Legacy buckets dropped 2026-06-03:** `uploads` and `user_files` from earlier dev iterations no longer exist. See `supabase/migrations/20260605100000_drop_legacy_storage_buckets.sql`.
-
-`publicUrl` in the response is `null` for private buckets. Reads for private buckets must go through dedicated signed-URL endpoints (not yet implemented for `creator-content` / `creator-private` — see `.claude/rules/security-model.md` for the access-check requirement).
+`creatorId` is derived server-side (3-hop `auth.users → users → profiles`). Quota checked via `sumOwnerBytes`; over-quota returns `413 { usedBytes, quotaBytes }`.
 
 ```json
 // Success
-{ "signedUrl": "https://...", "path": "1234_image.png", "publicUrl": "https://{supabase}/storage/v1/object/public/{bucket}/{path}" }
+{ "uploadUrl": "https://...", "bucket": "creator-content", "objectKey": "{creator_id}/{product_id}/{ts}_{filename}" }
 ```
 
-**Hardening (2026-06-03):** route requires a cookie session. `creatorId` derived server-side. Filename sanitized to `[A-Za-z0-9._-]+` (max 200 chars, no leading dot). `productId` is UUID-format-validated. Storage errors are logged server-side as JSON via `console.error` with `reqId` correlation and **never** leak Supabase internals to the client — clients get generic messages (`Failed to create upload URL`, `Internal server error`). Every response carries an `X-Request-ID` header (echoed from `x-request-id` request header if present, else generated). `creator-content` uploads are gated by a per-creator storage quota (1 GB hardcoded default — real per-plan version is blocked on `creator_subscriptions` table + a numeric quota schema). Quota check goes through the `public.sum_bucket_bytes_for_prefix(bucket, prefix)` RPC. Over-quota returns `413` with `{ usedBytes, quotaBytes }`. Still outstanding: rate limiting, resumable uploads for `creator-content`, log shipping to a real observability backend.
+**After upload:** client must call `POST /api/upload/confirm` to write the `storage_files` row.
 
-**`public-asset` path migration:** new uploads use `digione/{kind}/{ts}_{filename}`. Pre-2026-06-03 objects at `public-asset/linkinbio/...` and `public-asset/{filename}` remain readable at their original URLs; this change is forward-only.
+**Errors:** `400` (bad filename / bucket / category), `401` (no session), `413` (quota exceeded), `500`.
+
+---
+
+### `POST /api/upload/confirm` (auth required)
+
+Called by the client after a successful presigned PUT. HEADs the object in R2 for its actual size and writes the `storage_files` metadata row. Idempotent (upserts on `(bucket, object_key)`).
+
+```json
+// Request
+{ "bucket": "creator-content" | "creator-private", "objectKey": "string", "productId": "uuid?", "kind": "string?" }
+```
+
+```json
+// Success
+{ "fileId": "uuid" }
+```
+
+**Errors:** `400` (missing fields), `401` (no session), `403` (ownership violation), `502` (R2 HEAD error), `500`.
+
+---
+
+### `POST /api/media/upload` (auth required)
+
+Multipart image upload. Receives the raw file, converts to WebP with `sharp`, uploads the original to `digione-media`, writes a `storage_files` row, and returns the public CDN URL.
+
+```
+Form data: { file: File, bucket: "creator-public" | "public-asset", kind: "cover" | "avatar" | "banner" | "linkinbio" | "other" }
+```
+
+```json
+// Success
+{ "fileId": "uuid", "publicUrl": "https://media.digione.ai/{objectKey}", "objectKey": "string" }
+```
+
+**Errors:** `400` (missing/bad file or kind), `401` (no session), `413` (quota), `500`.
+
+---
+
+### `POST /api/media/derive` (auth required)
+
+Non-destructive crop. Creates a derivative object in R2 from an existing original (or source URL restricted to our R2 public buckets). The original is **never mutated**. The derivative row carries `parent_file_id` + `crop` (jsonb). Optionally soft-deletes a previously replaced derivative (`replacesFileId`).
+
+```json
+// Request
+{
+  "sourceFileId": "uuid?",
+  "sourceUrl": "string? (must be an R2 public bucket URL)",
+  "crop": { "x": 0, "y": 0, "width": 100, "height": 100, "unit": "%" },
+  "kind": "string",
+  "replacesFileId": "uuid?"
+}
+```
+
+```json
+// Success
+{ "fileId": "uuid", "publicUrl": "string", "objectKey": "string" }
+```
+
+**Errors:** `400` (missing source / invalid crop / sourceUrl not our domain), `401` (no session), `403` (not owner), `500`.
+
+---
+
+### `GET /api/media/resolve?url=` (auth required)
+
+Maps a derivative CDN URL back to its original `storage_files` row + saved crop. Used by `ImagePickerModal` to load the re-crop state.
+
+```json
+// Success
+{ "originalUrl": "string", "originalFileId": "uuid", "crop": { /* saved crop or null */ } }
+```
+
+**Errors:** `400` (missing/bad url), `401` (no session), `404` (no matching row).
+
+---
+
+### `GET /api/media/list` (auth required)
+
+Returns the creator's **original** images (rows where `parent_file_id IS NULL`) for the Media Library. Derivatives are excluded.
+
+```json
+// Success
+{ "files": [{ "id": "uuid", "publicUrl": "string", "kind": "string", "createdAt": "string", "size": 12345 }] }
+```
+
+---
+
+### `POST /api/media/delete` (auth required)
+
+Hard-cascade deletes an original image: removes the object from R2, hard-deletes the `storage_files` row, and hard-deletes all derivative rows (+ their R2 objects).
+
+```json
+// Request
+{ "fileId": "uuid" }
+```
+
+```json
+// Success
+{ "deleted": true }
+```
+
+**Errors:** `400` (missing fileId), `401` (no session), `403` (not owner), `404` (not found), `500`.
 
 ---
 
@@ -347,7 +457,7 @@ Returns a signed upload URL for a Supabase Storage bucket.
 
 ### `GET /api/deliverables/[productId]` (auth required)
 
-Buyer-facing endpoint. Returns short-TTL signed download URLs for every file the creator uploaded under `creator-content/{creator_id}/{productId}/`.
+Buyer-facing endpoint. Returns short-TTL signed download URLs by querying `storage_files` for rows with `bucket = 'creator-content'` and matching `product_id`, then signing each via R2.
 
 **Access:** verifies a `user_product_access` row exists for `(auth user.id, productId)`. 403 if no row.
 
@@ -363,27 +473,40 @@ Buyer-facing endpoint. Returns short-TTL signed download URLs for every file the
 }
 ```
 
-**Errors:** `400` (invalid productId), `401` (no session), `403` (no access row), `404` (product not found), `502` (storage list/sign error), `500` (other). TTL is 10 minutes. Max 50 files returned. All responses include `X-Request-ID` + `Cache-Control: no-store`.
+**Errors:** `400` (invalid productId), `401` (no session), `403` (no access row), `404` (product not found), `502` (R2 sign error), `500` (other). TTL is 10 minutes. Max 50 files returned. All responses include `X-Request-ID` + `Cache-Control: no-store`.
 
 ---
 
 ### `POST /api/private/download` (auth required)
 
-Creator-facing endpoint. Mints a signed download URL for a file in `creator-private` or `creator-content` that the calling creator owns. Used by dashboard surfaces (KYC review of own docs, deliverable preview before publishing).
+Creator-facing endpoint. Mints a signed download URL for a file in **`creator-content` only** (KYC docs were removed from this route — use the admin route below). Used by dashboard surfaces for deliverable preview before publishing.
 
 ```json
 // Request
-{ "bucket": "creator-private" | "creator-content", "path": "{creator_id}/..." }
+{ "bucket": "creator-content", "path": "{creator_id}/..." }
 ```
 
 ```json
 // Success
-{ "bucket": "creator-private", "path": "{creator_id}/kyc/...", "signedUrl": "...", "ttlSeconds": 600 }
+{ "bucket": "creator-content", "path": "{creator_id}/{product_id}/...", "signedUrl": "...", "ttlSeconds": 600 }
 ```
 
 **Ownership:** `path` must start with the calling creator's `profile.id`. Strict prefix match. Rejects `..`, leading `/`, backslashes. 403 if path doesn't belong to the caller.
 
-**Errors:** `400` (invalid JSON / bucket / path), `401` (no session), `403` (profile not found / ownership violation), `502` (storage sign error), `500` (other). TTL is 10 minutes.
+**Errors:** `400` (invalid JSON / bucket / path), `401` (no session), `403` (profile not found / ownership violation / wrong bucket), `502` (R2 sign error), `500` (other). TTL is 10 minutes.
+
+---
+
+### `GET /api/admin/kyc/[creatorId]/download` (super_admin only)
+
+The **only** route that mints a signed URL for the `digione-kyc-private` bucket. Reads `creator_kyc` to locate the object key, signs it via R2, and writes a `kyc_access_log` row on every call. The DB role is re-read (`super_admin` check) — JWT metadata alone is not trusted.
+
+```json
+// Success
+{ "signedUrl": "...", "ttlSeconds": 600, "creatorId": "uuid" }
+```
+
+**Errors:** `401` (no session), `403` (not super_admin or no KYC record), `404` (creator not found), `502` (R2 sign error), `500`. Every successful call writes a `kyc_access_log` row (`admin_id`, `creator_id`, `file_id`, `object_key`, `created_at`).
 
 ---
 

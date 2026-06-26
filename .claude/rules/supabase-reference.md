@@ -146,16 +146,34 @@ const { mutate } = useMutation({
 
 ## Storage
 
-`POST /api/upload` returns a signed upload URL via service role. See [`api-routes.md`](./api-routes.md) → `/api/upload`. Buckets used in DigiOne:
+File storage has moved from Supabase Storage → **Cloudflare R2** (S3-compatible). Supabase Storage is no longer used. The old dead file subsystem (`storage_file_usages`, `media_library`, `product_files`, `product_licenses`, `storage_provider_type` enum) was dropped; `storage_files` was recreated as the single bucket-aware metadata table. The `sum_bucket_bytes_for_prefix` RPC is **retired** — quota is now a `SELECT sum(size)` query against `storage_files`.
 
-| Bucket | What lives there | Path prefix |
+**Provider abstraction:** all storage calls go through `src/lib/storage/index.ts` (exports the `storage` provider + helpers). Concrete implementation: `src/lib/storage/r2.ts`. Routes never import the aws-sdk directly.
+
+**`storage_files` metadata table (single source of truth):**
+
+| Column | Type | Notes |
 |---|---|---|
-| `products` | Product covers, content files | `{timestamp}_{filename}` |
-| `public-asset` | Link-in-bio images, avatars | `linkinbio/{timestamp}_{filename}` |
+| `id` | uuid pk | |
+| `owner_id` | uuid | `profiles.id` (creator) |
+| `bucket` | text | logical bucket name (`creator-content`, `creator-private`, etc.) |
+| `object_key` | text | `{creator_id}/{...}/{ts}_{filename}` |
+| `file_name` | text | Original filename |
+| `mime_type` | text | |
+| `size` | bigint | Bytes |
+| `visibility` | text | `private` or `public` |
+| `kind` | text | `cover`, `avatar`, `deliverable`, `kyc`, `contract`, `banner`, `other` |
+| `product_id` | uuid? | FK `products(id)` when applicable |
+| `parent_file_id` | uuid? | Set on derivative (cropped) files; originals are NULL |
+| `crop` | jsonb? | Saved crop params for derivatives |
+| `created_at` | timestamptz | |
+| `deleted_at` | timestamptz? | Soft-delete for derivatives; hard-delete for originals cascades to derivatives |
 
-Public URL pattern: `${NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`.
+Partial unique: `(bucket, object_key) WHERE deleted_at IS NULL`.
 
-**Gap:** the upload route has no auth check. Add a session check before exposing publicly.
+RLS: owner SELECT (`owner_id = current_profile_id()`) + super_admin SELECT. Writes are **service-role only** (no creator INSERT/UPDATE/DELETE policy). Helpers in `src/lib/storage/files.ts`, including `sumOwnerBytes(ownerId)` for quota.
+
+See [`api-routes.md`](./api-routes.md) → Storage section for the full upload/media/download route reference, and [`env-vars.md`](./env-vars.md) → Cloudflare R2 for env var inventory.
 
 ## Regenerating types
 
