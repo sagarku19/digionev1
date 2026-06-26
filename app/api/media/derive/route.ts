@@ -21,6 +21,15 @@ async function fetchSource(url: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer());
 }
 
+// sourceUrl is only ever a stock/library image already hosted on our own R2
+// public buckets. Restricting to those base URLs prevents SSRF (no arbitrary
+// server-side fetch of internal/metadata endpoints) and matches the removal of
+// the paste-URL feature.
+function isAllowedSourceUrl(url: string): boolean {
+  const bases = [resolveBucket('public-asset').publicBaseUrl, resolveBucket('creator-public').publicBaseUrl];
+  return bases.some((b) => b !== null && url.startsWith(`${b}/`));
+}
+
 export async function POST(req: Request) {
   const reqId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   try {
@@ -50,11 +59,11 @@ export async function POST(req: Request) {
         ? publicUrlFor('creator-public', parent.object_key)
         : await storage.createDownloadUrl({ bucket: parent.bucket, objectKey: parent.object_key });
       sourceBuf = await fetchSource(pub!);
-    } else if (typeof body.sourceUrl === 'string' && /^https?:\/\//.test(body.sourceUrl)) {
+    } else if (typeof body.sourceUrl === 'string' && isAllowedSourceUrl(body.sourceUrl)) {
       sourceUrl = body.sourceUrl;
       sourceBuf = await fetchSource(body.sourceUrl);
     } else {
-      return json(reqId, { error: 'sourceFileId or sourceUrl required' }, 400);
+      return json(reqId, { error: 'sourceFileId or an allowed sourceUrl required' }, 400);
     }
 
     const dim = await probe(sourceBuf);
