@@ -1,12 +1,15 @@
 import type { LogicalBucket } from './buckets';
 
+// Per-bucket required fields are optional at the type level for one shared shape;
+// callers must supply `category` for creator-private and `productId` for
+// creator-content, else the key falls back to `other`/`unassigned`.
 interface KeyArgs {
   ts: number;
   safeName: string;       // already sanitized by lib/upload-validators
   creatorId: string;
-  productId?: string;
+  productId?: string;     // creator-content: groups deliverables under a product
   kind?: string;          // cover | avatar | banner | linkinbio | gallery | other
-  category?: string;      // kyc | contracts | other (creator-private)
+  category?: string;      // creator-private: kyc | contracts | other
   derived?: boolean;      // media derivatives live under a derived/ segment
 }
 

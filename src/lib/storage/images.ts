@@ -9,7 +9,9 @@ const DEFAULT_MAX_WIDTH = 2048;
 const QUALITY = 82;
 
 export async function probe(input: Buffer): Promise<{ width: number; height: number }> {
-  const m = await sharp(input).metadata();
+  // .rotate() applies EXIF orientation so dimensions match what the browser
+  // cropper saw (display space) — crop coords are validated against these.
+  const m = await sharp(input).rotate().metadata();
   if (!m.width || !m.height) throw new Error('unreadable image');
   return { width: m.width, height: m.height };
 }

@@ -4,22 +4,28 @@ import {
   S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import type { StorageProvider } from './index';
+import type { StorageProvider } from './types';
 
 const DEFAULT_TTL = 600; // 10 minutes
 
+// Lazily-created singleton — S3Client holds an HTTP connection pool, so we reuse
+// one instance across requests rather than rebuilding it on every operation.
+let cached: S3Client | null = null;
+
 function client(): S3Client {
+  if (cached) return cached;
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
   if (!accountId || !accessKeyId || !secretAccessKey) {
     throw new Error('[storage/r2] missing R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY');
   }
-  return new S3Client({
+  cached = new S3Client({
     region: 'auto',
     endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId, secretAccessKey },
   });
+  return cached;
 }
 
 export const r2Storage: StorageProvider = {

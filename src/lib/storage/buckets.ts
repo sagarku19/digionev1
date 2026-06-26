@@ -27,12 +27,18 @@ function env(name: string): string {
   return v;
 }
 
+// Public base URLs are concatenated with `/${objectKey}`, so strip any trailing
+// slash to avoid `//` in the resulting URL.
+function baseUrl(name: string): string {
+  return env(name).replace(/\/+$/, '');
+}
+
 export function resolveBucket(logical: LogicalBucket): BucketConfig {
   switch (logical) {
     case 'public-asset':
-      return { name: env('R2_BUCKET_PUBLIC'), visibility: 'public', publicBaseUrl: env('NEXT_PUBLIC_R2_BUCKET_PUBLIC_URL') };
+      return { name: env('R2_BUCKET_PUBLIC'), visibility: 'public', publicBaseUrl: baseUrl('NEXT_PUBLIC_R2_BUCKET_PUBLIC_URL') };
     case 'creator-public':
-      return { name: env('R2_BUCKET_MEDIA'), visibility: 'public', publicBaseUrl: env('NEXT_PUBLIC_R2_MEDIA_URL') };
+      return { name: env('R2_BUCKET_MEDIA'), visibility: 'public', publicBaseUrl: baseUrl('NEXT_PUBLIC_R2_MEDIA_URL') };
     case 'creator-content':
       return { name: env('R2_BUCKET_PRODUCTS'), visibility: 'private', publicBaseUrl: null };
     case 'creator-private':

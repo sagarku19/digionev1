@@ -15,8 +15,8 @@ export function parseCrop(raw: unknown, source: { width: number; height: number 
     if (typeof v !== 'number' || !Number.isFinite(v)) throw new Error(`crop.${n} must be a finite number`);
     return v;
   };
-  let x = Math.max(0, Math.floor(num(r.x, 'x')));
-  let y = Math.max(0, Math.floor(num(r.y, 'y')));
+  const x = Math.max(0, Math.floor(num(r.x, 'x')));
+  const y = Math.max(0, Math.floor(num(r.y, 'y')));
   if (x >= source.width || y >= source.height) throw new Error('crop origin out of bounds');
   let width = Math.floor(num(r.width, 'width'));
   let height = Math.floor(num(r.height, 'height'));
