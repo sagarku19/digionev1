@@ -81,8 +81,8 @@ export default function CropStage({ imageSrc, busy, initialAspectIdx = 1, onConf
   }), [currentAspect.value]);
 
   return (
-    <div className="flex flex-col">
-      <div className="relative w-full h-[22rem] bg-[var(--bg-tertiary)]">
+    <div className="flex flex-col h-full">
+      <div className="relative w-full flex-1 min-h-[11rem] bg-[var(--bg-tertiary)]">
         <Cropper
           image={imageSrc}
           crop={crop}
@@ -97,7 +97,7 @@ export default function CropStage({ imageSrc, busy, initialAspectIdx = 1, onConf
         />
       </div>
 
-      <div className="p-4 space-y-3 border-t border-[var(--border)]">
+      <div className="p-3 border-t border-[var(--border)] shrink-0">
         <div className="flex items-start gap-4">
           <div className="flex-1 space-y-3">
             <div>
@@ -131,7 +131,7 @@ export default function CropStage({ imageSrc, busy, initialAspectIdx = 1, onConf
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-5 py-3 border-t border-[var(--border)] bg-[var(--surface-muted)]">
+      <div className="flex items-center justify-between px-5 py-2.5 border-t border-[var(--border)] bg-[var(--surface-muted)] shrink-0">
         <button onClick={onBack} disabled={busy} className={`${BTN} text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] flex items-center gap-1`}>
           <ChevronLeft className="w-3.5 h-3.5" /> Back
         </button>

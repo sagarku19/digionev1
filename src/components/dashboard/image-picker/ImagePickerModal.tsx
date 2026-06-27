@@ -190,7 +190,7 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
 
         {/* Body (fixed height) */}
         {imageSrc ? (
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="flex-1 min-h-0">
             <CropStage imageSrc={imageSrc} busy={busy} onConfirm={handleConfirm} onUseOriginal={handleUseOriginal} onBack={() => { revokeObjectUrl(); setImageSrc(null); setSource(null); }} />
           </div>
         ) : (
