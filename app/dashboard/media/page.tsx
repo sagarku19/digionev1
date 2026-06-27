@@ -18,15 +18,6 @@ import { formatBytes } from '@/lib/format-bytes';
 type Source = 'mine' | 'digione';
 type TypeFilter = 'all' | 'images' | 'files';
 
-const SEG = (active: boolean) =>
-  `flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] text-[13px] font-medium transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-    active ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-  }`;
-const CHIP = (active: boolean) =>
-  `px-2.5 py-1 rounded-[var(--radius-sm)] border text-xs font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-    active ? 'bg-[var(--brand)]/10 text-[var(--brand)] border-[var(--brand)]/30' : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border-transparent hover:border-[var(--border)]'
-  }`;
-
 function renderFileIcon(name: string, mime: string | null) {
   const ext = name.split('.').pop()?.toLowerCase() ?? '';
   const cls = 'w-4 h-4 text-[var(--text-secondary)]';
@@ -41,7 +32,7 @@ function fmtDate(s: string) {
 }
 
 export default function MediaPage() {
-  const { images, files, isLoading: ownLoading, deleteImage } = useOwnAssets();
+  const { images, files, usedBytes, quotaBytes, isLoading: ownLoading, deleteImage } = useOwnAssets();
   const [source, setSource] = useState<Source>('mine');
   const { stock, isLoading: stockLoading } = useDigioneStock(source === 'digione');
 
@@ -84,36 +75,41 @@ export default function MediaPage() {
         description="Your uploaded images and product files, plus DigiOne's stock library."
       />
 
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search assets…"
-            className="w-full pl-9 pr-9 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {/* Left sub-sidebar */}
+        <aside className="w-full md:w-56 shrink-0 md:sticky md:top-4 space-y-3">
+          <nav className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-2">
+            <p className="px-2.5 pt-1.5 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">Library</p>
+            <NavItem icon={FolderOpen} label="My Assets" count={images.length + files.length} active={source === 'mine'} onClick={() => setSource('mine')} />
+            {source === 'mine' && (
+              <div className="ml-3 my-1 pl-3 border-l border-[var(--border-subtle)] space-y-0.5">
+                <SubItem label="All" count={images.length + files.length} active={type === 'all'} onClick={() => setType('all')} />
+                <SubItem label="Images" count={images.length} active={type === 'images'} onClick={() => setType('images')} />
+                <SubItem label="Files" count={files.length} active={type === 'files'} onClick={() => setType('files')} />
+              </div>
+            )}
+            <NavItem icon={Sparkles} label="DigiOne Stock" active={source === 'digione'} onClick={() => setSource('digione')} />
+          </nav>
 
-        <div className="flex items-center gap-1 p-1 bg-[var(--surface-muted)] rounded-[var(--radius-md)] shrink-0">
-          <button onClick={() => setSource('mine')} className={SEG(source === 'mine')}><FolderOpen className="w-3.5 h-3.5" />My Assets</button>
-          <button onClick={() => setSource('digione')} className={SEG(source === 'digione')}><Sparkles className="w-3.5 h-3.5" />DigiOne Stock</button>
-        </div>
+          <StorageMeter used={usedBytes} quota={quotaBytes} />
+        </aside>
 
-        {source === 'mine' && (
-          <div className="flex items-center gap-1.5 shrink-0">
-            {(['all', 'images', 'files'] as TypeFilter[]).map((t) => (
-              <button key={t} onClick={() => setType(t)} className={`${CHIP(type === t)} capitalize`}>{t}</button>
-            ))}
+        {/* Content */}
+        <div className="flex-1 min-w-0 space-y-5">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search assets…"
+              className="w-full pl-9 pr-9 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
-        )}
-      </div>
 
       {/* ── My Assets ── */}
       {source === 'mine' && (
@@ -176,6 +172,8 @@ export default function MediaPage() {
           </div>
         )
       )}
+        </div>
+      </div>
 
       {/* Preview modal */}
       {preview && (
@@ -302,5 +300,47 @@ function IconBtn({ children, title, onClick, danger }: { children: React.ReactNo
     <button onClick={onClick} title={title} className={`p-2 bg-white/90 rounded-[var(--radius-md)] shadow transition hover:bg-white focus-visible:outline-none ${danger ? 'text-[var(--danger)]' : 'text-neutral-800'}`}>
       {children}
     </button>
+  );
+}
+
+function NavItem({ icon: Icon, label, count, active, onClick }: { icon: typeof FolderOpen; label: string; count?: number; active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[var(--radius-sm)] text-[13px] font-medium transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active ? 'bg-[var(--surface-muted)] text-[var(--text-primary)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'}`}>
+      <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-[var(--brand)]' : ''}`} />
+      <span className="flex-1 text-left">{label}</span>
+      {typeof count === 'number' && <span className="text-[11px] text-[var(--text-tertiary)]">{count}</span>}
+    </button>
+  );
+}
+
+function SubItem({ label, count, active, onClick }: { label: string; count: number; active: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[var(--radius-sm)] text-[12px] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active ? 'text-[var(--brand)] font-semibold' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? 'bg-[var(--brand)]' : 'bg-[var(--border-strong)]'}`} />
+      <span className="flex-1 text-left">{label}</span>
+      <span className="text-[11px] text-[var(--text-tertiary)]">{count}</span>
+    </button>
+  );
+}
+
+function StorageMeter({ used, quota }: { used: number; quota: number }) {
+  const pct = quota > 0 ? Math.min(100, (used / quota) * 100) : 0;
+  const free = Math.max(0, quota - used);
+  const over = pct >= 90;
+  return (
+    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <HardDrive className="w-4 h-4 text-[var(--text-secondary)]" />
+        <p className="text-[13px] font-semibold text-[var(--text-primary)]">Files Storage</p>
+      </div>
+      <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-300" style={{ width: `${pct}%`, background: over ? 'var(--danger)' : 'var(--brand)' }} />
+      </div>
+      <div className="mt-2 flex items-center justify-between text-[11px]">
+        <span className="text-[var(--text-secondary)] font-medium">{formatBytes(used)} used</span>
+        <span className="text-[var(--text-tertiary)]">{formatBytes(free)} free</span>
+      </div>
+      <p className="mt-2.5 text-[10px] leading-relaxed text-[var(--text-tertiary)]">Product files only · {formatBytes(quota)} on your plan</p>
+    </div>
   );
 }

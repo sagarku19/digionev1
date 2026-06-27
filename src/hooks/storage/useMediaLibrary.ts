@@ -12,13 +12,18 @@ export interface OwnFile {
   id: string; name: string; size: number; mimeType: string | null;
   signedUrl: string | null; productName: string | null; createdAt: string;
 }
-interface OwnAssets { images: OwnImage[]; files: OwnFile[] }
+interface Storage { usedBytes: number; quotaBytes: number }
+interface OwnAssets { images: OwnImage[]; files: OwnFile[]; storage: Storage }
 
 async function fetchOwn(): Promise<OwnAssets> {
   const res = await fetch('/api/media/list', { cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? 'Failed to load assets');
-  return { images: data.images ?? [], files: data.files ?? [] };
+  return {
+    images: data.images ?? [],
+    files: data.files ?? [],
+    storage: { usedBytes: data.storage?.usedBytes ?? 0, quotaBytes: data.storage?.quotaBytes ?? 0 },
+  };
 }
 
 const OWN_KEY = ['media', 'library'];
@@ -49,6 +54,8 @@ export function useOwnAssets() {
   return {
     images: q.data?.images ?? [],
     files: q.data?.files ?? [],
+    usedBytes: q.data?.storage.usedBytes ?? 0,
+    quotaBytes: q.data?.storage.quotaBytes ?? 0,
     isLoading: q.isLoading,
     deleteImage: del.mutate,
     isDeleting: del.isPending,
