@@ -1,0 +1,2 @@
+# One file URL per line. Attached as demo deliverables by
+# `npm run assets:seed-demo -- --product <productId>`. # lines ignored.

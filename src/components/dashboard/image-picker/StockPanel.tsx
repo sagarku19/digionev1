@@ -6,7 +6,7 @@ import { Search, ImageIcon, Loader2, Crop } from 'lucide-react';
 type PublicImage = { id: string; url: string; name: string; category: string; tags: string[] };
 const CATEGORIES = ['all', 'abstract', 'nature', 'gradient', 'pattern', 'texture', 'minimal', 'dark', 'other'] as const;
 const PAGE_SIZE = 24;
-const CACHE_KEY = 'public_images_cache';
+const CACHE_KEY = 'public_images_cache_v2'; // bumped after stock images moved to R2
 const CACHE_TTL = 1000 * 60 * 30;
 const CHIP_ON = 'bg-[var(--brand)]/10 text-[var(--brand)] border-[var(--brand)]/30';
 const CHIP_OFF = 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border-transparent hover:border-[var(--border)]';

@@ -1,0 +1,2 @@
+# One image URL per line. Uploaded as DigiOne stock by `npm run assets:seed-stock`.
+# Lines starting with # are ignored.
