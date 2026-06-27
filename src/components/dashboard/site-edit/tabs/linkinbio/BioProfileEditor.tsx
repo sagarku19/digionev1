@@ -6,7 +6,7 @@ import {
   User, Instagram, Twitter, Youtube, Linkedin, Github, Globe, Music,
   Plus, Trash2, Eye, EyeOff, ImagePlus, Check,
 } from 'lucide-react';
-import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
 const INPUT = editorInput(EDITOR_ACCENTS.brand);

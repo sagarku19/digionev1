@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Palette, Sparkles, Type, Zap, Space, ImagePlus } from 'lucide-react';
-import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import { INPUT, SectionCard } from './_shared';
 
 export type BioAppearanceData = {

@@ -9,7 +9,7 @@ import { useProducts } from '@/hooks/products/useProducts';
 import { useCreator } from '@/hooks/creator/useCreator';
 import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
 import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/UnsavedChangesDialog';
-import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import DeliverablesUploader from '@/components/dashboard/products/DeliverablesUploader';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {

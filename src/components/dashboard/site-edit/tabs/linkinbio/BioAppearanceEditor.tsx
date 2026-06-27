@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { Palette, Sparkles, Type, Zap, Space, ImagePlus } from 'lucide-react';
-import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
 const INPUT = editorInput(EDITOR_ACCENTS.brand);

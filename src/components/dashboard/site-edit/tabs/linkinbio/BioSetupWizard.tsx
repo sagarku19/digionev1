@@ -6,7 +6,7 @@ import {
   User, ImagePlus, Check, ArrowLeft, LayoutTemplate,
   Instagram, Twitter, Youtube, Linkedin, Github, Music, Globe, Trash2,
 } from 'lucide-react';
-import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import type { BioProfileData } from './BioProfileEditor';
 import BioTemplates, { type TemplateCard } from './BioTemplates';
 

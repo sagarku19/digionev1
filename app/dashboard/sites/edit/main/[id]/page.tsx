@@ -26,7 +26,7 @@ import ThemeEditor from '@/components/dashboard/site-edit/tabs/ThemeEditor';
 import BioAppearanceEditor, { type BioAppearanceData } from '@/components/dashboard/site-edit/tabs/linkinbio/BioAppearanceEditor';
 import { type SettingsData } from '@/components/dashboard/site-edit/tabs/SettingsPanel';
 import type { Section } from '@/components/dashboard/site-edit/section-defs';
-import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import type { Database, Json } from '@/types/database.types';
 
 import {

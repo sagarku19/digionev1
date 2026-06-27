@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLinkInBioSiteQuery } from '@/hooks/sites/useLinkInBioSite';
-import ImagePickerModal from '@/components/dashboard/ImagePickerModal';
+import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import LinkInBioShell from '@/components/dashboard/site-edit/editor/LinkInBioShell';
 import ProfileCard from '@/components/dashboard/site-edit/editor/ProfileCard';
 import SectionList from '@/components/dashboard/site-edit/shell/SectionList';

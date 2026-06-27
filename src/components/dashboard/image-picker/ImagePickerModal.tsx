@@ -19,17 +19,22 @@ export type ImagePickerProps = {
   currentUrl?: string;
 };
 
-type Tab = 'stock' | 'mine' | 'upload';
+type Tab = 'upload' | 'stock' | 'mine';
 type Source = { kind: 'file'; file: File } | { kind: 'fileId'; id: string } | { kind: 'url'; url: string };
 
-const TAB_BTN = (active: boolean) =>
-  `flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-md)] text-xs font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-    active ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+const RAIL_BTN = (active: boolean) =>
+  `w-full flex items-center gap-2.5 px-3 py-2.5 rounded-[var(--radius-md)] text-xs font-semibold text-left transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+    active ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
   }`;
 
 export default function ImagePickerModal({ open, onClose, onSelect, title = 'Select Image', bucket = 'creator-public', kind = 'other', currentUrl }: ImagePickerProps) {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<Tab>('stock');
+  const [tab, setTab] = useState<Tab>('upload');
+  const [visited, setVisited] = useState<Set<Tab>>(() => new Set<Tab>(['upload']));
+  const selectTab = useCallback((t: Tab) => {
+    setTab(t);
+    setVisited((prev) => (prev.has(t) ? prev : new Set(prev).add(t)));
+  }, []);
   const [source, setSource] = useState<Source | null>(null);   // identity for the network call
   const [imageSrc, setImageSrc] = useState<string | null>(null); // what CropStage renders
   const [replacesFileId, setReplacesFileId] = useState<string | null>(null);
@@ -61,7 +66,7 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
   }, [revokeObjectUrl]);
 
   const reset = useCallback(() => {
-    revokeObjectUrl(); setSource(null); setImageSrc(null); setReplacesFileId(null); setTab('stock'); setBusy(false);
+    revokeObjectUrl(); setSource(null); setImageSrc(null); setReplacesFileId(null); setTab('upload'); setVisited(new Set<Tab>(['upload'])); setBusy(false);
   }, [revokeObjectUrl]);
 
   // Unsaved-changes guard: confirm if a crop/source is staged.
@@ -169,36 +174,41 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
     >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={requestClose} />
 
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-card-lg)] border border-[var(--border)] flex flex-col overflow-hidden">
-        {/* Header */}
+      {/* Fixed-size modal — header pinned, body scrolls internally so the box never resizes on load or tab switch */}
+      <div className="relative w-full max-w-3xl h-[600px] max-h-[88vh] bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-card-lg)] border border-[var(--border)] flex flex-col overflow-hidden">
+        {/* Header (fixed) */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--border)] shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-[var(--surface-muted)] rounded-[var(--radius-md)]"><ImageIcon className="w-4 h-4 text-[var(--text-secondary)]" /></div>
             <div>
               <h2 className="text-sm font-bold text-[var(--text-primary)]">{imageSrc ? 'Crop Image' : title}</h2>
-              <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{imageSrc ? 'Adjust crop, aspect & zoom' : 'Reuse, browse stock, or upload'}</p>
+              <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{imageSrc ? 'Adjust crop, aspect & zoom' : 'Upload, browse stock, or reuse'}</p>
             </div>
           </div>
           <button onClick={requestClose} className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><X className="w-4 h-4" /></button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          {imageSrc ? (
+        {/* Body (fixed height) */}
+        {imageSrc ? (
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <CropStage imageSrc={imageSrc} busy={busy} onConfirm={handleConfirm} onUseOriginal={handleUseOriginal} onBack={() => { revokeObjectUrl(); setImageSrc(null); setSource(null); }} />
-          ) : (
-            <>
-              <div className="flex gap-1 mx-4 mt-3 p-1 bg-[var(--surface-muted)] rounded-[var(--radius-lg)]">
-                <button onClick={() => setTab('stock')} className={TAB_BTN(tab === 'stock')}><Sparkles className="w-3.5 h-3.5" />DigiOne Stock</button>
-                <button onClick={() => setTab('mine')} className={TAB_BTN(tab === 'mine')}><FolderOpen className="w-3.5 h-3.5" />My Uploads</button>
-                <button onClick={() => setTab('upload')} className={TAB_BTN(tab === 'upload')}><Upload className="w-3.5 h-3.5" />New Upload</button>
-              </div>
-              {tab === 'stock' && <StockPanel onPick={handleStock} />}
-              {tab === 'mine' && <MyUploadsPanel onPick={handleMyUpload} />}
-              {tab === 'upload' && <UploadPanel onFile={handleLocalFile} />}
-            </>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 flex">
+            {/* Left rail: Upload → Stock → Uploaded */}
+            <div className="w-44 shrink-0 border-r border-[var(--border)] p-2 space-y-1 bg-[var(--surface-muted)]/30">
+              <button onClick={() => selectTab('upload')} className={RAIL_BTN(tab === 'upload')}><Upload className="w-4 h-4 shrink-0" />New Upload</button>
+              <button onClick={() => selectTab('stock')} className={RAIL_BTN(tab === 'stock')}><Sparkles className="w-4 h-4 shrink-0" />DigiOne Stock</button>
+              <button onClick={() => selectTab('mine')} className={RAIL_BTN(tab === 'mine')}><FolderOpen className="w-4 h-4 shrink-0" />My Uploads</button>
+            </div>
+            {/* Content — each panel stays mounted once visited, so switching tabs is instant (no remount/refetch) */}
+            <div className="flex-1 min-w-0 overflow-y-auto">
+              <div className={tab === 'upload' ? '' : 'hidden'}><UploadPanel onFile={handleLocalFile} /></div>
+              {visited.has('stock') && <div className={tab === 'stock' ? '' : 'hidden'}><StockPanel onPick={handleStock} /></div>}
+              {visited.has('mine') && <div className={tab === 'mine' ? '' : 'hidden'}><MyUploadsPanel onPick={handleMyUpload} /></div>}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Drag-anywhere overlay */}

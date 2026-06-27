@@ -95,7 +95,7 @@ and also subscription payment and its table
 
 
 next-
-Storage > Earning > Table Update
+Storage > Earning > Table Update > subscription
 
 
 Audit 25-06-2026- Do this after Coplete auth setup
@@ -104,3 +104,15 @@ also if a user signup on creator account using google auth c=verify mobile if as
 
 When any new user comes to dashboard for the forst ask something about their interests aand other type of question and save that to customize and get feeback time to time
 
+
+profile picture is not showing when do google o auth fetch from it but not showing
+
+also update the all site db table
+table naming convention
+
+list out all the filees and folder do a little commnet in all like production app, and rmove the unnecessary ones.
+create md files everywhere it neededd
+
+
+
+if a image is uplaod and then it change, then delete the old also from storage.

@@ -3,9 +3,6 @@
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const FILENAME_MAX = 200;
-// Allowlist: letters, digits, dot, hyphen, underscore. Blocks path separators
-// (/, \), parent refs (..), control chars, and unicode lookalikes.
-const FILENAME_SAFE_RE = /^[A-Za-z0-9._-]+$/;
 
 export function isUuid(v: unknown): v is string {
   return typeof v === 'string' && UUID_RE.test(v);
@@ -14,11 +11,14 @@ export function isUuid(v: unknown): v is string {
 export function sanitizeFilename(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
-  const collapsed = trimmed.replace(/\s+/g, '_');
-  if (collapsed.length > FILENAME_MAX) return null;
-  if (!FILENAME_SAFE_RE.test(collapsed)) return null;
-  // Reject any name that resolves to a parent ref or starts with a dot
-  // (defense in depth on top of the regex).
-  if (collapsed === '.' || collapsed === '..' || collapsed.startsWith('.')) return null;
-  return collapsed;
+  // Replace any run of disallowed characters (whitespace, parentheses, slashes,
+  // unicode, etc.) with a single underscore so ordinary names like
+  // "digionev1-main (2).zip" are accepted instead of rejected. Path separators
+  // (/, \) become "_", so traversal is impossible.
+  let safe = trimmed.replace(/[^A-Za-z0-9._-]+/g, '_').replace(/_{2,}/g, '_');
+  if (safe.length > FILENAME_MAX) safe = safe.slice(0, FILENAME_MAX);
+  // Defense in depth: never allow a name that is only dots, a hidden/dotfile,
+  // or that resolves to a parent ref.
+  if (!safe || safe === '.' || safe === '..' || safe.startsWith('.')) return null;
+  return safe;
 }
