@@ -83,10 +83,15 @@ export async function POST(req: Request) {
       crop: { ...crop, sourceUrl },
     });
 
-    // Replace/re-crop: soft-delete the old derivative (orphan cleanup).
+    // Replace/re-crop: remove the old derivative's R2 object AND soft-delete its
+    // row so the replaced image doesn't leak bytes/quota.
     if (typeof body.replacesFileId === 'string') {
-      const { data: old } = await serviceDb.from('storage_files').select('id, owner_id').eq('id', body.replacesFileId).maybeSingle();
-      if (old && old.owner_id === creatorId) await softDelete(serviceDb, old.id, creatorId);
+      const { data: old } = await serviceDb.from('storage_files')
+        .select('id, owner_id, bucket, object_key').eq('id', body.replacesFileId).is('deleted_at', null).maybeSingle();
+      if (old && old.owner_id === creatorId) {
+        try { await storage.delete({ bucket: old.bucket, objectKey: old.object_key }); } catch { /* already gone */ }
+        await softDelete(serviceDb, old.id, creatorId);
+      }
     }
 
     return json(reqId, { fileId: row.id, publicUrl: publicUrlFor('creator-public', objectKey), objectKey }, 200);

@@ -14,7 +14,7 @@ async function fetchMyMedia(): Promise<MediaItem[]> {
   const res = await fetch('/api/media/list', { cache: 'no-store' });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? 'Failed to load media');
-  return data.files as MediaItem[];
+  return data.images as MediaItem[];
 }
 
 export function useMyMedia(enabled = true) {

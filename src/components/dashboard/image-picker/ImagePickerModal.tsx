@@ -47,22 +47,24 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
   }, []);
 
   // Pick a local file: revoke the previous object URL BEFORE creating the next.
+  // NOTE: do NOT clear replacesFileId here — when the picker was opened on an
+  // existing placement (currentUrl -> a derivative), choosing ANY new image must
+  // still replace + delete the old one. Only reset()/handleClose clears it.
   const handleLocalFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return;
     revokeObjectUrl();
     const url = URL.createObjectURL(file);
     objectUrlRef.current = url;
     setSource({ kind: 'file', file });
-    setReplacesFileId(null);
     setImageSrc(url);
   }, [revokeObjectUrl]);
 
   const handleMyUpload = useCallback((sel: { fileId: string; url: string }) => {
-    revokeObjectUrl(); setSource({ kind: 'fileId', id: sel.fileId }); setReplacesFileId(null); setImageSrc(sel.url);
+    revokeObjectUrl(); setSource({ kind: 'fileId', id: sel.fileId }); setImageSrc(sel.url);
   }, [revokeObjectUrl]);
 
   const handleStock = useCallback((url: string) => {
-    revokeObjectUrl(); setSource({ kind: 'url', url }); setReplacesFileId(null); setImageSrc(url);
+    revokeObjectUrl(); setSource({ kind: 'url', url }); setImageSrc(url);
   }, [revokeObjectUrl]);
 
   const reset = useCallback(() => {

@@ -28,7 +28,7 @@
 | `/dashboard/marketing/leads` | Captured leads — list, search, site filter, CSV export | `useGuestLeads` | — | — | — |
 | `/dashboard/marketing/referrals` | Referral codes — create, toggle, delete, per-code analytics | `useReferrals` | — | — | reads `referral_codes`, `order_referrals` |
 | `/dashboard/marketing/services` | Creator services (1:1, retainer, audit) + booking management | `useServices` | — | — | reads `services`, `service_bookings` |
-| `/dashboard/media` | Media library — browse/upload Supabase Storage, folder view | — | — | — | direct `createClient` + `getCreatorProfileId`; bucket `uploads` |
+| `/dashboard/media` | Media library — My Assets (R2 images + product files) / DigiOne Stock tabs, type filter, preview, copy URL, hard-cascade delete | `useOwnAssets`, `useDigioneStock` (`@/hooks/storage/useMediaLibrary`) | `PageHeader`, `Card`, `EmptyState` | — | `GET /api/media/list` (own images + signed deliverable files), `POST /api/media/delete`; reads `public_images` (browser) for stock |
 | `/dashboard/notifications` | Notification feed — read/unread, mark-all-read | `useNotifications` | `PageHeader`, `Card`, `EmptyState`, `Skeleton` | — | — |
 | `/dashboard/orders` | Order list — detail drawer, status filter, CSV export | `useOrders` | `PageHeader`, `EmptyState`, `Skeleton` | — | reads `orders` |
 | `/dashboard/payouts` | Redirect → `/dashboard/earnings` | — | — | — | Server-side redirect only |
