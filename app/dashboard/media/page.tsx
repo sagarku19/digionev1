@@ -4,9 +4,9 @@
 //  • DigiOne Stock: read-only public stock images (public_images)
 // Data via TanStack hooks (useOwnAssets / useDigioneStock). Tokens only, lucide only.
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  ImageIcon, FileText, File as FileIcon, Archive, Search, Copy, Check, Trash2,
+  ImageIcon, FileText, File as FileIcon, Archive, Copy, Check, Trash2,
   Download, Eye, X, FolderOpen, Sparkles, HardDrive,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -37,7 +37,6 @@ export default function MediaPage() {
   const { stock, isLoading: stockLoading } = useDigioneStock(source === 'digione');
 
   const [type, setType] = useState<TypeFilter>('all');
-  const [search, setSearch] = useState('');
   const [copiedId, setCopiedId] = useState('');
   const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<OwnImage | null>(null);
@@ -52,10 +51,9 @@ export default function MediaPage() {
     setTimeout(() => setCopiedId(''), 1800);
   };
 
-  const q = search.trim().toLowerCase();
-  const ownImages = useMemo(() => images.filter((i) => !q || i.name.toLowerCase().includes(q)), [images, q]);
-  const ownFiles = useMemo(() => files.filter((f) => !q || f.name.toLowerCase().includes(q) || (f.productName ?? '').toLowerCase().includes(q)), [files, q]);
-  const stockImages = useMemo(() => stock.filter((s) => !q || s.name.toLowerCase().includes(q)), [stock, q]);
+  const ownImages = images;
+  const ownFiles = files;
+  const stockImages = stock;
 
   const showImages = type === 'all' || type === 'images';
   const showFiles = type === 'all' || type === 'files';
@@ -96,20 +94,6 @@ export default function MediaPage() {
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-5">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search assets…"
-              className="w-full pl-9 pr-9 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
 
       {/* ── My Assets ── */}
       {source === 'mine' && (
@@ -119,6 +103,17 @@ export default function MediaPage() {
           <Card><EmptyState icon={HardDrive} title="No assets yet" description="Images you upload through the picker and files you add to products appear here." /></Card>
         ) : (
           <div className="space-y-8">
+            {showFiles && ownFiles.length > 0 && (
+              <section>
+                <SectionLabel icon={FileIcon} label="Product files" count={ownFiles.length} />
+                <Card padded={false}>
+                  <div className="divide-y divide-[var(--border-subtle)]">
+                    {ownFiles.map((f) => <FileRow key={f.id} file={f} />)}
+                  </div>
+                </Card>
+              </section>
+            )}
+
             {showImages && ownImages.length > 0 && (
               <section>
                 <SectionLabel icon={ImageIcon} label="Images" count={ownImages.length} />
@@ -132,17 +127,6 @@ export default function MediaPage() {
                     />
                   ))}
                 </div>
-              </section>
-            )}
-
-            {showFiles && ownFiles.length > 0 && (
-              <section>
-                <SectionLabel icon={FileIcon} label="Product files" count={ownFiles.length} />
-                <Card padded={false}>
-                  <div className="divide-y divide-[var(--border-subtle)]">
-                    {ownFiles.map((f) => <FileRow key={f.id} file={f} />)}
-                  </div>
-                </Card>
               </section>
             )}
 
