@@ -148,7 +148,7 @@ export default function Sidebar() {
       <button
         onClick={() => setIsOpen(true)}
         className="md:hidden fixed top-2.5 left-3 p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all active:scale-95"
-        style={{ zIndex: 9999 }}
+        style={{ zIndex: 33 }}
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -157,7 +157,7 @@ export default function Sidebar() {
       {visible && (
         <div
           className={`fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
-          style={{ zIndex: 99998 }}
+          style={{ zIndex: 34 }}
           onClick={close}
         />
       )}
@@ -172,7 +172,7 @@ export default function Sidebar() {
           transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
           ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
-        style={{ zIndex: 99999 }}
+        style={{ zIndex: 35 }}
       >
 
         {/* ── Logo ── */}
