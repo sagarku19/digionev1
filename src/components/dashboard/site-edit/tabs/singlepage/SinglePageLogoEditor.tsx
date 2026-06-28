@@ -4,6 +4,7 @@ import React from 'react';
 import { Image, AlignLeft, AlignCenter, AlignRight, X, LayoutTemplate, Type, Circle, Square, Minus, Maximize2, SeparatorHorizontal } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
 import { INPUT, FieldLabel, SectionCard } from './_shared';
+import { useConfirm } from '@/hooks/useConfirm';
 
 const PLACEMENT_OPTIONS = [
   { id: 'top-bar' as const, label: 'Top Bar', desc: 'Fixed header at the very top' },
@@ -39,6 +40,7 @@ export default function SinglePageLogoEditor({
   data: SinglePageContentData;
   onChange: (d: SinglePageContentData) => void;
 }) {
+  const { confirm, confirmDialog } = useConfirm();
   const placement = data.logoPlacement || 'top-bar';
   const alignment = data.headerAlignment || 'center';
   const logoShape = data.logoShape || 'free';
@@ -74,7 +76,7 @@ export default function SinglePageLogoEditor({
               onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <button
-              onClick={() => onChange({ ...data, logoUrl: '' })}
+              onClick={async () => { if (await confirm({ title: 'Remove logo?', description: 'The logo will be cleared from your header. The image stays in your Media Library.' })) onChange({ ...data, logoUrl: '' }); }}
               className="absolute top-2 right-2 p-1.5 bg-[var(--danger)] text-[var(--text-on-brand)] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <X className="w-3 h-3" />
@@ -306,6 +308,7 @@ export default function SinglePageLogoEditor({
         </div>
       </SectionCard>
 
+      {confirmDialog}
     </div>
   );
 }

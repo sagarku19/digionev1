@@ -12,6 +12,7 @@ import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/Unsave
 import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
 import DeliverablesUploader from '@/components/dashboard/products/DeliverablesUploader';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useConfirm } from '@/hooks/useConfirm';
 import {
   FileText, IndianRupee, HardDrive, Megaphone, Settings,
   ArrowLeft, Save, ImagePlus, Image as ImageIcon,
@@ -247,6 +248,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   const [dirty, setDirty] = useState(false);
   const [picker, setPicker] = useState<null | 'thumbnail' | 'gallery'>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { confirm, confirmDialog } = useConfirm();
 
   // Local edits layered on top of the DB row
   const [edits, setEdits] = useState<Partial<ProductRow>>({});
@@ -457,7 +459,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                         <img src={formData.thumbnail_url} alt="Thumbnail" className="max-h-52 w-full object-contain" />
                         <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/50 opacity-0 transition group-hover:opacity-100">
                           <button onClick={() => setPicker('thumbnail')} className="rounded-lg bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Change</button>
-                          <button onClick={() => patch({ thumbnail_url: null })} className="rounded-lg bg-[var(--danger)] px-4 py-2 text-sm font-semibold text-[var(--text-on-brand)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Remove</button>
+                          <button onClick={async () => { if (await confirm({ title: 'Remove cover image?', description: 'The cover will be cleared. The image stays in your Media Library.' })) patch({ thumbnail_url: null }); }} className="rounded-lg bg-[var(--danger)] px-4 py-2 text-sm font-semibold text-[var(--text-on-brand)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Remove</button>
                         </div>
                       </div>
                     ) : (
@@ -561,7 +563,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={img} alt={`Gallery ${i + 1}`} className="h-full w-full object-cover" />
                         <button
-                          onClick={() => patch({ images: images.filter((_, idx) => idx !== i) as Json })}
+                          onClick={async () => { if (await confirm({ title: 'Remove image?', description: 'This image will be removed from the gallery. It stays in your Media Library.' })) patch({ images: images.filter((_, idx) => idx !== i) as Json }); }}
                           aria-label="Remove image"
                           className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition hover:bg-black/80 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                         >
@@ -704,6 +706,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
       </div>
 
       {/* ── Modals ── */}
+      {confirmDialog}
       {picker && (
         <ImagePickerModal
           open

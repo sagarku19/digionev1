@@ -4,6 +4,7 @@ import React from 'react';
 import { ImageIcon } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
 import { INPUT, FieldLabel } from './_shared';
+import { useConfirm } from '@/hooks/useConfirm';
 
 export type { SinglePageContentData };
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function SinglePageHeroEditor({ data, onChange }: Props) {
+  const { confirm, confirmDialog } = useConfirm();
   return (
     <div className="space-y-5 rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]">
       <div>
@@ -39,7 +41,7 @@ export default function SinglePageHeroEditor({ data, onChange }: Props) {
           <img src={data.heroImage} alt="Hero preview" className="w-full h-44 object-cover" />
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
             <button
-              onClick={() => onChange({ ...data, heroImage: '' })}
+              onClick={async () => { if (await confirm({ title: 'Remove hero image?', description: 'The hero image will be cleared. The image stays in your Media Library.' })) onChange({ ...data, heroImage: '' }); }}
               className="px-4 py-2 bg-[var(--danger)] text-[var(--text-on-brand)] rounded-full text-xs font-semibold hover:scale-105 transition-transform shadow-md"
             >
               Remove Image
@@ -47,6 +49,7 @@ export default function SinglePageHeroEditor({ data, onChange }: Props) {
           </div>
         </div>
       )}
+      {confirmDialog}
     </div>
   );
 }
