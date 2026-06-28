@@ -28,15 +28,8 @@ export default function DeliverablesUploader({ productId }: { productId: string 
   // an explicit Upload click + confirm.
   const onFiles = (picked: File[]) => setStaged((p) => [...p, ...picked]);
 
-  const startUpload = async () => {
+  const startUpload = () => {
     if (staged.length === 0) return;
-    const ok = await confirm({
-      title: 'Upload files?',
-      description: `Upload ${staged.length} file${staged.length > 1 ? 's' : ''}? Buyers will be able to download them after purchase.`,
-      confirmLabel: 'Upload',
-      isDestructive: false,
-    });
-    if (!ok) return;
     staged.forEach((f) => retryFiles.current.set(`${f.name}-${f.size}`, f));
     void uploadFiles(staged);
     setStaged([]);
