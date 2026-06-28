@@ -12,6 +12,7 @@ import {
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useOwnAssets, useDigioneStock, type OwnImage, type OwnFile, type StockImage } from '@/hooks/storage/useMediaLibrary';
 import { formatBytes } from '@/lib/format-bytes';
 
@@ -58,13 +59,6 @@ export default function MediaPage() {
   const showImages = type === 'all' || type === 'images';
   const showFiles = type === 'all' || type === 'files';
   const mineEmpty = ownImages.length === 0 && ownFiles.length === 0;
-
-  const confirmDelete = () => {
-    if (!deleteTarget) return;
-    deleteImage(deleteTarget.id);
-    showToast('Deleted');
-    setDeleteTarget(null);
-  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -171,22 +165,15 @@ export default function MediaPage() {
         </div>
       )}
 
-      {/* Delete confirm (own images, hard-cascade) */}
-      {deleteTarget && (
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
-          <Card className="max-w-sm w-full !shadow-[var(--shadow-lg)]">
-            <div className="w-11 h-11 rounded-full bg-[var(--danger-bg)] flex items-center justify-center mb-4"><Trash2 className="w-5 h-5 text-[var(--danger)]" /></div>
-            <h3 className="font-semibold text-[var(--text-primary)] mb-1">Delete original?</h3>
-            <p className="text-sm text-[var(--text-secondary)] mb-5">
-              This permanently deletes <span className="font-medium text-[var(--text-primary)]">{deleteTarget.name}</span> AND every cropped version made from it. Any product cover, avatar, or banner using those crops will break.
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2 border border-[var(--border)] rounded-[var(--radius-sm)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
-              <button onClick={confirmDelete} className="flex-1 py-2 bg-[var(--danger)] hover:opacity-90 text-[var(--text-on-brand)] rounded-[var(--radius-sm)] text-sm font-medium transition flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><Trash2 className="w-4 h-4" />Delete</button>
-            </div>
-          </Card>
-        </div>
-      )}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) { deleteImage(deleteTarget.id); showToast('Deleted'); } }}
+        title="Delete original?"
+        description={deleteTarget ? `This permanently deletes "${deleteTarget.name}" AND every cropped version made from it. Any product cover, avatar, or banner using those crops will break.` : ''}
+        confirmLabel="Delete"
+        isDestructive
+      />
 
       {toast && (
         <div className="fixed bottom-6 right-6 z-[100] flex items-center gap-2 px-4 py-2.5 bg-[var(--accent)] text-[var(--accent-fg)] text-sm font-medium rounded-[var(--radius-md)] shadow-[var(--shadow-lg)]">

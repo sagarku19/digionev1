@@ -1,13 +1,15 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { useProductFiles } from '@/hooks/products/useProductFiles';
+import { useProductFiles, type ProductFile } from '@/hooks/products/useProductFiles';
 import { formatBytes } from '@/lib/format-bytes';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Upload, File as FileIcon, Trash2, Loader2, AlertCircle, RotateCcw, X } from 'lucide-react';
 
 export default function DeliverablesUploader({ productId }: { productId: string }) {
   const { files, usedBytes, quotaBytes, isLoading, tasks, uploadFiles, retryTask, removeTask, abortUploads, deleteFile } = useProductFiles(productId);
   const inputRef = useRef<HTMLInputElement>(null);
   const [over, setOver] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ProductFile | null>(null);
   const retryFiles = useRef<Map<string, File>>(new Map());
 
   // warn before leaving while uploads are running
@@ -85,11 +87,21 @@ export default function DeliverablesUploader({ productId }: { productId: string 
             <div key={f.id} className="flex items-center gap-3 px-4 py-3">
               <div className="w-9 h-9 rounded-[var(--radius-md)] bg-[var(--surface-muted)] border border-[var(--border)] flex items-center justify-center shrink-0"><FileIcon className="w-4 h-4 text-[var(--text-secondary)]" /></div>
               <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-[var(--text-primary)] truncate">{f.name}</p><p className="text-xs text-[var(--text-tertiary)]">{formatBytes(f.size)} · {new Date(f.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p></div>
-              <button onClick={() => { if (window.confirm(`Delete ${f.name}? Buyers will no longer be able to download it.`)) deleteFile(f.id); }} className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><Trash2 className="w-4 h-4" /></button>
+              <button onClick={() => setDeleteTarget(f)} className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><Trash2 className="w-4 h-4" /></button>
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => { if (deleteTarget) deleteFile(deleteTarget.id); }}
+        title="Delete file?"
+        description={deleteTarget ? `"${deleteTarget.name}" will be permanently removed. Buyers will no longer be able to download it.` : ''}
+        confirmLabel="Delete"
+        isDestructive
+      />
     </div>
   );
 }
