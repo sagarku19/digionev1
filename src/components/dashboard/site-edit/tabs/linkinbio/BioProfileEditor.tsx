@@ -7,6 +7,7 @@ import {
   Plus, Trash2, Eye, EyeOff, ImagePlus, Check,
 } from 'lucide-react';
 import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
+import { useConfirm } from '@/hooks/useConfirm';
 import { editorInput, EDITOR_ACCENTS } from '../../_shared/editorStyles';
 
 const INPUT = editorInput(EDITOR_ACCENTS.brand);
@@ -42,6 +43,7 @@ export default function BioProfileEditor({
   onChange: (data: BioProfileData) => void;
 }) {
   const [imagePicker, setImagePicker] = useState<{ open: boolean; field: 'avatar' | 'cover' }>({ open: false, field: 'avatar' });
+  const { confirm, confirmDialog } = useConfirm();
 
   const updateSocial = (index: number, field: keyof SocialLink, value: string | boolean) => {
     const next = [...data.socialLinks];
@@ -78,27 +80,44 @@ export default function BioProfileEditor({
         {/* Visual mock header */}
         <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)]">
           <div className="relative flex items-end justify-between px-6 py-6">
-            <button
-              type="button"
-              onClick={() => setImagePicker({ open: true, field: 'avatar' })}
-              className="group relative z-10 cursor-pointer rounded-full focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-            >
-              <div
-                className={`flex h-24 w-24 items-center justify-center overflow-hidden bg-[var(--surface)] shadow-[var(--shadow-card)] transition-all duration-300
-                  ${data.avatarShape === 'square' ? 'rounded-[var(--radius-lg)]' : data.avatarShape === 'rounded' ? 'rounded-[2rem]' : 'rounded-full'}
-                  ${data.avatarBorder !== false ? 'border-4 border-[var(--surface)]' : 'border border-[var(--border)]'}
-                `}
+            <div className="relative z-10">
+              <button
+                type="button"
+                onClick={() => setImagePicker({ open: true, field: 'avatar' })}
+                className="group relative cursor-pointer rounded-full focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               >
-                {data.avatarUrl ? (
-                  <img src={data.avatarUrl} alt="Avatar" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                ) : (
-                  <User className="h-10 w-10 text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--text-secondary)]" />
-                )}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                  <ImagePlus className="h-6 w-6 text-white drop-shadow-md" />
+                <div
+                  className={`flex h-24 w-24 items-center justify-center overflow-hidden bg-[var(--surface)] shadow-[var(--shadow-card)] transition-all duration-300
+                    ${data.avatarShape === 'square' ? 'rounded-[var(--radius-lg)]' : data.avatarShape === 'rounded' ? 'rounded-[2rem]' : 'rounded-full'}
+                    ${data.avatarBorder !== false ? 'border-4 border-[var(--surface)]' : 'border border-[var(--border)]'}
+                  `}
+                >
+                  {data.avatarUrl ? (
+                    <img src={data.avatarUrl} alt="Avatar" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  ) : (
+                    <User className="h-10 w-10 text-[var(--text-tertiary)] transition-colors group-hover:text-[var(--text-secondary)]" />
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <ImagePlus className="h-6 w-6 text-white drop-shadow-md" />
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              {data.avatarUrl && (
+                <button
+                  type="button"
+                  aria-label="Remove profile picture"
+                  title="Remove"
+                  onClick={async () => {
+                    if (await confirm({ title: 'Remove profile picture?', description: 'Your avatar will be cleared from the page. The image stays in your Media Library.' })) {
+                      onChange({ ...data, avatarUrl: '' });
+                    }
+                  }}
+                  className="absolute -right-1.5 -top-1.5 z-20 rounded-full border border-[var(--border)] bg-[var(--surface)] p-1 text-[var(--text-tertiary)] shadow-[var(--shadow-sm)] transition-colors hover:border-[var(--danger)]/40 hover:text-[var(--danger)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
 
             {/* Shape toggles */}
             <div className="flex gap-1.5 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] p-1.5">
@@ -247,6 +266,7 @@ export default function BioProfileEditor({
         }}
         title={imagePicker.field === 'avatar' ? 'Select Profile Avatar' : 'Select Cover Image'}
       />
+      {confirmDialog}
     </div>
   );
 }
