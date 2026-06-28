@@ -74,12 +74,40 @@ export default function BioProfileEditor({
           <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
             <ImagePlus className="h-4 w-4 text-[var(--brand)]" /> Identity Media
           </h3>
-          <p className="mt-1 text-[13px] text-[var(--text-secondary)]">Tap the avatar below to upload your profile picture.</p>
+          <p className="mt-1 text-[13px] text-[var(--text-secondary)]">Tap the avatar to set your profile picture, and add a cover banner.</p>
         </div>
 
         {/* Visual mock header */}
         <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)]">
-          <div className="relative flex items-end justify-between px-6 py-6">
+          {data.coverImageUrl && (
+            <img src={data.coverImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          )}
+          {/* Cover controls */}
+          <div className="absolute right-2 top-2 z-20 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setImagePicker({ open: true, field: 'cover' })}
+              className="rounded-[var(--radius-sm)] bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm transition hover:bg-black/70 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            >
+              {data.coverImageUrl ? 'Change cover' : 'Add cover'}
+            </button>
+            {data.coverImageUrl && (
+              <button
+                type="button"
+                title="Remove cover"
+                aria-label="Remove cover image"
+                onClick={async () => {
+                  if (await confirm({ title: 'Remove cover image?', description: 'The cover banner will be cleared from your page. The image stays in your Media Library.' })) {
+                    onChange({ ...data, coverImageUrl: '' });
+                  }
+                }}
+                className="rounded-[var(--radius-sm)] bg-black/55 p-1.5 text-white backdrop-blur-sm transition hover:bg-[var(--danger)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="relative z-10 flex items-end justify-between px-6 py-6">
             <div className="relative z-10">
               <button
                 type="button"
