@@ -32,13 +32,9 @@ function isAllowedSourceUrl(url: string): boolean {
 
 export async function POST(req: Request) {
   const reqId = req.headers.get('x-request-id') ?? crypto.randomUUID();
-  const T: Record<string, number> = {};
-  let mark = Date.now();
-  const lap = (k: string) => { T[k] = Date.now() - mark; mark = Date.now(); };
   try {
     const cookieClient = await createClient();
     const { data: { user } } = await cookieClient.auth.getUser();
-    lap('auth');
     if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const body = await req.json().catch(() => null) as {
@@ -69,19 +65,16 @@ export async function POST(req: Request) {
     } else {
       return json(reqId, { error: 'sourceFileId or an allowed sourceUrl required' }, 400);
     }
-    lap('fetchSource');
 
     const dim = await probe(sourceBuf);
     const crop = parseCrop(body.crop, dim);
     const webp = await cropToWebp(sourceBuf, crop);
-    lap('sharp');
 
     const ts = Date.now();
     const safeName = sanitizeFilename(`crop_${ts}.webp`)!;
     const objectKey = buildObjectKey('creator-public', { ts, safeName, creatorId, kind, derived: true });
     const cfg = resolveBucket('creator-public');
     await storage.putObject({ bucket: cfg.name, objectKey, body: webp.data, contentType: webp.contentType });
-    lap('r2put');
 
     const row = await insertFile(serviceDb, {
       owner_id: creatorId, bucket: cfg.name, object_key: objectKey, file_name: safeName,
@@ -89,8 +82,6 @@ export async function POST(req: Request) {
       product_id: null, parent_file_id: parentFileId,
       crop: { ...crop, sourceUrl },
     });
-    lap('db');
-    console.warn('[media/derive] timing', JSON.stringify({ ...T, srcBytes: sourceBuf.length, outBytes: webp.size }));
 
     // Replace/re-crop: remove the old derivative's R2 object AND soft-delete its
     // row so the replaced image doesn't leak bytes/quota.

@@ -23,13 +23,9 @@ function json(reqId: string, body: unknown, status: number) {
 
 export async function POST(req: Request) {
   const reqId = req.headers.get('x-request-id') ?? crypto.randomUUID();
-  const T: Record<string, number> = {};
-  let mark = Date.now();
-  const lap = (k: string) => { T[k] = Date.now() - mark; mark = Date.now(); };
   try {
     const cookieClient = await createClient();
     const { data: { user } } = await cookieClient.auth.getUser();
-    lap('auth');
     if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const form = await req.formData().catch(() => null);
@@ -47,27 +43,21 @@ export async function POST(req: Request) {
 
     const serviceDb = createServiceClient();
     const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, user.id);
-    lap('resolve');
     if (!creatorId) return json(reqId, { error: 'Creator profile not found' }, 403);
 
     const input = Buffer.from(await file.arrayBuffer());
-    lap('readFile');
     await probe(input); // rejects non-images
     const webp = await toWebp(input);
-    lap('sharp');
 
     const ts = Date.now();
     const objectKey = buildObjectKey(bucket, { ts, safeName, creatorId, kind });
     const cfg = resolveBucket(bucket);
     await storage.putObject({ bucket: cfg.name, objectKey, body: webp.data, contentType: webp.contentType });
-    lap('r2put');
 
     const row = await insertFile(serviceDb, {
       owner_id: creatorId, bucket: cfg.name, object_key: objectKey, file_name: safeName,
       mime_type: webp.contentType, size: webp.size, visibility: 'public', kind, product_id: null,
     });
-    lap('db');
-    console.warn('[media/upload] timing', JSON.stringify({ ...T, inBytes: input.length, outBytes: webp.size }));
 
     return json(reqId, { fileId: row.id, publicUrl: publicUrlFor(bucket, objectKey), objectKey }, 200);
   } catch {

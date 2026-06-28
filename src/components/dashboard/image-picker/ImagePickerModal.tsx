@@ -186,7 +186,11 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
             <div className="p-1.5 bg-[var(--surface-muted)] rounded-[var(--radius-md)]"><ImageIcon className="w-4 h-4 text-[var(--text-secondary)]" /></div>
             <div>
               <h2 className="text-sm font-bold text-[var(--text-primary)]">{imageSrc ? 'Crop Image' : title}</h2>
-              <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{imageSrc ? 'Adjust crop, aspect & zoom' : 'Upload, browse stock, or reuse'}</p>
+              <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5 truncate max-w-[300px]">
+                {imageSrc
+                  ? (source?.kind === 'file' ? source.file.name : 'Adjust crop, aspect & zoom')
+                  : 'Upload, browse stock, or reuse'}
+              </p>
             </div>
           </div>
           <button onClick={requestClose} disabled={busy} className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40 disabled:cursor-not-allowed"><X className="w-4 h-4" /></button>
