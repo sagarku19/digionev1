@@ -1,5 +1,5 @@
 'use client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export interface MediaItem {
   id: string;
@@ -18,6 +18,20 @@ async function fetchMyMedia(): Promise<MediaItem[]> {
 }
 
 export function useMyMedia(enabled = true) {
+  const qc = useQueryClient();
   const q = useQuery({ queryKey: ['media', 'list'], queryFn: fetchMyMedia, enabled });
-  return { images: q.data ?? [], isLoading: q.isLoading, error: q.error };
+  const del = useMutation({
+    mutationFn: async (fileId: string) => {
+      const res = await fetch('/api/media/delete', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Delete failed');
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['media', 'list'] });
+      qc.invalidateQueries({ queryKey: ['media', 'library'] });
+    },
+  });
+  return { images: q.data ?? [], isLoading: q.isLoading, error: q.error, deleteImage: del.mutate };
 }
