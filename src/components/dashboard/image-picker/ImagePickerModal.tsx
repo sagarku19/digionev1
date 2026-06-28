@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Area } from 'react-easy-crop';
-import { X, FolderOpen, Upload, ImageIcon, Sparkles } from 'lucide-react';
+import { X, FolderOpen, Upload, ImageIcon, Sparkles, Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import CropStage from './CropStage';
 import StockPanel from './StockPanel';
@@ -39,6 +39,7 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
   const [imageSrc, setImageSrc] = useState<string | null>(null); // what CropStage renders
   const [replacesFileId, setReplacesFileId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [busyLabel, setBusyLabel] = useState('Saving…');
   const [dragging, setDragging] = useState(false);
   const objectUrlRef = useRef<string | null>(null);
 
@@ -68,7 +69,7 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
   }, [revokeObjectUrl]);
 
   const reset = useCallback(() => {
-    revokeObjectUrl(); setSource(null); setImageSrc(null); setReplacesFileId(null); setTab('upload'); setVisited(new Set<Tab>(['upload'])); setBusy(false);
+    revokeObjectUrl(); setSource(null); setImageSrc(null); setReplacesFileId(null); setTab('upload'); setVisited(new Set<Tab>(['upload'])); setBusy(false); setBusyLabel('Saving…');
   }, [revokeObjectUrl]);
 
   // Unsaved-changes guard: confirm if a crop/source is staged.
@@ -149,15 +150,16 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
     setBusy(true);
     try {
       let url: string;
-      if (source.kind === 'file') { const up = await uploadOriginal(source.file); url = await derive({ sourceFileId: up.fileId, crop: area }); }
-      else if (source.kind === 'fileId') url = await derive({ sourceFileId: source.id, crop: area });
-      else url = await derive({ sourceUrl: source.url, crop: area });
+      if (source.kind === 'file') { setBusyLabel('Uploading image…'); const up = await uploadOriginal(source.file); setBusyLabel('Applying crop…'); url = await derive({ sourceFileId: up.fileId, crop: area }); }
+      else if (source.kind === 'fileId') { setBusyLabel('Applying crop…'); url = await derive({ sourceFileId: source.id, crop: area }); }
+      else { setBusyLabel('Applying crop…'); url = await derive({ sourceUrl: source.url, crop: area }); }
       finish(url);
     } catch (err) { console.error(err); setBusy(false); }
   }, [source, uploadOriginal, derive, finish]);
 
   const handleUseOriginal = useCallback(async () => {
     if (!source) return;
+    setBusyLabel(source.kind === 'file' ? 'Uploading image…' : 'Saving…');
     setBusy(true);
     try {
       if (source.kind === 'file') { const up = await uploadOriginal(source.file); finish(up.publicUrl); }
@@ -187,7 +189,7 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
               <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{imageSrc ? 'Adjust crop, aspect & zoom' : 'Upload, browse stock, or reuse'}</p>
             </div>
           </div>
-          <button onClick={requestClose} className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"><X className="w-4 h-4" /></button>
+          <button onClick={requestClose} disabled={busy} className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40 disabled:cursor-not-allowed"><X className="w-4 h-4" /></button>
         </div>
 
         {/* Body (fixed height) */}
@@ -209,6 +211,14 @@ export default function ImagePickerModal({ open, onClose, onSelect, title = 'Sel
               {visited.has('stock') && <div className={tab === 'stock' ? '' : 'hidden'}><StockPanel onPick={handleStock} /></div>}
               {visited.has('mine') && <div className={tab === 'mine' ? '' : 'hidden'}><MyUploadsPanel onPick={handleMyUpload} /></div>}
             </div>
+          </div>
+        )}
+
+        {/* Saving overlay — clear "please wait" feedback during upload/crop */}
+        {busy && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-[var(--surface)]/80 backdrop-blur-[2px]">
+            <Loader2 className="w-7 h-7 animate-spin text-[var(--brand)]" />
+            <p className="text-sm font-medium text-[var(--text-secondary)]">{busyLabel}</p>
           </div>
         )}
       </div>
