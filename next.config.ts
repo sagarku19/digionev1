@@ -17,6 +17,10 @@ import type { NextConfig } from "next";
 // So we accept the informational warning rather than break the build.
 
 const nextConfig: NextConfig = {
+  // Native / heavy server-only deps must be loaded from node_modules at runtime,
+  // not bundled by Turbopack — bundling `sharp` (native libvips) makes route
+  // handlers that use it extremely slow (or re-init it per request) in dev.
+  serverExternalPackages: ["sharp", "@aws-sdk/client-s3", "@aws-sdk/s3-request-presigner"],
   allowedDevOrigins: [
     "192.168.0.179",
     "192.168.1.8",
