@@ -502,7 +502,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                       <Field label="Base Price (INR)">
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-[var(--text-secondary)]">₹</span>
-                          <input type="number" min="0" value={formData.price || 0} onChange={(e) => patch({ price: parseFloat(e.target.value) || 0 })} className={`${INPUT} pl-8 font-mono`} />
+                          <input type="number" min="0" step="any" inputMode="decimal" placeholder="0" value={formData.price || ''} onChange={(e) => patch({ price: parseFloat(e.target.value) || 0 })} className={`${INPUT} pl-8 font-mono`} />
                         </div>
                       </Field>
                       <Field label="Compare-at Price (optional)" hint="Shows as a strikethrough original price">
