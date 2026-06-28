@@ -25,13 +25,18 @@ export async function POST(req: Request) {
     if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const body = await req.json().catch(() => null) as {
-      bucket?: unknown; objectKey?: unknown; productId?: unknown; kind?: unknown; mimeType?: unknown;
+      bucket?: unknown; objectKey?: unknown; productId?: unknown; kind?: unknown; mimeType?: unknown; fileName?: unknown;
     } | null;
     if (!body) return json(reqId, { error: 'Invalid JSON body' }, 400);
 
-    const { bucket, objectKey, productId, kind, mimeType } = body;
+    const { bucket, objectKey, productId, kind, mimeType, fileName } = body;
     const resolvedMime = typeof mimeType === 'string' && mimeType.length > 0 && mimeType.length <= 255
       ? mimeType
+      : null;
+    // Original (display) filename from the client — the object key keeps its
+    // {ts}_ prefix for uniqueness, but file_name should read cleanly.
+    const resolvedFileName = typeof fileName === 'string' && fileName.length > 0 && fileName.length <= 200
+      ? fileName
       : null;
     if (typeof bucket !== 'string' || !VALID_BUCKETS.has(bucket as PrivateBucket)) return json(reqId, { error: 'Invalid bucket' }, 400);
     if (typeof objectKey !== 'string' || objectKey.includes('..') || objectKey.startsWith('/') || objectKey.includes('\\')) {
@@ -50,12 +55,12 @@ export async function POST(req: Request) {
     if (existing) return json(reqId, { fileId: existing.id, alreadyConfirmed: true }, 200);
 
     const head = await storage.headObject({ bucket: cfg.name, objectKey });
-    const fileName = objectKey.split('/').pop() ?? objectKey;
+    const derivedName = objectKey.split('/').pop() ?? objectKey;
     const row = await insertFile(serviceDb, {
       owner_id: creatorId,
       bucket: cfg.name,
       object_key: objectKey,
-      file_name: fileName,
+      file_name: resolvedFileName ?? derivedName,
       mime_type: resolvedMime ?? head.contentType,
       size: head.size,
       visibility: 'private',

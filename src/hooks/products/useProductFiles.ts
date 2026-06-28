@@ -61,7 +61,7 @@ export function useProductFiles(productId: string) {
       await putWithProgress(pres.uploadUrl, file, (pct) => setTask(id, { progress: Math.max(5, pct) }), signal);
       const confirm = await fetch('/api/upload/confirm', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
-        body: JSON.stringify({ bucket: 'creator-content', objectKey: pres.objectKey, productId, kind: 'deliverable', mimeType: file.type || null }),
+        body: JSON.stringify({ bucket: 'creator-content', objectKey: pres.objectKey, productId, kind: 'deliverable', mimeType: file.type || null, fileName: file.name }),
       });
       const conf = await confirm.json();
       if (!confirm.ok) throw new Error(conf.error ?? 'Could not finalize upload');
