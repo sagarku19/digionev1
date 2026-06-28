@@ -39,17 +39,26 @@ export default function DeliverablesUploader({ productId }: { productId: string 
 
   return (
     <div className="space-y-4">
-      {/* Dropzone */}
+      {/* Dropzone — full when empty, compact "add more" once files exist */}
       <div
         onDrop={(e) => { e.preventDefault(); setOver(false); onFiles(Array.from(e.dataTransfer.files)); }}
         onDragOver={(e) => { e.preventDefault(); setOver(true); }}
         onDragLeave={() => setOver(false)}
         onClick={() => inputRef.current?.click()}
-        className={`flex flex-col items-center justify-center py-10 px-6 border-2 border-dashed rounded-[var(--radius-lg)] cursor-pointer transition-all ${over ? 'border-[var(--brand)] bg-[var(--brand)]/5' : 'border-[var(--border)] hover:border-[var(--brand)]/50 bg-[var(--surface-muted)]'}`}
+        className={`border-2 border-dashed rounded-[var(--radius-lg)] cursor-pointer transition-all ${over ? 'border-[var(--brand)] bg-[var(--brand)]/5' : 'border-[var(--border)] hover:border-[var(--brand)]/50 bg-[var(--surface-muted)]'} ${files.length > 0 ? 'flex items-center justify-center gap-2 py-3 px-4' : 'flex flex-col items-center justify-center py-10 px-6'}`}
       >
-        <div className="p-3 rounded-[var(--radius-lg)] mb-3 bg-[var(--surface-hover)]"><Upload className="w-6 h-6 text-[var(--text-secondary)]" /></div>
-        <p className="text-sm font-semibold text-[var(--text-primary)]">Drop deliverable files or click to select</p>
-        <p className="text-xs text-[var(--text-tertiary)] mt-1">Review them below, then upload — buyers download these after purchase</p>
+        {files.length > 0 ? (
+          <>
+            <Upload className="w-4 h-4 text-[var(--text-secondary)]" />
+            <span className="text-[13px] font-medium text-[var(--text-secondary)]">Drop or click to add more files</span>
+          </>
+        ) : (
+          <>
+            <div className="p-3 rounded-[var(--radius-lg)] mb-3 bg-[var(--surface-hover)]"><Upload className="w-6 h-6 text-[var(--text-secondary)]" /></div>
+            <p className="text-sm font-semibold text-[var(--text-primary)]">Drop deliverable files or click to select</p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-1">Review them below, then upload — buyers download these after purchase</p>
+          </>
+        )}
         <input ref={inputRef} type="file" multiple className="hidden" onChange={(e) => { onFiles(Array.from(e.target.files ?? [])); e.target.value = ''; }} />
       </div>
 
