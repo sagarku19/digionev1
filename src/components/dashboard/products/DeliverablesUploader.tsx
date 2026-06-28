@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useProductFiles } from '@/hooks/products/useProductFiles';
 import { useConfirm } from '@/hooks/useConfirm';
 import { formatBytes } from '@/lib/format-bytes';
-import { Upload, File as FileIcon, Trash2, Loader2, AlertCircle, RotateCcw, X } from 'lucide-react';
+import { Upload, File as FileIcon, Trash2, Loader2, AlertCircle, RotateCcw, X, Lock } from 'lucide-react';
 
 export default function DeliverablesUploader({ productId }: { productId: string }) {
   const { files, usedBytes, quotaBytes, isLoading, tasks, uploadFiles, retryTask, removeTask, abortUploads, deleteFile } = useProductFiles(productId);
@@ -115,6 +115,14 @@ export default function DeliverablesUploader({ productId }: { productId: string 
             );
           })}
         </div>
+      )}
+
+      {/* Delivery note */}
+      {files.length > 0 && (
+        <p className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+          <Lock className="w-3.5 h-3.5 text-[var(--text-tertiary)] shrink-0" />
+          These files are shared with the buyer only after they complete their payment.
+        </p>
       )}
 
       {/* Existing files */}
