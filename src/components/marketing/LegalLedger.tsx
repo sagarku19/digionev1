@@ -62,16 +62,18 @@ export default function LegalLedger({
         />
         <Rails className="pt-28 sm:pt-36">
           <div className="px-5 sm:px-10 lg:px-14 pb-12 sm:pb-16">
-            <Kicker index="00" route={route} />
-            <h1 className="mt-7 sm:mt-9 text-[36px] sm:text-[48px] lg:text-[56px] font-bold tracking-[-0.04em] leading-[1.05] text-[#16130F] max-w-2xl">
-              {title} <span className="text-[#E83A2E]">{accent}</span>
-            </h1>
-            <p className="mt-5 text-[15px] sm:text-[16px] font-medium text-black/50 max-w-xl leading-relaxed">
-              {sub}
-            </p>
-            <p className="font-ledger mt-6 text-[10px] tracking-[0.18em] text-black/35 uppercase">
-              Last updated {updated}
-            </p>
+            <div className="max-w-3xl mx-auto">
+              <Kicker index="00" route={route} />
+              <h1 className="mt-7 sm:mt-9 text-[36px] sm:text-[48px] lg:text-[56px] font-bold tracking-[-0.04em] leading-[1.05] text-[#16130F]">
+                {title} <span className="text-[#E83A2E]">{accent}</span>
+              </h1>
+              <p className="mt-5 text-[15px] sm:text-[16px] font-medium text-black/50 max-w-xl leading-relaxed">
+                {sub}
+              </p>
+              <p className="font-ledger mt-6 text-[10px] tracking-[0.18em] text-black/35 uppercase">
+                Last updated {updated}
+              </p>
+            </div>
           </div>
         </Rails>
       </section>
@@ -83,7 +85,7 @@ export default function LegalLedger({
           <Cross className="-bottom-[5px] -left-[5px]" />
           <Cross className="-bottom-[5px] -right-[5px]" />
           <div className="px-5 sm:px-10 lg:px-14 py-12 sm:py-16">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl mx-auto">
 
               {toc && (
                 <div className="mb-12 p-5 rounded-xl bg-[#FAF8F6] border border-black/[0.07]">

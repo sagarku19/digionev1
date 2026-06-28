@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, Library, ExternalLink, Package, FileText, BookOpen, Tag, Search } from 'lucide-react';
+import { Download, Library, ExternalLink, Package, FileText, BookOpen, Tag, Search, Loader2, AlertCircle } from 'lucide-react';
 import { useLibrary } from '@/hooks/commerce/useLibrary';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
@@ -18,10 +18,34 @@ const CATEGORY_ICON: Record<string, React.ElementType> = {
 export default function LibraryPage() {
   const { data: products = [], isLoading } = useLibrary();
   const [search, setSearch] = useState('');
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const filtered = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Deliverables live in R2, not on the product row. Mint signed URLs on demand.
+  const handleDownload = async (productId: string) => {
+    setDownloadingId(productId);
+    setDownloadError(null);
+    try {
+      const res = await fetch(`/api/deliverables/${productId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not prepare your download.');
+      if (!data.files?.length) {
+        setDownloadError('No downloadable files have been added to this product yet.');
+        return;
+      }
+      for (const file of data.files) {
+        window.open(file.signedUrl, '_blank', 'noopener');
+      }
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : 'Download failed. Please try again.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -39,6 +63,13 @@ export default function LibraryPage() {
             placeholder="Search your library..."
             className="w-full pl-9 pr-4 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow"
           />
+        </div>
+      )}
+
+      {downloadError && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-[var(--radius-md)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium border border-[var(--danger)]/20">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {downloadError}
         </div>
       )}
 
@@ -110,21 +141,23 @@ export default function LibraryPage() {
                   </div>
 
                   <div className="mt-auto flex items-center gap-2">
-                    {product.file_url ? (
-                      <a
-                        href={product.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-[var(--radius-sm)] text-xs font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        Download
-                      </a>
-                    ) : (
-                      <span className="flex-1 flex items-center justify-center py-2 bg-[var(--surface-muted)] text-[var(--text-tertiary)] rounded-[var(--radius-sm)] text-xs font-semibold cursor-not-allowed">
-                        No file yet
-                      </span>
-                    )}
+                    <button
+                      onClick={() => handleDownload(product.id)}
+                      disabled={downloadingId === product.id}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-[var(--radius-sm)] text-xs font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {downloadingId === product.id ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Preparing...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-3.5 h-3.5" />
+                          Download
+                        </>
+                      )}
+                    </button>
                     <a
                       href={`/discover/${product.id}`}
                       target="_blank"

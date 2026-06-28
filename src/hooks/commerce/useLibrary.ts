@@ -1,9 +1,7 @@
 // Logged-in buyer's purchased products. Flattens orders → order_items → products
-// and dedupes by product id.
+// and dedupes by product id. Download URLs are NOT stored on products — they are
+// minted on demand via GET /api/deliverables/[productId] (signed R2 URLs).
 // DB tables: orders, order_items, products (read only); auth.users (via supabase.auth)
-//   Note: `file_url` is selected for backwards compatibility with the existing page UI
-//   but the generated `products` row type doesn't list it; treat the joined product as
-//   loose to avoid forcing a `(supabase as any)` cast at the query builder level.
 // Query keys: ['library','list']
 "use client";
 
@@ -18,7 +16,6 @@ export interface PurchasedProduct {
   category: string | null;
   price_at_purchase: number;
   purchased_at: string;
-  file_url: string | null;
 }
 
 type RawProduct = {
@@ -27,7 +24,6 @@ type RawProduct = {
   description: string | null;
   thumbnail_url: string | null;
   category: string | null;
-  file_url?: string | null;
 };
 
 type RawItem = {
@@ -52,12 +48,12 @@ export function useLibrary() {
             order_items (
               price_at_purchase,
               products (
-                id, name, description, thumbnail_url, category, file_url
+                id, name, description, thumbnail_url, category
               )
             )
           `)
           .eq('user_id', user.id)
-          .eq('status', 'paid')
+          .eq('status', 'completed')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -73,7 +69,6 @@ export function useLibrary() {
               description: p.description,
               thumbnail_url: p.thumbnail_url,
               category: p.category,
-              file_url: p.file_url ?? null,
               price_at_purchase: item.price_at_purchase,
               purchased_at: order.created_at,
             });

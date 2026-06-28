@@ -197,6 +197,7 @@ export default function CommunityPage() {
           <Cross className="-bottom-[5px] -left-[5px]" />
           <Cross className="-bottom-[5px] -right-[5px]" />
           <div className="px-5 sm:px-10 lg:px-14 py-10 sm:py-14">
+            <div className="max-w-4xl mx-auto">
 
             {/* Tab Switcher */}
             <div className="flex items-center gap-1 p-1 bg-[#FAF8F6] border border-black/[0.08] rounded-lg w-fit mb-10">
@@ -386,6 +387,7 @@ export default function CommunityPage() {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </Rails>
       </section>

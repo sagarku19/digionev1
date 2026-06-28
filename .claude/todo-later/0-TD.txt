@@ -95,7 +95,7 @@ and also subscription payment and its table
 
 
 next-
-Storage > Earning > Table Update > subscription
+Storage > Earning > Table Update > subscription > KYC
 
 
 Audit 25-06-2026- Do this after Coplete auth setup

@@ -71,7 +71,7 @@ export default function LibraryAccountActions() {
   if (isLoading || !isLoggedIn || isCreator !== false) return null;
 
   return (
-    <div className="max-w-3xl mt-6 bg-white border border-black/[0.07] rounded-xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
+    <div className="max-w-3xl mx-auto mt-6 bg-white border border-black/[0.07] rounded-xl p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5">
       <div className="w-12 h-12 rounded-lg bg-[#FAF8F6] border border-black/[0.07] flex items-center justify-center shrink-0">
         <Store className="w-6 h-6 text-[#E83A2E]" strokeWidth={1.8} />
       </div>
