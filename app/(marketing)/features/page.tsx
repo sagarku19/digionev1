@@ -31,7 +31,7 @@ const MAIN_FEATURES = [
     title: 'Auto DMs & automation',
     desc: 'Connect your Instagram to automatically send product links when fans comment a specific keyword.',
     icon: MessageCircle,
-    route: '/dashboard/automation',
+    route: '/dashboard/integrations',
   },
   {
     title: 'Creator analytics',

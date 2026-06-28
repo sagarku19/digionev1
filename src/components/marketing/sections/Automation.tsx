@@ -80,7 +80,7 @@ export default function Automation() {
   return (
     <SectionShell
       index="04"
-      route="/dashboard/automation"
+      route="/dashboard/integrations"
       title="Automation on every channel you already use."
       sub="Wire DigiOne into the apps your audience lives in. Set the trigger once — it runs forever."
       tone="paper"
