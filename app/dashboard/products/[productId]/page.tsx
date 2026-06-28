@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProducts } from '@/hooks/products/useProducts';
+import { useProductFiles } from '@/hooks/products/useProductFiles';
 import { useCreator } from '@/hooks/creator/useCreator';
 import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
 import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/UnsavedChangesDialog';
@@ -249,6 +250,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   const [picker, setPicker] = useState<null | 'thumbnail' | 'gallery'>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { confirm, confirmDialog } = useConfirm();
+  const { files: deliverableFiles } = useProductFiles(productId);
 
   // Local edits layered on top of the DB row
   const [edits, setEdits] = useState<Partial<ProductRow>>({});
@@ -337,7 +339,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   if (!formData.thumbnail_url) mustFix.push('Add a cover image');
   if (!formData.description?.trim()) mustFix.push('Write a description');
   if (!isFree && (formData.price ?? 0) <= 0) mustFix.push('Set a price, or switch it to Free');
-  if (!formData.post_purchase_url?.trim()) mustFix.push('Add the file or access link buyers receive');
+  if (!formData.post_purchase_url?.trim() && deliverableFiles.length === 0) mustFix.push('Add a file or an access link buyers receive');
 
   const tips: string[] = [];
   if (images.length === 0) tips.push('Add gallery images for a richer page');
