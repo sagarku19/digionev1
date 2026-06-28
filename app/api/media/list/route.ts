@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { resolveBucket, publicUrlFor, storage } from '@/lib/storage';
-import { sumOwnerBytes } from '@/lib/storage/files';
 import { CREATOR_CONTENT_QUOTA_BYTES } from '@/lib/storage/quota';
 import crypto from 'crypto';
 
@@ -65,9 +64,9 @@ export async function GET(req: Request) {
       };
     }));
 
-    // Files storage usage (deliverables / creator-content) — the quota'd bucket.
-    // quotaBytes will vary per subscription once per-plan quotas land.
-    const usedBytes = await sumOwnerBytes(serviceDb, creatorId, prodCfg.name);
+    // Files storage usage (deliverables / creator-content) — summed from the rows
+    // we already fetched (no extra round-trip). quotaBytes varies per plan later.
+    const usedBytes = (fileRows ?? []).reduce((acc, r) => acc + Number(r.size ?? 0), 0);
 
     return json(reqId, { images, files, storage: { usedBytes, quotaBytes: CREATOR_CONTENT_QUOTA_BYTES } }, 200);
   } catch {
