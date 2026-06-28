@@ -67,11 +67,13 @@ function renderBody(body: string) {
 export default function BlogPostPage() {
   return (
     <main className="flex flex-col w-full overflow-hidden bg-white">
+      <section className="relative bg-white">
       <Rails className="pt-28 sm:pt-32 pb-14 sm:pb-20">
         <Cross className="-bottom-[5px] -left-[5px]" />
         <Cross className="-bottom-[5px] -right-[5px]" />
 
         <div className="px-5 sm:px-10 lg:px-14">
+          <div className="max-w-3xl mx-auto">
           <Link
             href="/blog"
             className="inline-flex items-center gap-2 text-[13px] font-semibold text-black/45 hover:text-[#16130F] transition-colors duration-200"
@@ -80,7 +82,7 @@ export default function BlogPostPage() {
             Back to Blog
           </Link>
 
-          <article className="max-w-3xl mt-8 pb-4">
+          <article className="mt-8 pb-4">
 
             {/* Meta — ledger kicker */}
             <div className="flex items-center gap-4 font-ledger text-[11px] mb-6">
@@ -144,8 +146,10 @@ export default function BlogPostPage() {
               </div>
             </div>
           </article>
+          </div>
         </div>
       </Rails>
+      </section>
     </main>
   );
 }

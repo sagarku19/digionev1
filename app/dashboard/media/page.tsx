@@ -5,9 +5,10 @@
 // Data via TanStack hooks (useOwnAssets / useDigioneStock). Tokens only, lucide only.
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   ImageIcon, FileText, File as FileIcon, Archive, Copy, Check, Trash2,
-  Download, Eye, X, FolderOpen, Sparkles, HardDrive,
+  Download, Eye, X, FolderOpen, Sparkles, HardDrive, Package, Pencil,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
@@ -80,7 +81,7 @@ export default function MediaPage() {
                 <SubItem label="Files" count={files.length} active={type === 'files'} onClick={() => setType('files')} />
               </div>
             )}
-            <NavItem icon={Sparkles} label="DigiOne Stock" active={source === 'digione'} onClick={() => setSource('digione')} />
+            <NavItem icon={Sparkles} label="DigiOne Stock Images" active={source === 'digione'} onClick={() => setSource('digione')} />
           </nav>
 
           <StorageMeter used={usedBytes} quota={quotaBytes} />
@@ -100,11 +101,11 @@ export default function MediaPage() {
             {showFiles && ownFiles.length > 0 && (
               <section>
                 <SectionLabel icon={FileIcon} label="Product files" count={ownFiles.length} />
-                <Card padded={false}>
-                  <div className="divide-y divide-[var(--border-subtle)]">
-                    {ownFiles.map((f) => <FileRow key={f.id} file={f} />)}
-                  </div>
-                </Card>
+                <div className="space-y-3">
+                  {groupFilesByProduct(ownFiles).map((group) => (
+                    <ProductFileGroup key={group.productId ?? 'unassigned'} group={group} />
+                  ))}
+                </div>
               </section>
             )}
 
@@ -245,6 +246,86 @@ function StockCard({ image, copied, onPreview, onCopy }: { image: StockImage; co
   );
 }
 
+interface ProductGroup {
+  productId: string | null;
+  productName: string | null;
+  productCover: string | null;
+  files: OwnFile[];
+  totalBytes: number;
+  latestAt: string;
+}
+
+function groupFilesByProduct(files: OwnFile[]): ProductGroup[] {
+  const map = new Map<string, ProductGroup>();
+  for (const f of files) {
+    const key = f.productId ?? '__unassigned__';
+    let g = map.get(key);
+    if (!g) {
+      g = { productId: f.productId, productName: f.productName, productCover: f.productCover, files: [], totalBytes: 0, latestAt: f.createdAt };
+      map.set(key, g);
+    }
+    g.files.push(f);
+    g.totalBytes += f.size;
+    if (f.createdAt > g.latestAt) g.latestAt = f.createdAt;
+  }
+  // Newest first — most recently added / edited products on top.
+  return [...map.values()].sort((a, b) => b.latestAt.localeCompare(a.latestAt));
+}
+
+function ProductFileGroup({ group }: { group: ProductGroup }) {
+  const title = group.productName ?? 'Unassigned files';
+  const count = group.files.length;
+
+  const headerInner = (
+    <>
+      <div className="w-11 h-11 rounded-[var(--radius-md)] bg-[var(--surface-muted)] border border-[var(--border)] overflow-hidden shrink-0 flex items-center justify-center">
+        {group.productCover
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src={group.productCover} alt={title} className="w-full h-full object-cover" />
+          : group.productId
+            ? <Package className="w-5 h-5 text-[var(--text-tertiary)]" />
+            : <FolderOpen className="w-5 h-5 text-[var(--text-tertiary)]" />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <p className="text-sm font-semibold text-[var(--text-primary)] truncate group-hover:text-[var(--brand)] transition-colors" title={title}>{title}</p>
+          {group.productId && (
+            <span className="inline-flex items-center gap-1.5 shrink-0 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1 text-[11px] font-semibold text-[var(--text-secondary)] transition-colors group-hover:border-[var(--brand)] group-hover:bg-[var(--brand)] group-hover:text-[var(--text-on-brand)]">
+              <Pencil className="w-3 h-3" /> Edit
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{count} file{count !== 1 ? 's' : ''} · {formatBytes(group.totalBytes)}</p>
+      </div>
+      <div className="shrink-0 text-right hidden sm:block">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-[var(--text-tertiary)]">Last updated</p>
+        <p className="text-xs text-[var(--text-secondary)] tabular-nums mt-0.5">{fmtDate(group.latestAt)}</p>
+      </div>
+    </>
+  );
+
+  return (
+    <Card padded={false} className="group overflow-hidden">
+      {group.productId ? (
+        <Link
+          href={`/dashboard/products/${group.productId}`}
+          title={`Edit ${title}`}
+          className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-subtle)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        >
+          {headerInner}
+        </Link>
+      ) : (
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-subtle)]">
+          {headerInner}
+        </div>
+      )}
+      <div className="divide-y divide-[var(--border-subtle)]">
+        {group.files.map((f) => <FileRow key={f.id} file={f} />)}
+      </div>
+    </Card>
+  );
+}
+
 function FileRow({ file }: { file: OwnFile }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-hover)] transition">
@@ -254,7 +335,7 @@ function FileRow({ file }: { file: OwnFile }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{file.name}</p>
         <p className="text-xs text-[var(--text-tertiary)]">
-          {formatBytes(file.size)}{file.productName ? ` · ${file.productName}` : ''} · {fmtDate(file.createdAt)}
+          {formatBytes(file.size)} · {fmtDate(file.createdAt)}
         </p>
       </div>
       {file.signedUrl && (

@@ -10,7 +10,9 @@ export interface OwnImage {
 }
 export interface OwnFile {
   id: string; name: string; size: number; mimeType: string | null;
-  signedUrl: string | null; productName: string | null; createdAt: string;
+  signedUrl: string | null;
+  productId: string | null; productName: string | null; productCover: string | null;
+  createdAt: string;
 }
 interface Storage { usedBytes: number; quotaBytes: number }
 interface OwnAssets { images: OwnImage[]; files: OwnFile[]; storage: Storage }

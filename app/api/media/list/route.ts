@@ -49,9 +49,10 @@ export async function GET(req: Request) {
 
     const productIds = [...new Set((fileRows ?? []).map((r) => r.product_id).filter((x): x is string => Boolean(x)))];
     const nameById = new Map<string, string>();
+    const coverById = new Map<string, string | null>();
     if (productIds.length) {
-      const { data: prods } = await serviceDb.from('products').select('id, name').in('id', productIds);
-      (prods ?? []).forEach((p) => nameById.set(p.id, p.name));
+      const { data: prods } = await serviceDb.from('products').select('id, name, thumbnail_url').in('id', productIds);
+      (prods ?? []).forEach((p) => { nameById.set(p.id, p.name); coverById.set(p.id, p.thumbnail_url ?? null); });
     }
 
     const files = await Promise.all((fileRows ?? []).map(async (r) => {
@@ -59,7 +60,10 @@ export async function GET(req: Request) {
       try { signedUrl = await storage.createDownloadUrl({ bucket: prodCfg.name, objectKey: r.object_key, ttlSeconds: SIGNED_TTL }); } catch { signedUrl = null; }
       return {
         id: r.id, name: r.file_name, size: Number(r.size ?? 0), mimeType: r.mime_type,
-        signedUrl, productName: r.product_id ? (nameById.get(r.product_id) ?? null) : null,
+        signedUrl,
+        productId: r.product_id ?? null,
+        productName: r.product_id ? (nameById.get(r.product_id) ?? null) : null,
+        productCover: r.product_id ? (coverById.get(r.product_id) ?? null) : null,
         createdAt: r.created_at, source: 'own' as const,
       };
     }));
