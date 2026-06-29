@@ -658,13 +658,13 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                     <Trash2 className="h-4 w-4" /> Danger Zone
                   </h3>
                   <p className="mb-4 text-sm text-[var(--text-secondary)]">
-                    Deleting this product hides it everywhere and removes buyer access. Existing orders are preserved for records.
+                    Moving this product to Trash hides it from your store and Discover. Buyers who already bought it keep their access, and existing orders are preserved. You can restore it from Trash anytime.
                   </p>
                   <button
                     onClick={() => setConfirmDelete(true)}
                     className="rounded-[var(--radius-md)] border border-[var(--danger)]/30 bg-[var(--danger-bg)] px-4 py-2 text-sm font-semibold text-[var(--danger)] transition hover:bg-[var(--danger)]/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                   >
-                    Delete Product
+                    Move to Trash
                   </button>
                 </div>
               </div>
@@ -728,10 +728,9 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
         isOpen={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         onConfirm={handleDelete}
-        title="Delete product?"
-        description="This hides the product from your store and Discover, and revokes buyer access. Existing orders keep their records. This cannot be undone from here."
-        confirmLabel="Delete product"
-        isDestructive
+        title="Move to Trash?"
+        description="This hides the product from your store and Discover. Buyers who already purchased keep their access, and existing orders keep their records. You can restore it from Trash anytime."
+        confirmLabel="Move to Trash"
       />
 
       <UnsavedChangesDialog open={!!pendingNav} saving={isUpdating} onCancel={cancel} onDiscard={discardAndLeave} onSave={saveAndLeave} />
