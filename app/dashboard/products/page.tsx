@@ -10,8 +10,10 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatINR } from '@/lib/format';
 import CreateProductModal from '@/components/dashboard/products/CreateProductModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { TrashDrawer, TrashItem } from '@/components/dashboard/TrashDrawer';
 import {
-  Plus, Package, FileText, Tag, BookOpen, Search, Edit3, Eye, ImageIcon, Filter,
+  Plus, Package, FileText, Tag, BookOpen, Search, Edit3, Eye, ImageIcon, Filter, Trash2,
 } from 'lucide-react';
 
 type StatusTab = 'all' | 'published' | 'draft';
@@ -29,7 +31,10 @@ export default function ProductsPage() {
 function ProductsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { products, isLoading, createProduct, isCreating } = useProducts();
+  const {
+    products, trashedProducts, isLoading, isLoadingTrash, createProduct, isCreating,
+    deleteProduct, restoreProduct, permanentlyDeleteProduct,
+  } = useProducts();
 
   const [modal, setModal] = useState(false);
   const [search, setSearch] = useState('');
@@ -39,6 +44,15 @@ function ProductsPageInner() {
   const [category, setCategory] = useState('digital');
   const [price, setPrice] = useState('');
   const [createError, setCreateError] = useState('');
+  const [trashOpen, setTrashOpen] = useState(false);
+  const [trashTarget, setTrashTarget] = useState<{ id: string; name: string } | null>(null);
+
+  const trashItems: TrashItem[] = trashedProducts.map((p) => ({
+    id: p.id,
+    title: p.name ?? 'Untitled',
+    subtitle: p.category ?? undefined,
+    deletedAt: p.deleted_at,
+  }));
 
   // Hydration guard — client-only product data must not drive the SSR render
   const [mounted, setMounted] = useState(false);
@@ -77,14 +91,28 @@ function ProductsPageInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const addProductButton = (
-    <button
-      onClick={openModal}
-      className="inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-sm)] bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-[var(--text-on-brand)] shadow-[var(--shadow-xs)] transition hover:bg-[var(--brand-hover)] active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-    >
-      <Plus className="h-4 w-4" />
-      Add Product
-    </button>
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => setTrashOpen(true)}
+        className="inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5 text-sm font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      >
+        <Trash2 className="h-4 w-4" />
+        Trash
+        {trashedProducts.length > 0 && (
+          <span className="rounded-full bg-[var(--surface-hover)] px-1.5 py-0.5 text-xs font-bold text-[var(--text-secondary)]">
+            {trashedProducts.length}
+          </span>
+        )}
+      </button>
+      <button
+        onClick={openModal}
+        className="inline-flex shrink-0 items-center gap-2 rounded-[var(--radius-sm)] bg-[var(--brand)] px-5 py-2.5 text-sm font-semibold text-[var(--text-on-brand)] shadow-[var(--shadow-xs)] transition hover:bg-[var(--brand-hover)] active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      >
+        <Plus className="h-4 w-4" />
+        Add Product
+      </button>
+    </div>
   );
 
   return (
@@ -97,7 +125,7 @@ function ProductsPageInner() {
               ? `${products.length} product${products.length !== 1 ? 's' : ''} in your catalog`
               : 'No products yet — create your first one.'
         }
-        action={addProductButton}
+        action={headerActions}
       />
 
       {/* Status tabs */}
@@ -205,6 +233,14 @@ function ProductsPageInner() {
                       <span className="text-xs font-medium uppercase tracking-widest opacity-50">No Cover</span>
                     </div>
                   )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setTrashTarget({ id: product.id, name: product.name ?? 'this product' }); }}
+                    className="absolute left-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)]/90 text-[var(--text-secondary)] opacity-0 shadow-[var(--shadow-xs)] backdrop-blur transition hover:bg-[var(--danger-bg)] hover:text-[var(--danger)] group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                    title="Move to Trash"
+                    aria-label="Move to Trash"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                   <div className="absolute right-3 top-3">
                     <span className={`rounded-full border px-3 py-1.5 text-xs font-bold shadow-[var(--shadow-xs)] ${product.is_published ? 'border-[var(--success)]/20 bg-[var(--success-bg)] text-[var(--success)]' : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)]'}`}>
                       {product.is_published ? 'Live' : 'Draft'}
@@ -307,6 +343,27 @@ function ProductsPageInner() {
           onClose={() => setModal(false)}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={!!trashTarget}
+        onClose={() => setTrashTarget(null)}
+        onConfirm={async () => { if (trashTarget) await deleteProduct(trashTarget.id); }}
+        title="Move to Trash?"
+        description={`"${trashTarget?.name ?? ''}" will be moved to Trash. You can restore it from Trash later.`}
+        confirmLabel="Move to Trash"
+        cancelLabel="Cancel"
+      />
+
+      <TrashDrawer
+        isOpen={trashOpen}
+        onClose={() => setTrashOpen(false)}
+        title="Trashed products"
+        items={trashItems}
+        isLoading={isLoadingTrash}
+        emptyLabel="Trash is empty"
+        onRestore={restoreProduct}
+        onPermanentDelete={permanentlyDeleteProduct}
+      />
     </div>
   );
 }
