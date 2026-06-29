@@ -32,6 +32,8 @@ DigiOne is a creator monetization platform. Creators sign up, build a storefront
 | Charts | recharts |
 | Drag & Drop | @dnd-kit |
 | Image Crop | react-easy-crop |
+| Storage | Cloudflare R2 (S3-compatible) via @aws-sdk/client-s3 + @aws-sdk/s3-request-presigner |
+| Image Processing | sharp (image → WebP on upload) |
 
 ---
 
@@ -97,21 +99,24 @@ digionev1/
 │   ├── api/                      # Server-side route handlers — 14+ routes (partial list)
 │   │   ├── checkout/             # Cashfree payment creation
 │   │   ├── webhook/cashfree/     # Payment confirmation (source of truth)
-│   │   ├── upload/               # Supabase Storage
-│   │   └── …                     # auth, sites, leads, coupons, payouts, products, linkinbio
-│   └── …                         # account, actions, payment
+│   │   ├── upload/               # Cloudflare R2 presigned uploads
+│   │   └── …                     # auth, sites, leads, coupons, payouts, products, linkinbio, media, deliverables
+│   └── …                         # account, actions, payment, user-login (buyer login)
 ├── src/
 │   ├── components/
 │   │   ├── dashboard/            # Dashboard UI (Sidebar, TopBar, editors)
 │   │   ├── storefront/           # Public creator page components
 │   │   ├── marketing/            # Landing page sections
 │   │   ├── store/                # Shared (ProductCard, CartButton)
+│   │   ├── account/              # Buyer account/library UI
+│   │   ├── auth/                 # Buyer auth modal + provider
+│   │   ├── providers/            # App-level context providers
 │   │   ├── ui/                   # Atomic primitives (DataTable, SideDrawer, etc.)
 │   │   └── assets/               # Shared SVG/image assets (DigiOneLogo, etc.)
-│   ├── hooks/                    # All TanStack Query hooks
+│   ├── hooks/                    # All TanStack Query hooks (domain subfolders)
 │   ├── lib/                      # Supabase clients, utilities, theme helpers
 │   ├── contexts/                 # React contexts (DashboardThemeContext)
-│   └── types/                    # database.types.ts (auto-generated — never edit)
+│   └── stores/                   # Zustand stores (useBuyerAuth)
 ├── types/
 │   └── database.types.ts         # Supabase schema types — source of truth
 └── supabase/                     # Config and migrations

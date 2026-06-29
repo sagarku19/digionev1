@@ -16,8 +16,9 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 |---|---|
 | `auth/` | `useAuthSession` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`) |
-| `products/` | `useProducts`, `useProductPage`, `useStoreProducts` |
+| `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
 | `commerce/` | `useOrders`, `useCustomers`, `useEarnings`, `useCart`, `useLibrary` |
+| `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
 | `analytics/` | `useAnalytics` |
 | `notifications/` | `useNotifications` |
@@ -84,7 +85,7 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useNotifications()` | `['notifications','list']` (polls every 120 s) |
 | `useOrders()` | `['orders','list']` |
 | `useProductPage(creatorId, slug)` | `['products','page', creatorId, slug]` |
-| `useProducts()` | `['products','list']` / `['products','detail', id]` |
-| `useSites()` | `['sites','list']` |
+| `useProducts()` | `['products','list']` / `['products','detail', id]` / `['products','trash']` (also `trashedProducts`, `restoreProduct`, `permanentlyDeleteProduct`) |
+| `useSites()` | `['sites','list']` / `['sites','trash']` (also `trashedSites`, `restoreSite`, `permanentlyDeleteSite`) |
 | `useStorefront(slug)` | `['storefront','detail', slug]` |
 | `useStoreProducts(creatorId)` | `['products','store', creatorId]` |
