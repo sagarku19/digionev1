@@ -75,27 +75,29 @@ export function TrashDrawer({
           {items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-3"
+              className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-3"
             >
-              <ItemIcon item={item} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{item.title}</p>
-                <p className="truncate text-xs text-[var(--text-tertiary)]">
-                  {item.subtitle ? `${item.subtitle} · ` : ''}Deleted {fmt(item.deletedAt)}
-                </p>
+              <div className="flex items-center gap-3">
+                <ItemIcon item={item} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{item.title}</p>
+                  <p className="truncate text-xs text-[var(--text-tertiary)]">
+                    {item.subtitle ? `${item.subtitle} · ` : ''}Deleted {fmt(item.deletedAt)}
+                  </p>
+                </div>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5">
+              <div className="mt-3 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-3">
                 <button
                   onClick={() => handleRestore(item.id)}
                   disabled={busyId === item.id}
-                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-2.5 py-2 text-xs font-semibold text-[var(--text-secondary)] transition hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
                   <RotateCcw className="h-3.5 w-3.5" /> Restore
                 </button>
                 <button
                   onClick={() => { setError(''); setConfirmTarget(item); }}
                   disabled={busyId === item.id}
-                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-1.5 text-xs font-semibold text-[var(--danger)] transition hover:bg-[var(--danger-bg)] disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--danger)]/20 bg-[var(--danger-bg)] px-2.5 py-2 text-xs font-semibold text-[var(--danger)] transition hover:bg-[var(--danger)]/15 disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Delete
                 </button>
