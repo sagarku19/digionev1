@@ -23,6 +23,7 @@ export function useProducts() {
           .from('products')
           .select('*')
           .eq('creator_id', profileId)
+          .is('deleted_at', null)
           .order('created_at', { ascending: false });
         if (error) throw error;
         return data ?? [];
@@ -31,6 +32,21 @@ export function useProducts() {
         throw err;
       }
     }
+  });
+
+  const { data: trashedProducts = [], isLoading: isLoadingTrash } = useQuery({
+    queryKey: ['products', 'trash'],
+    queryFn: async () => {
+      const profileId = await getCreatorProfileId();
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('creator_id', profileId)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
   });
 
   const createMutation = useMutation({
@@ -96,13 +112,66 @@ export function useProducts() {
     },
   });
 
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('products')
+        .update({ deleted_at: null })
+        .eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      revalidateStorefrontPaths(['/', '/dashboard/products']);
+    },
+  });
+
+  const permanentDeleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const profileId = await getCreatorProfileId();
+
+      // Guard: never destroy a product someone has already bought — its row,
+      // user_product_access grants, and deliverable files must survive.
+      const { count, error: countError } = await supabase
+        .from('order_items')
+        .select('id, orders!inner(creator_id, status)', { count: 'exact', head: true })
+        .eq('product_id', id)
+        .eq('orders.creator_id', profileId)
+        .eq('orders.status', 'completed');
+      if (countError) throw countError;
+      if ((count ?? 0) > 0) {
+        throw new Error(
+          `${count} customer${count === 1 ? '' : 's'} own this product, so it can't be permanently deleted. It stays archived in Trash so their downloads keep working.`,
+        );
+      }
+
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) {
+        if (error.code === '23503') {
+          throw new Error('This product powers a Product Site. Detach or delete that Product Site first, then try again.');
+        }
+        throw error;
+      }
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      revalidateStorefrontPaths(['/', '/dashboard/products']);
+    },
+  });
+
   return {
     products,
+    trashedProducts,
     isLoading,
+    isLoadingTrash,
     error,
     createProduct: createMutation.mutateAsync,
     updateProduct: updateMutation.mutateAsync,
     deleteProduct: deleteMutation.mutateAsync,
+    restoreProduct: restoreMutation.mutateAsync,
+    permanentlyDeleteProduct: permanentDeleteMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
