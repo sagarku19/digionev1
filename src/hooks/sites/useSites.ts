@@ -28,6 +28,16 @@ export type SiteWithMain = {
   linkinbio_pages: { display_name: string | null } | null;
 };
 
+// Shared column projection for the list + trash queries so the two never drift.
+// `deleted_at` is included for the trash drawer's deletion-date display.
+const SITES_SELECT = `
+  id, slug, child_slug, parent_site_id, creator_id, site_type, is_active, custom_domain, ssl_status, created_at, deleted_at,
+  site_main(title, banner_url, logo_url, meta_description),
+  site_singlepage(title),
+  linkinbio_pages(display_name),
+  parent_site:sites(slug)
+`;
+
 export function useSites() {
   const queryClient = useQueryClient();
 
@@ -57,13 +67,7 @@ export function useSites() {
 
       const { data, error } = await supabase
         .from('sites')
-        .select(`
-          id, slug, child_slug, parent_site_id, creator_id, site_type, is_active, custom_domain, ssl_status, created_at,
-          site_main(title, banner_url, logo_url, meta_description),
-          site_singlepage(title),
-          linkinbio_pages(display_name),
-          parent_site:sites(slug)
-        `)
+        .select(SITES_SELECT)
         .eq('creator_id', profile.id)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
@@ -79,13 +83,7 @@ export function useSites() {
       const profileId = await getCreatorProfileId();
       const { data, error } = await supabase
         .from('sites')
-        .select(`
-          id, slug, child_slug, parent_site_id, creator_id, site_type, is_active, custom_domain, ssl_status, created_at,
-          site_main(title, banner_url, logo_url, meta_description),
-          site_singlepage(title),
-          linkinbio_pages(display_name),
-          parent_site:sites(slug)
-        `)
+        .select(SITES_SELECT)
         .eq('creator_id', profileId)
         .not('deleted_at', 'is', null)
         .order('created_at', { ascending: false });
@@ -118,6 +116,7 @@ export function useSites() {
 
   const restoreMutation = useMutation({
     mutationFn: async (siteId: string) => {
+      // Clears the trash flag only — site stays inactive (draft) until re-published.
       const { error } = await supabase
         .from('sites')
         .update({ deleted_at: null })
