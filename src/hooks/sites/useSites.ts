@@ -4,6 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 export type SiteWithMain = {
   id: string;
@@ -64,8 +65,30 @@ export function useSites() {
           parent_site:sites(slug)
         `)
         .eq('creator_id', profile.id)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
+      if (error) throw error;
+      return (data as unknown as SiteWithMain[]) ?? [];
+    },
+  });
+
+  const { data: trashedSites = [], isLoading: isLoadingTrash } = useQuery<SiteWithMain[]>({
+    queryKey: ['sites', 'trash'],
+    queryFn: async () => {
+      const profileId = await getCreatorProfileId();
+      const { data, error } = await supabase
+        .from('sites')
+        .select(`
+          id, slug, child_slug, parent_site_id, creator_id, site_type, is_active, custom_domain, ssl_status, created_at,
+          site_main(title, banner_url, logo_url, meta_description),
+          site_singlepage(title),
+          linkinbio_pages(display_name),
+          parent_site:sites(slug)
+        `)
+        .eq('creator_id', profileId)
+        .not('deleted_at', 'is', null)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return (data as unknown as SiteWithMain[]) ?? [];
     },
@@ -75,11 +98,11 @@ export function useSites() {
     mutationFn: async (siteId: string) => {
       const { error } = await supabase
         .from('sites')
-        .update({ is_active: false })
+        .update({ deleted_at: new Date().toISOString(), is_active: false })
         .eq('id', siteId);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sites', 'list'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sites'] }),
   });
 
   const toggleActiveMutation = useMutation({
@@ -93,11 +116,36 @@ export function useSites() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sites', 'list'] }),
   });
 
+  const restoreMutation = useMutation({
+    mutationFn: async (siteId: string) => {
+      const { error } = await supabase
+        .from('sites')
+        .update({ deleted_at: null })
+        .eq('id', siteId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sites'] }),
+  });
+
+  const permanentDeleteMutation = useMutation({
+    mutationFn: async (siteId: string) => {
+      const { error } = await supabase.from('sites').delete().eq('id', siteId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sites'] }),
+  });
+
   return {
     sites,
+    trashedSites,
     isLoading,
+    isLoadingTrash,
     error,
     deleteSite: deleteMutation.mutateAsync,
+    restoreSite: restoreMutation.mutateAsync,
+    permanentlyDeleteSite: permanentDeleteMutation.mutateAsync,
     toggleActive: toggleActiveMutation.mutateAsync,
+    isRestoring: restoreMutation.isPending,
+    isPermanentlyDeleting: permanentDeleteMutation.isPending,
   };
 }
