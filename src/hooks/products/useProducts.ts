@@ -135,7 +135,7 @@ export function useProducts() {
       // user_product_access grants, and deliverable files must survive.
       const { count, error: countError } = await supabase
         .from('order_items')
-        .select('id, orders!inner(creator_id, status)', { count: 'exact', head: true })
+        .select('orders!inner(creator_id, status)', { count: 'exact', head: true })
         .eq('product_id', id)
         .eq('orders.creator_id', profileId)
         .eq('orders.status', 'completed');
@@ -175,5 +175,7 @@ export function useProducts() {
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isRestoring: restoreMutation.isPending,
+    isPermanentlyDeleting: permanentDeleteMutation.isPending,
   };
 }
