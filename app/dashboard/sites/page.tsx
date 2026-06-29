@@ -1,16 +1,18 @@
 'use client';
 // Dashboard: My Sites — list view with left-side type filter tabs.
 
-import React, { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSites, SiteWithMain } from '@/hooks/sites/useSites';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import {
   Plus, ExternalLink, MoreVertical, Store, Layers,
   CreditCard, Link2, Globe, Copy, Check,
-  Trash2, EyeOff, Eye, Clock, Pencil, AlertTriangle, X
+  Trash2, EyeOff, Eye, Clock, Pencil, type LucideIcon
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { TrashDrawer, TrashItem } from '@/components/dashboard/TrashDrawer';
 
 // ─── Type filter config ─────────────────────────────────────
 const FILTER_TABS = [
@@ -28,85 +30,9 @@ const SITE_TYPE_META: Record<string, { label: string; color: string; bg: string;
   linkinbio: { label: 'Link in Bio',   bg: 'bg-[var(--surface-muted)]', text: 'text-[var(--text-secondary)]', color: 'neutral' },
 };
 
-const SITE_TYPE_ICON: Record<string, React.ElementType> = {
+const SITE_TYPE_ICON: Record<string, LucideIcon> = {
   main: Store, single: Layers, payment: CreditCard, linkinbio: Link2,
 };
-
-// ─── Delete Confirmation Modal ──────────────────────────────
-function DeleteModal({ siteName, onConfirm, onCancel }: {
-  siteName: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
-  const [typed, setTyped] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
-
-  const canDelete = typed === siteName;
-
-  return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
-      <div className="absolute inset-0" onClick={onCancel} />
-      <div className="relative bg-[var(--surface)] rounded-[32px] shadow-[var(--shadow-lg)] w-full max-w-md border border-[var(--border)] p-6 sm:p-8 transform transition-all scale-in-95 flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="flex items-start gap-5 mb-6">
-          <div className="w-14 h-14 rounded-[20px] bg-[var(--danger-subtle)] flex items-center justify-center shrink-0 border border-[var(--danger-border)] shadow-inner">
-            <AlertTriangle className="w-7 h-7 text-[var(--danger)]" />
-          </div>
-          <div className="flex-1 pt-1">
-            <h3 className="text-xl font-extrabold text-[var(--text-primary)]">Delete site</h3>
-            <p className="text-sm text-[var(--text-secondary)] mt-1 leading-relaxed">
-              This action is permanent and cannot be undone. All layout and setting data associated with this site will be lost.
-            </p>
-          </div>
-          <button
-            onClick={onCancel}
-            className="p-2 -mr-2 -mt-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] rounded-full hover:bg-[var(--surface-hover)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Confirmation input */}
-        <div className="mb-8">
-          <label className="block text-sm font-bold text-[var(--text-primary)] mb-2">
-            Type <span className="px-2 py-0.5 rounded bg-[var(--surface-muted)] text-[var(--text-primary)] mx-1">{siteName}</span> to confirm
-          </label>
-          <input
-            ref={inputRef}
-            type="text"
-            value={typed}
-            onChange={e => setTyped(e.target.value)}
-            placeholder={siteName}
-            className="w-full px-4 py-3 border-2 border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-sm font-medium text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-0 focus:border-[var(--danger)] focus:border-[var(--border-strong)] transition-colors focus-visible:shadow-[var(--focus-ring)]"
-          />
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-3.5 text-sm font-bold text-[var(--text-secondary)] border-2 border-[var(--border)] hover:bg-[var(--surface-hover)] rounded-xl transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            Keep Site
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={!canDelete}
-            className={`flex-1 py-3.5 text-sm font-bold rounded-xl transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-              canDelete
-                ? 'bg-[var(--danger)] hover:bg-[var(--danger-hover)] text-white shadow-[var(--shadow-xs)]'
-                : 'bg-[var(--danger-subtle)] text-[var(--danger)] cursor-not-allowed opacity-70'
-            }`}
-          >
-            Yes, Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Site Row ───────────────────────────────────────────────
 function SiteRow({ site, onRequestDelete, onToggle }: {
@@ -283,16 +209,31 @@ function SitesEmptyState({ label, onClick }: { label: string; onClick: () => voi
   );
 }
 
+function siteTitle(site: SiteWithMain): string {
+  const sm = Array.isArray(site.site_main) ? site.site_main[0] : site.site_main;
+  const sp = Array.isArray(site.site_singlepage) ? site.site_singlepage[0] : site.site_singlepage;
+  const sl = Array.isArray(site.linkinbio_pages) ? site.linkinbio_pages[0] : site.linkinbio_pages;
+  return sm?.title ?? sp?.title ?? sl?.display_name ?? site.slug ?? 'Untitled';
+}
+
 // ─── Page ────────────────────────────────────────────────────
 export default function SitesPage() {
   const router = useRouter();
-  const { sites, isLoading, deleteSite, toggleActive } = useSites();
+  const {
+    sites, trashedSites, isLoading, isLoadingTrash,
+    deleteSite, restoreSite, permanentlyDeleteSite, toggleActive,
+  } = useSites();
   const [activeFilter, setActiveFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [trashOpen, setTrashOpen] = useState(false);
 
-  const handleDelete = async (id: string) => {
-    try { await deleteSite(id); } catch { /* silent */ }
-  };
+  const trashItems: TrashItem[] = trashedSites.map((s) => ({
+    id: s.id,
+    title: siteTitle(s),
+    subtitle: s.site_type,
+    deletedAt: (s as { deleted_at?: string | null }).deleted_at ?? null,
+    icon: SITE_TYPE_ICON[s.site_type] ?? Store,
+  }));
 
   const handleToggle = async (id: string, active: boolean) => {
     try { await toggleActive({ siteId: id, isActive: active }); } catch { /* silent */ }
@@ -318,13 +259,27 @@ export default function SitesPage() {
               : 'No sites yet — create your first one.'
           }
           action={
-            <button
-              onClick={() => router.push('/dashboard/sites/new')}
-              className="inline-flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-3 py-2 rounded-[var(--radius-sm)] font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-            >
-              <Plus className="w-4 h-4" />
-              Create New Site
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setTrashOpen(true)}
+                className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Trash2 className="w-4 h-4" />
+                Trash
+                {trashedSites.length > 0 && (
+                  <span className="rounded-full bg-[var(--surface-hover)] px-1.5 py-0.5 text-xs font-bold text-[var(--text-secondary)]">
+                    {trashedSites.length}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/sites/new')}
+                className="inline-flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-3 py-2 rounded-[var(--radius-sm)] font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Plus className="w-4 h-4" />
+                Create New Site
+              </button>
+            </div>
           }
         />
 
@@ -470,14 +425,27 @@ export default function SitesPage() {
         </div>
       </div>
 
-      {/* Delete confirmation modal */}
-      {deleteTarget && (
-        <DeleteModal
-          siteName={deleteTarget.name}
-          onConfirm={() => { handleDelete(deleteTarget.id); setDeleteTarget(null); }}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
+      {/* Move-to-trash confirmation */}
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => { if (deleteTarget) await deleteSite(deleteTarget.id); }}
+        title="Move to Trash?"
+        description={`"${deleteTarget?.name ?? ''}" will be moved to Trash. You can restore it from Trash later.`}
+        confirmLabel="Move to Trash"
+        cancelLabel="Cancel"
+      />
+
+      <TrashDrawer
+        isOpen={trashOpen}
+        onClose={() => setTrashOpen(false)}
+        title="Trashed sites"
+        items={trashItems}
+        isLoading={isLoadingTrash}
+        emptyLabel="Trash is empty"
+        onRestore={restoreSite}
+        onPermanentDelete={permanentlyDeleteSite}
+      />
     </>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RotateCcw, Trash2, Package } from 'lucide-react';
+import { RotateCcw, Trash2, Package, type LucideIcon } from 'lucide-react';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -12,6 +12,7 @@ export interface TrashItem {
   title: string;
   subtitle?: string;
   deletedAt: string | null;
+  icon?: LucideIcon;
 }
 
 interface TrashDrawerProps {
@@ -76,9 +77,7 @@ export function TrashDrawer({
               key={item.id}
               className="flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-3"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-tertiary)]">
-                <Package className="h-5 w-5" />
-              </div>
+              <ItemIcon item={item} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{item.title}</p>
                 <p className="truncate text-xs text-[var(--text-tertiary)]">
@@ -117,5 +116,14 @@ export function TrashDrawer({
         isDestructive
       />
     </SideDrawer>
+  );
+}
+
+function ItemIcon({ item }: { item: TrashItem }) {
+  const Icon = item.icon ?? Package;
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-tertiary)]">
+      <Icon className="h-5 w-5" />
+    </div>
   );
 }
