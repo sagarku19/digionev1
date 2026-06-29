@@ -235,6 +235,7 @@ function ProductsPageInner() {
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); setTrashTarget({ id: product.id, name: product.name ?? 'this product' }); }}
+                    onKeyDown={(e) => e.stopPropagation()}
                     className="absolute left-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)]/90 text-[var(--text-secondary)] opacity-0 shadow-[var(--shadow-xs)] backdrop-blur transition hover:bg-[var(--danger-bg)] hover:text-[var(--danger)] group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                     title="Move to Trash"
                     aria-label="Move to Trash"
