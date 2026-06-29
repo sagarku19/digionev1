@@ -5,6 +5,7 @@ import { RotateCcw, Trash2, Package } from 'lucide-react';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export interface TrashItem {
   id: string;
@@ -63,7 +64,7 @@ export function TrashDrawer({
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 rounded-[var(--radius-lg)] bg-[var(--surface-muted)] animate-pulse" />
+            <Skeleton key={i} rounded="lg" className="h-16" />
           ))}
         </div>
       ) : items.length === 0 ? (
