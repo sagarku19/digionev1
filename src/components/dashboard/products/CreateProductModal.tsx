@@ -29,11 +29,18 @@ export default function CreateProductModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-card-lg)] w-full max-w-[480px] border border-[var(--border)] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] shadow-[var(--shadow-card-lg)] w-full max-w-[540px] border border-[var(--border)] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="relative px-6 sm:px-7 pt-6 pb-5 border-b border-[var(--border)] shrink-0">
-          <h2 className="text-xl font-semibold font-display tracking-tight text-[var(--text-primary)]">Create product</h2>
-          <p className="text-sm text-[var(--text-secondary)] mt-0.5">Add a new offering to your catalog.</p>
+          <div className="flex items-center gap-3 pr-8">
+            <div className="w-10 h-10 rounded-[var(--radius-md)] bg-[var(--brand)]/10 text-[var(--brand)] flex items-center justify-center shrink-0">
+              <Package className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-xl font-semibold font-display tracking-tight text-[var(--text-primary)]">Create product</h2>
+              <p className="text-sm text-[var(--text-secondary)] mt-0.5">Add a new offering to your catalog.</p>
+            </div>
+          </div>
           <button onClick={onClose} aria-label="Close" className="absolute top-5 right-5 p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
             <X className="w-4 h-4" />
           </button>
@@ -54,9 +61,11 @@ export default function CreateProductModal({
                 const active = category === c.value;
                 return (
                   <button key={c.value} type="button" onClick={() => setCategory(c.value)}
-                    className={`group flex flex-col items-start gap-2 p-3.5 rounded-[var(--radius-md)] text-left transition-all duration-150 border focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active ? 'border-[var(--brand)] bg-[var(--brand)]/[0.06] shadow-[var(--shadow-xs)]' : 'border-[var(--border)] hover:border-[var(--brand)]/40 bg-[var(--surface)]'}`}>
-                    <c.icon className={`w-5 h-5 ${active ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]'}`} />
-                    <div>
+                    className={`group flex items-start gap-3 p-3.5 rounded-[var(--radius-md)] text-left transition-all duration-150 border focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active ? 'border-[var(--brand)] bg-[var(--brand)]/[0.06] shadow-[var(--shadow-xs)]' : 'border-[var(--border)] hover:border-[var(--brand)]/40 bg-[var(--surface)]'}`}>
+                    <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 transition-colors ${active ? 'bg-[var(--brand)] text-[var(--text-on-brand)]' : 'bg-[var(--surface-muted)] text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]'}`}>
+                      <c.icon className="w-[18px] h-[18px]" />
+                    </div>
+                    <div className="min-w-0">
                       <div className="text-[13px] font-semibold text-[var(--text-primary)]">{c.label}</div>
                       <div className="text-[11px] text-[var(--text-tertiary)] leading-tight mt-0.5">{c.desc}</div>
                     </div>
@@ -79,14 +88,19 @@ export default function CreateProductModal({
               </button>
             </div>
             <div className="relative group">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium text-[var(--text-secondary)] group-focus-within:text-[var(--brand)] transition-colors">₹</span>
+              <span className={`absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-medium transition-colors ${isFree ? 'text-[var(--success)]' : 'text-[var(--text-secondary)] group-focus-within:text-[var(--brand)]'}`}>₹</span>
               <input
                 type="number" min="0" step="any" inputMode="decimal"
                 value={price}
                 onChange={e => setPrice(e.target.value)}
                 placeholder="0"
-                className={`${INPUT} pl-8 font-mono`}
+                className={`${INPUT} pl-8 font-mono ${isFree ? 'border-[var(--success)]/40' : ''}`}
               />
+              {isFree && (
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--success)] pointer-events-none">
+                  <Gift className="w-3 h-3" /> Free product
+                </span>
+              )}
             </div>
             <p className="text-xs text-[var(--text-tertiary)] mt-1.5">Set ₹0 for a free product. You can change pricing anytime.</p>
           </div>

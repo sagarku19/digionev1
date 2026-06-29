@@ -116,3 +116,6 @@ create md files everywhere it neededd
 
 
 if a image is uplaod and then it change, then delete the old also from storage.
+
+
+also add different type of site like upcomimg site and more option
