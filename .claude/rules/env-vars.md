@@ -70,6 +70,19 @@ File storage lives in Cloudflare R2 (S3-compatible). All variables are read by `
 |---|---|---|---|
 | `KYC_ENCRYPTION_KEY` | **secret** | `src/lib/server/kyc-crypto.ts` (KYC PII encryption); `app/api/kyc/submit` (added in a later task) | base64-encoded 32 bytes (AES-256). Server-only. Rotating it requires re-encrypting existing `creator_kyc._enc` values. |
 
+## Cashfree Payouts
+
+Separate from the Cashfree PG (payment gateway) credentials above — Cashfree Payouts is a different product with its own API keys, base URLs, and webhook secret. All variables are server-only. They are read by `src/lib/server/cashfree-payouts.ts` and the admin payout routes.
+
+| Var | Scope | Used in | Notes |
+|---|---|---|---|
+| `CASHFREE_PAYOUT_ENVIRONMENT` | server | `src/lib/server/cashfree-payouts.ts`, `/api/admin/payouts/[id]/approve` | `'PRODUCTION'` → production Cashfree Payouts base URL. Anything else → sandbox. Not a secret. |
+| `CASHFREE_PAYOUT_API_VERSION` | server | `src/lib/server/cashfree-payouts.ts` | Pinned API version sent as `x-api-version` header (default `2024-01-01`). Not a secret. |
+| `CASHFREE_PAYOUT_CLIENT_ID` | **secret** | `src/lib/server/cashfree-payouts.ts` | Cashfree Payouts merchant key ID. Different from `CASHFREE_CLIENT_ID` (PG). |
+| `CASHFREE_PAYOUT_CLIENT_SECRET` | **secret** | `src/lib/server/cashfree-payouts.ts`, `/api/admin/payouts/[id]/approve` | Cashfree Payouts secret. Used for API auth. Different from `CASHFREE_CLIENT_SECRET` (PG). |
+| `CASHFREE_PAYOUT_WEBHOOK_SECRET` | **secret** | `/api/webhook/cashfree-payout` | HMAC key for Cashfree Payouts webhook signature verification. Separate from the PG webhook secret. |
+| `CRON_SECRET` | **secret** | `/api/admin/payouts/sync` | Bearer token for the cron-ready payout-sync route. Pass as `Authorization: Bearer <CRON_SECRET>` from your scheduler. Super-admin session is an alternative auth path. |
+
 ## Known cleanup
 
 - **`CASHFREE_ENVIRONMENT` vs `NEXT_PUBLIC_CASHFREE_ENV`** — two sources of truth. If they drift, sandbox-signed orders will fail to redirect to prod (or vice versa). Consider deriving the public one from the server one at build time.

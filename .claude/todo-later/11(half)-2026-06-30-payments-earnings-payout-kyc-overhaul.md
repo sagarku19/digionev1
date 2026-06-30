@@ -24,16 +24,21 @@ designer**, and **chartered accountant** (Indian e-commerce tax).
 | Phase | What | Status | Spec / Plan links |
 |---|---|---|---|
 | 0 | Harden live: KYC self-verify RLS hole, **plaintext PAN/bank `_enc` columns**, payout accounting (ledger debit + balance release), single balance formula, reconciliation | **DONE** (applied live 2026-06-30) | spec: `docs/superpowers/specs/2026-06-30-phase0-money-hardening-design.md` · plan: `docs/superpowers/plans/2026-06-30-phase0-money-hardening.md` |
-| 1 | Payouts for real: wire `creator_payout_methods` + **Cashfree Payouts** (beneficiary → transfer → webhook) | not started | — |
+| 1 | Payouts for real: wire `creator_payout_methods` + **Cashfree Payouts** (beneficiary → transfer → webhook) | **BUILT (not live — needs Cashfree Payouts sandbox creds + contract spike + e2e)** | spec: `docs/superpowers/specs/2026-06-30-phase1-cashfree-payouts-design.md` · plan: `docs/superpowers/plans/2026-06-30-phase1-cashfree-payouts.md` |
 | 2 | KYC verification: PAN + bank/UPI verify provider, admin review UI, typed mutation, real encryption/tokenization, **KYC document upload → R2 `creator-private`** | not started | — |
 | 3 | **Creator subscriptions**: wire `subscription_plans`/`subscriptions`, Cashfree PG recurring, **platform-fee tiering**, plan gating | not started | — |
 | 4 | Refunds + `frozen_balance` + risk controls (velocity, dispute freeze, duplicate-payout guard) | not started | — |
 | 5 | **GST / TDS / TCS tax engine** (the real greenfield build) | not started | — |
 | 6 | Invoices + tax statements: creator-sale invoice + DigiOne→creator commission/subscription tax invoice; **PDF generation → R2 (signed-URL only)**; Form 16A / GSTR exports | not started | — |
 
-**Next planned phase:** Phase 1 — Payouts for real (Cashfree Payouts). `settle_payout()` is live + tested but
-has **no caller yet**; Phase 1 wires the payout webhook → `settle_payout`. Also pick the reconciliation
-**scheduler** in Phase 1 (`pg_cron` is NOT installed; `reconcile_creator_balances()` ships unscheduled, run via MCP).
+**Next planned phase:** Phase 2 — KYC verification (PAN + bank/UPI verify provider, admin review UI).
+
+**Phase 1 deferred — needs before going live:**
+- **Task 1 (contract spike):** confirm the Cashfree Payouts V2 API contract end-to-end in sandbox — auth (bearer token generation), beneficiary create + idempotency, transfer create, `getTransfer` poll, and the **webhook signature variant** (Cashfree Payouts uses a different signing scheme from PG; both a legacy form-POST verifier and a V2 JSON verifier exist in `src/lib/server/cashfree-payouts.ts` — confirm which sandbox actually sends and delete the dead path).
+- **Sandbox e2e:** full flow with real Cashfree Payouts sandbox credentials → approve → beneficiary/transfer created → webhook fires → `settle_payout` settles → balance released.
+- **(a)** Confirm webhook signature variant (legacy form-POST vs V2 JSON) and drop the unused verifier once confirmed.
+- **(b)** Add FK `creator_payouts.payout_method_id → creator_payout_methods(id)` so the admin queue can JOIN the payout destination (bank/UPI) without a second round-trip.
+- **(c)** Reconciliation scheduler stays deferred — the sync route is cron-ready via `CRON_SECRET` but no scheduler has been wired; set up `pg_cron` or an external cron once going live.
 
 **Phase 0 execution notes (what actually shipped / deviations from the original blueprint):**
 - KYC writes now go through service-role `POST /api/kyc/submit` (+ pure `buildEncryptedKycRow`); client `creator_kyc`

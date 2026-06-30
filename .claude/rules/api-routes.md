@@ -19,10 +19,14 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/checkout/create` | none (buyerId optional) | service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
 | POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access` |
+| POST | `/api/webhook/cashfree-payout` | Cashfree Payouts signature (HMAC) | service role | `settle_payout` (success/failed); separate from `/api/webhook/cashfree` (PG webhook) |
 | POST | `/api/coupons/validate` | none | service role | — |
 | POST | `/api/leads` | none | service role | `lead_form` |
 | POST | `/api/linkinbio/track` | none | service role | `linkinbio_analytics` |
-| POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` |
+| POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` (min ₹100; links `creator_payout_methods.id` as `payout_method_id`) |
+| POST | `/api/admin/payouts/[id]/approve` | cookie session (super_admin, DB role re-read) | server + service role | `creator_payouts` (status→processing), `creator_kyc` (beneficiary_id), `creator_payout_methods`; calls Cashfree beneficiary + transfer |
+| POST | `/api/admin/payouts/[id]/reject` | cookie session (super_admin) | service role | `creator_payouts` via `settle_payout('failed')` (pending-only) |
+| POST | `/api/admin/payouts/sync` | super_admin session OR `CRON_SECRET` bearer | service role | reconciles stuck `processing` payouts via Cashfree `getTransfer` → `settle_payout` |
 | POST | `/api/kyc/submit` | cookie session | server + service role | `creator_kyc` (forces status=pending, encrypts PAN/bank/UPI; never accepts *_verified/status from client) |
 | GET | `/api/products/search` | none | service role | — |
 | GET | `/api/sites/check-slug` | none | service role | — |
@@ -286,18 +290,20 @@ Creator requests a payout. Cookie session required.
 
 ```json
 // Request
-{ "amount": 5000 }
+{ "amount": 5000, "payoutMethodId": "uuid" }
 ```
 
-All four operations (KYC check, balance read, balance update, payout insert) key on the creator's `profiles.id`, resolved via `resolveProfileId` from `src/lib/server/resolve-profile.ts`. Returns `404` when no profile resolves for the authenticated user.
+All operations key on the creator's `profiles.id`, resolved via `resolveProfileId` from `src/lib/server/resolve-profile.ts`. Returns `404` when no profile resolves for the authenticated user.
 
 **Preconditions checked in order:**
 1. `profiles.id` resolved → else 404
-2. `creator_kyc.status === 'verified'` → else 403
-3. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout` ≥ `amount` → else 400
-4. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409
+2. `amount` ≥ 100 (₹100 minimum) → else 400
+3. `creator_kyc.status === 'verified'` → else 403
+4. `payoutMethodId` belongs to the creator (`creator_payout_methods`) → else 400
+5. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout` ≥ `amount` → else 400
+6. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409
 
-**On success:** `pending_payout += amount`, inserts `creator_payouts` row with `status: 'pending'`, `currency: 'INR'`.
+**On success:** `pending_payout += amount`, inserts `creator_payouts` row with `status: 'pending'`, `currency: 'INR'`, and `payout_method_id` linked to the chosen `creator_payout_methods` row.
 
 ```json
 // Success
@@ -328,6 +334,77 @@ Body passes through `buildEncryptedKycRow` (`src/lib/server/kyc-row.ts`), which:
 
 **Success:** `{ ok: true }`
 **Errors:** `400` (invalid JSON, required fields missing), `401` (no session), `404` (no creator profile), `500` (upsert failure).
+
+---
+
+### `POST /api/admin/payouts/[id]/approve` (super_admin only)
+
+Approves a pending payout and initiates the Cashfree Payouts transfer. DB role is re-read on every call — JWT `super_admin` claim alone is not trusted.
+
+**Flow:**
+1. Resolve `creator_kyc.beneficiary_id`; if absent, create a Cashfree beneficiary from the KYC + payout-method data and write it back.
+2. Call Cashfree Payouts `createTransfer`; store `gateway_payout_id` + `gateway_batch_id` in the `creator_payouts` row and set `status = 'processing'`.
+3. Return immediately — terminal status (success/failed) arrives via `/api/webhook/cashfree-payout`.
+
+```json
+// Request body — none required (payout ID is in the URL path)
+
+// Success
+{ "success": true, "payoutId": "uuid", "gatewayPayoutId": "string" }
+```
+
+**Errors:** `401` (no session), `403` (not super_admin), `404` (payout not found or not pending), `409` (payout already processing/settled), `502` (Cashfree error), `500`.
+
+---
+
+### `POST /api/admin/payouts/[id]/reject` (super_admin only)
+
+Rejects a pending payout. Calls `settle_payout('failed', rejectionReason)` which releases `pending_payout` and writes a ledger debit entry marking the reversal.
+
+```json
+// Request
+{ "reason": "string?" }
+
+// Success
+{ "success": true }
+```
+
+**Errors:** `401` (no session), `403` (not super_admin), `404` (payout not found), `409` (payout not in pending state), `500`.
+
+---
+
+### `POST /api/admin/payouts/sync` (super_admin OR `CRON_SECRET`)
+
+Reconciliation route. Fetches every `creator_payouts` row stuck in `processing` status, queries Cashfree `getTransfer` for the current terminal state, and calls `settle_payout` for each resolved transfer.
+
+**Auth:** accepts either a valid super_admin cookie session **or** `Authorization: Bearer <CRON_SECRET>` for unattended cron runs.
+
+```json
+// Success
+{ "synced": 3, "skipped": 1, "errors": 0 }
+```
+
+**Errors:** `401` (no auth), `403` (not super_admin and wrong/missing CRON_SECRET), `500`.
+
+---
+
+### `POST /api/webhook/cashfree-payout`
+
+Cashfree Payouts → us. Terminal status updates for payout transfers initiated by the approve route.
+
+**Auth:** HMAC-SHA256 of raw body using `CASHFREE_PAYOUT_WEBHOOK_SECRET`, compared via `crypto.timingSafeEqual`. **Separate** from the PG webhook at `/api/webhook/cashfree` — different product, different secret.
+
+**On `TRANSFER_SUCCESS`:** calls `settle_payout('success', ...)` — releases `pending_payout`, bumps `total_paid_out`, writes a `payout` debit row in `transaction_ledger`.
+**On `TRANSFER_FAILED` / `TRANSFER_REVERSED`:** calls `settle_payout('failed', failureReason)` — releases `pending_payout`, writes a reversal ledger entry.
+
+**Idempotency:** `settle_payout` is an atomic Postgres RPC that guards on the current status — a duplicate delivery for an already-settled payout is a no-op.
+
+```json
+// Success (always 200 on valid signature)
+{ "received": true }
+```
+
+**Errors:** `401` (invalid signature). Returns `200` even when the payout is not found (avoids Cashfree retry storms from stray test events).
 
 ---
 
