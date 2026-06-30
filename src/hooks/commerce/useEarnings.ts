@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
+import { availableBalance } from '@/lib/shared/balance';
 
 export function useEarnings() {
   const queryClient = useQueryClient();
@@ -25,10 +26,9 @@ export function useEarnings() {
         if (payoutsRes.error) throw payoutsRes.error;
 
         const rawBal = balanceRes.data;
-        const derivedBalance = rawBal ? {
-          ...rawBal,
-          available_balance: (rawBal.total_earnings ?? 0) - (rawBal.total_platform_fees ?? 0) - (rawBal.total_paid_out ?? 0) - (rawBal.pending_payout ?? 0),
-        } : { available_balance: 0, pending_payout: 0, total_earnings: 0, total_platform_fees: 0, total_paid_out: 0 };
+        const derivedBalance = rawBal
+          ? { ...rawBal, available_balance: availableBalance(rawBal) }
+          : { available_balance: 0, pending_payout: 0, total_earnings: 0, total_platform_fees: 0, total_paid_out: 0 };
 
         return {
           balances: derivedBalance,
@@ -44,14 +44,13 @@ export function useEarnings() {
 
   const updateKycMutation = useMutation({
     mutationFn: async (payload: Record<string, unknown>) => {
-      try {
-        const creatorId = await getCreatorProfileId();
-        const { error } = await supabase.from('creator_kyc').upsert({ creator_id: creatorId, ...payload });
-        if (error) throw error;
-      } catch (err) {
-        console.error('useEarnings updateKyc error:', err);
-        throw err;
-      }
+      const res = await fetch('/api/kyc/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Failed to submit KYC details.');
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['earnings', 'summary'] }),
   });

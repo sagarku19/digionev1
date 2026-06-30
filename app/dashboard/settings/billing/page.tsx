@@ -18,17 +18,17 @@ type KycData = {
   status: string;
   kyc_level: string;
   legal_name: string | null;
-  pan_enc: string | null;
+  pan: string | null;
   pan_last4: string | null;
   pan_verified: boolean | null;
   pan_verified_at: string | null;
-  bank_account_enc: string | null;
+  bank_account: string | null;
   bank_account_name: string | null;
   bank_last4: string | null;
   bank_verified: boolean | null;
   bank_verified_at: string | null;
   ifsc_code: string | null;
-  upi_id_enc: string | null;
+  upi_id: string | null;
   upi_verified: boolean | null;
   upi_verified_at: string | null;
   aadhaar_last4: string | null;
@@ -146,9 +146,9 @@ export default function KYCAndBillingPage() {
 
   const empty: KycData = {
     status: '', kyc_level: 'basic',
-    legal_name: '', pan_enc: '', pan_last4: null, pan_verified: null, pan_verified_at: null,
-    bank_account_enc: '', bank_account_name: '', bank_last4: null, bank_verified: null, bank_verified_at: null,
-    ifsc_code: '', upi_id_enc: '', upi_verified: null, upi_verified_at: null,
+    legal_name: '', pan: '', pan_last4: null, pan_verified: null, pan_verified_at: null,
+    bank_account: '', bank_account_name: '', bank_last4: null, bank_verified: null, bank_verified_at: null,
+    ifsc_code: '', upi_id: '', upi_verified: null, upi_verified_at: null,
     aadhaar_last4: '', dob: '', gender: '',
     address_line1: '', address_line2: '', city: '', state: '', postal_code: '', country: 'India',
     rejection_reason: null,
@@ -161,7 +161,10 @@ export default function KYCAndBillingPage() {
   useEffect(() => {
     if (!kyc || hydratedRef.current) return;
     hydratedRef.current = true;
-    setForm({ ...empty, ...kyc });
+    // hydrate non-secret fields from the stored row; never put ciphertext into the raw PII inputs
+    const { pan_enc, bank_account_enc, upi_id_enc, ...rest } = kyc as Record<string, unknown>;
+    void pan_enc; void bank_account_enc; void upi_id_enc;
+    setForm({ ...empty, ...(rest as Partial<typeof empty>) });
   }, [kyc, empty]);
 
   const isVerified = kyc?.status === 'verified';
@@ -175,11 +178,11 @@ export default function KYCAndBillingPage() {
     try {
       await updateKyc({
         legal_name: form.legal_name,
-        pan_enc: form.pan_enc,
-        bank_account_enc: form.bank_account_enc,
+        pan: form.pan,
+        bank_account: form.bank_account,
         bank_account_name: form.bank_account_name,
         ifsc_code: form.ifsc_code,
-        upi_id_enc: form.upi_id_enc || null,
+        upi_id: form.upi_id || '',
         aadhaar_last4: form.aadhaar_last4 || null,
         dob: form.dob || null,
         gender: form.gender || null,
@@ -189,8 +192,6 @@ export default function KYCAndBillingPage() {
         state: form.state || null,
         postal_code: form.postal_code || null,
         country: form.country || 'India',
-        status: 'pending',
-        kyc_level: 'basic',
       });
       setSuccessMsg('Details submitted! Our compliance team will review within 1–2 business days.');
     } catch (err) {
@@ -291,13 +292,16 @@ export default function KYCAndBillingPage() {
                 <input
                   type="text"
                   required
-                  value={form.pan_enc ?? ''}
+                  value={form.pan ?? ''}
                   disabled={isLocked}
                   maxLength={10}
-                  onChange={e => set('pan_enc', e.target.value.toUpperCase())}
+                  onChange={e => set('pan', e.target.value.toUpperCase())}
                   className={`${inputCls} font-mono uppercase`}
                   placeholder="ABCDE1234F"
                 />
+                {kyc?.pan_last4 && isLocked && (
+                  <p className="text-xs text-[var(--text-tertiary)] mt-1">Ending in ••••• {kyc.pan_last4}</p>
+                )}
               </Field>
             </div>
 
@@ -442,9 +446,9 @@ export default function KYCAndBillingPage() {
                   <input
                     type={showAccount ? 'text' : 'password'}
                     required
-                    value={form.bank_account_enc ?? ''}
+                    value={form.bank_account ?? ''}
                     disabled={isLocked}
-                    onChange={e => setForm(f => ({ ...f, bank_account_enc: e.target.value }))}
+                    onChange={e => setForm(f => ({ ...f, bank_account: e.target.value }))}
                     className={`${inputCls} font-mono pr-10`}
                     placeholder="••••••••••••"
                   />
@@ -494,9 +498,9 @@ export default function KYCAndBillingPage() {
                 <Wallet size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
                 <input
                   type={showUpi ? 'text' : 'password'}
-                  value={form.upi_id_enc ?? ''}
+                  value={form.upi_id ?? ''}
                   disabled={isLocked}
-                  onChange={e => setForm(f => ({ ...f, upi_id_enc: e.target.value }))}
+                  onChange={e => setForm(f => ({ ...f, upi_id: e.target.value }))}
                   className={`${inputCls} pl-9 pr-10 font-mono`}
                   placeholder="yourname@upi"
                 />
