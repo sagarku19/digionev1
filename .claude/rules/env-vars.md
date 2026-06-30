@@ -64,6 +64,12 @@ File storage lives in Cloudflare R2 (S3-compatible). All variables are read by `
 | `creator-content` | `digione-products` | no |
 | `creator-private` | `digione-kyc-private` | no |
 
+## KYC
+
+| Var | Scope | Used in | Notes |
+|---|---|---|---|
+| `KYC_ENCRYPTION_KEY` | **secret** | `src/lib/server/kyc-crypto.ts` (KYC PII encryption); `app/api/kyc/submit` (added in a later task) | base64-encoded 32 bytes (AES-256). Server-only. Rotating it requires re-encrypting existing `creator_kyc._enc` values. |
+
 ## Known cleanup
 
 - **`CASHFREE_ENVIRONMENT` vs `NEXT_PUBLIC_CASHFREE_ENV`** — two sources of truth. If they drift, sandbox-signed orders will fail to redirect to prod (or vice versa). Consider deriving the public one from the server one at build time.
