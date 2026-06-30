@@ -10,17 +10,38 @@ drop policy if exists creator_kyc_update_own on public.creator_kyc;
 comment on table public.creator_kyc is
   'KYC profile. Creators may only SELECT their own row. All writes go through service-role POST /api/kyc/submit (forces status=pending, never accepts *_verified from the client). Admin verification flips status/*_verified via a service-role admin route (Phase 2).';
 
--- Ensure a unique target for the route''s upsert(onConflict: creator_id).
+-- Ensure a unique target for the route's upsert(onConflict: creator_id). A unique INDEX
+-- (idx_kyc_creator) already exists on this DB and satisfies the upsert; only add a constraint
+-- if NO single-column unique index/constraint on (creator_id) exists — keeps this portable +
+-- idempotent and avoids a redundant duplicate index.
 do $$
 begin
   if not exists (
-    select 1 from pg_constraint c
-      join pg_class t on t.oid = c.conrelid
-      join pg_namespace n on n.oid = t.relnamespace
-    where n.nspname = 'public' and t.relname = 'creator_kyc' and c.contype = 'u'
-      and pg_get_constraintdef(c.oid) ilike '%(creator_id)%'
+    select 1
+    from pg_index i
+    join pg_class t on t.oid = i.indrelid
+    join pg_namespace n on n.oid = t.relnamespace
+    where n.nspname = 'public' and t.relname = 'creator_kyc'
+      and i.indisunique and i.indnatts = 1
+      and (select attname from pg_attribute where attrelid = t.oid and attnum = i.indkey[0]) = 'creator_id'
   ) then
     alter table public.creator_kyc add constraint uq_creator_kyc_creator_id unique (creator_id);
+  end if;
+end $$;
+
+-- The *_enc columns are bytea but hold our TEXT ciphertext envelope ("enc:v1:<iv>:<tag>:<ct>").
+-- Storing that string into bytea makes it read back as \x hex, which breaks decryptField/isEncrypted
+-- round-trip (Phase 2 decryption + backfill idempotency). Convert to text so the envelope reads back
+-- verbatim. convert_from(...,'UTF8') decodes the existing bytes (which ARE the UTF-8 of the envelope)
+-- losslessly; guarded so it's a no-op once already text.
+do $$
+begin
+  if (select data_type from information_schema.columns
+        where table_schema = 'public' and table_name = 'creator_kyc' and column_name = 'pan_enc') = 'bytea' then
+    alter table public.creator_kyc
+      alter column pan_enc          type text using convert_from(pan_enc, 'UTF8'),
+      alter column bank_account_enc type text using convert_from(bank_account_enc, 'UTF8'),
+      alter column upi_id_enc       type text using convert_from(upi_id_enc, 'UTF8');
   end if;
 end $$;
 
