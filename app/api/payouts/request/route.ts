@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveProfileId } from '@/lib/server/resolve-profile';
 import { availableBalance } from '@/lib/shared/balance';
+import { MIN_PAYOUT_INR } from '@/lib/server/payout-policy';
 
 export async function POST(req: Request) {
   try {
@@ -17,6 +18,10 @@ export async function POST(req: Request) {
 
     if (!amount || isNaN(amount) || amount <= 0) {
       return NextResponse.json({ error: 'Invalid amount requested.' }, { status: 400 });
+    }
+
+    if (amount < MIN_PAYOUT_INR) {
+      return NextResponse.json({ error: `Minimum payout is ₹${MIN_PAYOUT_INR}.` }, { status: 400 });
     }
 
     // Initialize Admin Client to bypass RLS for secure ledger writes
@@ -77,13 +82,21 @@ export async function POST(req: Request) {
     }
 
     // 4. Create Payout Request Log
+    const { data: method } = await supabaseAdmin
+      .from('creator_payout_methods')
+      .select('id')
+      .eq('creator_id', profileId)
+      .eq('is_default', true)
+      .maybeSingle();
+
     const { data: payout, error: payoutError } = await supabaseAdmin
       .from('creator_payouts')
       .insert({
         creator_id: profileId,
         amount: amount,
         currency: 'INR',
-        status: 'pending'
+        status: 'pending',
+        payout_method_id: method?.id ?? null,
       })
       .select()
       .single();
