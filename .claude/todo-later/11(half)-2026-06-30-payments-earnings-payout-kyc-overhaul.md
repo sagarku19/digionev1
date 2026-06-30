@@ -40,6 +40,12 @@ designer**, and **chartered accountant** (Indian e-commerce tax).
 - **(b)** Add FK `creator_payouts.payout_method_id → creator_payout_methods(id)` so the admin queue can JOIN the payout destination (bank/UPI) without a second round-trip.
 - **(c)** Reconciliation scheduler stays deferred — the sync route is cron-ready via `CRON_SECRET` but no scheduler has been wired; set up `pg_cron` or an external cron once going live.
 
+**Phase 1 final-review fixes (2026-07-01) — applied vs. deferred (holistic review of the whole diff):**
+- ✅ **FIXED (CRITICAL)** reject double-pay race — `settle_payout` gained an atomic `p_expect_status` guard (migration `20260701000001`); reject passes `'pending'` so it can never settle an already-`processing` (in-flight) payout. Also stamps `processed_at`.
+- ✅ **FIXED (MED)** payout webhook **failed open** to an empty signing secret → now fail-closed (500 if no secret). ✅ **FIXED (MED)** webhook swallowed `settle_payout` errors and always 200'd → now returns 500 on a real DB error so Cashfree retries (idempotent claim makes retries safe).
+- ⏳ **DEFERRED to the sandbox spike** (need real Cashfree payload/behaviour): **(HIGH)** a thrown `initiateTransfer` (network) leaves the payout stuck `processing` with the hold applied — fix `getTransfer` to surface HTTP status and have `sync` settle `'failed'` only on a confirmed not-found (404) after the stale cutoff (safe because `transfer_id = payout.id`). **(MED)** don't persist raw provider payloads (`beneficiary_metadata`/`gateway_metadata = ben.raw/tr.raw`) — they may echo full account no./IFSC/VPA as plaintext-at-rest, undermining Phase 0 encryption; redact to known-safe fields once the spike reveals the real shapes. **(LOW)** handle `TRANSFER_REVERSED`.
+- ⏳ **DEFERRED (LOW, cheap, do at go-live):** add a `super_admin` gate for `/dashboard/admin/*` in `proxy.ts` (defense-in-depth; RLS already scopes data + buttons 403); tighten `creator_payout_methods` RLS to SELECT-own (it's server-written now); clear `creator_kyc.beneficiary_id` on any KYC bank re-verification (Phase 2) so transfers don't route to a stale beneficiary; guard UPI-only creators at request time (`mode` is hardcoded `'banktransfer'`).
+
 **Phase 0 execution notes (what actually shipped / deviations from the original blueprint):**
 - KYC writes now go through service-role `POST /api/kyc/submit` (+ pure `buildEncryptedKycRow`); client `creator_kyc`
   INSERT/UPDATE RLS policies dropped. The 4-step KYC **wizard** (`billing/page.tsx`) submits raw → server encrypts.

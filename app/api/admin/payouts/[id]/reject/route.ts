@@ -24,8 +24,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!payout) return NextResponse.json({ error: 'Payout not found.' }, { status: 404 });
     if (payout.status !== 'pending') return NextResponse.json({ error: `Cannot reject a ${payout.status} payout.` }, { status: 409 });
 
-    const { data: ok } = await db.rpc('settle_payout', { p_payout_id: payoutId, p_terminal: 'failed', p_failure_reason: reason });
-    if (!ok) return NextResponse.json({ error: 'Payout no longer pending.' }, { status: 409 });
+    // Atomic + pending-only: p_expect_status='pending' means settle_payout can NEVER fail an
+    // already-claimed (processing) payout — closes the reject-vs-approve double-pay race.
+    const { data: ok, error: settleErr } = await db.rpc('settle_payout', {
+      p_payout_id: payoutId, p_terminal: 'failed', p_failure_reason: reason, p_expect_status: 'pending',
+    });
+    if (settleErr) {
+      console.error('[admin/payouts/reject] settle failed', settleErr.message);
+      return NextResponse.json({ error: 'Failed to reject payout.' }, { status: 500 });
+    }
+    if (!ok) return NextResponse.json({ error: 'Payout is no longer pending.' }, { status: 409 });
     return NextResponse.json({ ok: true, status: 'failed' });
   } catch (e) {
     console.error('[admin/payouts/reject]', e);

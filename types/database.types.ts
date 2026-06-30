@@ -3293,6 +3293,7 @@ export type Database = {
       reconcile_creator_balances: { Args: never; Returns: number }
       settle_payout: {
         Args: {
+          p_expect_status?: string
           p_failure_reason?: string
           p_gateway_metadata?: Json
           p_gateway_payout_id?: string
