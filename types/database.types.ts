@@ -110,6 +110,44 @@ export type Database = {
           },
         ]
       }
+      balance_reconciliation_log: {
+        Row: {
+          cached_value: number
+          created_at: string
+          creator_id: string | null
+          drift: number
+          expected_value: number
+          field: string
+          id: string
+        }
+        Insert: {
+          cached_value: number
+          created_at?: string
+          creator_id?: string | null
+          drift: number
+          expected_value: number
+          field: string
+          id?: string
+        }
+        Update: {
+          cached_value?: number
+          created_at?: string
+          creator_id?: string | null
+          drift?: number
+          expected_value?: number
+          field?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balance_reconciliation_log_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_posts: {
         Row: {
           category: string
@@ -280,6 +318,7 @@ export type Database = {
         Row: {
           creator_id: string
           currency: string | null
+          frozen_balance: number
           id: string
           pending_payout: number
           total_earnings: number
@@ -290,6 +329,7 @@ export type Database = {
         Insert: {
           creator_id: string
           currency?: string | null
+          frozen_balance?: number
           id?: string
           pending_payout?: number
           total_earnings?: number
@@ -300,6 +340,7 @@ export type Database = {
         Update: {
           creator_id?: string
           currency?: string | null
+          frozen_balance?: number
           id?: string
           pending_payout?: number
           total_earnings?: number
@@ -3246,6 +3287,17 @@ export type Database = {
         Returns: undefined
       }
       is_super_admin: { Args: never; Returns: boolean }
+      reconcile_creator_balances: { Args: never; Returns: number }
+      settle_payout: {
+        Args: {
+          p_failure_reason?: string
+          p_gateway_metadata?: Json
+          p_gateway_payout_id?: string
+          p_payout_id: string
+          p_terminal: string
+        }
+        Returns: boolean
+      }
       sum_bucket_bytes_for_prefix: {
         Args: { p_bucket_id: string; p_prefix: string }
         Returns: number
