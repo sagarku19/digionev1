@@ -55,6 +55,18 @@ export function useEarnings() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['earnings', 'summary'] }),
   });
 
+  const requestPayoutMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      const res = await fetch('/api/payouts/request', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Payout request failed.');
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['earnings', 'summary'] }),
+  });
+
   return {
     creatorBalances: data?.balances,
     payouts: data?.payouts || [],
@@ -64,5 +76,7 @@ export function useEarnings() {
     refreshEarnings: refetch,
     updateKyc: updateKycMutation.mutateAsync,
     isUpdatingKyc: updateKycMutation.isPending,
+    requestPayout: requestPayoutMutation.mutateAsync,
+    isRequestingPayout: requestPayoutMutation.isPending,
   };
 }

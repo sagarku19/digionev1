@@ -9,10 +9,11 @@ import {
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
   Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, MessageCircle, HelpCircle,
-  Instagram, Zap, Calendar, ShoppingBag, Sparkles,
+  Instagram, Zap, Calendar, ShoppingBag, Sparkles, ShieldCheck,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/creator/useCreator';
 import { useNotifications } from '@/hooks/notifications/useNotifications';
+import { useAuthSession } from '@/hooks/auth/useAuthSession';
 
 // ─── Types ───────────────────────────────────────────────────
 type NavChild = { label: string; href: string; icon: React.ElementType };
@@ -90,6 +91,7 @@ export default function Sidebar() {
 
   const { profile, isLoading: profileLoading } = useCreator();
   const { unreadCount } = useNotifications();
+  const { userRole } = useAuthSession();
 
   // Hide sidebar entirely on full-screen editor pages
   if (pathname?.startsWith('/dashboard/sites/edit')) return null;
@@ -284,6 +286,23 @@ export default function Sidebar() {
               </div>
             </div>
           ))}
+
+          {/* Admin links — super_admin only */}
+          {userRole === 'super_admin' && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-60 px-3 mb-1.5">
+                Admin
+              </p>
+              <div className="flex flex-col gap-px">
+                <NavLink
+                  href="/dashboard/admin/payouts"
+                  label="Payouts · Admin"
+                  icon={ShieldCheck}
+                  active={isActive('/dashboard/admin/payouts')}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Account links */}
           <div>

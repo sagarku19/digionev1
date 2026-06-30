@@ -11,6 +11,7 @@ export interface AuthSessionData {
   isLoggedIn: boolean;
   userEmail: string | null;
   profile: { full_name: string | null; avatar_url: string | null } | null;
+  userRole: string | null;
 }
 
 // getUser() serializes on the origin-wide Supabase auth lock and its fetch has
@@ -29,7 +30,7 @@ export function useAuthSession() {
           supabase.auth.getUser().then(({ data }) => data.user),
           new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_CHECK_TIMEOUT_MS)),
         ]);
-        if (!user) return { isLoggedIn: false, userEmail: null, profile: null };
+        if (!user) return { isLoggedIn: false, userEmail: null, profile: null, userRole: null };
 
         const { data } = await supabase
           .from('users')
@@ -42,6 +43,7 @@ export function useAuthSession() {
           isLoggedIn: true,
           userEmail: user.email ?? null,
           profile: raw ? { full_name: raw.full_name ?? null, avatar_url: raw.avatar_url ?? null } : null,
+          userRole: (user.app_metadata?.role as string) ?? null,
         };
       } catch (err) {
         console.error('useAuthSession error:', err);
@@ -61,6 +63,7 @@ export function useAuthSession() {
     isLoggedIn: query.data?.isLoggedIn ?? false,
     userEmail: query.data?.userEmail ?? null,
     profile: query.data?.profile ?? null,
+    userRole: query.data?.userRole ?? null,
     isLoading: query.isLoading,
   };
 }
