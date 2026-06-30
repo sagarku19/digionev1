@@ -23,6 +23,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/leads` | none | service role | `lead_form` |
 | POST | `/api/linkinbio/track` | none | service role | `linkinbio_analytics` |
 | POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` |
+| POST | `/api/kyc/submit` | cookie session | server + service role | `creator_kyc` (forces status=pending, encrypts PAN/bank/UPI; never accepts *_verified/status from client) |
 | GET | `/api/products/search` | none | service role | — |
 | GET | `/api/sites/check-slug` | none | service role | — |
 | POST | `/api/sites/create` | cookie session | server + service role | `sites`, `site_main`/`site_singlepage`/`linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` |
@@ -302,6 +303,31 @@ All four operations (KYC check, balance read, balance update, payout insert) key
 // Success
 { "success": true, "payout": { /* creator_payouts row */ } }
 ```
+
+---
+
+### `POST /api/kyc/submit` (auth required)
+
+Creator submits KYC details. Cookie session required.
+
+```json
+// Request
+{ "legal_name": "string", "pan": "string", "bank_account": "string", "ifsc_code": "string",
+  "bank_account_name": "string?", "upi_id": "string?", "aadhaar_last4": "string?",
+  "dob": "string?", "gender": "string?", "address_line1": "string?", "city": "string?",
+  "state": "string?", "postal_code": "string?", "country": "string?" }
+```
+
+Body passes through `buildEncryptedKycRow` (`src/lib/server/kyc-row.ts`), which:
+- **Allowlists** input fields — any `status`, `kyc_level`, `*_verified`, or admin column in the body is silently dropped.
+- Forces `status = 'pending'` and `kyc_level = 'basic'` on every upsert regardless of what the client sends.
+- **Encrypts** `pan`, `bank_account`, and `upi_id` at rest (AES-256-GCM via `src/lib/server/kyc-crypto.ts`). Stores only `*_last4` as readable masked values.
+- Upserts on `creator_id` (unique constraint added by the Phase 0 migration) so re-submitting before verification overwrites the previous draft.
+
+`creator_kyc` client writes are being locked to service-role-only in the Phase 0 migration — this route is the single authorised write path for creators.
+
+**Success:** `{ ok: true }`
+**Errors:** `400` (invalid JSON, required fields missing), `401` (no session), `404` (no creator profile), `500` (upsert failure).
 
 ---
 
