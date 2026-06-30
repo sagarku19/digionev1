@@ -504,6 +504,7 @@ export type Database = {
       creator_payout_methods: {
         Row: {
           account_holder_name: string | null
+          account_last4: string | null
           account_number: string | null
           bank_name: string | null
           branch_name: string | null
@@ -521,6 +522,7 @@ export type Database = {
         }
         Insert: {
           account_holder_name?: string | null
+          account_last4?: string | null
           account_number?: string | null
           bank_name?: string | null
           branch_name?: string | null
@@ -538,6 +540,7 @@ export type Database = {
         }
         Update: {
           account_holder_name?: string | null
+          account_last4?: string | null
           account_number?: string | null
           bank_name?: string | null
           branch_name?: string | null
