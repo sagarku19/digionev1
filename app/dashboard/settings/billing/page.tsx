@@ -4,15 +4,38 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useEarnings } from '@/hooks/commerce/useEarnings';
 import {
   ShieldCheck, ShieldAlert, Building2, AlertCircle, Clock,
-  ChevronRight, User, Eye, EyeOff,
+  ChevronRight, ChevronLeft, User, Eye, EyeOff, Check, Lock,
   CheckCircle2, RefreshCw, BadgeCheck, MapPin, Calendar,
-  Smartphone, Wallet, Info,
+  Smartphone, Wallet,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 const inputCls = 'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow disabled:opacity-60 disabled:cursor-not-allowed';
+const btnPrimary = 'inline-flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--accent-fg)] font-semibold px-5 py-2.5 rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors';
+const btnBrand = 'inline-flex items-center justify-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text-on-brand)] font-semibold px-5 py-2.5 rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors';
+const btnGhost = 'inline-flex items-center justify-center gap-2 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] font-medium px-4 py-2.5 rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors';
+
+const STEP_LABELS = ['Identity', 'Address', 'Bank', 'Review'] as const;
+
+const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+const IFSC_RE = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+const isPan = (v: string) => PAN_RE.test((v ?? '').trim().toUpperCase());
+const isIfsc = (v: string) => IFSC_RE.test((v ?? '').trim().toUpperCase());
+const isAcct = (v: string) => /^[0-9]{9,18}$/.test((v ?? '').replace(/\s/g, ''));
+
+const maskTail = (v?: string | null, keep = 4) => {
+  const s = (v ?? '').replace(/\s/g, '');
+  if (!s) return '—';
+  if (s.length <= keep) return s;
+  return '•'.repeat(Math.min(6, s.length - keep)) + s.slice(-keep);
+};
+const maskPan = (v?: string | null) => {
+  const s = (v ?? '').trim().toUpperCase();
+  if (!s) return '—';
+  return s.length >= 6 ? `${s.slice(0, 5)}····${s.slice(-1)}` : s;
+};
 
 type KycData = {
   status: string;
@@ -43,6 +66,16 @@ type KycData = {
   rejection_reason: string | null;
 };
 
+const EMPTY_FORM: KycData = {
+  status: '', kyc_level: 'basic',
+  legal_name: '', pan: '', pan_last4: null, pan_verified: null, pan_verified_at: null,
+  bank_account: '', bank_account_name: '', bank_last4: null, bank_verified: null, bank_verified_at: null,
+  ifsc_code: '', upi_id: '', upi_verified: null, upi_verified_at: null,
+  aadhaar_last4: '', dob: '', gender: '',
+  address_line1: '', address_line2: '', city: '', state: '', postal_code: '', country: 'India',
+  rejection_reason: null,
+};
+
 function VerifiedTag({ at }: { at?: string | null }) {
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--success)] bg-[var(--success-bg)] border border-[var(--success)]/20 px-2 py-0.5 rounded-[var(--radius-pill)]">
@@ -51,39 +84,43 @@ function VerifiedTag({ at }: { at?: string | null }) {
   );
 }
 
-function Section({ title, subtitle, icon: Icon, iconBg, iconColor, tag, children }: {
-  title: string;
-  subtitle?: string;
-  icon: React.ElementType;
-  iconBg: string;
-  iconColor: string;
-  tag?: React.ReactNode;
+function Field({ label, hint, required, error, children }: {
+  label: string;
+  hint?: string;
+  required?: boolean;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
-      <div className="px-6 py-4 border-b border-[var(--border-subtle)] flex items-center gap-3">
-        <div className={`p-2 ${iconBg} rounded-[var(--radius-md)]`}>
-          <Icon size={15} className={iconColor} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[var(--text-primary)]">{title}</p>
-          {subtitle && <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{subtitle}</p>}
-        </div>
-        {tag}
-      </div>
-      <div className="px-6 py-6 space-y-4">{children}</div>
+    <div>
+      <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">
+        {label}{required && <span className="text-[var(--danger)] ml-0.5">*</span>}
+      </label>
+      {children}
+      {error
+        ? <p className="text-xs text-[var(--danger)] mt-1 flex items-center gap-1"><AlertCircle size={11} />{error}</p>
+        : hint && <p className="text-xs text-[var(--text-tertiary)] mt-1">{hint}</p>}
     </div>
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function StepHeader({ icon: Icon, title, description, tag }: {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  tag?: React.ReactNode;
+}) {
   return (
-    <div>
-      <label className="block text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-1.5">{label}</label>
-      {children}
-      {hint && <p className="text-xs text-[var(--text-tertiary)] mt-1">{hint}</p>}
-    </div>
+    <header className="flex items-start gap-3 mb-5">
+      <div className="p-2 bg-[var(--surface-muted)] rounded-[var(--radius-md)] shrink-0">
+        <Icon size={16} className="text-[var(--text-secondary)]" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h2 className="text-base font-semibold text-[var(--text-primary)]">{title}</h2>
+        <p className="text-sm text-[var(--text-secondary)] mt-0.5">{description}</p>
+      </div>
+      {tag}
+    </header>
   );
 }
 
@@ -120,7 +157,67 @@ function StatusBanner({ status, rejectionReason }: { status?: string; rejectionR
       <ShieldAlert size={18} className="text-[var(--warning)] shrink-0 mt-0.5" />
       <div>
         <p className="text-sm font-semibold text-[var(--warning)]">KYC Not Submitted</p>
-        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Complete the form below to enable payouts from your store.</p>
+        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Complete the 4 quick steps below to enable payouts from your store.</p>
+      </div>
+    </div>
+  );
+}
+
+function Stepper({ step, furthest, onJump }: { step: number; furthest: number; onJump: (s: number) => void }) {
+  return (
+    <ol className="flex items-center gap-1 sm:gap-2 text-xs font-medium mb-5">
+      {STEP_LABELS.map((label, i) => {
+        const idx = i + 1;
+        const isActive = idx === step;
+        const isDone = idx < step;
+        const reachable = idx <= furthest;
+        return (
+          <React.Fragment key={label}>
+            <li>
+              <button
+                type="button"
+                disabled={!reachable}
+                onClick={() => reachable && onJump(idx)}
+                className={`inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-1.5 py-1 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${reachable ? 'cursor-pointer' : 'cursor-not-allowed'} ${
+                  isActive ? 'text-[var(--brand)]' : isDone ? 'text-[var(--success)]' : 'text-[var(--text-tertiary)]'
+                }`}
+              >
+                <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-semibold ${
+                  isActive
+                    ? 'bg-[var(--brand)] text-[var(--text-on-brand)]'
+                    : isDone
+                    ? 'bg-[var(--success)] text-[var(--text-on-brand)]'
+                    : 'bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-tertiary)]'
+                }`}>
+                  {isDone ? <Check className="w-3 h-3" /> : idx}
+                </span>
+                <span className={`hidden sm:inline ${isActive ? 'font-semibold' : ''}`}>{label}</span>
+              </button>
+            </li>
+            {idx < STEP_LABELS.length && <li aria-hidden className="text-[var(--text-tertiary)] px-0.5">→</li>}
+          </React.Fragment>
+        );
+      })}
+    </ol>
+  );
+}
+
+function SummaryRow({ label, value, mono, verified, at, missing }: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+  verified?: boolean | null;
+  at?: string | null;
+  missing?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-[var(--border-subtle)] last:border-0">
+      <span className="text-xs text-[var(--text-tertiary)] shrink-0">{label}</span>
+      <div className="flex items-center gap-2 min-w-0">
+        {verified ? <VerifiedTag at={at} /> : null}
+        <span className={`text-sm text-right truncate ${missing ? 'text-[var(--danger)]' : 'text-[var(--text-primary)]'} ${mono ? 'font-mono' : ''}`}>
+          {value}
+        </span>
       </div>
     </div>
   );
@@ -138,23 +235,16 @@ const STATES = [
 export default function KYCAndBillingPage() {
   const { kyc, isLoading, updateKyc } = useEarnings();
 
+  const [step, setStep] = useState(1);
+  const [furthest, setFurthest] = useState(1);
+  const [triedNext, setTriedNext] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [showAccount, setShowAccount] = useState(false);
   const [showUpi, setShowUpi] = useState(false);
 
-  const empty: KycData = {
-    status: '', kyc_level: 'basic',
-    legal_name: '', pan: '', pan_last4: null, pan_verified: null, pan_verified_at: null,
-    bank_account: '', bank_account_name: '', bank_last4: null, bank_verified: null, bank_verified_at: null,
-    ifsc_code: '', upi_id: '', upi_verified: null, upi_verified_at: null,
-    aadhaar_last4: '', dob: '', gender: '',
-    address_line1: '', address_line2: '', city: '', state: '', postal_code: '', country: 'India',
-    rejection_reason: null,
-  };
-
-  const [form, setForm] = useState(empty);
+  const [form, setForm] = useState(EMPTY_FORM);
   const set = (k: keyof KycData, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const hydratedRef = useRef(false);
@@ -164,15 +254,33 @@ export default function KYCAndBillingPage() {
     // hydrate non-secret fields from the stored row; never put ciphertext into the raw PII inputs
     const { pan_enc, bank_account_enc, upi_id_enc, ...rest } = kyc as Record<string, unknown>;
     void pan_enc; void bank_account_enc; void upi_id_enc;
-    setForm({ ...empty, ...(rest as Partial<typeof empty>) });
-  }, [kyc, empty]);
+    setForm({ ...EMPTY_FORM, ...(rest as Partial<typeof EMPTY_FORM>) });
+  }, [kyc]);
 
   const isVerified = kyc?.status === 'verified';
   const isPending = kyc?.status === 'pending';
   const isLocked = isVerified || isPending;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const v1 = !!form.legal_name?.trim() && isPan(form.pan ?? '');
+  const v3 = !!form.bank_account_name?.trim() && isAcct(form.bank_account ?? '') && isIfsc(form.ifsc_code ?? '');
+  const canSubmit = v1 && v3;
+
+  const stepValid = (s: number) => (s === 1 ? v1 : s === 3 ? v3 : true);
+
+  const goNext = () => {
+    if (!stepValid(step)) { setTriedNext(true); return; }
+    setTriedNext(false);
+    setStep(s => {
+      const n = Math.min(STEP_LABELS.length, s + 1);
+      setFurthest(f => Math.max(f, n));
+      return n;
+    });
+  };
+  const goBack = () => { setErrorMsg(''); setTriedNext(false); setStep(s => Math.max(1, s - 1)); };
+  const jumpTo = (n: number) => { if (n <= furthest) { setTriedNext(false); setErrorMsg(''); setStep(n); } };
+
+  const handleSubmit = async () => {
+    if (!canSubmit) { setTriedNext(true); return; }
     setErrorMsg(''); setSuccessMsg('');
     setIsSubmitting(true);
     try {
@@ -201,13 +309,12 @@ export default function KYCAndBillingPage() {
     }
   };
 
-  const steps = [
-    { label: 'Fill Details', done: !!kyc },
-    { label: 'Under Review', done: isVerified || isPending },
-    { label: 'Verified', done: isVerified },
-  ];
-
-  const activeStepIdx = steps.filter(s => s.done).length;
+  const formAddress = [form.address_line1, form.address_line2, form.city, form.state, form.postal_code, form.country]
+    .map(s => (s ?? '').trim()).filter(Boolean).join(', ');
+  const lockedAddress = kyc
+    ? [kyc.address_line1, kyc.address_line2, kyc.city, kyc.state, kyc.postal_code, kyc.country]
+        .map(s => (s ?? '').trim()).filter(Boolean).join(', ')
+    : '';
 
   return (
     <div className="space-y-6 pb-12">
@@ -218,339 +325,198 @@ export default function KYCAndBillingPage() {
 
       {!isLoading && <StatusBanner status={kyc?.status} rejectionReason={kyc?.rejection_reason} />}
 
-      {!isLoading && (
+      {isLoading ? (
         <Card>
-          <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide mb-5">Verification Progress</p>
-          <div className="flex items-center">
-            {steps.map((step, idx) => (
-              <React.Fragment key={step.label}>
-                <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${
-                    step.done
-                      ? 'bg-[var(--success)] border-[var(--success)] text-[var(--text-on-brand)] shadow-[var(--shadow-sm)]'
-                      : idx === activeStepIdx
-                      ? 'border-[var(--text-primary)] text-[var(--text-secondary)] bg-[var(--surface-muted)]'
-                      : 'border-[var(--border)] text-[var(--text-tertiary)] bg-[var(--surface-muted)]'
-                  }`}>
-                    {step.done ? <CheckCircle2 size={17} /> : <span className="text-xs font-bold">{idx + 1}</span>}
-                  </div>
-                  <span className={`text-xs font-medium text-center leading-tight ${
-                    step.done
-                      ? 'text-[var(--success)]'
-                      : idx === activeStepIdx
-                      ? 'text-[var(--text-secondary)]'
-                      : 'text-[var(--text-tertiary)]'
-                  }`}>
-                    {step.label}
-                  </span>
-                </div>
-                {idx < steps.length - 1 && (
-                  <div className={`h-0.5 flex-1 mb-5 transition-colors ${step.done ? 'bg-[var(--success)]' : 'bg-[var(--border)]'}`} />
-                )}
-              </React.Fragment>
-            ))}
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-2/3" />
           </div>
         </Card>
-      )}
-
-      {isLoading ? (
-        <div className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </Card>
-          ))}
+      ) : isLocked ? (
+        /* ───────── Read-only summary (pending / verified) ───────── */
+        <div className="max-w-3xl">
+          <Card>
+            <div className="flex items-center gap-2 mb-4">
+              <Lock size={14} className="text-[var(--text-tertiary)]" />
+              <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Submitted Details</p>
+            </div>
+            <SummaryRow label="Legal name" value={kyc?.legal_name || '—'} />
+            <SummaryRow label="PAN" value={kyc?.pan_last4 ? `•••••${kyc.pan_last4}` : '—'} mono verified={kyc?.pan_verified} at={kyc?.pan_verified_at} />
+            {kyc?.dob && <SummaryRow label="Date of birth" value={kyc.dob} />}
+            {kyc?.gender && <SummaryRow label="Gender" value={kyc.gender} />}
+            {kyc?.aadhaar_last4 && <SummaryRow label="Aadhaar" value={`••••••••${kyc.aadhaar_last4}`} mono />}
+            {lockedAddress && <SummaryRow label="Address" value={lockedAddress} />}
+            <SummaryRow label="Account holder" value={kyc?.bank_account_name || '—'} />
+            <SummaryRow label="Account number" value={kyc?.bank_last4 ? `••••${kyc.bank_last4}` : '—'} mono verified={kyc?.bank_verified} at={kyc?.bank_verified_at} />
+            <SummaryRow label="IFSC" value={kyc?.ifsc_code || '—'} mono />
+            <SummaryRow
+              label="UPI"
+              value={(kyc as Record<string, unknown>)?.upi_id_enc ? 'Added' : '—'}
+              verified={kyc?.upi_verified}
+              at={kyc?.upi_verified_at}
+            />
+          </Card>
+          <p className="mt-3 text-xs text-[var(--text-tertiary)] flex items-center gap-1.5">
+            <Lock size={11} /> Your PAN, account number and UPI are encrypted at rest — only the last few digits are ever shown.
+          </p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        /* ───────── Editable wizard ───────── */
+        <div className="max-w-3xl">
+          <Stepper step={step} furthest={furthest} onJump={jumpTo} />
 
-          <Section
-            title="Personal Identity (PAN)"
-            subtitle="Must exactly match your PAN card"
-            icon={User}
-            iconBg="bg-[var(--surface-muted)]"
-            iconColor="text-[var(--text-secondary)]"
-            tag={kyc?.pan_verified ? <VerifiedTag at={kyc.pan_verified_at} /> : undefined}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Legal Name">
-                <input
-                  type="text"
-                  required
-                  value={form.legal_name ?? ''}
-                  disabled={isLocked}
-                  onChange={e => set('legal_name', e.target.value)}
-                  className={inputCls}
-                  placeholder="As per PAN card"
-                />
-              </Field>
-              <Field label="PAN Number" hint="Format: ABCDE1234F">
-                <input
-                  type="text"
-                  required
-                  value={form.pan ?? ''}
-                  disabled={isLocked}
-                  maxLength={10}
-                  onChange={e => set('pan', e.target.value.toUpperCase())}
-                  className={`${inputCls} font-mono uppercase`}
-                  placeholder="ABCDE1234F"
-                />
-                {kyc?.pan_last4 && isLocked && (
-                  <p className="text-xs text-[var(--text-tertiary)] mt-1">Ending in ••••• {kyc.pan_last4}</p>
-                )}
-              </Field>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Field label="Date of Birth">
-                <div className="relative">
-                  <Calendar size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                  <input
-                    type="date"
-                    value={form.dob ?? ''}
-                    disabled={isLocked}
-                    onChange={e => set('dob', e.target.value)}
-                    className={`${inputCls} pl-9`}
-                  />
+          <Card>
+            {/* Step 1 — Identity */}
+            {step === 1 && (
+              <div>
+                <StepHeader icon={User} title="Identity" description="Must exactly match your PAN card." tag={kyc?.pan_verified ? <VerifiedTag at={kyc.pan_verified_at} /> : undefined} />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Legal Name" required error={triedNext && !form.legal_name?.trim() ? 'Required.' : undefined}>
+                      <input type="text" value={form.legal_name ?? ''} onChange={e => set('legal_name', e.target.value)} className={inputCls} placeholder="As per PAN card" />
+                    </Field>
+                    <Field label="PAN Number" required hint="Format: ABCDE1234F" error={triedNext && !isPan(form.pan ?? '') ? 'Enter a valid 10-character PAN.' : undefined}>
+                      <input type="text" value={form.pan ?? ''} maxLength={10} onChange={e => set('pan', e.target.value.toUpperCase())} className={`${inputCls} font-mono uppercase`} placeholder="ABCDE1234F" />
+                    </Field>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Field label="Date of Birth" hint="Optional">
+                      <div className="relative">
+                        <Calendar size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                        <input type="date" value={form.dob ?? ''} onChange={e => set('dob', e.target.value)} className={`${inputCls} pl-9`} />
+                      </div>
+                    </Field>
+                    <Field label="Gender" hint="Optional">
+                      <select value={form.gender ?? ''} onChange={e => set('gender', e.target.value)} className={`${inputCls} appearance-none`}>
+                        <option value="">Select…</option>
+                        <option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option>
+                      </select>
+                    </Field>
+                    <Field label="Aadhaar Last 4" hint="Optional — faster verification">
+                      <div className="relative">
+                        <Smartphone size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                        <input type="text" maxLength={4} value={form.aadhaar_last4 ?? ''} onChange={e => set('aadhaar_last4', e.target.value.replace(/\D/g, ''))} className={`${inputCls} pl-9 font-mono`} placeholder="XXXX" />
+                      </div>
+                    </Field>
+                  </div>
                 </div>
-              </Field>
-              <Field label="Gender">
-                <select
-                  value={form.gender ?? ''}
-                  disabled={isLocked}
-                  onChange={e => set('gender', e.target.value)}
-                  className={`${inputCls} appearance-none`}
-                >
-                  <option value="">Select…</option>
-                  <option>Male</option><option>Female</option><option>Other</option><option>Prefer not to say</option>
-                </select>
-              </Field>
-              <Field label="Aadhaar Last 4 Digits" hint="Optional — for faster verification">
-                <div className="relative">
-                  <Smartphone size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                  <input
-                    type="text"
-                    maxLength={4}
-                    value={form.aadhaar_last4 ?? ''}
-                    disabled={isLocked}
-                    onChange={e => set('aadhaar_last4', e.target.value.replace(/\D/g, ''))}
-                    className={`${inputCls} pl-9 font-mono`}
-                    placeholder="XXXX"
-                  />
-                </div>
-              </Field>
-            </div>
-          </Section>
-
-          <Section
-            title="Address"
-            subtitle="Your current residential address"
-            icon={MapPin}
-            iconBg="bg-[var(--surface-muted)]"
-            iconColor="text-[var(--text-secondary)]"
-          >
-            <Field label="Address Line 1">
-              <input
-                type="text"
-                value={form.address_line1 ?? ''}
-                disabled={isLocked}
-                onChange={e => set('address_line1', e.target.value)}
-                className={inputCls}
-                placeholder="Flat / House no., Street"
-              />
-            </Field>
-            <Field label="Address Line 2 (optional)">
-              <input
-                type="text"
-                value={form.address_line2 ?? ''}
-                disabled={isLocked}
-                onChange={e => set('address_line2', e.target.value)}
-                className={inputCls}
-                placeholder="Area, Landmark"
-              />
-            </Field>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <Field label="City">
-                <input
-                  type="text"
-                  value={form.city ?? ''}
-                  disabled={isLocked}
-                  onChange={e => set('city', e.target.value)}
-                  className={inputCls}
-                  placeholder="Mumbai"
-                />
-              </Field>
-              <div className="sm:col-span-1">
-                <Field label="State">
-                  <select
-                    value={form.state ?? ''}
-                    disabled={isLocked}
-                    onChange={e => set('state', e.target.value)}
-                    className={`${inputCls} appearance-none`}
-                  >
-                    <option value="">Select…</option>
-                    {STATES.map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </Field>
               </div>
-              <Field label="Pincode">
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={form.postal_code ?? ''}
-                  disabled={isLocked}
-                  onChange={e => set('postal_code', e.target.value.replace(/\D/g, ''))}
-                  className={`${inputCls} font-mono`}
-                  placeholder="400001"
-                />
-              </Field>
-              <Field label="Country">
-                <input
-                  type="text"
-                  value={form.country ?? 'India'}
-                  disabled={isLocked}
-                  onChange={e => set('country', e.target.value)}
-                  className={inputCls}
-                  placeholder="India"
-                />
-              </Field>
-            </div>
-          </Section>
+            )}
 
-          <Section
-            title="Settlement Bank Account"
-            subtitle="Payout will be transferred here"
-            icon={Building2}
-            iconBg="bg-[var(--info-bg)]"
-            iconColor="text-[var(--info)]"
-            tag={kyc?.bank_verified ? <VerifiedTag at={kyc.bank_verified_at} /> : undefined}
-          >
-            <Field label="Account Holder Name" hint="Must match your legal name exactly">
-              <input
-                type="text"
-                required
-                value={form.bank_account_name ?? ''}
-                disabled={isLocked}
-                onChange={e => setForm(f => ({ ...f, bank_account_name: e.target.value }))}
-                className={inputCls}
-                placeholder="Full name as per bank records"
-              />
-            </Field>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Account Number">
-                <div className="relative">
-                  <input
-                    type={showAccount ? 'text' : 'password'}
-                    required
-                    value={form.bank_account ?? ''}
-                    disabled={isLocked}
-                    onChange={e => setForm(f => ({ ...f, bank_account: e.target.value }))}
-                    className={`${inputCls} font-mono pr-10`}
-                    placeholder="••••••••••••"
-                  />
-                  {!isLocked && (
-                    <button
-                      type="button"
-                      onClick={() => setShowAccount(v => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)]"
-                    >
-                      {showAccount ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  )}
+            {/* Step 2 — Address */}
+            {step === 2 && (
+              <div>
+                <StepHeader icon={MapPin} title="Address" description="Your current residential address. This whole step is optional." />
+                <div className="space-y-4">
+                  <Field label="Address Line 1" hint="Optional">
+                    <input type="text" value={form.address_line1 ?? ''} onChange={e => set('address_line1', e.target.value)} className={inputCls} placeholder="Flat / House no., Street" />
+                  </Field>
+                  <Field label="Address Line 2" hint="Optional">
+                    <input type="text" value={form.address_line2 ?? ''} onChange={e => set('address_line2', e.target.value)} className={inputCls} placeholder="Area, Landmark" />
+                  </Field>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <Field label="City"><input type="text" value={form.city ?? ''} onChange={e => set('city', e.target.value)} className={inputCls} placeholder="Mumbai" /></Field>
+                    <Field label="State">
+                      <select value={form.state ?? ''} onChange={e => set('state', e.target.value)} className={`${inputCls} appearance-none`}>
+                        <option value="">Select…</option>
+                        {STATES.map(s => <option key={s}>{s}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="Pincode"><input type="text" maxLength={6} value={form.postal_code ?? ''} onChange={e => set('postal_code', e.target.value.replace(/\D/g, ''))} className={`${inputCls} font-mono`} placeholder="400001" /></Field>
+                    <Field label="Country"><input type="text" value={form.country ?? 'India'} onChange={e => set('country', e.target.value)} className={inputCls} placeholder="India" /></Field>
+                  </div>
                 </div>
-                {kyc?.bank_last4 && isLocked && (
-                  <p className="text-xs text-[var(--text-tertiary)] mt-1">Ending in •••• {kyc.bank_last4}</p>
-                )}
-              </Field>
-              <Field label="IFSC Code" hint="11-character bank branch code">
-                <input
-                  type="text"
-                  required
-                  value={form.ifsc_code ?? ''}
-                  disabled={isLocked}
-                  maxLength={11}
-                  onChange={e => setForm(f => ({ ...f, ifsc_code: e.target.value.toUpperCase() }))}
-                  className={`${inputCls} font-mono uppercase`}
-                  placeholder="SBIN0001234"
-                />
-              </Field>
-            </div>
-          </Section>
-
-          <Section
-            title="UPI ID"
-            subtitle="Optional — for instant payout via UPI"
-            icon={Wallet}
-            iconBg="bg-[var(--success-bg)]"
-            iconColor="text-[var(--success)]"
-            tag={
-              kyc?.upi_verified
-                ? <VerifiedTag at={kyc.upi_verified_at} />
-                : <span className="text-xs text-[var(--text-tertiary)] bg-[var(--surface-muted)] px-2 py-0.5 rounded-[var(--radius-pill)]">Optional</span>
-            }
-          >
-            <Field label="UPI ID" hint="e.g. name@upi or 9876543210@ybl">
-              <div className="relative">
-                <Wallet size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-                <input
-                  type={showUpi ? 'text' : 'password'}
-                  value={form.upi_id ?? ''}
-                  disabled={isLocked}
-                  onChange={e => setForm(f => ({ ...f, upi_id: e.target.value }))}
-                  className={`${inputCls} pl-9 pr-10 font-mono`}
-                  placeholder="yourname@upi"
-                />
-                {!isLocked && (
-                  <button
-                    type="button"
-                    onClick={() => setShowUpi(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)]"
-                  >
-                    {showUpi ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                )}
               </div>
-            </Field>
-          </Section>
+            )}
 
-          <Card className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex-1 space-y-1">
-              {errorMsg && <p className="text-sm text-[var(--danger)] flex items-center gap-1.5"><AlertCircle size={13} />{errorMsg}</p>}
-              {successMsg && <p className="text-sm text-[var(--success)] flex items-center gap-1.5"><CheckCircle2 size={13} />{successMsg}</p>}
-              {!errorMsg && !successMsg && (
-                <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1.5">
-                  <Info size={11} /> Financial details are encrypted and stored securely.
-                </p>
+            {/* Step 3 — Bank */}
+            {step === 3 && (
+              <div>
+                <StepHeader icon={Building2} title="Settlement Bank Account" description="Payouts are transferred here. UPI is optional." tag={kyc?.bank_verified ? <VerifiedTag at={kyc.bank_verified_at} /> : undefined} />
+                <div className="space-y-4">
+                  <Field label="Account Holder Name" required hint="Must match your legal name exactly" error={triedNext && !form.bank_account_name?.trim() ? 'Required.' : undefined}>
+                    <input type="text" value={form.bank_account_name ?? ''} onChange={e => set('bank_account_name', e.target.value)} className={inputCls} placeholder="Full name as per bank records" />
+                  </Field>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Account Number" required error={triedNext && !isAcct(form.bank_account ?? '') ? '9–18 digits.' : undefined}>
+                      <div className="relative">
+                        <input type={showAccount ? 'text' : 'password'} value={form.bank_account ?? ''} onChange={e => set('bank_account', e.target.value.replace(/\s/g, ''))} className={`${inputCls} font-mono pr-10`} placeholder="••••••••••••" />
+                        <button type="button" onClick={() => setShowAccount(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)]">
+                          {showAccount ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      </div>
+                    </Field>
+                    <Field label="IFSC Code" required hint="11-character branch code" error={triedNext && !isIfsc(form.ifsc_code ?? '') ? 'Enter a valid IFSC (e.g. SBIN0001234).' : undefined}>
+                      <input type="text" value={form.ifsc_code ?? ''} maxLength={11} onChange={e => set('ifsc_code', e.target.value.toUpperCase())} className={`${inputCls} font-mono uppercase`} placeholder="SBIN0001234" />
+                    </Field>
+                  </div>
+                  <Field label="UPI ID" hint="Optional — for instant payout via UPI">
+                    <div className="relative">
+                      <Wallet size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+                      <input type={showUpi ? 'text' : 'password'} value={form.upi_id ?? ''} onChange={e => set('upi_id', e.target.value)} className={`${inputCls} pl-9 pr-10 font-mono`} placeholder="yourname@upi" />
+                      <button type="button" onClick={() => setShowUpi(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)]">
+                        {showUpi ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </Field>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4 — Review */}
+            {step === 4 && (
+              <div>
+                <StepHeader icon={CheckCircle2} title="Review & Submit" description="Confirm your details. Sensitive numbers are masked and encrypted on submit." />
+                {!canSubmit && (
+                  <div className="flex items-start gap-2 p-3 mb-4 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-[var(--radius-md)]">
+                    <AlertCircle size={14} className="text-[var(--danger)] shrink-0 mt-0.5" />
+                    <p className="text-xs text-[var(--danger)]">
+                      Some required details are missing or invalid.{' '}
+                      {!v1 && <button type="button" onClick={() => jumpTo(1)} className="underline font-semibold focus-visible:outline-none">Fix Identity</button>}
+                      {!v1 && !v3 && ' · '}
+                      {!v3 && <button type="button" onClick={() => jumpTo(3)} className="underline font-semibold focus-visible:outline-none">Fix Bank</button>}
+                    </p>
+                  </div>
+                )}
+                <div className="rounded-[var(--radius-md)] border border-[var(--border)] px-4">
+                  <SummaryRow label="Legal name" value={form.legal_name || '—'} missing={!form.legal_name?.trim()} />
+                  <SummaryRow label="PAN" value={maskPan(form.pan)} mono missing={!isPan(form.pan ?? '')} />
+                  {form.dob && <SummaryRow label="Date of birth" value={form.dob} />}
+                  {form.gender && <SummaryRow label="Gender" value={form.gender} />}
+                  {form.aadhaar_last4 && <SummaryRow label="Aadhaar" value={`••••••••${form.aadhaar_last4}`} mono />}
+                  {formAddress && <SummaryRow label="Address" value={formAddress} />}
+                  <SummaryRow label="Account holder" value={form.bank_account_name || '—'} missing={!form.bank_account_name?.trim()} />
+                  <SummaryRow label="Account number" value={maskTail(form.bank_account)} mono missing={!isAcct(form.bank_account ?? '')} />
+                  <SummaryRow label="IFSC" value={(form.ifsc_code || '—').toUpperCase()} mono missing={!isIfsc(form.ifsc_code ?? '')} />
+                  <SummaryRow label="UPI" value={form.upi_id ? form.upi_id : '—'} mono />
+                </div>
+                {errorMsg && <p className="mt-3 text-sm text-[var(--danger)] flex items-center gap-1.5"><AlertCircle size={13} />{errorMsg}</p>}
+                {successMsg && <p className="mt-3 text-sm text-[var(--success)] flex items-center gap-1.5"><CheckCircle2 size={13} />{successMsg}</p>}
+              </div>
+            )}
+
+            {/* Nav controls */}
+            <div className="flex items-center justify-between gap-3 mt-6 pt-5 border-t border-[var(--border-subtle)]">
+              {step > 1
+                ? <button type="button" onClick={goBack} className={btnGhost}><ChevronLeft size={15} /> Back</button>
+                : <span className="text-xs text-[var(--text-tertiary)] flex items-center gap-1.5"><Lock size={11} /> Encrypted &amp; secure</span>}
+
+              {step < STEP_LABELS.length ? (
+                <button type="button" onClick={goNext} className={btnPrimary}>
+                  {step === 2 && formAddress === '' ? 'Skip' : 'Continue'} <ChevronRight size={15} />
+                </button>
+              ) : (
+                <button type="button" onClick={handleSubmit} disabled={isSubmitting || !canSubmit} className={btnBrand}>
+                  {isSubmitting
+                    ? <><RefreshCw size={14} className="animate-spin" /> Submitting…</>
+                    : <><ShieldCheck size={14} /> Submit for Verification</>}
+                </button>
               )}
             </div>
-
-            {!isLocked && (
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 text-[var(--accent-fg)] font-semibold px-6 py-2.5 rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors text-sm"
-              >
-                {isSubmitting
-                  ? <><RefreshCw size={13} className="animate-spin" />Submitting…</>
-                  : <>Submit for Verification <ChevronRight size={13} /></>}
-              </button>
-            )}
-            {isPending && (
-              <div className="flex items-center gap-2 text-sm text-[var(--info)]">
-                <Clock size={14} /> Awaiting review
-              </div>
-            )}
-            {isVerified && (
-              <div className="flex items-center gap-2 text-sm text-[var(--success)]">
-                <ShieldCheck size={14} /> Verified · No changes needed
-              </div>
-            )}
           </Card>
-        </form>
+        </div>
       )}
     </div>
   );
