@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveProfileId } from '@/lib/server/resolve-profile';
+import { availableBalance } from '@/lib/shared/balance';
 
 export async function POST(req: Request) {
   try {
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
     // 2. Lock and Check Balance
     const { data: balanceData, error: balanceError } = await supabaseAdmin
       .from('creator_balances')
-      .select('total_earnings, total_platform_fees, total_paid_out, pending_payout')
+      .select('total_earnings, total_platform_fees, total_paid_out, pending_payout, frozen_balance')
       .eq('creator_id', profileId)
       .single();
 
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Could not fetch balance details.' }, { status: 500 });
     }
 
-    const available_balance = balanceData.total_earnings - balanceData.total_platform_fees - balanceData.total_paid_out - balanceData.pending_payout;
+    const available_balance = availableBalance(balanceData);
 
     if (available_balance < amount) {
       return NextResponse.json({ error: 'Insufficient available balance.' }, { status: 400 });
