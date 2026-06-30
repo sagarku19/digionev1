@@ -80,7 +80,7 @@ Tables you should not touch without understanding their RLS:
 | `creator_balances` | Creator reads their own row. **Writes: service role only.** |
 | `transaction_ledger` | Creator reads their own. **Writes: service role only, with `record_hash` for audit.** |
 | `creator_payouts` | Creator reads/inserts their own. |
-| `creator_kyc` | Creator reads/inserts/updates their own (app upserts client-side). Payout API checks `status === 'verified'`. |
+| `creator_kyc` | Creator **reads** their own (SELECT-own); **no client writes** — all writes go through service-role `POST /api/kyc/submit` (forces `status='pending'`, never accepts `*_verified` from the client; encrypts PAN/bank/UPI via `kyc-crypto`). Admin verification flips `status`/`*_verified` server-side. Payout API checks `status === 'verified'`. |
 | `products` | Creator owns rows where `creator_id = profile.id`. Public read where `is_published AND deleted_at IS NULL`. |
 | `coupons` | Creator owns (no anon read). Public validation goes through `/api/coupons/validate` (service role). |
 | `sites`, `site_main`, `site_singlepage`, `linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` | Owned by `creator_id`. Public read when `is_active`. |
