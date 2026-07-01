@@ -6,18 +6,19 @@ import {
   ShieldCheck, ShieldAlert, Building2, AlertCircle, Clock,
   ChevronRight, ChevronLeft, User, Eye, EyeOff, Check, Lock,
   CheckCircle2, RefreshCw, BadgeCheck, MapPin, Calendar,
-  Smartphone, Wallet,
+  Smartphone, Wallet, FileText, Upload,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useKycDocuments, type KycDocType } from '@/hooks/creator/useKycDocuments';
 
 const inputCls = 'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow disabled:opacity-60 disabled:cursor-not-allowed';
 const btnPrimary = 'inline-flex items-center justify-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--accent-fg)] font-semibold px-5 py-2.5 rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors';
 const btnBrand = 'inline-flex items-center justify-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text-on-brand)] font-semibold px-5 py-2.5 rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors';
 const btnGhost = 'inline-flex items-center justify-center gap-2 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] font-medium px-4 py-2.5 rounded-[var(--radius-md)] text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors';
 
-const STEP_LABELS = ['Identity', 'Address', 'Bank', 'Review'] as const;
+const STEP_LABELS = ['Identity', 'Address', 'Bank', 'Documents', 'Review'] as const;
 
 const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
 const IFSC_RE = /^[A-Z]{4}0[A-Z0-9]{6}$/;
@@ -157,7 +158,7 @@ function StatusBanner({ status, rejectionReason }: { status?: string; rejectionR
       <ShieldAlert size={18} className="text-[var(--warning)] shrink-0 mt-0.5" />
       <div>
         <p className="text-sm font-semibold text-[var(--warning)]">KYC Not Submitted</p>
-        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Complete the 4 quick steps below to enable payouts from your store.</p>
+        <p className="text-xs text-[var(--text-secondary)] mt-0.5">Complete the 5 quick steps below to enable payouts from your store.</p>
       </div>
     </div>
   );
@@ -234,6 +235,7 @@ const STATES = [
 
 export default function KYCAndBillingPage() {
   const { kyc, isLoading, updateKyc } = useEarnings();
+  const { latestByType, uploadDoc, isUploading } = useKycDocuments();
 
   const [step, setStep] = useState(1);
   const [furthest, setFurthest] = useState(1);
@@ -243,9 +245,19 @@ export default function KYCAndBillingPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [showAccount, setShowAccount] = useState(false);
   const [showUpi, setShowUpi] = useState(false);
+  const [docUploadError, setDocUploadError] = useState<Partial<Record<KycDocType, string>>>({});
 
   const [form, setForm] = useState(EMPTY_FORM);
   const set = (k: keyof KycData, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleDocUpload = async (file: File, docType: KycDocType) => {
+    setDocUploadError(prev => ({ ...prev, [docType]: '' }));
+    try {
+      await uploadDoc({ file, docType });
+    } catch (err) {
+      setDocUploadError(prev => ({ ...prev, [docType]: (err as Error).message || 'Upload failed.' }));
+    }
+  };
 
   const hydratedRef = useRef(false);
   useEffect(() => {
@@ -263,9 +275,10 @@ export default function KYCAndBillingPage() {
 
   const v1 = !!form.legal_name?.trim() && isPan(form.pan ?? '');
   const v3 = !!form.bank_account_name?.trim() && isAcct(form.bank_account ?? '') && isIfsc(form.ifsc_code ?? '');
-  const canSubmit = v1 && v3;
+  const vDocs = !!latestByType('pan_card') && !!latestByType('bank_proof');
+  const canSubmit = v1 && v3 && vDocs;
 
-  const stepValid = (s: number) => (s === 1 ? v1 : s === 3 ? v3 : true);
+  const stepValid = (s: number) => (s === 1 ? v1 : s === 3 ? v3 : s === 4 ? vDocs : true);
 
   const goNext = () => {
     if (!stepValid(step)) { setTriedNext(true); return; }
@@ -465,8 +478,74 @@ export default function KYCAndBillingPage() {
               </div>
             )}
 
-            {/* Step 4 — Review */}
+            {/* Step 4 — Documents */}
             {step === 4 && (
+              <div>
+                <StepHeader icon={FileText} title="Documents" description="Upload your PAN card and a bank proof (cancelled cheque or statement)." />
+                <div className="space-y-5">
+                  {(['pan_card', 'bank_proof', 'aadhaar'] as const).map((docType) => {
+                    const isRequired = docType !== 'aadhaar';
+                    const label =
+                      docType === 'pan_card' ? 'PAN Card' :
+                      docType === 'bank_proof' ? 'Bank Proof (cancelled cheque or statement)' :
+                      'Aadhaar (optional)';
+                    const doc = latestByType(docType);
+                    const sf = doc?.storage_files;
+                    const fileName = sf
+                      ? (Array.isArray(sf)
+                          ? (sf[0] as { file_name: string } | undefined)?.file_name
+                          : (sf as { file_name: string }).file_name)
+                      : undefined;
+                    return (
+                      <Field key={docType} label={label} required={isRequired} error={docUploadError[docType]}>
+                        {doc ? (
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="flex items-center gap-1.5 text-sm text-[var(--success)]">
+                              <Check size={13} />
+                              Uploaded{fileName ? ` — ${fileName}` : ''}
+                            </span>
+                            <label className={`text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)] px-2 py-1 border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] ${(isUploading || isLocked) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
+                              Replace
+                              <input
+                                type="file"
+                                className="sr-only"
+                                accept="image/*,application/pdf"
+                                disabled={isUploading || isLocked}
+                                onChange={async e => {
+                                  const f = e.target.files?.[0];
+                                  if (f) await handleDocUpload(f, docType);
+                                  e.currentTarget.value = '';
+                                }}
+                              />
+                            </label>
+                          </div>
+                        ) : (
+                          <label className={`flex items-center justify-center gap-2 w-full px-3 py-4 text-sm border border-dashed border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-colors focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--focus-ring)] ${(isUploading || isLocked) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+                            {isUploading
+                              ? <><RefreshCw size={13} className="animate-spin" /> Uploading…</>
+                              : <><Upload size={13} /> Choose file (PDF or image)</>}
+                            <input
+                              type="file"
+                              className="sr-only"
+                              accept="image/*,application/pdf"
+                              disabled={isUploading || isLocked}
+                              onChange={async e => {
+                                const f = e.target.files?.[0];
+                                if (f) await handleDocUpload(f, docType);
+                                e.currentTarget.value = '';
+                              }}
+                            />
+                          </label>
+                        )}
+                      </Field>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Step 5 — Review */}
+            {step === 5 && (
               <div>
                 <StepHeader icon={CheckCircle2} title="Review & Submit" description="Confirm your details. Sensitive numbers are masked and encrypted on submit." />
                 {!canSubmit && (
@@ -475,8 +554,10 @@ export default function KYCAndBillingPage() {
                     <p className="text-xs text-[var(--danger)]">
                       Some required details are missing or invalid.{' '}
                       {!v1 && <button type="button" onClick={() => jumpTo(1)} className="underline font-semibold focus-visible:outline-none">Fix Identity</button>}
-                      {!v1 && !v3 && ' · '}
+                      {!v1 && (!v3 || !vDocs) && ' · '}
                       {!v3 && <button type="button" onClick={() => jumpTo(3)} className="underline font-semibold focus-visible:outline-none">Fix Bank</button>}
+                      {!v3 && !vDocs && ' · '}
+                      {!vDocs && <button type="button" onClick={() => jumpTo(4)} className="underline font-semibold focus-visible:outline-none">Upload Documents</button>}
                     </p>
                   </div>
                 )}
@@ -491,6 +572,9 @@ export default function KYCAndBillingPage() {
                   <SummaryRow label="Account number" value={maskTail(form.bank_account)} mono missing={!isAcct(form.bank_account ?? '')} />
                   <SummaryRow label="IFSC" value={(form.ifsc_code || '—').toUpperCase()} mono missing={!isIfsc(form.ifsc_code ?? '')} />
                   <SummaryRow label="UPI" value={form.upi_id ? form.upi_id : '—'} mono />
+                  <SummaryRow label="PAN card doc" value={latestByType('pan_card') ? '✓ Uploaded' : 'Missing'} missing={!latestByType('pan_card')} />
+                  <SummaryRow label="Bank proof doc" value={latestByType('bank_proof') ? '✓ Uploaded' : 'Missing'} missing={!latestByType('bank_proof')} />
+                  {latestByType('aadhaar') && <SummaryRow label="Aadhaar doc" value="✓ Uploaded" />}
                 </div>
                 {errorMsg && <p className="mt-3 text-sm text-[var(--danger)] flex items-center gap-1.5"><AlertCircle size={13} />{errorMsg}</p>}
                 {successMsg && <p className="mt-3 text-sm text-[var(--success)] flex items-center gap-1.5"><CheckCircle2 size={13} />{successMsg}</p>}
