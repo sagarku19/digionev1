@@ -28,6 +28,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/admin/payouts/[id]/reject` | cookie session (super_admin) | service role | `creator_payouts` via `settle_payout('failed')` (pending-only) |
 | POST | `/api/admin/payouts/sync` | super_admin session OR `CRON_SECRET` bearer | service role | reconciles stuck `processing` payouts via Cashfree `getTransfer` → `settle_payout` |
 | POST | `/api/kyc/submit` | cookie session | server + service role | `creator_kyc` (forces status=pending, encrypts PAN/bank/UPI; never accepts *_verified/status from client) |
+| POST | `/api/kyc/documents` | cookie session | server + service role | `kyc_documents` (links an uploaded creator-private kyc file; validates owner+bucket+kind) |
 | GET | `/api/products/search` | none | service role | — |
 | GET | `/api/sites/check-slug` | none | service role | — |
 | POST | `/api/sites/create` | cookie session | server + service role | `sites`, `site_main`/`site_singlepage`/`linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` |
