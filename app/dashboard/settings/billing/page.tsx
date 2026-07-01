@@ -369,7 +369,7 @@ export default function KYCAndBillingPage() {
               <button
                 type="button"
                 onClick={() => { setEditing(true); setStep(1); setSuccessMsg(''); setErrorMsg(''); }}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--brand)] border border-[var(--brand)]/30 bg-[var(--brand)]/[0.06] hover:bg-[var(--brand)]/[0.12] hover:border-[var(--brand)]/50 px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               >
                 <Pencil size={12} /> Update details
               </button>
@@ -390,9 +390,13 @@ export default function KYCAndBillingPage() {
               at={kyc?.upi_verified_at}
             />
           </Card>
-          <p className="mt-3 text-xs text-[var(--text-tertiary)] flex items-center gap-1.5">
-            <Lock size={11} /> Your PAN, account number and UPI are encrypted at rest — only the last few digits are ever shown. Use <span className="font-medium">Update details</span> to change your bank / IFSC / UPI — it re-submits for verification.
-          </p>
+          <div className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
+            <Lock size={12} className="shrink-0 mt-0.5" />
+            <p>
+              Your PAN, account number, and UPI are <span className="font-medium text-[var(--text-secondary)]">encrypted at rest</span> — only the last 4 digits are ever shown.
+              To change your bank account, IFSC, or UPI, tap <span className="font-semibold text-[var(--brand)]">Update details</span> above; it re-submits your KYC for verification.
+            </p>
+          </div>
         </div>
       ) : (
         /* ───────── Editable wizard ───────── */
