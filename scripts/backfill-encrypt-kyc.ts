@@ -15,6 +15,13 @@ async function main() {
   let updated = 0;
   for (const row of rows ?? []) {
     const patch: Record<string, string> = {};
+    // Guard: if a value comes back as bytea hex (\x…), the columns are still bytea — this script
+    // MUST run AFTER migration 20260630000000 (bytea→text). Abort rather than re-encrypt the hex
+    // (which would store a wrong last4 = silent corruption).
+    const looksHex = (v: string | null) => !!v && /^\\x[0-9a-f]+$/i.test(v);
+    if (looksHex(row.pan_enc) || looksHex(row.bank_account_enc) || looksHex(row.upi_id_enc)) {
+      throw new Error('creator_kyc *_enc columns look like bytea hex — run migration 20260630000000 (bytea→text) before this backfill.');
+    }
     if (row.pan_enc && !isEncrypted(row.pan_enc)) {
       patch.pan_enc = encryptField(row.pan_enc);
       patch.pan_last4 = last4(row.pan_enc);

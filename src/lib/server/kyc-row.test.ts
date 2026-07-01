@@ -17,14 +17,14 @@ describe('buildEncryptedKycRow', () => {
     expect(row.kyc_level).toBe('basic');
   });
 
-  it('drops verification/admin fields entirely', () => {
+  it('drops arbitrary admin fields; forces verification flags + beneficiary to false/null', () => {
     const row = buildEncryptedKycRow({
       ...base, pan_verified: true, bank_verified: true, admin_notes: 'x', beneficiary_id: 'y',
     }) as unknown as Record<string, unknown>;
-    expect(row.pan_verified).toBeUndefined();
-    expect(row.bank_verified).toBeUndefined();
-    expect(row.admin_notes).toBeUndefined();
-    expect(row.beneficiary_id).toBeUndefined();
+    expect(row.admin_notes).toBeUndefined();   // arbitrary field never set (allowlist)
+    expect(row.pan_verified).toBe(false);      // forced, not passed through from the client
+    expect(row.bank_verified).toBe(false);
+    expect(row.beneficiary_id).toBeNull();     // forced null
   });
 
   it('encrypts PAN and bank and exposes correct last4', () => {
@@ -40,5 +40,16 @@ describe('buildEncryptedKycRow', () => {
     const row = buildEncryptedKycRow(base);
     expect(row.ifsc_code).toBe('HDFC0001234');
     expect(row.upi_id_enc).toBeNull();
+  });
+
+  it('resets verification flags + beneficiary on every submit (bank change ⇒ re-verify)', () => {
+    const row = buildEncryptedKycRow({ ...base, pan_verified: true, bank_verified: true, beneficiary_id: 'stale' });
+    expect(row.pan_verified).toBe(false);
+    expect(row.bank_verified).toBe(false);
+    expect(row.upi_verified).toBe(false);
+    expect(row.pan_verified_at).toBeNull();
+    expect(row.bank_verified_at).toBeNull();
+    expect(row.upi_verified_at).toBeNull();
+    expect(row.beneficiary_id).toBeNull();
   });
 });
