@@ -235,7 +235,7 @@ const STATES = [
 
 export default function KYCAndBillingPage() {
   const { kyc, isLoading, updateKyc } = useEarnings();
-  const { latestByType, uploadDoc, isUploading } = useKycDocuments();
+  const { latestByType, uploadDoc } = useKycDocuments();
 
   const [step, setStep] = useState(1);
   const [furthest, setFurthest] = useState(1);
@@ -246,16 +246,20 @@ export default function KYCAndBillingPage() {
   const [showAccount, setShowAccount] = useState(false);
   const [showUpi, setShowUpi] = useState(false);
   const [docUploadError, setDocUploadError] = useState<Partial<Record<KycDocType, string>>>({});
+  const [uploadingType, setUploadingType] = useState<KycDocType | null>(null);
 
   const [form, setForm] = useState(EMPTY_FORM);
   const set = (k: keyof KycData, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   const handleDocUpload = async (file: File, docType: KycDocType) => {
     setDocUploadError(prev => ({ ...prev, [docType]: '' }));
+    setUploadingType(docType);
     try {
       await uploadDoc({ file, docType });
     } catch (err) {
       setDocUploadError(prev => ({ ...prev, [docType]: (err as Error).message || 'Upload failed.' }));
+    } finally {
+      setUploadingType(null);
     }
   };
 
@@ -508,35 +512,37 @@ export default function KYCAndBillingPage() {
                               <Check size={13} />
                               Uploaded{fileName ? ` — ${fileName}` : ''}
                             </span>
-                            <label className={`text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)] px-2 py-1 border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] ${(isUploading || isLocked) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
-                              Replace
+                            <label className={`text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)] px-2 py-1 border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] ${(uploadingType !== null || isLocked) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
+                              {uploadingType === docType ? 'Uploading…' : 'Replace'}
                               <input
                                 type="file"
                                 className="sr-only"
                                 accept="image/*,application/pdf"
-                                disabled={isUploading || isLocked}
+                                disabled={uploadingType !== null || isLocked}
                                 onChange={async e => {
-                                  const f = e.target.files?.[0];
+                                  const input = e.currentTarget;
+                                  const f = input.files?.[0];
                                   if (f) await handleDocUpload(f, docType);
-                                  e.currentTarget.value = '';
+                                  input.value = '';
                                 }}
                               />
                             </label>
                           </div>
                         ) : (
-                          <label className={`flex items-center justify-center gap-2 w-full px-3 py-4 text-sm border border-dashed border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-colors focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--focus-ring)] ${(isUploading || isLocked) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-                            {isUploading
+                          <label className={`flex items-center justify-center gap-2 w-full px-3 py-4 text-sm border border-dashed border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-colors focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--focus-ring)] ${(uploadingType !== null || isLocked) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+                            {uploadingType === docType
                               ? <><RefreshCw size={13} className="animate-spin" /> Uploading…</>
                               : <><Upload size={13} /> Choose file (PDF or image)</>}
                             <input
                               type="file"
                               className="sr-only"
                               accept="image/*,application/pdf"
-                              disabled={isUploading || isLocked}
+                              disabled={uploadingType !== null || isLocked}
                               onChange={async e => {
-                                const f = e.target.files?.[0];
+                                const input = e.currentTarget;
+                                const f = input.files?.[0];
                                 if (f) await handleDocUpload(f, docType);
-                                e.currentTarget.value = '';
+                                input.value = '';
                               }}
                             />
                           </label>
