@@ -380,6 +380,10 @@ export default function KYCAndBillingPage() {
         <div className="max-w-3xl mx-auto">
           <Stepper step={step} furthest={furthest} onJump={jumpTo} />
 
+          <p className="text-xs text-[var(--text-tertiary)] mb-3">
+            <span className="text-[var(--danger)]">*</span> Required field
+          </p>
+
           <Card>
             {/* Step 1 — Identity */}
             {step === 1 && (
