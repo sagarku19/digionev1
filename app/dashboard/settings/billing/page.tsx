@@ -64,6 +64,7 @@ type KycData = {
   state: string | null;
   postal_code: string | null;
   country: string | null;
+  preferred_payout_method: string | null;
   rejection_reason: string | null;
 };
 
@@ -74,6 +75,7 @@ const EMPTY_FORM: KycData = {
   ifsc_code: '', upi_id: '', upi_verified: null, upi_verified_at: null,
   aadhaar_last4: '', dob: '', gender: '',
   address_line1: '', address_line2: '', city: '', state: '', postal_code: '', country: 'India',
+  preferred_payout_method: 'bank',
   rejection_reason: null,
 };
 
@@ -285,7 +287,8 @@ export default function KYCAndBillingPage() {
   const locked = isLocked && !editing;
 
   const v1 = !!form.legal_name?.trim() && isPan(form.pan ?? '');
-  const v3 = !!form.bank_account_name?.trim() && isAcct(form.bank_account ?? '') && isIfsc(form.ifsc_code ?? '');
+  const v3 = !!form.bank_account_name?.trim() && isAcct(form.bank_account ?? '') && isIfsc(form.ifsc_code ?? '')
+    && (form.preferred_payout_method !== 'upi' || !!form.upi_id?.trim());
   const vDocs = !!latestByType('pan_card') && !!latestByType('bank_proof');
   const canSubmit = v1 && v3 && vDocs;
 
@@ -324,6 +327,7 @@ export default function KYCAndBillingPage() {
         state: form.state || null,
         postal_code: form.postal_code || null,
         country: form.country || 'India',
+        preferred_payout_method: form.preferred_payout_method || 'bank',
       });
       setEditing(false);
       setStep(1);
@@ -594,6 +598,24 @@ export default function KYCAndBillingPage() {
                       </button>
                     </div>
                   </Field>
+                  <Field label="Primary Payout Method" required hint="Where your payouts are sent by default (UPI needs a UPI ID above)">
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['bank', 'upi'] as const).map(m => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => set('preferred_payout_method', m)}
+                          className={`inline-flex items-center justify-center gap-2 px-3 py-2.5 text-sm rounded-[var(--radius-md)] border transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                            (form.preferred_payout_method ?? 'bank') === m
+                              ? 'border-[var(--brand)] bg-[var(--brand)]/[0.06] text-[var(--brand)] font-semibold'
+                              : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+                          }`}
+                        >
+                          {m === 'bank' ? <><Building2 size={14} /> Bank account</> : <><Wallet size={14} /> UPI</>}
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
                 </div>
               </div>
             )}
@@ -694,6 +716,7 @@ export default function KYCAndBillingPage() {
                   <SummaryRow label="Account number" value={maskTail(form.bank_account)} mono missing={!isAcct(form.bank_account ?? '')} />
                   <SummaryRow label="IFSC" value={(form.ifsc_code || '—').toUpperCase()} mono missing={!isIfsc(form.ifsc_code ?? '')} />
                   <SummaryRow label="UPI" value={form.upi_id ? form.upi_id : '—'} mono />
+                  <SummaryRow label="Primary method" value={(form.preferred_payout_method ?? 'bank') === 'upi' ? 'UPI' : 'Bank account'} />
                   <SummaryRow label="PAN card doc" value={latestByType('pan_card') ? '✓ Uploaded' : 'Missing'} missing={!latestByType('pan_card')} />
                   <SummaryRow label="Bank proof doc" value={latestByType('bank_proof') ? '✓ Uploaded' : 'Missing'} missing={!latestByType('bank_proof')} />
                   {latestByType('aadhaar') && <SummaryRow label="Aadhaar doc" value="✓ Uploaded" />}

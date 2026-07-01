@@ -52,4 +52,10 @@ describe('buildEncryptedKycRow', () => {
     expect(row.upi_verified_at).toBeNull();
     expect(row.beneficiary_id).toBeNull();
   });
+
+  it('defaults preferred_payout_method to bank; passes upi through', () => {
+    expect(buildEncryptedKycRow(base).preferred_payout_method).toBe('bank');
+    expect(buildEncryptedKycRow({ ...base, preferred_payout_method: 'upi' }).preferred_payout_method).toBe('upi');
+    expect(buildEncryptedKycRow({ ...base, preferred_payout_method: 'weird' }).preferred_payout_method).toBe('bank');
+  });
 });

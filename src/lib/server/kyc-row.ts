@@ -29,6 +29,7 @@ export interface EncryptedKycRow {
   country: string;
   status: 'pending';
   kyc_level: 'basic';
+  preferred_payout_method: 'bank' | 'upi';
   // Every submit resets verification state + the Cashfree beneficiary: a bank/PAN change must force
   // re-verification, and stale *_verified flags must never gate a payout to a changed account.
   pan_verified: false;
@@ -64,6 +65,7 @@ export function buildEncryptedKycRow(input: Record<string, unknown>): EncryptedK
     country: STR(input.country) || 'India',
     status: 'pending',
     kyc_level: 'basic',
+    preferred_payout_method: STR(input.preferred_payout_method) === 'upi' ? 'upi' : 'bank',
     pan_verified: false,
     bank_verified: false,
     upi_verified: false,
