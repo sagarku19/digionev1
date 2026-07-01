@@ -1080,6 +1080,45 @@ export type Database = {
           },
         ]
       }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          creator_id: string
+          doc_type: string
+          file_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          doc_type: string
+          file_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          doc_type?: string
+          file_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_documents_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kyc_documents_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "storage_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_form: {
         Row: {
           created_at: string | null
