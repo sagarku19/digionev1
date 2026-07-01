@@ -349,7 +349,7 @@ export default function KYCAndBillingPage() {
         </Card>
       ) : isLocked ? (
         /* ───────── Read-only summary (pending / verified) ───────── */
-        <div className="max-w-3xl">
+        <div className="max-w-3xl mx-auto">
           <Card>
             <div className="flex items-center gap-2 mb-4">
               <Lock size={14} className="text-[var(--text-tertiary)]" />
@@ -377,7 +377,7 @@ export default function KYCAndBillingPage() {
         </div>
       ) : (
         /* ───────── Editable wizard ───────── */
-        <div className="max-w-3xl">
+        <div className="max-w-3xl mx-auto">
           <Stepper step={step} furthest={furthest} onJump={jumpTo} />
 
           <Card>
