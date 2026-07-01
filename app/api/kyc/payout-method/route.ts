@@ -26,8 +26,12 @@ export async function POST(req: Request) {
     const name = String(body.bank_account_name ?? '').trim();
     const ifsc = String(body.ifsc_code ?? '').trim().toUpperCase();
     const upi = String(body.upi_id ?? '').trim();
+    const preferred = body.preferred_payout_method === 'upi' ? 'upi' : 'bank';
     if (!name || !/^[0-9]{9,18}$/.test(bank) || !IFSC_RE.test(ifsc)) {
       return NextResponse.json({ error: 'Account holder, a valid account number (9–18 digits) and IFSC are required.' }, { status: 400 });
+    }
+    if (preferred === 'upi' && !upi) {
+      return NextResponse.json({ error: 'Add a UPI ID to use UPI as your primary payout method.' }, { status: 400 });
     }
 
     const db = createServiceClient();
@@ -40,6 +44,7 @@ export async function POST(req: Request) {
       bank_account_name: name,
       ifsc_code: ifsc,
       upi_id_enc: upi ? encryptField(upi) : null,
+      preferred_payout_method: preferred,
       // A changed destination must be re-verified — reset ONLY the payout side; identity stays as-is.
       bank_verified: false,
       bank_verified_at: null,

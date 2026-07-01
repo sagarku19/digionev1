@@ -392,6 +392,7 @@ export type Database = {
           pan_verified: boolean | null
           pan_verified_at: string | null
           postal_code: string | null
+          preferred_payout_method: string
           rejection_reason: string | null
           state: string | null
           status: string
@@ -436,6 +437,7 @@ export type Database = {
           pan_verified?: boolean | null
           pan_verified_at?: string | null
           postal_code?: string | null
+          preferred_payout_method?: string
           rejection_reason?: string | null
           state?: string | null
           status?: string
@@ -480,6 +482,7 @@ export type Database = {
           pan_verified?: boolean | null
           pan_verified_at?: string | null
           postal_code?: string | null
+          preferred_payout_method?: string
           rejection_reason?: string | null
           state?: string | null
           status?: string

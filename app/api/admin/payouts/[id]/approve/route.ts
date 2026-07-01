@@ -24,7 +24,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     if (payout.status !== 'pending') return NextResponse.json({ error: `Payout is ${payout.status}, not pending.` }, { status: 409 });
 
     const { data: kyc } = await db.from('creator_kyc')
-      .select('legal_name, bank_account_name, bank_account_enc, ifsc_code, bank_last4, upi_id_enc, beneficiary_id, status')
+      .select('legal_name, bank_account_name, bank_account_enc, ifsc_code, bank_last4, upi_id_enc, beneficiary_id, status, preferred_payout_method')
       .eq('creator_id', payout.creator_id).maybeSingle();
     if (!kyc || kyc.status !== 'verified') return NextResponse.json({ error: 'Creator KYC not verified.' }, { status: 409 });
 
@@ -66,7 +66,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     if (!claimed) return NextResponse.json({ error: 'Payout already claimed.' }, { status: 409 });
 
     // transfer_id = payout.id (Cashfree dedupes duplicates).
-    const tr = await initiateTransfer({ transfer_id: payoutId, transfer_amount: Number(payout.amount), beneficiary_id: beneficiaryId, mode: 'banktransfer' });
+    // Route to the creator's chosen destination (UPI needs a vpa on the beneficiary, set above from KYC).
+    const mode = kyc.preferred_payout_method === 'upi' ? 'upi' : 'banktransfer';
+    const tr = await initiateTransfer({ transfer_id: payoutId, transfer_amount: Number(payout.amount), beneficiary_id: beneficiaryId, mode });
     if (!tr.accepted) {
       // Don't persist tr.raw (may echo beneficiary/account details) — store a safe marker only.
       await db.rpc('settle_payout', { p_payout_id: payoutId, p_terminal: 'failed', p_gateway_metadata: { stage: 'transfer_init_failed' } as Json, p_failure_reason: 'transfer_init_failed' });

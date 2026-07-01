@@ -249,7 +249,7 @@ export default function KYCAndBillingPage() {
   const [uploadingType, setUploadingType] = useState<KycDocType | null>(null);
   const [editing, setEditing] = useState(false);
   const [editingPayout, setEditingPayout] = useState(false);
-  const [payoutForm, setPayoutForm] = useState({ bank_account_name: '', bank_account: '', ifsc_code: '', upi_id: '' });
+  const [payoutForm, setPayoutForm] = useState<{ bank_account_name: string; bank_account: string; ifsc_code: string; upi_id: string; preferred_payout_method: 'bank' | 'upi' }>({ bank_account_name: '', bank_account: '', ifsc_code: '', upi_id: '', preferred_payout_method: 'bank' });
   const [payoutError, setPayoutError] = useState('');
 
   const [form, setForm] = useState(EMPTY_FORM);
@@ -335,9 +335,16 @@ export default function KYCAndBillingPage() {
     }
   };
 
-  const payoutValid = !!payoutForm.bank_account_name.trim() && isAcct(payoutForm.bank_account) && isIfsc(payoutForm.ifsc_code);
+  const payoutValid = !!payoutForm.bank_account_name.trim() && isAcct(payoutForm.bank_account) && isIfsc(payoutForm.ifsc_code)
+    && (payoutForm.preferred_payout_method !== 'upi' || !!payoutForm.upi_id.trim());
   const openPayoutEdit = () => {
-    setPayoutForm({ bank_account_name: kyc?.bank_account_name ?? '', bank_account: '', ifsc_code: kyc?.ifsc_code ?? '', upi_id: '' });
+    setPayoutForm({
+      bank_account_name: kyc?.bank_account_name ?? '',
+      bank_account: '',
+      ifsc_code: kyc?.ifsc_code ?? '',
+      upi_id: '',
+      preferred_payout_method: (kyc?.preferred_payout_method === 'upi' ? 'upi' : 'bank'),
+    });
     setPayoutError('');
     setEditing(false);
     setEditingPayout(true);
@@ -351,6 +358,7 @@ export default function KYCAndBillingPage() {
         bank_account: payoutForm.bank_account,
         ifsc_code: payoutForm.ifsc_code,
         upi_id: payoutForm.upi_id || '',
+        preferred_payout_method: payoutForm.preferred_payout_method,
       });
       setEditingPayout(false);
     } catch (err) {
@@ -400,8 +408,26 @@ export default function KYCAndBillingPage() {
                   <input type="text" maxLength={11} className={`${inputCls} font-mono uppercase`} value={payoutForm.ifsc_code} onChange={e => setPayoutForm(f => ({ ...f, ifsc_code: e.target.value.toUpperCase() }))} placeholder="SBIN0001234" />
                 </Field>
               </div>
-              <Field label="UPI ID" hint="Optional — for instant payout via UPI">
+              <Field label="UPI ID" required={payoutForm.preferred_payout_method === 'upi'} hint="Optional — for instant payout via UPI">
                 <input type="text" className={`${inputCls} font-mono`} value={payoutForm.upi_id} onChange={e => setPayoutForm(f => ({ ...f, upi_id: e.target.value }))} placeholder="yourname@upi" />
+              </Field>
+              <Field label="Primary Payout Method" required hint="Where your payouts are sent by default">
+                <div className="grid grid-cols-2 gap-2">
+                  {(['bank', 'upi'] as const).map(m => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setPayoutForm(f => ({ ...f, preferred_payout_method: m }))}
+                      className={`inline-flex items-center justify-center gap-2 px-3 py-2.5 text-sm rounded-[var(--radius-md)] border transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                        payoutForm.preferred_payout_method === m
+                          ? 'border-[var(--brand)] bg-[var(--brand)]/[0.06] text-[var(--brand)] font-semibold'
+                          : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+                      }`}
+                    >
+                      {m === 'bank' ? <><Building2 size={14} /> Bank account</> : <><Wallet size={14} /> UPI</>}
+                    </button>
+                  ))}
+                </div>
               </Field>
             </div>
             {payoutError && <p className="mt-3 text-sm text-[var(--danger)] flex items-center gap-1.5"><AlertCircle size={13} />{payoutError}</p>}
@@ -434,7 +460,7 @@ export default function KYCAndBillingPage() {
                 <button
                   type="button"
                   onClick={() => { setEditing(true); setEditingPayout(false); setStep(1); setSuccessMsg(''); setErrorMsg(''); }}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--info)] border border-[var(--info)]/30 bg-[var(--info)]/[0.06] hover:bg-[var(--info)]/[0.12] hover:border-[var(--info)]/50 px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
                   <Pencil size={12} /> Update details
                 </button>
@@ -455,6 +481,7 @@ export default function KYCAndBillingPage() {
               verified={kyc?.upi_verified}
               at={kyc?.upi_verified_at}
             />
+            <SummaryRow label="Primary method" value={kyc?.preferred_payout_method === 'upi' ? 'UPI' : 'Bank account'} />
           </Card>
           <div className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
             <Lock size={12} className="shrink-0 mt-0.5" />
@@ -680,7 +707,9 @@ export default function KYCAndBillingPage() {
             <div className="flex items-center justify-between gap-3 mt-6 pt-5 border-t border-[var(--border-subtle)]">
               {step > 1
                 ? <button type="button" onClick={goBack} className={btnGhost}><ChevronLeft size={15} /> Back</button>
-                : <span className="text-xs text-[var(--text-tertiary)] flex items-center gap-1.5"><Lock size={11} /> Encrypted &amp; secure</span>}
+                : editing
+                  ? <button type="button" onClick={() => { setEditing(false); setStep(1); }} className={btnGhost}><ChevronLeft size={15} /> Back to summary</button>
+                  : <span className="text-xs text-[var(--text-tertiary)] flex items-center gap-1.5"><Lock size={11} /> Encrypted &amp; secure</span>}
 
               {step < STEP_LABELS.length ? (
                 <button type="button" onClick={goNext} className={btnPrimary}>
