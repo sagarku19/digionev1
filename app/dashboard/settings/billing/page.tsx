@@ -6,7 +6,7 @@ import {
   ShieldCheck, ShieldAlert, Building2, AlertCircle, Clock,
   ChevronRight, ChevronLeft, User, Eye, EyeOff, Check, Lock,
   CheckCircle2, RefreshCw, BadgeCheck, MapPin, Calendar,
-  Smartphone, Wallet, FileText, Upload,
+  Smartphone, Wallet, FileText, Upload, Pencil,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
@@ -247,6 +247,7 @@ export default function KYCAndBillingPage() {
   const [showUpi, setShowUpi] = useState(false);
   const [docUploadError, setDocUploadError] = useState<Partial<Record<KycDocType, string>>>({});
   const [uploadingType, setUploadingType] = useState<KycDocType | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const [form, setForm] = useState(EMPTY_FORM);
   const set = (k: keyof KycData, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -276,6 +277,9 @@ export default function KYCAndBillingPage() {
   const isVerified = kyc?.status === 'verified';
   const isPending = kyc?.status === 'pending';
   const isLocked = isVerified || isPending;
+  // verified/pending normally shows the read-only summary; `editing` lets the creator re-open the
+  // wizard to update bank/IFSC/UPI — re-submitting resets verification (server-side) = re-KYC.
+  const locked = isLocked && !editing;
 
   const v1 = !!form.legal_name?.trim() && isPan(form.pan ?? '');
   const v3 = !!form.bank_account_name?.trim() && isAcct(form.bank_account ?? '') && isIfsc(form.ifsc_code ?? '');
@@ -318,6 +322,8 @@ export default function KYCAndBillingPage() {
         postal_code: form.postal_code || null,
         country: form.country || 'India',
       });
+      setEditing(false);
+      setStep(1);
       setSuccessMsg('Details submitted! Our compliance team will review within 1–2 business days.');
     } catch (err) {
       setErrorMsg((err as Error).message || 'Failed to submit KYC details.');
@@ -351,13 +357,22 @@ export default function KYCAndBillingPage() {
             <Skeleton className="h-10 w-2/3" />
           </div>
         </Card>
-      ) : isLocked ? (
+      ) : locked ? (
         /* ───────── Read-only summary (pending / verified) ───────── */
         <div className="max-w-3xl mx-auto">
           <Card>
-            <div className="flex items-center gap-2 mb-4">
-              <Lock size={14} className="text-[var(--text-tertiary)]" />
-              <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Submitted Details</p>
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <Lock size={14} className="text-[var(--text-tertiary)]" />
+                <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Submitted Details</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setEditing(true); setStep(1); setSuccessMsg(''); setErrorMsg(''); }}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Pencil size={12} /> Update details
+              </button>
             </div>
             <SummaryRow label="Legal name" value={kyc?.legal_name || '—'} />
             <SummaryRow label="PAN" value={kyc?.pan_last4 ? `•••••${kyc.pan_last4}` : '—'} mono verified={kyc?.pan_verified} at={kyc?.pan_verified_at} />
@@ -376,7 +391,7 @@ export default function KYCAndBillingPage() {
             />
           </Card>
           <p className="mt-3 text-xs text-[var(--text-tertiary)] flex items-center gap-1.5">
-            <Lock size={11} /> Your PAN, account number and UPI are encrypted at rest — only the last few digits are ever shown.
+            <Lock size={11} /> Your PAN, account number and UPI are encrypted at rest — only the last few digits are ever shown. Use <span className="font-medium">Update details</span> to change your bank / IFSC / UPI — it re-submits for verification.
           </p>
         </div>
       ) : (
@@ -512,13 +527,13 @@ export default function KYCAndBillingPage() {
                               <Check size={13} />
                               Uploaded{fileName ? ` — ${fileName}` : ''}
                             </span>
-                            <label className={`text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)] px-2 py-1 border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] ${(uploadingType !== null || isLocked) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
+                            <label className={`text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-sm)] px-2 py-1 border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] ${(uploadingType !== null || locked) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
                               {uploadingType === docType ? 'Uploading…' : 'Replace'}
                               <input
                                 type="file"
                                 className="sr-only"
                                 accept="image/*,application/pdf"
-                                disabled={uploadingType !== null || isLocked}
+                                disabled={uploadingType !== null || locked}
                                 onChange={async e => {
                                   const input = e.currentTarget;
                                   const f = input.files?.[0];
@@ -529,7 +544,7 @@ export default function KYCAndBillingPage() {
                             </label>
                           </div>
                         ) : (
-                          <label className={`flex items-center justify-center gap-2 w-full px-3 py-4 text-sm border border-dashed border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-colors focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--focus-ring)] ${(uploadingType !== null || isLocked) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+                          <label className={`flex items-center justify-center gap-2 w-full px-3 py-4 text-sm border border-dashed border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-colors focus-within:border-[var(--border-strong)] focus-within:shadow-[var(--focus-ring)] ${(uploadingType !== null || locked) ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
                             {uploadingType === docType
                               ? <><RefreshCw size={13} className="animate-spin" /> Uploading…</>
                               : <><Upload size={13} /> Choose file (PDF or image)</>}
@@ -537,7 +552,7 @@ export default function KYCAndBillingPage() {
                               type="file"
                               className="sr-only"
                               accept="image/*,application/pdf"
-                              disabled={uploadingType !== null || isLocked}
+                              disabled={uploadingType !== null || locked}
                               onChange={async e => {
                                 const input = e.currentTarget;
                                 const f = input.files?.[0];
