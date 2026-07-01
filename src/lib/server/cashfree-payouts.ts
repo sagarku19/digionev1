@@ -72,10 +72,12 @@ export async function initiateTransfer(input: { transfer_id: string; transfer_am
   return { accepted, raw };
 }
 
-export async function getTransfer(transferId: string): Promise<{ status: string | null; raw: unknown }> {
+export async function getTransfer(transferId: string): Promise<{ status: string | null; httpStatus: number; raw: unknown }> {
   const res = await fetch(`${BASE}/v2/transfers/${encodeURIComponent(transferId)}`, { headers: headers(), cache: 'no-store' });
   const raw = await res.json().catch(() => ({}));
   const status = (raw as { status?: string; transfer_status?: string })?.status
     ?? (raw as { transfer_status?: string })?.transfer_status ?? null;
-  return { status, raw };
+  // httpStatus lets the reconciler distinguish a genuinely-missing transfer (404 → never reached
+  // Cashfree, safe to fail) from an in-flight one — see app/api/admin/payouts/sync/route.ts.
+  return { status, httpStatus: res.status, raw };
 }

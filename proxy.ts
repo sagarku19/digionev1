@@ -82,6 +82,12 @@ export default async function proxy(request: NextRequest) {
       url.search = '';
       return NextResponse.redirect(url);
     }
+    // Admin surfaces are super_admin-only (defense-in-depth on top of RLS + per-route DB role checks).
+    if (url.pathname.startsWith('/dashboard/admin') && role !== 'super_admin') {
+      url.pathname = '/dashboard';
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

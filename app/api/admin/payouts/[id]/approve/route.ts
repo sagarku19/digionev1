@@ -43,7 +43,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       beneficiaryId = `benef_${payout.creator_id}`;
       const ben = await createBeneficiary(kycToBeneficiaryPayload(beneficiaryId, dkyc));
       if (!ben.ok) return NextResponse.json({ error: 'Beneficiary creation failed.' }, { status: 502 });
-      await db.from('creator_kyc').update({ beneficiary_id: beneficiaryId, beneficiary_metadata: ben.raw as Json }).eq('creator_id', payout.creator_id);
+      // Do NOT persist ben.raw — the Cashfree beneficiary response can echo the full account number /
+      // IFSC / VPA, which would re-introduce plaintext bank PII at rest (undoing Phase 0 encryption).
+      await db.from('creator_kyc').update({ beneficiary_id: beneficiaryId, beneficiary_metadata: { created_at: new Date().toISOString(), provider: 'cashfree' } as Json }).eq('creator_id', payout.creator_id);
     }
 
     // Ensure a default payout-method row (display only). Select-then-insert (no unique index on creator_id,is_default).
@@ -66,10 +68,12 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     // transfer_id = payout.id (Cashfree dedupes duplicates).
     const tr = await initiateTransfer({ transfer_id: payoutId, transfer_amount: Number(payout.amount), beneficiary_id: beneficiaryId, mode: 'banktransfer' });
     if (!tr.accepted) {
-      await db.rpc('settle_payout', { p_payout_id: payoutId, p_terminal: 'failed', p_gateway_metadata: tr.raw as Json, p_failure_reason: 'transfer_init_failed' });
+      // Don't persist tr.raw (may echo beneficiary/account details) — store a safe marker only.
+      await db.rpc('settle_payout', { p_payout_id: payoutId, p_terminal: 'failed', p_gateway_metadata: { stage: 'transfer_init_failed' } as Json, p_failure_reason: 'transfer_init_failed' });
       return NextResponse.json({ error: 'Transfer initiation failed; hold released.' }, { status: 502 });
     }
-    await db.from('creator_payouts').update({ gateway_metadata: tr.raw as Json }).eq('id', payoutId);
+    // Safe marker only; the webhook later overwrites gateway_metadata with its (non-PII) payload.
+    await db.from('creator_payouts').update({ gateway_metadata: { initiated_at: new Date().toISOString() } as Json }).eq('id', payoutId);
     return NextResponse.json({ ok: true, status: 'processing' });
   } catch (e) {
     console.error('[admin/payouts/approve]', e);

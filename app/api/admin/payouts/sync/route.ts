@@ -28,13 +28,19 @@ export async function POST(req: Request) {
 
     let settled = 0;
     for (const p of stuck ?? []) {
-      const { status } = await getTransfer(p.id);
+      const { status, httpStatus } = await getTransfer(p.id);
       const s = (status ?? '').toUpperCase();
       if (['SUCCESS', 'COMPLETED', 'PAID'].includes(s)) {
         await db.rpc('settle_payout', { p_payout_id: p.id, p_terminal: 'success', p_gateway_metadata: { synced: true, status: s } as Json });
         settled++;
       } else if (['FAILED', 'REJECTED', 'REVERSED', 'CANCELLED'].includes(s)) {
         await db.rpc('settle_payout', { p_payout_id: p.id, p_terminal: 'failed', p_gateway_metadata: { synced: true, status: s } as Json, p_failure_reason: `synced_${s}` });
+        settled++;
+      } else if (httpStatus === 404) {
+        // Cashfree has no record of transfer_id (= our payout.id): the transfer never reached the
+        // gateway (e.g. approve threw after the pending→processing claim). No money moved → release
+        // the hold so the stuck payout can be re-requested. Safe because transfer_id is our idempotency key.
+        await db.rpc('settle_payout', { p_payout_id: p.id, p_terminal: 'failed', p_gateway_metadata: { synced: true, not_found: true } as Json, p_failure_reason: 'transfer_not_found' });
         settled++;
       }
       // else still in-flight → leave processing.
