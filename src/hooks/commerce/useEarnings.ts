@@ -67,6 +67,17 @@ export function useEarnings() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['earnings', 'summary'] }),
   });
 
+  const updatePayoutMethodMutation = useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const res = await fetch('/api/kyc/payout-method', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Failed to update payout method.');
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['earnings', 'summary'] }),
+  });
+
   return {
     creatorBalances: data?.balances,
     payouts: data?.payouts || [],
@@ -78,5 +89,7 @@ export function useEarnings() {
     isUpdatingKyc: updateKycMutation.isPending,
     requestPayout: requestPayoutMutation.mutateAsync,
     isRequestingPayout: requestPayoutMutation.isPending,
+    updatePayoutMethod: updatePayoutMethodMutation.mutateAsync,
+    isUpdatingPayoutMethod: updatePayoutMethodMutation.isPending,
   };
 }

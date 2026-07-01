@@ -234,7 +234,7 @@ const STATES = [
 ];
 
 export default function KYCAndBillingPage() {
-  const { kyc, isLoading, updateKyc } = useEarnings();
+  const { kyc, isLoading, updateKyc, updatePayoutMethod, isUpdatingPayoutMethod } = useEarnings();
   const { latestByType, uploadDoc } = useKycDocuments();
 
   const [step, setStep] = useState(1);
@@ -248,6 +248,9 @@ export default function KYCAndBillingPage() {
   const [docUploadError, setDocUploadError] = useState<Partial<Record<KycDocType, string>>>({});
   const [uploadingType, setUploadingType] = useState<KycDocType | null>(null);
   const [editing, setEditing] = useState(false);
+  const [editingPayout, setEditingPayout] = useState(false);
+  const [payoutForm, setPayoutForm] = useState({ bank_account_name: '', bank_account: '', ifsc_code: '', upi_id: '' });
+  const [payoutError, setPayoutError] = useState('');
 
   const [form, setForm] = useState(EMPTY_FORM);
   const set = (k: keyof KycData, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -332,6 +335,29 @@ export default function KYCAndBillingPage() {
     }
   };
 
+  const payoutValid = !!payoutForm.bank_account_name.trim() && isAcct(payoutForm.bank_account) && isIfsc(payoutForm.ifsc_code);
+  const openPayoutEdit = () => {
+    setPayoutForm({ bank_account_name: kyc?.bank_account_name ?? '', bank_account: '', ifsc_code: kyc?.ifsc_code ?? '', upi_id: '' });
+    setPayoutError('');
+    setEditing(false);
+    setEditingPayout(true);
+  };
+  const savePayoutMethod = async () => {
+    if (!payoutValid) return;
+    setPayoutError('');
+    try {
+      await updatePayoutMethod({
+        bank_account_name: payoutForm.bank_account_name,
+        bank_account: payoutForm.bank_account,
+        ifsc_code: payoutForm.ifsc_code,
+        upi_id: payoutForm.upi_id || '',
+      });
+      setEditingPayout(false);
+    } catch (err) {
+      setPayoutError((err as Error).message || 'Failed to update payout method.');
+    }
+  };
+
   const formAddress = [form.address_line1, form.address_line2, form.city, form.state, form.postal_code, form.country]
     .map(s => (s ?? '').trim()).filter(Boolean).join(', ');
   const lockedAddress = kyc
@@ -357,6 +383,37 @@ export default function KYCAndBillingPage() {
             <Skeleton className="h-10 w-2/3" />
           </div>
         </Card>
+      ) : editingPayout ? (
+        /* ───────── Focused payout-method update (identity stays verified) ───────── */
+        <div className="max-w-3xl mx-auto">
+          <Card>
+            <StepHeader icon={Building2} title="Update Payout Method" description="Change the bank account (and UPI) where you receive payouts. Your identity stays verified — only the new account is re-verified." />
+            <div className="space-y-4">
+              <Field label="Account Holder Name" required>
+                <input type="text" className={inputCls} value={payoutForm.bank_account_name} onChange={e => setPayoutForm(f => ({ ...f, bank_account_name: e.target.value }))} placeholder="Full name as per bank records" />
+              </Field>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Account Number" required hint={kyc?.bank_last4 ? `Current: ••••${kyc.bank_last4}` : undefined}>
+                  <input type="text" className={`${inputCls} font-mono`} value={payoutForm.bank_account} onChange={e => setPayoutForm(f => ({ ...f, bank_account: e.target.value.replace(/\s/g, '') }))} placeholder="New account number" />
+                </Field>
+                <Field label="IFSC Code" required>
+                  <input type="text" maxLength={11} className={`${inputCls} font-mono uppercase`} value={payoutForm.ifsc_code} onChange={e => setPayoutForm(f => ({ ...f, ifsc_code: e.target.value.toUpperCase() }))} placeholder="SBIN0001234" />
+                </Field>
+              </div>
+              <Field label="UPI ID" hint="Optional — for instant payout via UPI">
+                <input type="text" className={`${inputCls} font-mono`} value={payoutForm.upi_id} onChange={e => setPayoutForm(f => ({ ...f, upi_id: e.target.value }))} placeholder="yourname@upi" />
+              </Field>
+            </div>
+            {payoutError && <p className="mt-3 text-sm text-[var(--danger)] flex items-center gap-1.5"><AlertCircle size={13} />{payoutError}</p>}
+            <div className="flex items-center justify-between gap-3 mt-6 pt-5 border-t border-[var(--border-subtle)]">
+              <button type="button" onClick={() => setEditingPayout(false)} className={btnGhost}><ChevronLeft size={15} /> Cancel</button>
+              <button type="button" onClick={savePayoutMethod} disabled={isUpdatingPayoutMethod || !payoutValid} className={btnBrand}>
+                {isUpdatingPayoutMethod ? <><RefreshCw size={14} className="animate-spin" /> Saving…</> : <><Check size={14} /> Save payout method</>}
+              </button>
+            </div>
+          </Card>
+          <p className="mt-3 text-xs text-[var(--text-tertiary)]">Updating your payout account sends it for re-verification — payouts are paused until it is verified.</p>
+        </div>
       ) : locked ? (
         /* ───────── Read-only summary (pending / verified) ───────── */
         <div className="max-w-3xl mx-auto">
@@ -366,13 +423,22 @@ export default function KYCAndBillingPage() {
                 <Lock size={14} className="text-[var(--text-tertiary)]" />
                 <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Submitted Details</p>
               </div>
-              <button
-                type="button"
-                onClick={() => { setEditing(true); setStep(1); setSuccessMsg(''); setErrorMsg(''); }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--brand)] border border-[var(--brand)]/30 bg-[var(--brand)]/[0.06] hover:bg-[var(--brand)]/[0.12] hover:border-[var(--brand)]/50 px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-              >
-                <Pencil size={12} /> Update details
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openPayoutEdit}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--brand)] border border-[var(--brand)]/30 bg-[var(--brand)]/[0.06] hover:bg-[var(--brand)]/[0.12] hover:border-[var(--brand)]/50 px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                >
+                  <Building2 size={12} /> Update payout method
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setEditing(true); setEditingPayout(false); setStep(1); setSuccessMsg(''); setErrorMsg(''); }}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                >
+                  <Pencil size={12} /> Update details
+                </button>
+              </div>
             </div>
             <SummaryRow label="Legal name" value={kyc?.legal_name || '—'} />
             <SummaryRow label="PAN" value={kyc?.pan_last4 ? `•••••${kyc.pan_last4}` : '—'} mono verified={kyc?.pan_verified} at={kyc?.pan_verified_at} />
