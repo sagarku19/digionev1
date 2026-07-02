@@ -177,6 +177,14 @@ RLS: owner SELECT (`owner_id = current_profile_id()`) + super_admin SELECT. Writ
 
 See [`api-routes.md`](./api-routes.md) → Storage section for the full upload/media/download route reference, and [`env-vars.md`](./env-vars.md) → Cloudflare R2 for env var inventory.
 
+## Subscriptions & platform fee
+
+`subscription_plans` (free/plus/pro — `platform_fee_percent`, monthly/yearly price, `features` jsonb `string[]`) and `subscriptions` (the creator's active plan — `current_platform_fee_percent` **snapshotted** at activation, `status`, `renewal_date`, `billing_cycle`) are wired as of Phase 3.
+
+- **Platform fee is subscription-driven.** `getPlatformFeeRate(creatorId)` in `src/lib/server/platform-fee.ts` reads the creator's active `subscriptions` row and returns its snapshotted `current_platform_fee_percent / 100`. It **fails safe to Free 0.10** (the higher fee) on no-sub / expired (`renewal_date < now`) / error — never under-charges. The pure core `resolveFeeRate(row)` is unit-tested. This one function tiers the whole money path (`fulfillOrder`/`fulfillPaymentLinkSubmission`), so a Plus creator's sale splits at 7% and Pro at 5%.
+- **Activation is service-role / terminal for now.** `scripts/subscription-admin.ts` (`view`/`activate`/`cancel`, run via `npx tsx --env-file=.env.local`) uses the shared `src/lib/server/subscription.ts` (`activateSubscription`/`cancelSubscription` + pure `subscriptionRowFromPlan`). One active sub per creator (activation supersedes any prior active row). Real PG/recurring billing is deferred — the `activateSubscription` lib is the seam a future billing webhook reuses.
+- **RLS:** `subscriptions` SELECT-own (`creator_id = current_profile_id()`) + super_admin SELECT, **writes service-role only**; `subscription_plans` readable by `authenticated` (the picker reads it via the browser client). Client hooks: `useSubscription` / `useSubscriptionPlans` (`src/hooks/creator/useSubscription.ts`).
+
 ## Regenerating types
 
 After any Supabase schema change. **Never edit `types/database.types.ts` by hand** — your edit will be wiped the next time types are regenerated.
