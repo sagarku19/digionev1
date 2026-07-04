@@ -18,8 +18,11 @@ export interface PlanRow {
 
 export function subscriptionRowFromPlan(creatorId: string, plan: PlanRow, cycle: Cycle, now: Date) {
   const renewal = new Date(now);
+  const day = now.getDate();
   if (cycle === 'yearly') renewal.setFullYear(renewal.getFullYear() + 1);
   else renewal.setMonth(renewal.getMonth() + 1);
+  // setMonth/setFullYear overflow (Jan 31 +1mo → Mar 3; Feb 29 +1yr → Mar 1) → clamp to the target month's last day.
+  if (renewal.getDate() !== day) renewal.setDate(0);
   return {
     creator_id: creatorId,
     subscription_plan_id: plan.id,
@@ -38,8 +41,9 @@ export async function activateSubscription(db: Db, creatorId: string, planType: 
     .select('id, plan_type, platform_fee_percent, monthly_price, yearly_price')
     .eq('plan_type', planType).eq('is_active', true).maybeSingle();
   if (!plan) return false;
-  // one active sub per creator — supersede any current active row
-  await db.from('subscriptions').update({ status: 'cancelled' }).eq('creator_id', creatorId).eq('status', 'active');
+  // one active sub per creator — supersede any current active row (fail hard so we never leave two active rows)
+  const { error: cancelErr } = await db.from('subscriptions').update({ status: 'cancelled' }).eq('creator_id', creatorId).eq('status', 'active');
+  if (cancelErr) throw cancelErr;
   const { error } = await db.from('subscriptions').insert(subscriptionRowFromPlan(creatorId, plan as PlanRow, cycle, new Date()) as Database['public']['Tables']['subscriptions']['Insert']);
   if (error) throw error;
   return true;

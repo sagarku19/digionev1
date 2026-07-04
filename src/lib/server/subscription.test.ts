@@ -21,4 +21,12 @@ describe('subscriptionRowFromPlan', () => {
     expect(r.current_price).toBe(10000);
     expect(r.renewal_date).toBe('2027-07-02T00:00:00.000Z');
   });
+  it('clamps month-end overflow (Jan 31 +1mo → last day of Feb, not Mar)', () => {
+    // Local-time construction + local-time assertions: subscriptionRowFromPlan does local Date math,
+    // so read the result back with local getters to stay timezone-robust.
+    const r = subscriptionRowFromPlan('c', plan, 'monthly', new Date(2026, 0, 31));
+    const d = new Date(r.renewal_date);
+    expect(d.getMonth()).toBe(1); // February — clamped, not March
+    expect(d.getDate()).toBe(28); // 2026 is not a leap year
+  });
 });

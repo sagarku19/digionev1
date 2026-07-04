@@ -15,4 +15,7 @@ describe('resolveFeeRate', () => {
     expect(resolveFeeRate({ current_platform_fee_percent: null })).toBe(0.10);
     expect(resolveFeeRate({ current_platform_fee_percent: NaN })).toBe(0.10);
   });
+  it('passes a configured 0% fee through as 0 (a valid plan value, NOT the Free fallback)', () => {
+    expect(resolveFeeRate({ current_platform_fee_percent: 0 })).toBe(0);
+  });
 });
