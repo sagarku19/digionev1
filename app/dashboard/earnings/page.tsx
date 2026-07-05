@@ -530,7 +530,7 @@ export default function EarningsPage() {
             ) : null}
             <button
               onClick={() => setIsConfirmOpen(true)}
-              disabled={!isAmountValid || isRequestingPayout || registrationRequired}
+              disabled={!isAmountValid || isRequestingPayout || registrationRequired || (drawerAmount > 0 && drawerAmount <= previewTds + previewTcs)}
               className="w-full flex items-center justify-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text-on-brand)] font-semibold py-3 rounded-[var(--radius-sm)] transition shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               {isRequestingPayout

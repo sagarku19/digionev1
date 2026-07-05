@@ -3663,6 +3663,7 @@ export type Database = {
         Returns: undefined
       }
       is_super_admin: { Args: never; Returns: boolean }
+      preview_payout_tax: { Args: { p_creator_id: string }; Returns: Json }
       reconcile_creator_balances: { Args: never; Returns: number }
       record_sale_tax: {
         Args: {

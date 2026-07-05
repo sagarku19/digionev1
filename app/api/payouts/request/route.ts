@@ -86,6 +86,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Insufficient available balance.' }, { status: 400 });
     }
 
+    // Phase 5: accrued TDS/TCS is withheld in full on the next payout. Reject a withdrawal
+    // that wouldn't cover it — otherwise net_amount (amount − tax) goes negative.
+    const { data: taxPreview } = await supabaseAdmin.rpc('preview_payout_tax', { p_creator_id: profileId });
+    const pendingTax = Number((taxPreview as { tds?: number } | null)?.tds ?? 0)
+                     + Number((taxPreview as { tcs?: number } | null)?.tcs ?? 0);
+    if (pendingTax >= amount) {
+      return NextResponse.json(
+        { error: `Your accrued TDS/TCS of ₹${pendingTax.toFixed(2)} is withheld on your next withdrawal. Request at least ₹${Math.floor(pendingTax) + 1}.`, code: 'tax_exceeds_amount' },
+        { status: 409 }
+      );
+    }
+
     // 3. Mathematical Transaction
     // Decrease available_balance natively by increasing pending_payout.
     const newPending = balanceData.pending_payout + amount;
@@ -132,22 +144,32 @@ export async function POST(req: Request) {
 
     // Phase 5: reserve the creator's unsettled pending tax against this payout and
     // record the withholding. net_amount is what the Cashfree transfer will send.
-    const { data: taxData } = await supabaseAdmin.rpc('begin_payout_tax', {
+    const { data: taxData, error: taxErr } = await supabaseAdmin.rpc('begin_payout_tax', {
       p_payout_id: payout.id,
       p_creator_id: profileId,
     });
+    if (taxErr) {
+      // Could not compute withholding — abort cleanly (releases reservation + pending_payout).
+      await supabaseAdmin.rpc('settle_payout', { p_payout_id: payout.id, p_terminal: 'failed', p_failure_reason: 'tax_reserve_failed' });
+      return NextResponse.json({ error: 'Could not compute tax withholding. Please try again.' }, { status: 500 });
+    }
     const tds = Number((taxData as { tds_withheld?: number } | null)?.tds_withheld ?? 0);
     const tcs = Number((taxData as { tcs_withheld?: number } | null)?.tcs_withheld ?? 0);
-    const netAmount = Math.round((amount - tds - tcs) * 100) / 100;
+    const netAmount = Math.max(Math.round((amount - tds - tcs) * 100) / 100, 0); // floor backstop vs TOCTOU
 
-    const { data: finalPayout } = await supabaseAdmin
+    const { data: finalPayout, error: finalErr } = await supabaseAdmin
       .from('creator_payouts')
       .update({ tds_withheld: tds, tcs_withheld: tcs, net_amount: netAmount })
       .eq('id', payout.id)
       .select()
       .single();
+    if (finalErr || !finalPayout) {
+      // Persisting withholding failed — abort cleanly so approve never transfers an un-withheld amount.
+      await supabaseAdmin.rpc('settle_payout', { p_payout_id: payout.id, p_terminal: 'failed', p_failure_reason: 'withholding_persist_failed' });
+      return NextResponse.json({ error: 'Could not finalize payout. Please try again.' }, { status: 500 });
+    }
 
-    return NextResponse.json({ success: true, payout: finalPayout ?? payout }, { status: 200 });
+    return NextResponse.json({ success: true, payout: finalPayout }, { status: 200 });
     
   } catch (error) {
     console.error('Payout Request Error:', error);
