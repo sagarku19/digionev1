@@ -19,7 +19,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     if (actor?.role !== 'super_admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const { data: payout } = await db.from('creator_payouts')
-      .select('id, creator_id, amount, status, payout_method_id').eq('id', payoutId).maybeSingle();
+      .select('id, creator_id, amount, net_amount, status, payout_method_id').eq('id', payoutId).maybeSingle();
     if (!payout) return NextResponse.json({ error: 'Payout not found.' }, { status: 404 });
     if (payout.status !== 'pending') return NextResponse.json({ error: `Payout is ${payout.status}, not pending.` }, { status: 409 });
 
@@ -68,7 +68,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     // transfer_id = payout.id (Cashfree dedupes duplicates).
     // Route to the creator's chosen destination (UPI needs a vpa on the beneficiary, set above from KYC).
     const mode = kyc.preferred_payout_method === 'upi' ? 'upi' : 'banktransfer';
-    const tr = await initiateTransfer({ transfer_id: payoutId, transfer_amount: Number(payout.amount), beneficiary_id: beneficiaryId, mode });
+    // Phase 5: transfer net of TDS/TCS withheld at request time (falls back to amount for pre-Phase-5 payouts).
+    const tr = await initiateTransfer({ transfer_id: payoutId, transfer_amount: Number(payout.net_amount ?? payout.amount), beneficiary_id: beneficiaryId, mode });
     if (!tr.accepted) {
       // Don't persist tr.raw (may echo beneficiary/account details) — store a safe marker only.
       await db.rpc('settle_payout', { p_payout_id: payoutId, p_terminal: 'failed', p_gateway_metadata: { stage: 'transfer_init_failed' } as Json, p_failure_reason: 'transfer_init_failed' });
