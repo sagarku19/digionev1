@@ -18,6 +18,8 @@ import { SideDrawer } from '@/components/ui/SideDrawer';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { formatINR, formatINRCompact } from '@/lib/format';
+import { usePayoutTaxPreview, useAddGstin } from '@/hooks/commerce/useTax';
+import { isValidGstin } from '@/lib/shared/gstin';
 
 export default function EarningsPage() {
   const { creatorBalances, payouts, kyc, isLoading, requestPayout, isRequestingPayout } = useEarnings();
@@ -37,6 +39,15 @@ export default function EarningsPage() {
   const platformFees = creatorBalances?.total_platform_fees ?? 0;
   const frozen = Number((creatorBalances as { frozen_balance?: number } | undefined)?.frozen_balance ?? 0);
   const bankLast4 = kyc?.bank_last4;
+
+  const { data: taxPreview } = usePayoutTaxPreview();
+  const addGstin = useAddGstin();
+  const [gstinOpen, setGstinOpen] = useState(false);
+  const [gstinValue, setGstinValue] = useState('');
+  const [gstinError, setGstinError] = useState('');
+  const registrationRequired = taxPreview?.registration_required ?? false;
+  const previewTds = Number(taxPreview?.tds ?? 0);
+  const previewTcs = Number(taxPreview?.tcs ?? 0);
 
   const amountError =
     drawerAmount > 0
@@ -459,9 +470,30 @@ export default function EarningsPage() {
                 {drawerError}
               </div>
             )}
+            {registrationRequired ? (
+              <div className="rounded-[var(--radius-md)] bg-[var(--warning-bg)] border border-[var(--warning)]/20 p-3 space-y-2">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">GST registration required</p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  Your sales crossed the GST threshold. Add your GSTIN to continue withdrawing.
+                </p>
+                <button
+                  onClick={() => { setGstinOpen(true); }}
+                  className="w-full py-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-semibold rounded-[var(--radius-sm)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                >
+                  Add GSTIN
+                </button>
+              </div>
+            ) : (previewTds > 0 || previewTcs > 0) ? (
+              <div className="rounded-[var(--radius-md)] bg-[var(--surface-muted)] border border-[var(--border)] p-3 text-xs space-y-1">
+                <div className="flex justify-between text-[var(--text-secondary)]"><span>Amount</span><span>{formatINR(drawerAmount)}</span></div>
+                {previewTds > 0 && <div className="flex justify-between text-[var(--text-secondary)]"><span>TDS withheld (194-O)</span><span>- {formatINR(previewTds)}</span></div>}
+                {previewTcs > 0 && <div className="flex justify-between text-[var(--text-secondary)]"><span>TCS withheld (GST §52)</span><span>- {formatINR(previewTcs)}</span></div>}
+                <div className="flex justify-between font-semibold text-[var(--text-primary)] pt-1 border-t border-[var(--border-subtle)]"><span>You receive</span><span>{formatINR(Math.max(drawerAmount - previewTds - previewTcs, 0))}</span></div>
+              </div>
+            ) : null}
             <button
               onClick={() => setIsConfirmOpen(true)}
-              disabled={!isAmountValid || isRequestingPayout}
+              disabled={!isAmountValid || isRequestingPayout || registrationRequired}
               className="w-full flex items-center justify-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text-on-brand)] font-semibold py-3 rounded-[var(--radius-sm)] transition shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
               {isRequestingPayout
@@ -535,6 +567,40 @@ export default function EarningsPage() {
         description={`Funds will be transferred to ${bankLast4 ? `••••${bankLast4}` : 'your bank account'}. This typically takes 1–2 business days.`}
         confirmLabel="Confirm Withdrawal"
       />
+
+      {gstinOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setGstinOpen(false)} />
+          <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm p-6 space-y-4">
+            <div>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Add your GSTIN</h3>
+              <p className="text-sm text-[var(--text-secondary)] mt-1">Required to withdraw once your sales cross the GST registration threshold.</p>
+            </div>
+            <input
+              value={gstinValue}
+              onChange={(e) => { setGstinValue(e.target.value.toUpperCase()); setGstinError(''); }}
+              placeholder="22AAAAA0000A1Z5"
+              maxLength={15}
+              className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow font-mono tracking-wide"
+            />
+            {gstinError && <p className="text-xs text-[var(--danger)]">{gstinError}</p>}
+            <div className="flex gap-2">
+              <button onClick={() => setGstinOpen(false)} className="flex-1 py-2 border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] text-sm font-semibold rounded-[var(--radius-sm)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
+              <button
+                onClick={async () => {
+                  if (!isValidGstin(gstinValue)) { setGstinError('Enter a valid 15-character GSTIN.'); return; }
+                  try { await addGstin.mutateAsync(gstinValue); setGstinOpen(false); }
+                  catch (e) { setGstinError(e instanceof Error ? e.message : 'Could not save GSTIN.'); }
+                }}
+                disabled={addGstin.isPending}
+                className="flex-1 py-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-semibold rounded-[var(--radius-sm)] transition disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                {addGstin.isPending ? 'Saving…' : 'Save GSTIN'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
