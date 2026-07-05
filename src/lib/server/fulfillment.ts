@@ -47,11 +47,12 @@ export async function fulfillOrder(
   const platformFee = total * feeRate;
   const creatorProceeds = total - platformFee;
 
-  // 2. Credit creator (atomic RPC — no read-modify-write race)
+  // 2. Credit creator (atomic RPC — no read-modify-write race).
+  // total_earnings holds GROSS; availableBalance() subtracts total_platform_fees.
   if (creatorId) {
     const { error: creditErr } = await db.rpc('credit_creator_balance', {
       p_creator_id: creatorId,
-      p_earnings_delta: creatorProceeds,
+      p_earnings_delta: total,
       p_fees_delta: platformFee,
     });
     if (creditErr) {
@@ -259,9 +260,10 @@ export async function fulfillPaymentLinkSubmission(
   const creatorProceeds = amount - platformFee;
 
   if (creatorId) {
+    // total_earnings holds GROSS; availableBalance() subtracts total_platform_fees.
     const { error: creditErr } = await db.rpc('credit_creator_balance', {
       p_creator_id: creatorId,
-      p_earnings_delta: creatorProceeds,
+      p_earnings_delta: amount,
       p_fees_delta: platformFee,
     });
     if (creditErr) {
