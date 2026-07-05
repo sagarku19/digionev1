@@ -5,8 +5,8 @@ tags: []
 
 # Payments / Earnings / Payout / KYC / Tax / Subscriptions — overhaul blueprint
 
-**Captured:** 2026-06-30 · **Last updated:** 2026-07-05 (Phase 4 refunds + risk built).
-**Status:** `(half)` — **Phases 0–4 BUILT** (0 live; 1–4 built, some deferrals — see Plan state); Phases 5–6 not started. Update the status tag + "Plan state" as work continues.
+**Captured:** 2026-06-30 · **Last updated:** 2026-07-06 (Phase 5 tax engine built).
+**Status:** `(half)` — **Phases 0–5 BUILT** (0 live; 1–5 built, some deferrals — see Plan state); Phase 6 not started. Update the status tag + "Plan state" as work continues.
 **Scope:** the entire money surface — earnings, payouts, KYC, refunds, **GST/TDS/TCS tax**,
 invoices, **creator subscriptions (creator → DigiOne billing)**, wallet/ledger maturity, risk
 controls. Both DB and code. Written from four lenses: **developer**, **DB designer**, **UI/UX
@@ -28,10 +28,20 @@ designer**, and **chartered accountant** (Indian e-commerce tax).
 | 2 | KYC verification: creator **doc upload → R2** + **terminal** verify/reject (provider-ready `kyc-verify.ts`, `scripts/kyc-admin.ts`). **Admin UI NOT built here** → moves to a separate admin app (plan `12(left)`). Provider auto-verify deferred (needs creds). | **BUILT** (terminal-admin interim) | spec: `docs/superpowers/specs/2026-07-01-phase2-kyc-verification-design.md` · plan: `docs/superpowers/plans/2026-07-01-phase2-kyc-verification.md` · admin-app: `.claude/todo-later/12(left)-2026-07-01-admin-app-scratch-plan.md` |
 | 3 | **Creator subscriptions**: wire `subscription_plans`/`subscriptions`, **platform-fee tiering** (`getPlatformFeeRate` reads the active sub, fail-safe Free), real plan picker, **terminal** activation (`scripts/subscription-admin.ts`). Deferred: real PG billing / recurring mandate / auto-renew / GST invoice on the fee / app-wide feature-gating enforcement. | **BUILT (fee-tiering core; billing deferred)** | spec: `docs/superpowers/specs/2026-07-02-phase3-creator-subscriptions-design.md` · plan: `docs/superpowers/plans/2026-07-02-phase3-creator-subscriptions.md` |
 | 4 | Refunds (freeze → PG refund → webhook-settled clawback) + `frozen_balance` activation + risk controls (one-in-flight payout guard, manual dispute/admin freeze, `TRANSFER_REVERSED` clawback) + **gross-earnings fee double-count fix** (+ ledger-derived backfill) | **BUILT** (terminal-admin interim; refund UI in orders drawer). Deferred: sandbox e2e of the refund webhook (needs a real sandbox payment), payment-link (`pl_`) refunds, dispute-webhook automation, referral-commission clawback. | spec: `docs/superpowers/specs/2026-07-04-phase4-refunds-risk-design.md` · plan: `docs/superpowers/plans/2026-07-04-phase4-refunds-risk.md` |
-| 5 | **GST / TDS / TCS tax engine** (the real greenfield build) | not started | — |
+| 5 | **GST / TDS / TCS tax engine** — accrue-per-sale / settle-at-payout model; ₹20L GSTIN payout gate (no registered-creator payout without verified GSTIN); GST-inclusive-commission decision (platform fee computed on gross, GST passed through); `tax_rules` versioned + `tax_transactions` immutable per order; TDS/TCS branching on creator registration; shared `src/lib/shared/tax-math.ts` + `src/lib/shared/gstin.ts`; `useTax` hook | **BUILT** | spec: `docs/superpowers/specs/2026-07-05-phase5-tax-engine-design.md` · plan: `docs/superpowers/plans/2026-07-05-phase5-tax-engine.md` |
 | 6 | Invoices + tax statements: creator-sale invoice + DigiOne→creator commission/subscription tax invoice; **PDF generation → R2 (signed-URL only)**; Form 16A / GSTR exports | not started | — |
 
-**Next planned phase:** Phase 5 — GST / TDS / TCS tax engine (the real greenfield build).
+**Next planned phase:** Phase 6 — Invoices + tax statements/exports (Form 16A, GSTR-8/26Q/GSTR-1, PDF invoices).
+
+**Phase 5 deferred:**
+- **Documents/exports:** Form 16A generation (TDS certificate PDF), GSTR-8 monthly TCS export, GSTR-26Q quarterly TDS return export, GSTR-1/GSTR-3B export for DigiOne's own GST output on commission/subscription. All deferred to Phase 6.
+- **Live GSTIN/PAN API verification:** real-time validation via a government/provider API (GSTN sandbox or Cashfree/Signzy). Currently only format-validated (`gstin.ts`). Deferred — needs provider credentials.
+- **Product-GST-rate capture:** different HSN codes/rates may apply to different digital product categories (e.g., e-books at 0% vs. online courses at 18%). Currently the engine uses a single `gst_commission_rate`; per-product HSN/rate column on `products` deferred.
+- **4 CA-review flags (from spec §10):**
+  1. TDS is withheld at payout time (when cash moves), not at sale credit time — creates a mismatch between `tax_transactions` (accrued at sale) and actual withholding (at payout). Acceptable as a cash-flow simplification but needs CA sign-off.
+  2. A sale that crosses the ₹5L TDS threshold in mid-year taxes the full gross of that transaction, not just the amount over ₹5L — overstates TDS marginally; deliberate, conservative approach.
+  3. TCS is computed on gross sale amount (not ex-GST value) — may need revisiting if CBIC clarifies the base for digital services.
+  4. Settled TDS/TCS amounts are not cash-reversed on order refund — the refund net-of-returns approach via GSTR-8/26Q corrections is deferred to Phase 6 exports.
 
 **Phase 1 deferred — needs before going live:**
 - **Task 1 (contract spike):** confirm the Cashfree Payouts V2 API contract end-to-end in sandbox — auth (bearer token generation), beneficiary create + idempotency, transfer create, `getTransfer` poll, and the **webhook signature variant** (Cashfree Payouts uses a different signing scheme from PG; both a legacy form-POST verifier and a V2 JSON verifier exist in `src/lib/server/cashfree-payouts.ts` — confirm which sandbox actually sends and delete the dead path).
