@@ -336,3 +336,59 @@ Run this against a local dev or staging environment to confirm the full flow end
     where creator_id = '<profileId>';
     -- pending_payout should have increased by 100
     ```
+
+### (d) Refund flow
+
+13. Refund a completed sandbox order: orders page → drawer → Refund (or `npx tsx --env-file=.env.local scripts/refund-admin.ts refund <orderId>`).
+14. Confirm: `refunds` row `processing`; `creator_balances.frozen_balance` increased by `net_clawback`; a payout request for more than the new available 400s.
+15. Deliver the REFUND_STATUS_WEBHOOK (Cashfree dashboard test event) or run `refund-admin.ts sync`.
+16. Confirm: refund `success`; `total_earnings` −= amount; `total_platform_fees` −= fee_reversed; `frozen_balance` released; ledger `refund` debit exists; order `refunded` (full refunds); `user_product_access` rows for the order gone; `/api/deliverables/[productId]` now 403 for that buyer.
+17. `select public.reconcile_creator_balances();` → 0 new drift rows.
+
+---
+
+## 8. Refunds
+
+Freeze → gateway → webhook-settle, mirroring the payout pattern.
+
+```
+POST /api/refunds/create  (creator, own order)  OR  scripts/refund-admin.ts refund
+   ↓
+begin_refund RPC (atomic)
+   ├─ lock orders row FOR UPDATE (serializes concurrent refunds; shared lock order with settle_refund)
+   ├─ read original platform_fee from the sale transaction_ledger row (refuse if absent → 'refund:sale_ledger_missing')
+   ├─ compute proportional split (completing refund takes the exact fee remainder)
+   ├─ INSERT refunds (status 'processing', merchant_refund_id 'rfnd_…')
+   ├─ creator_balances.frozen_balance += net_clawback
+   └─ INSERT wallet_frozen_logs (status 'frozen', source 'refund')
+   ↓
+Cashfree POST /orders/{order_id}/refunds  (createRefund)
+   ├─ rejected  → settle_refund('failed') immediately → freeze released, 502 to caller
+   └─ accepted  → refund stays 'processing' until the terminal webhook/sync
+   ↓
+[terminal] REFUND_STATUS_WEBHOOK on /api/webhook/cashfree  (or refund-admin.ts sync → getRefund poll)
+   → settle_refund(...) (claim-idempotent):
+      SUCCESS  → total_earnings −= amount, total_platform_fees −= fee_reversed,
+                 frozen_balance −= net_clawback, ledger 'refund' debit
+                 (record_hash = sha256('refund:' + refundId)), release freeze log;
+                 if sum(success refunds) ≥ order.total → orders.status='refunded' +
+                 delete user_product_access / guest_entitlements for the order
+      FAILED   → frozen_balance −= net_clawback (release only), release freeze log
+```
+
+**Proportional fee reversal (worked example — ₹1000 sale, 10% platform fee):**
+
+| Refund | amount | fee_reversed | net_clawback (creator loses) |
+|---|---|---|---|
+| Full ₹1000 | 1000 | 100 | 900 |
+| Partial ₹400 | 400 | 40 | 360 |
+
+A fully refunded order nets to zero: the creator gives back their ₹900 proceeds and the platform gives up its ₹100 fee. Partial fees are `round(fee * amount / total, 2)`; the **completing** refund takes the exact fee remainder so paisa never accumulate.
+
+**Cashfree `refund_status` mapping:** `SUCCESS → settle_refund('success')`; `CANCELLED | FAILED → settle_refund('failed')`; `PENDING | ONHOLD → no-op` (leave `processing`). `syncProcessingRefunds` additionally settles a confirmed 404 past the 15-min stale cutoff as `failed` (the create never reached Cashfree). Reconcile stuck refunds with `npx tsx --env-file=.env.local scripts/refund-admin.ts sync`.
+
+**Invariants:**
+- **One in-flight refund per order** — partial unique index `uq_refunds_one_processing_per_order (order_id) WHERE status='processing'`. Sequential partials work (wait for the previous to settle); a concurrent double-submit fails with a unique violation mapped to a friendly "already processing" 409.
+- **No `frozen_balance` write outside the RPCs** (`begin_refund`/`settle_refund`/`freeze_creator_funds`/`release_frozen_funds`).
+
+**⚠ Deployment precondition (Task 1 quality review):** refund surfaces must NOT be enabled in any environment until the gross-earnings fulfillment fix **and** the `total_earnings` net→gross backfill migration have both been applied there. Settling a refund against a net-shaped `total_earnings` (where the fee was double-counted) can drive `total_earnings` below zero, tripping `chk_creator_balances_nonneg` inside `settle_refund` and wedging the refund in `processing`.

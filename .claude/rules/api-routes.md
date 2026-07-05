@@ -18,12 +18,13 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/account/upgrade-to-creator` | cookie session | server + service role | `auth.users` (`app_metadata.role`), `users.role`, `profiles` |
 | POST | `/api/checkout/create` | none (buyerId optional) | service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
-| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access` |
-| POST | `/api/webhook/cashfree-payout` | Cashfree Payouts signature (HMAC) | service role | `settle_payout` (success/failed); separate from `/api/webhook/cashfree` (PG webhook) |
+| POST | `/api/refunds/create` | cookie session | server + service role | `refunds`, `wallet_frozen_logs`, `creator_balances.frozen_balance` (via `begin_refund`); Cashfree PG refund create |
+| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access`; `refunds` + `settle_refund` (REFUND_STATUS_WEBHOOK) |
+| POST | `/api/webhook/cashfree-payout` | Cashfree Payouts signature (HMAC) | service role | `settle_payout` (success/failed); `TRANSFER_REVERSED` → `settle_payout('failed')` in-flight / `reverse_settled_payout` post-success; separate from `/api/webhook/cashfree` (PG webhook) |
 | POST | `/api/coupons/validate` | none | service role | — |
 | POST | `/api/leads` | none | service role | `lead_form` |
 | POST | `/api/linkinbio/track` | none | service role | `linkinbio_analytics` |
-| POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` (min ₹100; links `creator_payout_methods.id` as `payout_method_id`) |
+| POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` (min ₹100; links `creator_payout_methods.id` as `payout_method_id`; one-in-flight guard → 409 while a pending/processing payout exists) |
 | POST | `/api/admin/payouts/[id]/approve` | cookie session (super_admin, DB role re-read) | server + service role | `creator_payouts` (status→processing), `creator_kyc` (beneficiary_id), `creator_payout_methods`; calls Cashfree beneficiary + transfer |
 | POST | `/api/admin/payouts/[id]/reject` | cookie session (super_admin) | service role | `creator_payouts` via `settle_payout('failed')` (pending-only) |
 | POST | `/api/admin/payouts/sync` | super_admin session OR `CRON_SECRET` bearer | service role | reconciles stuck `processing` payouts via Cashfree `getTransfer` → `settle_payout` |
@@ -159,7 +160,11 @@ data.payment.payment_status    → SUCCESS | FAILED | USER_DROPPED
 data.payment.cf_payment_id     → stored as gateway_payment_id
 ```
 
-**Routing by `order_id` prefix:**
+**Type-aware routing** (checked in order):
+- `REFUND_STATUS_WEBHOOK` / `data.refund` envelope → refund settlement: matched by `refunds.merchant_refund_id`, then `SUCCESS → settle_refund('success')` (reverses `total_earnings`/`total_platform_fees`, releases the freeze, flips fully-refunded orders to `refunded`, revokes access, notifies), `CANCELLED|FAILED → settle_refund('failed')` (releases the freeze only), `PENDING|ONHOLD → no-op`. Unknown/stray refund → `200 { received: true }`.
+- unknown envelope (no `data.order`, no `data.refund`) → `200 { received: true }` (previously `400` — a 400 here caused Cashfree retry storms for non-payment event types).
+
+**Routing by `order_id` prefix (payment webhooks):**
 - `pl_*` → payment-link submission: `SUCCESS` calls `fulfillPaymentLinkSubmission`; `FAILED`/`USER_DROPPED` flips `payment_submissions.payment_status = 'failed'`.
 - all others → product order: `SUCCESS` calls `fulfillOrder`; `FAILED`/`USER_DROPPED` sets `orders.status = 'failed'`.
 
@@ -286,6 +291,24 @@ Creates a `sites` row plus all required sub-tables for the given site type.
 
 ## Money
 
+### `POST /api/refunds/create` (auth required)
+
+Creator refunds one of their own completed orders. Freeze-then-settle: `begin_refund` (atomic RPC) holds the net clawback in `creator_balances.frozen_balance` and records a `processing` `refunds` row **before** any gateway call; the Cashfree PG refund is then created. Terminal settlement (reverse balances, ledger debit, order flip, access revoke) happens later via the `REFUND_STATUS_WEBHOOK` on `/api/webhook/cashfree` or `scripts/refund-admin.ts sync`.
+
+```json
+// Request  (amount omitted = full remaining; min ₹1)
+{ "orderId": "uuid", "amount": 400, "reason": "string?" }
+
+// Success
+{ "success": true, "refund": { "refundId": "uuid", "merchantRefundId": "rfnd_…", "amount": 400, "feeReversed": 40, "netClawback": 360, "creatorId": "uuid" } }
+```
+
+**Guards in order:** auth (401) → creator profile resolved (404) → 5/min **profile-keyed** rate limit (429) → order exists + belongs to caller (404/403) → `begin_refund` state checks. Fee reversal is proportional (the platform returns its fee on the refunded portion); the completing refund takes the exact fee remainder so a fully refunded order nets to zero.
+
+**Errors:** `400` (invalid orderId/amount, over-refund past remaining), `401` (no session), `403` (not your order), `404` (no profile / order not found), `409` (invalid state — order not completed/paid, **missing sale ledger row**, or a refund already `processing` for this order), `429` (rate limit), `502` (gateway rejected — the freeze is released immediately, safe to retry), `500`.
+
+---
+
 ### `POST /api/payouts/request` (auth required)
 
 Creator requests a payout. Cookie session required.
@@ -301,9 +324,10 @@ All operations key on the creator's `profiles.id`, resolved via `resolveProfileI
 1. `profiles.id` resolved → else 404
 2. `amount` ≥ 100 (₹100 minimum) → else 400
 3. `creator_kyc.status === 'verified'` → else 403
-4. `payoutMethodId` belongs to the creator (`creator_payout_methods`) → else 400
-5. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout` ≥ `amount` → else 400
-6. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409
+4. No in-flight payout: no existing `creator_payouts` row for the creator in `pending`/`processing` → else 409 (risk control — one payout at a time)
+5. `payoutMethodId` belongs to the creator (`creator_payout_methods`) → else 400
+6. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout` ≥ `amount` → else 400
+7. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409
 
 **On success:** `pending_payout += amount`, inserts `creator_payouts` row with `status: 'pending'`, `currency: 'INR'`, and `payout_method_id` linked to the chosen `creator_payout_methods` row.
 

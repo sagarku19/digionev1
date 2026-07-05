@@ -27,9 +27,9 @@ Canonical inventory of every `process.env.*` read by the codebase. If you add or
 
 | Var | Scope | Used in | Notes |
 |---|---|---|---|
-| `CASHFREE_ENVIRONMENT` | server | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx` | `'PRODUCTION'` → api.cashfree.com. Anything else → sandbox.cashfree.com. |
-| `CASHFREE_CLIENT_ID` | **secret** | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx` | Cashfree merchant ID. |
-| `CASHFREE_CLIENT_SECRET` | **secret** | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx`, `/api/webhook/cashfree` | Cashfree secret. Also used as the HMAC key for webhook signature verification. |
+| `CASHFREE_ENVIRONMENT` | server | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx`, `src/lib/server/cashfree-refunds.ts` | `'PRODUCTION'` → api.cashfree.com. Anything else → sandbox.cashfree.com. |
+| `CASHFREE_CLIENT_ID` | **secret** | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx`, `src/lib/server/cashfree-refunds.ts` | Cashfree merchant ID. |
+| `CASHFREE_CLIENT_SECRET` | **secret** | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx`, `/api/webhook/cashfree`, `src/lib/server/cashfree-refunds.ts` | Cashfree secret. Also used as the HMAC key for webhook signature verification. |
 | `NEXT_PUBLIC_CASHFREE_ENV` | public | `app/(buyer)/checkout/page.tsx` | UI mirror — client uses this to pick sandbox/prod Cashfree JS SDK. Must match `CASHFREE_ENVIRONMENT`. |
 
 ## App

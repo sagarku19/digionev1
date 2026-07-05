@@ -80,6 +80,8 @@ Tables you should not touch without understanding their RLS:
 | `creator_balances` | Creator reads their own row. **Writes: service role only.** |
 | `transaction_ledger` | Creator reads their own. **Writes: service role only, with `record_hash` for audit.** |
 | `creator_payouts` | Creator reads/inserts their own. |
+| `refunds` | Creator reads their own. **Writes: service role only** (begin_refund/settle_refund RPCs). |
+| `wallet_frozen_logs` | Creator reads their own. **Writes: service role only** (freeze/release RPCs). |
 | `creator_kyc` | Creator **reads** their own (SELECT-own); **no client writes** — all writes go through service-role `POST /api/kyc/submit` (forces `status='pending'`, never accepts `*_verified` from the client; encrypts PAN/bank/UPI via `kyc-crypto`). Admin verification flips `status`/`*_verified` server-side. Payout API checks `status === 'verified'`. |
 | `products` | Creator owns rows where `creator_id = profile.id`. Public read where `is_published AND deleted_at IS NULL`. |
 | `coupons` | Creator owns (no anon read). Public validation goes through `/api/coupons/validate` (service role). |
@@ -99,6 +101,8 @@ These exist because money tables cannot be rebuilt from logs.
 7. **KYC gate before payout.** No payout request is recorded until `creator_kyc.status === 'verified'`. Reference: `app/api/payouts/request/route.ts`.
 8. **Deterministic UNIQUE ledger record hash.** Every `transaction_ledger` row carries `record_hash = sha256(orderId + ':' + cf_payment_id)` (`:free` for free orders; `pl:submissionId:...` for payment-link orders). The column has a UNIQUE constraint — a duplicate hash is rejected by the DB, making replays replay-safe. Don't skip this column.
 9. **`user_product_access` grants.** On fulfillment, logged-in buyers receive `user_product_access` rows (one per product in the order). UNIQUE on `(order_id, product_id)` — idempotent.
+10. **Refunds are freeze-then-settle.** `begin_refund` (atomic RPC: order row lock → over-refund check → `frozen_balance` hold) runs before any gateway call; only `settle_refund` (claim-idempotent, webhook/sync-driven) reverses `total_earnings`/`total_platform_fees`, writes the ledger `refund` debit (`record_hash = sha256('refund:' + refundId)`), flips fully-refunded orders to `refunded`, and revokes access. Fee reversal is proportional. No code path outside these RPCs may mutate `frozen_balance`.
+11. **`total_earnings` is GROSS.** Fulfillment credits the gross sale amount; `availableBalance()` subtracts `total_platform_fees`. (Fixed 2026-07-04 — it previously credited net, double-counting the fee.)
 
 ## Public endpoints — abuse surface
 

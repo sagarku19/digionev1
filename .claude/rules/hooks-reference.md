@@ -17,7 +17,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `auth/` | `useAuthSession` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`) |
 | `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
-| `commerce/` | `useOrders`, `useCustomers`, `useEarnings`, `useCart`, `useLibrary` |
+| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart`, `useLibrary` |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
 | `analytics/` | `useAnalytics` |
@@ -84,6 +84,7 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useLibrary()` | `['library','list']` |
 | `useNotifications()` | `['notifications','list']` (polls every 120 s) |
 | `useOrders()` | `['orders','list']` |
+| `useOrderRefundInfo(orderId)` | `['orders','refund-info', orderId]` (sale-ledger fee + prior refunds for the refund preview) |
 | `useProductPage(creatorId, slug)` | `['products','page', creatorId, slug]` |
 | `useProducts()` | `['products','list']` / `['products','detail', id]` / `['products','trash']` (also `trashedProducts`, `restoreProduct`, `permanentlyDeleteProduct`) |
 | `useSites()` | `['sites','list']` / `['sites','trash']` (also `trashedSites`, `restoreSite`, `permanentlyDeleteSite`) |
