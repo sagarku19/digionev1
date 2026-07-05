@@ -46,6 +46,7 @@ export default function EarningsPage() {
   const [gstinOpen, setGstinOpen] = useState(false);
   const [gstinValue, setGstinValue] = useState('');
   const [gstinError, setGstinError] = useState('');
+  const closeGstin = () => { setGstinOpen(false); setGstinValue(''); setGstinError(''); };
   const registrationRequired = taxPreview?.registration_required ?? false;
   const previewTds = Number(taxPreview?.tds ?? 0);
   const previewTcs = Number(taxPreview?.tcs ?? 0);
@@ -313,9 +314,9 @@ export default function EarningsPage() {
               <FileText size={14} className="text-[var(--text-tertiary)]" />
               <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Tax withheld</h3>
             </div>
-            <p className="text-xs text-[var(--text-tertiary)] mb-3">The 10% platform fee is GST-inclusive. TDS/TCS are withheld at withdrawal.</p>
+            <p className="text-xs text-[var(--text-tertiary)] mb-3">Platform fee is GST-inclusive. TDS/TCS are withheld at withdrawal.</p>
             <div className="space-y-3">
-              {taxSummary!.map((t) => (
+              {taxSummary?.map((t) => (
                 <div key={t.fy} className="rounded-[var(--radius-md)] border border-[var(--border)] p-3">
                   <p className="text-xs font-semibold text-[var(--text-primary)] mb-2">FY {t.fy}</p>
                   <div className="grid grid-cols-3 gap-2 text-center">
@@ -518,12 +519,13 @@ export default function EarningsPage() {
                   Add GSTIN
                 </button>
               </div>
-            ) : (previewTds > 0 || previewTcs > 0) ? (
+            ) : (drawerAmount > 0 && (previewTds > 0 || previewTcs > 0)) ? (
               <div className="rounded-[var(--radius-md)] bg-[var(--surface-muted)] border border-[var(--border)] p-3 text-xs space-y-1">
                 <div className="flex justify-between text-[var(--text-secondary)]"><span>Amount</span><span>{formatINR(drawerAmount)}</span></div>
                 {previewTds > 0 && <div className="flex justify-between text-[var(--text-secondary)]"><span>TDS withheld (194-O)</span><span>- {formatINR(previewTds)}</span></div>}
                 {previewTcs > 0 && <div className="flex justify-between text-[var(--text-secondary)]"><span>TCS withheld (GST §52)</span><span>- {formatINR(previewTcs)}</span></div>}
                 <div className="flex justify-between font-semibold text-[var(--text-primary)] pt-1 border-t border-[var(--border-subtle)]"><span>You receive</span><span>{formatINR(Math.max(drawerAmount - previewTds - previewTcs, 0))}</span></div>
+              <p className="text-[11px] text-[var(--text-tertiary)] pt-1">Your total accrued TDS/TCS is withheld in full on this withdrawal.</p>
               </div>
             ) : null}
             <button
@@ -604,11 +606,11 @@ export default function EarningsPage() {
       />
 
       {gstinOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setGstinOpen(false)} />
-          <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm p-6 space-y-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onKeyDown={(e) => { if (e.key === 'Escape') closeGstin(); }}>
+          <div className="absolute inset-0 bg-black/40" onClick={closeGstin} />
+          <div className="relative bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] w-full max-w-sm p-6 space-y-4" role="dialog" aria-modal="true" aria-labelledby="gstin-dialog-title">
             <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Add your GSTIN</h3>
+              <h3 id="gstin-dialog-title" className="text-base font-semibold text-[var(--text-primary)]">Add your GSTIN</h3>
               <p className="text-sm text-[var(--text-secondary)] mt-1">Required to withdraw once your sales cross the GST registration threshold.</p>
             </div>
             <input
@@ -616,15 +618,16 @@ export default function EarningsPage() {
               onChange={(e) => { setGstinValue(e.target.value.toUpperCase()); setGstinError(''); }}
               placeholder="22AAAAA0000A1Z5"
               maxLength={15}
+              autoFocus
               className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow font-mono tracking-wide"
             />
             {gstinError && <p className="text-xs text-[var(--danger)]">{gstinError}</p>}
             <div className="flex gap-2">
-              <button onClick={() => setGstinOpen(false)} className="flex-1 py-2 border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] text-sm font-semibold rounded-[var(--radius-sm)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
+              <button onClick={closeGstin} className="flex-1 py-2 border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] text-sm font-semibold rounded-[var(--radius-sm)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Cancel</button>
               <button
                 onClick={async () => {
                   if (!isValidGstin(gstinValue)) { setGstinError('Enter a valid 15-character GSTIN.'); return; }
-                  try { await addGstin.mutateAsync(gstinValue); setGstinOpen(false); }
+                  try { await addGstin.mutateAsync(gstinValue); closeGstin(); }
                   catch (e) { setGstinError(e instanceof Error ? e.message : 'Could not save GSTIN.'); }
                 }}
                 disabled={addGstin.isPending}
