@@ -86,6 +86,17 @@ export async function fulfillOrder(
     console.error('[fulfillment] ledger insert failed for order', orderId, ledgerErr.message);
   }
 
+  // 3b. Phase 5 — accrue immutable per-sale tax (no balance change; RPC is idempotent). Non-fatal.
+  if (creatorId) {
+    const { error: taxErr } = await db.rpc('record_sale_tax', {
+      p_creator_id: creatorId,
+      p_gross: total,
+      p_commission_gross: platformFee,
+      p_order_id: orderId,
+    });
+    if (taxErr) console.error('[fulfillment] record_sale_tax failed for order', orderId, taxErr.message);
+  }
+
   // 4. Grant durable access. Logged-in buyers get a user_product_access row now;
   // guests get an email-keyed guest_entitlements row, claimed on later sign-in.
   const buyerUserId = claimed.user_id;
@@ -295,6 +306,16 @@ export async function fulfillPaymentLinkSubmission(
   });
   if (ledgerErr) {
     console.error('[fulfillment] ledger insert failed for submission', submissionId, ledgerErr.message);
+  }
+
+  if (creatorId) {
+    const { error: taxErr } = await db.rpc('record_sale_tax', {
+      p_creator_id: creatorId,
+      p_gross: amount,
+      p_commission_gross: platformFee,
+      p_submission_id: submissionId,
+    });
+    if (taxErr) console.error('[fulfillment] record_sale_tax failed for submission', submissionId, taxErr.message);
   }
 
   if (creatorId) {
