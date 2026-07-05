@@ -2016,6 +2016,78 @@ export type Database = {
           },
         ]
       }
+      refunds: {
+        Row: {
+          amount: number
+          created_at: string
+          creator_id: string
+          failure_reason: string | null
+          fee_reversed: number
+          gateway_metadata: Json | null
+          gateway_refund_id: string | null
+          id: string
+          initiated_by: string
+          initiator_id: string | null
+          merchant_refund_id: string
+          net_clawback: number
+          order_id: string
+          processed_at: string | null
+          reason: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          creator_id: string
+          failure_reason?: string | null
+          fee_reversed?: number
+          gateway_metadata?: Json | null
+          gateway_refund_id?: string | null
+          id?: string
+          initiated_by: string
+          initiator_id?: string | null
+          merchant_refund_id: string
+          net_clawback: number
+          order_id: string
+          processed_at?: string | null
+          reason?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          creator_id?: string
+          failure_reason?: string | null
+          fee_reversed?: number
+          gateway_metadata?: Json | null
+          gateway_refund_id?: string | null
+          id?: string
+          initiated_by?: string
+          initiator_id?: string | null
+          merchant_refund_id?: string
+          net_clawback?: number
+          order_id?: string
+          processed_at?: string | null
+          reason?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_bookings: {
         Row: {
           amount_paid: number | null
@@ -3305,11 +3377,78 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_frozen_logs: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          creator_id: string
+          id: string
+          reason: string
+          refund_id: string | null
+          release_note: string | null
+          released_at: string | null
+          source: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          creator_id: string
+          id?: string
+          reason: string
+          refund_id?: string | null
+          release_note?: string | null
+          released_at?: string | null
+          source: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          creator_id?: string
+          id?: string
+          reason?: string
+          refund_id?: string | null
+          release_note?: string | null
+          released_at?: string | null
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_frozen_logs_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_frozen_logs_refund_id_fkey"
+            columns: ["refund_id"]
+            isOneToOne: false
+            referencedRelation: "refunds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      begin_refund: {
+        Args: {
+          p_amount?: number
+          p_initiated_by?: string
+          p_initiator_id?: string
+          p_order_id: string
+          p_reason?: string
+        }
+        Returns: Json
+      }
       check_rate_limit: {
         Args: { p_key: string; p_max: number; p_window_seconds: number }
         Returns: boolean
@@ -3323,6 +3462,16 @@ export type Database = {
         Returns: undefined
       }
       current_profile_id: { Args: never; Returns: string }
+      freeze_creator_funds: {
+        Args: {
+          p_amount: number
+          p_created_by?: string
+          p_creator_id: string
+          p_reason: string
+          p_source?: string
+        }
+        Returns: string
+      }
       increment_coupon_uses: {
         Args: { p_coupon_id: string }
         Returns: undefined
@@ -3333,6 +3482,18 @@ export type Database = {
       }
       is_super_admin: { Args: never; Returns: boolean }
       reconcile_creator_balances: { Args: never; Returns: number }
+      release_frozen_funds: {
+        Args: { p_log_id: string; p_note?: string }
+        Returns: boolean
+      }
+      reverse_settled_payout: {
+        Args: {
+          p_gateway_metadata?: Json
+          p_payout_id: string
+          p_reason?: string
+        }
+        Returns: boolean
+      }
       settle_payout: {
         Args: {
           p_expect_status?: string
@@ -3340,6 +3501,16 @@ export type Database = {
           p_gateway_metadata?: Json
           p_gateway_payout_id?: string
           p_payout_id: string
+          p_terminal: string
+        }
+        Returns: boolean
+      }
+      settle_refund: {
+        Args: {
+          p_failure_reason?: string
+          p_gateway_metadata?: Json
+          p_gateway_refund_id?: string
+          p_refund_id: string
           p_terminal: string
         }
         Returns: boolean
