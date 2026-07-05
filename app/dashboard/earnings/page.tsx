@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowUpRight, CheckCircle2, AlertCircle, Clock, TrendingUp,
   Building2, Wallet, CreditCard, History, ChevronRight,
-  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert, Snowflake,
+  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert, Snowflake, FileText,
 } from 'lucide-react';
 import { useEarnings } from '@/hooks/commerce/useEarnings';
 import { StatusPill } from '@/components/ui/StatusPill';
@@ -18,7 +18,7 @@ import { SideDrawer } from '@/components/ui/SideDrawer';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { formatINR, formatINRCompact } from '@/lib/format';
-import { usePayoutTaxPreview, useAddGstin } from '@/hooks/commerce/useTax';
+import { usePayoutTaxPreview, useTaxSummary, useAddGstin } from '@/hooks/commerce/useTax';
 import { isValidGstin } from '@/lib/shared/gstin';
 
 export default function EarningsPage() {
@@ -42,6 +42,7 @@ export default function EarningsPage() {
 
   const { data: taxPreview } = usePayoutTaxPreview();
   const addGstin = useAddGstin();
+  const { data: taxSummary } = useTaxSummary();
   const [gstinOpen, setGstinOpen] = useState(false);
   const [gstinValue, setGstinValue] = useState('');
   const [gstinError, setGstinError] = useState('');
@@ -131,6 +132,18 @@ export default function EarningsPage() {
           description="Track your balance, request withdrawals, and manage payout history."
           action={withdrawAction}
         />
+
+        {registrationRequired && (
+          <Card className="!bg-[var(--warning-bg)] !border-[var(--warning)]/20">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">GST registration required to withdraw</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Your FY sales crossed the ₹20L threshold. Add your GSTIN to continue.</p>
+              </div>
+              <button onClick={() => setGstinOpen(true)} className="shrink-0 px-3 py-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-semibold rounded-[var(--radius-sm)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Add GSTIN</button>
+            </div>
+          </Card>
+        )}
 
         {/* Payout Eligibility Banner */}
         {!isLoading && isKycVerified && available > 0 && available < 100 && (
@@ -290,6 +303,28 @@ export default function EarningsPage() {
                 <span className="text-sm font-semibold text-[var(--text-secondary)]">Net Available</span>
                 <span className="text-sm font-bold tabular-nums text-[var(--text-secondary)]">{formatINR(available)}</span>
               </div>
+            </div>
+          </Card>
+        )}
+
+        {!isLoading && (taxSummary?.length ?? 0) > 0 && (
+          <Card>
+            <div className="flex items-center gap-2 mb-4">
+              <FileText size={14} className="text-[var(--text-tertiary)]" />
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Tax withheld</h3>
+            </div>
+            <p className="text-xs text-[var(--text-tertiary)] mb-3">The 10% platform fee is GST-inclusive. TDS/TCS are withheld at withdrawal.</p>
+            <div className="space-y-3">
+              {taxSummary!.map((t) => (
+                <div key={t.fy} className="rounded-[var(--radius-md)] border border-[var(--border)] p-3">
+                  <p className="text-xs font-semibold text-[var(--text-primary)] mb-2">FY {t.fy}</p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div><p className="text-[11px] text-[var(--text-tertiary)]">TDS 194-O</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.tds, 0))}</p></div>
+                    <div><p className="text-[11px] text-[var(--text-tertiary)]">TCS §52</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.tcs, 0))}</p></div>
+                    <div><p className="text-[11px] text-[var(--text-tertiary)]">GST on fee</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.gstOnCommission, 0))}</p></div>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         )}
