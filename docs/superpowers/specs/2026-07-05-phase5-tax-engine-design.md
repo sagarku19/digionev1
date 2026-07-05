@@ -72,8 +72,8 @@ Write an immutable `tax_transactions` row:
 - **Compute withholding:** sum the creator's **unsettled** pending TDS/TCS across `tax_transactions`; store `tds_withheld`, `tcs_withheld`, and `net_amount = amount − tds_withheld − tcs_withheld` on the `creator_payouts` row; set `settling_payout_id` on those `tax_transactions`.
 
 ### 3.3 At payout settle (webhook)
-- **Success** → mark the linked `tax_transactions` `tds_settled`/`tcs_settled = true`.
-- **Failure/reversal** → clear `settling_payout_id` (tax returns to pending for the next payout). Mirrors Phase 4 freeze/settle idempotency.
+- **Success** → mark the reserved `tax_transactions` `settled = true`.
+- **Failure/reversal** → clear `settling_payout_id` on unsettled reserved rows (tax returns to pending for the next payout). Mirrors Phase 4 freeze/settle idempotency.
 - **Balance:** `total_paid_out += amount` (the full payout amount leaves available; the bank/govt split is internal). Unchanged from today.
 - **Transfer:** Cashfree `createTransfer` uses **`net_amount`**, not `amount`.
 
@@ -115,7 +115,7 @@ order_id uuid→orders null, submission_id uuid→payment_submissions null,  -- 
 gross_amount numeric, commission_gross numeric, commission_net numeric, gst_on_commission numeric,
 creator_registered bool, gstin text, pan_present bool,
 tds_amount numeric default 0, tcs_amount numeric default 0,
-tds_settled bool default false, tcs_settled bool default false,
+settled bool default false,            -- TDS+TCS settle together at one payout
 settling_payout_id uuid→creator_payouts null,
 rate_snapshot jsonb, status text check (status in ('posted','reversed')) default 'posted',
 reverses_id uuid→tax_transactions null, created_at timestamptz,
@@ -139,8 +139,8 @@ Indexes: `(creator_id, fy)`, `(creator_id) WHERE not tds_settled OR not tcs_sett
 
 - **`record_sale_tax(p_creator_id, p_gross, p_commission_gross, p_fy, p_order_id default null, p_submission_id default null)`** → computes the split + threshold-aware TDS/TCS accrual authoritatively (re-implements `tax-math.ts`; reads `fy_turnover` before this sale for the ₹5L check and `creator_kyc` for PAN/GSTIN), inserts the `tax_transactions` row for whichever source is set, returns the row. Called from `fulfillOrder` (order_id) and `fulfillPaymentLinkSubmission` (submission_id) after the balance credit. Idempotent via the per-source partial-unique index.
 - **`fy_turnover(p_creator_id, p_fy)`** → `SUM(gross_amount) FILTER (status='posted') − SUM(gross_amount of reversed)`; used by the payout gate and the sale-time threshold check.
-- **`begin_payout_tax(p_payout_id, p_creator_id)`** → sums unsettled pending TDS/TCS, sets `settling_payout_id`, returns `{tds_withheld, tcs_withheld}`. Called from the payout request path.
-- **`settle_payout` (extend)** → on success also mark linked `tax_transactions` settled; on failure clear `settling_payout_id`.
+- **`begin_payout_tax(p_payout_id, p_creator_id)`** → reserves the creator's unsettled posted rows (`settling_payout_id = p_payout_id`) and returns `{tds_withheld, tcs_withheld}` = reserved pending **net of any `reversed` counter-rows** against those originals (so a refund before payout reduces the withholding). Called from the payout request path.
+- **`settle_payout` (extend)** → on success mark reserved `tax_transactions` `settled = true`; on failure clear `settling_payout_id` on unsettled reserved rows.
 - **`settle_refund` (extend, Phase 4 RPC)** → on `success` also write the reversal counter-row + release unsettled pending tax (§3.4).
 
 ---
