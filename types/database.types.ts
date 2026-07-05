@@ -380,6 +380,9 @@ export type Database = {
           dob: string | null
           full_name: string | null
           gender: string | null
+          gstin: string | null
+          gstin_added_at: string | null
+          gstin_verified: boolean
           id: string
           ifsc_code: string | null
           kyc_level: string
@@ -425,6 +428,9 @@ export type Database = {
           dob?: string | null
           full_name?: string | null
           gender?: string | null
+          gstin?: string | null
+          gstin_added_at?: string | null
+          gstin_verified?: boolean
           id?: string
           ifsc_code?: string | null
           kyc_level?: string
@@ -470,6 +476,9 @@ export type Database = {
           dob?: string | null
           full_name?: string | null
           gender?: string | null
+          gstin?: string | null
+          gstin_added_at?: string | null
+          gstin_verified?: boolean
           id?: string
           ifsc_code?: string | null
           kyc_level?: string
@@ -664,10 +673,13 @@ export type Database = {
           gateway_payout_id: string | null
           id: string
           initiated_at: string | null
+          net_amount: number | null
           payout_method_id: string | null
           payout_request_id: string | null
           processed_at: string | null
           status: string
+          tcs_withheld: number
+          tds_withheld: number
           updated_at: string | null
         }
         Insert: {
@@ -682,10 +694,13 @@ export type Database = {
           gateway_payout_id?: string | null
           id?: string
           initiated_at?: string | null
+          net_amount?: number | null
           payout_method_id?: string | null
           payout_request_id?: string | null
           processed_at?: string | null
           status?: string
+          tcs_withheld?: number
+          tds_withheld?: number
           updated_at?: string | null
         }
         Update: {
@@ -700,10 +715,13 @@ export type Database = {
           gateway_payout_id?: string | null
           id?: string
           initiated_at?: string | null
+          net_amount?: number | null
           payout_method_id?: string | null
           payout_request_id?: string | null
           processed_at?: string | null
           status?: string
+          tcs_withheld?: number
+          tds_withheld?: number
           updated_at?: string | null
         }
         Relationships: [
@@ -2894,6 +2912,156 @@ export type Database = {
           },
         ]
       }
+      tax_rules: {
+        Row: {
+          created_at: string
+          effective_from: string
+          effective_to: string | null
+          gst_commission_rate: number
+          gst_reg_threshold: number
+          gst_reg_threshold_special: number
+          id: string
+          is_active: boolean
+          tcs_rate: number
+          tds_rate_no_pan: number
+          tds_rate_pan: number
+          tds_threshold_fy: number
+        }
+        Insert: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          gst_commission_rate: number
+          gst_reg_threshold: number
+          gst_reg_threshold_special: number
+          id?: string
+          is_active?: boolean
+          tcs_rate: number
+          tds_rate_no_pan: number
+          tds_rate_pan: number
+          tds_threshold_fy: number
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          effective_to?: string | null
+          gst_commission_rate?: number
+          gst_reg_threshold?: number
+          gst_reg_threshold_special?: number
+          id?: string
+          is_active?: boolean
+          tcs_rate?: number
+          tds_rate_no_pan?: number
+          tds_rate_pan?: number
+          tds_threshold_fy?: number
+        }
+        Relationships: []
+      }
+      tax_transactions: {
+        Row: {
+          commission_gross: number
+          commission_net: number
+          created_at: string
+          creator_id: string
+          creator_registered: boolean
+          fy: string
+          gross_amount: number
+          gst_on_commission: number
+          gstin: string | null
+          id: string
+          order_id: string | null
+          pan_present: boolean
+          rate_snapshot: Json | null
+          reverses_id: string | null
+          settled: boolean
+          settling_payout_id: string | null
+          status: string
+          submission_id: string | null
+          tcs_amount: number
+          tds_amount: number
+        }
+        Insert: {
+          commission_gross: number
+          commission_net: number
+          created_at?: string
+          creator_id: string
+          creator_registered?: boolean
+          fy: string
+          gross_amount: number
+          gst_on_commission: number
+          gstin?: string | null
+          id?: string
+          order_id?: string | null
+          pan_present?: boolean
+          rate_snapshot?: Json | null
+          reverses_id?: string | null
+          settled?: boolean
+          settling_payout_id?: string | null
+          status?: string
+          submission_id?: string | null
+          tcs_amount?: number
+          tds_amount?: number
+        }
+        Update: {
+          commission_gross?: number
+          commission_net?: number
+          created_at?: string
+          creator_id?: string
+          creator_registered?: boolean
+          fy?: string
+          gross_amount?: number
+          gst_on_commission?: number
+          gstin?: string | null
+          id?: string
+          order_id?: string | null
+          pan_present?: boolean
+          rate_snapshot?: Json | null
+          reverses_id?: string | null
+          settled?: boolean
+          settling_payout_id?: string | null
+          status?: string
+          submission_id?: string | null
+          tcs_amount?: number
+          tds_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_transactions_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_transactions_reverses_id_fkey"
+            columns: ["reverses_id"]
+            isOneToOne: false
+            referencedRelation: "tax_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_transactions_settling_payout_id_fkey"
+            columns: ["settling_payout_id"]
+            isOneToOne: false
+            referencedRelation: "creator_payouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_transactions_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "payment_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transaction_ledger: {
         Row: {
           amount: number
@@ -3439,6 +3607,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_payout_tax: {
+        Args: { p_creator_id: string; p_payout_id: string }
+        Returns: Json
+      }
       begin_refund: {
         Args: {
           p_amount?: number
@@ -3461,6 +3633,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      current_fy: { Args: never; Returns: string }
       current_profile_id: { Args: never; Returns: string }
       freeze_creator_funds: {
         Args: {
@@ -3472,6 +3645,15 @@ export type Database = {
         }
         Returns: string
       }
+      fy_turnover: {
+        Args: { p_creator_id: string; p_fy: string }
+        Returns: number
+      }
+      get_payout_tax_preview: { Args: never; Returns: Json }
+      gst_registration_required: {
+        Args: { p_creator_id: string }
+        Returns: boolean
+      }
       increment_coupon_uses: {
         Args: { p_coupon_id: string }
         Returns: undefined
@@ -3482,6 +3664,16 @@ export type Database = {
       }
       is_super_admin: { Args: never; Returns: boolean }
       reconcile_creator_balances: { Args: never; Returns: number }
+      record_sale_tax: {
+        Args: {
+          p_commission_gross: number
+          p_creator_id: string
+          p_gross: number
+          p_order_id?: string
+          p_submission_id?: string
+        }
+        Returns: string
+      }
       release_frozen_funds: {
         Args: { p_log_id: string; p_note?: string }
         Returns: boolean
