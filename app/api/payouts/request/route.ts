@@ -44,6 +44,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'KYC must be verified before requesting a payout.' }, { status: 403 });
     }
 
+    // Risk control: one in-flight payout at a time. Belt-and-braces with the
+    // optimistic pending_payout guard below (racers lose the .eq match anyway).
+    const { data: inflight } = await supabaseAdmin
+      .from('creator_payouts')
+      .select('id')
+      .eq('creator_id', profileId)
+      .in('status', ['pending', 'processing'])
+      .limit(1);
+    if (inflight && inflight.length > 0) {
+      return NextResponse.json(
+        { error: 'You already have a payout in progress. Wait for it to complete before requesting another.' },
+        { status: 409 }
+      );
+    }
+
     // 2. Lock and Check Balance
     const { data: balanceData, error: balanceError } = await supabaseAdmin
       .from('creator_balances')
