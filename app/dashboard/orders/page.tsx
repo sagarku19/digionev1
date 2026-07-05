@@ -2,16 +2,18 @@
 // Orders dashboard — all orders for this creator with detail drawer.
 
 import React, { useState, useMemo } from 'react';
-import { useOrders, type Order } from '@/hooks/commerce/useOrders';
+import { useOrders, useRefundOrder, useOrderRefundInfo, type Order } from '@/hooks/commerce/useOrders';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   ShoppingBag, CheckCircle2, XCircle, Clock, Search,
   ChevronRight, X, Package, Mail, Phone, Calendar,
   Download, TrendingUp, RotateCcw, FileDown,
 } from 'lucide-react';
 import { formatINR } from '@/lib/format';
+import { computeRefundSplit } from '@/lib/shared/refund-math';
 
 function exportOrdersCSV(orders: ReturnType<typeof useOrders>['orders']) {
   const header = ['Order ID', 'Customer Name', 'Customer Email', 'Customer Phone', 'Amount', 'Status', 'Products', 'Date'];
@@ -63,9 +65,118 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) {
+  const { data: info, isLoading } = useOrderRefundInfo(order.id);
+  const refundOrder = useRefundOrder();
+  const [amountStr, setAmountStr] = useState('');
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const total = Number(order.total_amount);
+  const remaining = info ? Math.round((total - info.priorAmount) * 100) / 100 : total;
+  const amount = amountStr === '' ? remaining : Number(amountStr);
+
+  let preview: { netClawback: number; feeReversed: number } | null = null;
+  let previewError = '';
+  if (info?.hasLedger && Number.isFinite(amount)) {
+    try {
+      preview = computeRefundSplit(total, info.fee, amount, info.priorAmount, info.priorFeeReversed);
+    } catch (e) {
+      previewError = e instanceof Error ? e.message : 'Invalid amount';
+    }
+  }
+
+  const blocked = isLoading || !info?.hasLedger || info?.hasProcessing || remaining < 1;
+  const blockedMessage = !isLoading && info
+    ? !info.hasLedger
+      ? 'This order is missing its sale record — contact support to refund it.'
+      : info.hasProcessing
+        ? 'A refund for this order is already processing.'
+        : remaining < 1
+          ? 'This order is fully refunded.'
+          : ''
+    : '';
+
+  const submit = async () => {
+    setError('');
+    try {
+      await refundOrder.mutateAsync({
+        orderId: order.id,
+        ...(amountStr === '' ? {} : { amount }),
+        ...(reason.trim() ? { reason: reason.trim() } : {}),
+      });
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Refund failed.');
+    }
+  };
+
+  return (
+    <div className="border-t border-[var(--border)] bg-[var(--surface-muted)] p-4 space-y-3">
+      <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Refund this order</p>
+      {blocked ? (
+        <p className="text-sm text-[var(--text-secondary)]">{isLoading ? 'Loading…' : blockedMessage}</p>
+      ) : (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
+              Amount (max {formatINR(remaining)})
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={remaining}
+              value={amountStr}
+              onChange={(e) => setAmountStr(e.target.value)}
+              placeholder={String(remaining)}
+              className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Reason (optional)</label>
+            <input
+              type="text"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Why is this being refunded?"
+              className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow"
+            />
+          </div>
+          {preview && (
+            <p className="text-xs text-[var(--text-secondary)]">
+              <span className="font-semibold text-[var(--danger)]">{formatINR(preview.netClawback)}</span> will be
+              deducted from your balance. The {formatINR(preview.feeReversed)} platform fee on this portion is returned.
+            </p>
+          )}
+          {previewError && <p className="text-xs text-[var(--danger)]">{previewError}</p>}
+          {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
+          <button
+            onClick={() => setConfirmOpen(true)}
+            disabled={!preview || refundOrder.isPending}
+            className="w-full py-2.5 bg-[var(--danger)] hover:opacity-90 text-[var(--text-on-brand)] font-semibold rounded-[var(--radius-sm)] transition text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          >
+            {refundOrder.isPending ? 'Processing…' : `Refund ${Number.isFinite(amount) ? formatINR(amount) : ''}`}
+          </button>
+          <ConfirmDialog
+            isOpen={confirmOpen}
+            onClose={() => setConfirmOpen(false)}
+            onConfirm={submit}
+            title="Refund this order?"
+            description={`The buyer gets ${Number.isFinite(amount) ? formatINR(amount) : ''} back to their original payment method (5–7 days). ${preview ? `${formatINR(preview.netClawback)} will be deducted from your balance and held until the refund completes.` : ''} This cannot be undone.`}
+            confirmLabel="Refund"
+            isDestructive
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
 function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) {
   const products = order.order_items ?? [];
   const receiptUrl = `/payment/receipt?order_id=${order.id}`;
+  const [showRefund, setShowRefund] = useState(false);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -160,16 +271,28 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
 
         {/* Footer actions */}
         {order.status === 'completed' && (
-          <div className="sticky bottom-0 bg-[var(--surface)] border-t border-[var(--border)] p-4">
-            <a
-              href={receiptUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] font-semibold rounded-[var(--radius-sm)] transition text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-            >
-              <Download className="w-4 h-4" />
-              Download Receipt
-            </a>
+          <div className="sticky bottom-0 bg-[var(--surface)]">
+            {showRefund && <RefundPanel order={order} onClose={onClose} />}
+            <div className="border-t border-[var(--border)] p-4 space-y-2">
+              <a
+                href={receiptUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] font-semibold rounded-[var(--radius-sm)] transition text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Download className="w-4 h-4" />
+                Download Receipt
+              </a>
+              {order.gateway_payment_id && (
+                <button
+                  onClick={() => setShowRefund((v) => !v)}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 border border-[var(--danger)]/30 text-[var(--danger)] hover:bg-[var(--danger-bg)] font-semibold rounded-[var(--radius-sm)] transition text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {showRefund ? 'Hide refund' : 'Refund order'}
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -319,7 +442,7 @@ export default function OrdersPage() {
           )}
         </div>
         <div className="flex gap-2">
-          {['all', 'completed', 'pending', 'failed'].map(s => (
+          {['all', 'completed', 'pending', 'failed', 'refunded'].map(s => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
