@@ -2,7 +2,7 @@
 // Fetches all orders for the current creator (by creator_id).
 // DB tables: orders, order_items, products (read only)
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
@@ -84,4 +84,58 @@ export function useOrders(limit = 100) {
   });
 
   return { orders, isLoading, error };
+}
+
+export function useRefundOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { orderId: string; amount?: number; reason?: string }) => {
+      const res = await fetch('/api/refunds/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Refund failed.');
+      return data as { success: true; refund: { refundId: string; amount: number; netClawback: number } };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['earnings'] });
+    },
+  });
+}
+
+// Data the refund dialog needs for its clawback preview: the order's original
+// platform fee (sale ledger row — RLS select-own) and prior refunds on the order.
+export function useOrderRefundInfo(orderId: string | null) {
+  return useQuery({
+    queryKey: ['orders', 'refund-info', orderId],
+    enabled: !!orderId,
+    queryFn: async () => {
+      const [ledgerRes, refundsRes] = await Promise.all([
+        supabase
+          .from('transaction_ledger')
+          .select('meta')
+          .eq('order_id', orderId!)
+          .eq('tx_type', 'sale')
+          .eq('direction', 'credit')
+          .limit(1),
+        supabase
+          .from('refunds')
+          .select('amount, fee_reversed, status')
+          .eq('order_id', orderId!)
+          .in('status', ['processing', 'success']),
+      ]);
+      const meta = (ledgerRes.data?.[0]?.meta ?? {}) as { platform_fee?: number };
+      const rows = refundsRes.data ?? [];
+      return {
+        fee: Number(meta.platform_fee ?? 0),
+        hasLedger: (ledgerRes.data ?? []).length > 0,
+        priorAmount: rows.reduce((s, r) => s + Number(r.amount), 0),
+        priorFeeReversed: rows.reduce((s, r) => s + Number(r.fee_reversed), 0),
+        hasProcessing: rows.some((r) => r.status === 'processing'),
+      };
+    },
+  });
 }

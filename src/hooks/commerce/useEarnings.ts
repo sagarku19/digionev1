@@ -28,7 +28,7 @@ export function useEarnings() {
         const rawBal = balanceRes.data;
         const derivedBalance = rawBal
           ? { ...rawBal, available_balance: availableBalance(rawBal) }
-          : { available_balance: 0, pending_payout: 0, total_earnings: 0, total_platform_fees: 0, total_paid_out: 0 };
+          : { available_balance: 0, pending_payout: 0, total_earnings: 0, total_platform_fees: 0, total_paid_out: 0, frozen_balance: 0 };
 
         return {
           balances: derivedBalance,
