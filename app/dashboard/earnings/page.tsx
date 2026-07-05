@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowUpRight, CheckCircle2, AlertCircle, Clock, TrendingUp,
   Building2, Wallet, CreditCard, History, ChevronRight,
-  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert,
+  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert, Snowflake,
 } from 'lucide-react';
 import { useEarnings } from '@/hooks/commerce/useEarnings';
 import { StatusPill } from '@/components/ui/StatusPill';
@@ -35,6 +35,7 @@ export default function EarningsPage() {
   const totalEarnings = creatorBalances?.total_earnings ?? 0;
   const totalPaidOut = creatorBalances?.total_paid_out ?? 0;
   const platformFees = creatorBalances?.total_platform_fees ?? 0;
+  const frozen = Number((creatorBalances as { frozen_balance?: number } | undefined)?.frozen_balance ?? 0);
   const bankLast4 = kyc?.bank_last4;
 
   const amountError =
@@ -261,6 +262,7 @@ export default function EarningsPage() {
                 { label: 'Platform Fees', amount: -platformFees, color: 'bg-[var(--danger)]', icon: CreditCard },
                 { label: 'Total Paid Out', amount: -totalPaidOut, color: 'bg-[var(--info)]', icon: Banknote },
                 { label: 'Pending Clearance', amount: -pending, color: 'bg-[var(--warning)]', icon: Clock },
+                ...(frozen > 0 ? [{ label: 'Frozen (refunds/disputes)', amount: -frozen, color: 'bg-[var(--danger)]', icon: Snowflake }] : []),
               ].map(({ label, amount, color, icon: Icon }) => (
                 <div key={label} className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full shrink-0 ${color}`} />
