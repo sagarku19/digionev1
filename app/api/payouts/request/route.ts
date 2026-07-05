@@ -59,6 +59,16 @@ export async function POST(req: Request) {
       );
     }
 
+    // Phase 5 risk control: block payout once GST registration is legally due (₹20L / ₹10L
+    // special-category turnover) until the creator furnishes a GSTIN.
+    const { data: gstGate } = await supabaseAdmin.rpc('gst_registration_required', { p_creator_id: profileId });
+    if (gstGate === true) {
+      return NextResponse.json(
+        { error: 'Your sales have crossed the GST registration threshold. Add your GSTIN to withdraw.', code: 'gstin_required' },
+        { status: 409 }
+      );
+    }
+
     // 2. Lock and Check Balance
     const { data: balanceData, error: balanceError } = await supabaseAdmin
       .from('creator_balances')
@@ -116,11 +126,28 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    if (payoutError) {
+    if (payoutError || !payout) {
       return NextResponse.json({ error: 'Failed to record payout ledger.' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, payout }, { status: 200 });
+    // Phase 5: reserve the creator's unsettled pending tax against this payout and
+    // record the withholding. net_amount is what the Cashfree transfer will send.
+    const { data: taxData } = await supabaseAdmin.rpc('begin_payout_tax', {
+      p_payout_id: payout.id,
+      p_creator_id: profileId,
+    });
+    const tds = Number((taxData as { tds_withheld?: number } | null)?.tds_withheld ?? 0);
+    const tcs = Number((taxData as { tcs_withheld?: number } | null)?.tcs_withheld ?? 0);
+    const netAmount = Math.round((amount - tds - tcs) * 100) / 100;
+
+    const { data: finalPayout } = await supabaseAdmin
+      .from('creator_payouts')
+      .update({ tds_withheld: tds, tcs_withheld: tcs, net_amount: netAmount })
+      .eq('id', payout.id)
+      .select()
+      .single();
+
+    return NextResponse.json({ success: true, payout: finalPayout ?? payout }, { status: 200 });
     
   } catch (error) {
     console.error('Payout Request Error:', error);
