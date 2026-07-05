@@ -988,6 +988,9 @@ const RPC_ERROR_MAP: Array<{ marker: string; code: RefundErrorCode; message: str
   { marker: 'refund:amount_too_small', code: 'over_refund', message: 'Minimum refund is ₹1.' },
   { marker: 'refund:over_refund', code: 'over_refund', message: 'Amount exceeds the remaining refundable amount.' },
   { marker: 'refund:fee_split_anomaly', code: 'internal', message: 'Refund split anomaly — contact support.' },
+  // Unique partial index uq_refunds_one_processing_per_order (Task 11 migration): only one
+  // in-flight refund per order — double-submit dedupe at the DB level.
+  { marker: 'uq_refunds_one_processing_per_order', code: 'invalid_state', message: 'A refund for this order is already processing.' },
 ];
 
 export interface InitiateRefundInput {
@@ -1335,8 +1338,25 @@ git commit -m "feat(payouts): one-in-flight payout guard (409 while pending/proc
 ### Task 11: Key-based rate limit + creator refund route
 
 **Files:**
+- Create: `supabase/migrations/20260704000002_one_processing_refund_per_order.sql`
 - Modify: `src/lib/server/rate-limit.ts`
 - Create: `app/api/refunds/create/route.ts`
+
+- [ ] **Step 0: Double-submit dedupe migration (Task 1 quality-review follow-up)**
+
+`begin_refund` legitimately allows multiple partials, so a rapid double-submit of the same refund would fire twice. Enforce one in-flight refund per order at the DB level. Create `supabase/migrations/20260704000002_one_processing_refund_per_order.sql`:
+
+```sql
+-- Phase 4 follow-up — double-submit dedupe (Task 1 quality review):
+-- at most ONE in-flight ('processing') refund per order. Sequential partials still
+-- work (wait for the previous to settle). A concurrent second begin_refund insert
+-- fails with a unique violation naming this index; src/lib/server/refunds.ts maps
+-- it to a friendly 'already processing' error.
+create unique index if not exists uq_refunds_one_processing_per_order
+  on public.refunds (order_id) where status = 'processing';
+```
+
+Apply via MCP `apply_migration` (`project_id: "qcendfisvyjnwmefruba"`, `name: "one_processing_refund_per_order"`). Verify with `execute_sql`: `select indexname from pg_indexes where tablename = 'refunds' and indexname = 'uq_refunds_one_processing_per_order';` → 1 row. (The `RPC_ERROR_MAP` entry for this index name is already in Task 7's `refunds.ts`.)
 
 - [ ] **Step 1: Add `rateLimitKey` and refactor `rateLimit` onto it**
 
@@ -1960,7 +1980,7 @@ In the Cashfree table, extend the "Used in" cells for `CASHFREE_ENVIRONMENT`, `C
 
 - [ ] **Step 5: `docs/db/money-path.md`**
 
-Add a new "## 8. Refunds" section documenting: the freeze → gateway → webhook-settle flow, the proportional split (worked ₹1000/10% example: full refund → creator loses ₹900, platform gives up ₹100, order nets to zero), the `SUCCESS|CANCELLED|FAILED|PENDING|ONHOLD` mapping, sync via `refund-admin.ts sync`, and append to the smoke checklist (§7 → renumber or extend):
+Add a new "## 8. Refunds" section documenting: the freeze → gateway → webhook-settle flow, the proportional split (worked ₹1000/10% example: full refund → creator loses ₹900, platform gives up ₹100, order nets to zero), the `SUCCESS|CANCELLED|FAILED|PENDING|ONHOLD` mapping, sync via `refund-admin.ts sync`, the one-processing-refund-per-order invariant (`uq_refunds_one_processing_per_order`), and this **deployment precondition** (Task 1 quality review): refund surfaces must not be enabled in any environment until the gross-earnings fulfillment fix and the backfill migration have both been applied there — settling a refund against a net-shaped `total_earnings` trips `chk_creator_balances_nonneg` and wedges the refund in `processing`. Then append to the smoke checklist (§7 → renumber or extend):
 
 ```markdown
 ### (d) Refund flow
