@@ -24,13 +24,14 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/coupons/validate` | none | service role | — |
 | POST | `/api/leads` | none | service role | `lead_form` |
 | POST | `/api/linkinbio/track` | none | service role | `linkinbio_analytics` |
-| POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` (min ₹100; links `creator_payout_methods.id` as `payout_method_id`; one-in-flight guard → 409 while a pending/processing payout exists) |
-| POST | `/api/admin/payouts/[id]/approve` | cookie session (super_admin, DB role re-read) | server + service role | `creator_payouts` (status→processing), `creator_kyc` (beneficiary_id), `creator_payout_methods`; calls Cashfree beneficiary + transfer |
+| POST | `/api/payouts/request` | cookie session | service role | `creator_balances`, `creator_payouts` (min ₹100; links `creator_payout_methods.id` as `payout_method_id`; one-in-flight guard → 409 while a pending/processing payout exists); Phase 5 ₹20L GST gate → 409 gstin_required; computes + stores tds_withheld/tcs_withheld/net_amount via begin_payout_tax |
+| POST | `/api/admin/payouts/[id]/approve` | cookie session (super_admin, DB role re-read) | server + service role | `creator_payouts` (status→processing), `creator_kyc` (beneficiary_id), `creator_payout_methods`; calls Cashfree beneficiary + transfer of `net_amount` (amount − TDS − TCS) |
 | POST | `/api/admin/payouts/[id]/reject` | cookie session (super_admin) | service role | `creator_payouts` via `settle_payout('failed')` (pending-only) |
 | POST | `/api/admin/payouts/sync` | super_admin session OR `CRON_SECRET` bearer | service role | reconciles stuck `processing` payouts via Cashfree `getTransfer` → `settle_payout` |
 | POST | `/api/kyc/submit` | cookie session | server + service role | `creator_kyc` (forces status=pending, encrypts PAN/bank/UPI; never accepts *_verified/status from client) |
 | POST | `/api/kyc/documents` | cookie session | server + service role | `kyc_documents` (links an uploaded creator-private kyc file; validates owner+bucket+kind) |
 | POST | `/api/kyc/payout-method` | cookie session | server + service role | `creator_kyc` — focused payout update: re-encrypts bank/UPI, resets ONLY bank/UPI verification + `beneficiary_id`, sets `status=pending`; keeps identity (`pan_verified`, legal_name) intact |
+| POST | `/api/kyc/gstin` | cookie session | server + service role | `creator_kyc` (gstin; format+checksum validated) |
 | GET | `/api/products/search` | none | service role | — |
 | GET | `/api/sites/check-slug` | none | service role | — |
 | POST | `/api/sites/create` | cookie session | server + service role | `sites`, `site_main`/`site_singlepage`/`linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` |
@@ -360,6 +361,22 @@ Body passes through `buildEncryptedKycRow` (`src/lib/server/kyc-row.ts`), which:
 
 **Success:** `{ ok: true }`
 **Errors:** `400` (invalid JSON, required fields missing), `401` (no session), `404` (no creator profile), `500` (upsert failure).
+
+---
+
+### `POST /api/kyc/gstin` (auth required)
+
+Creator submits their GSTIN once FY sales cross the ₹20L GST-registration threshold (the payout gate blocks withdrawals until this is provided). GSTIN is validated **offline** (15-char format + mod-36 checksum) — no live API in Phase 5.
+
+```json
+// Request
+{ "gstin": "27AAPFU0939F1ZV" }
+
+// Success
+{ "ok": true, "registered": true }
+```
+
+**Guards:** auth (401) → valid GSTIN format+checksum (400) → creator profile resolved (404) → 5/min profile-keyed rate limit (429). Sets `creator_kyc.gstin` (+ `gstin_added_at`, `gstin_verified=false`). Errors: `400`, `401`, `404`, `429`, `500`.
 
 ---
 

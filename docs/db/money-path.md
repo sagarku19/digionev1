@@ -392,3 +392,63 @@ A fully refunded order nets to zero: the creator gives back their ₹900 proceed
 - **No `frozen_balance` write outside the RPCs** (`begin_refund`/`settle_refund`/`freeze_creator_funds`/`release_frozen_funds`).
 
 **⚠ Deployment precondition (Task 1 quality review):** refund surfaces must NOT be enabled in any environment until the gross-earnings fulfillment fix **and** the `total_earnings` net→gross backfill migration have both been applied there. Settling a refund against a net-shaped `total_earnings` (where the fee was double-counted) can drive `total_earnings` below zero, tripping `chk_creator_balances_nonneg` inside `settle_refund` and wedging the refund in `processing`.
+
+---
+
+## 9. Tax Engine (GST / TDS / TCS)
+
+DigiOne collects and withholds Indian taxes on behalf of creators. Three taxes apply:
+
+| Tax | Statute | Rate | Trigger |
+|---|---|---|---|
+| TDS | Income Tax §194-O | 0.1% (PAN-linked); 5% (no PAN) | Payout once FY gross > ₹5L |
+| TCS | GST §52 | 0.5% (GSTIN-registered creators only) | Every payout |
+| GST on commission | GST §9 | 18% on DigiOne's fee share | Every sale |
+
+### GST-inclusive commission split
+
+DigiOne's 10% commission already includes the 18% GST that DigiOne owes on that fee. For a ₹1000 sale:
+
+```
+Total collected from buyer:   ₹1000
+DigiOne commission (10%):     ₹100  = ₹84.75 net fee  +  ₹15.25 GST-on-commission
+Creator proceeds:             ₹900
+```
+
+The split is recorded in `tax_transactions` at fulfillment. The balance formula and `reconcile_creator_balances` are **unchanged** — tax accrual has no effect on `total_earnings` or `total_platform_fees`.
+
+### Accrue per-sale, settle at payout
+
+**At sale (`fulfillOrder`):** `record_sale_tax` RPC snapshots an immutable `tax_transactions` row:
+- commission split (net fee / GST-on-commission)
+- pending TDS and TCS amounts (₹0 until the respective thresholds are met)
+- `status = 'pending'`
+
+No balance columns change at this point.
+
+**At payout (`begin_payout_tax`):** sums all unsettled `pending` `tax_transactions` rows (net of `reversed` counter-rows) to compute `tds_withheld`, `tcs_withheld`, and `net_amount = amount − tds_withheld − tcs_withheld`. These three values are stored on the `creator_payouts` row. The Cashfree transfer uses `net_amount`; the withheld amounts are remitted to the government by DigiOne.
+
+**At payout settlement (`settle_payout`):** marks the associated `tax_transactions` rows `settled`.
+
+**At refund (`settle_refund`):** writes a proportional `status='reversed'` `tax_transactions` counter-row so that the tax accrual mirrors the refunded amounts.
+
+### ₹20L GST-registration payout gate
+
+Once a creator's FY gross turnover reaches ₹20L (₹10L for special-category states), `/api/payouts/request` returns `409 { code: 'gstin_required' }`. The creator must submit their GSTIN via `POST /api/kyc/gstin` before further payouts are processed. GSTIN is validated offline (15-char format + mod-36 checksum); `creator_kyc.gstin_verified` starts `false` and is set to `true` by admin review.
+
+FY turnover is computed by `public.fy_turnover(creator_id, fy)` using `public.current_fy()` for the current financial year (April–March).
+
+### What is NOT changed
+
+- `total_earnings` / `total_platform_fees` / `creator_balances` balance formula — unchanged.
+- `reconcile_creator_balances` RPC — unchanged; tax rows do not affect its drift check.
+- The platform-fee rate in `src/lib/server/platform-fee.ts` — unchanged; TDS/TCS are withheld at the payout layer, not the fulfillment layer.
+
+### (e) Tax flow smoke checklist
+
+- A completed sale writes a `tax_transactions` row (commission split + pending TDS/TCS).
+- `select public.fy_turnover('<profileId>', public.current_fy());` returns the FY gross.
+- Once FY gross crosses ₹5L, subsequent sales accrue TDS.
+- A payout withholds pending TDS/TCS and transfers `net_amount`; `creator_payouts.tds_withheld`/`tcs_withheld` are populated.
+- A refund writes a `status='reversed'` `tax_transactions` row.
+- `select public.reconcile_creator_balances();` → still 0 new drift.

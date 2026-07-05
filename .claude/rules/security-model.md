@@ -87,6 +87,8 @@ Tables you should not touch without understanding their RLS:
 | `coupons` | Creator owns (no anon read). Public validation goes through `/api/coupons/validate` (service role). |
 | `sites`, `site_main`, `site_singlepage`, `linkinbio_pages`, `site_sections_config`, `site_design_tokens`, `site_navigation` | Owned by `creator_id`. Public read when `is_active`. |
 | `lead_form`, `linkinbio_analytics` | Creator reads via site ownership. Public insert via service role (rate-limited at the route). |
+| `tax_rules` | Readable by `authenticated` (rates/thresholds). **Writes: service role only.** |
+| `tax_transactions` | Creator reads their own. **Writes: service role only** (record_sale_tax / settle_* RPCs). |
 
 ## Revenue integrity rules
 
@@ -103,6 +105,8 @@ These exist because money tables cannot be rebuilt from logs.
 9. **`user_product_access` grants.** On fulfillment, logged-in buyers receive `user_product_access` rows (one per product in the order). UNIQUE on `(order_id, product_id)` — idempotent.
 10. **Refunds are freeze-then-settle.** `begin_refund` (atomic RPC: order row lock → over-refund check → `frozen_balance` hold) runs before any gateway call; only `settle_refund` (claim-idempotent, webhook/sync-driven) reverses `total_earnings`/`total_platform_fees`, writes the ledger `refund` debit (`record_hash = sha256('refund:' + refundId)`), flips fully-refunded orders to `refunded`, and revokes access. Fee reversal is proportional. No code path outside these RPCs may mutate `frozen_balance`.
 11. **`total_earnings` is GROSS.** Fulfillment credits the gross sale amount; `availableBalance()` subtracts `total_platform_fees`. (Fixed 2026-07-04 — it previously credited net, double-counting the fee.)
+12. **Tax is accrue-per-sale / settle-at-payout.** `record_sale_tax` snapshots an immutable `tax_transactions` row at fulfillment (GST-inclusive commission split + threshold-aware pending TDS/TCS) — no balance change. `begin_payout_tax` reserves unsettled pending tax (net of `reversed` counter-rows) at payout; the transfer sends `net_amount`; `settle_payout` finalizes/releases and `settle_refund` writes the proportional reversal. Only these RPCs touch `tax_transactions`. `total_earnings`/`reconcile_creator_balances` are unaffected (a payout of ₹X counts as ₹X paid out regardless of the bank/govt split).
+13. **GST registration gate.** `gst_registration_required` blocks payout (409) once FY turnover ≥ ₹20L (₹10L special-category states) until a GSTIN is furnished via `POST /api/kyc/gstin`.
 
 ## Public endpoints — abuse surface
 

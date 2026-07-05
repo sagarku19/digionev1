@@ -17,7 +17,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `auth/` | `useAuthSession` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`) |
 | `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
-| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart`, `useLibrary` |
+| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart`, `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
 | `analytics/` | `useAnalytics` |
@@ -90,3 +90,5 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useSites()` | `['sites','list']` / `['sites','trash']` (also `trashedSites`, `restoreSite`, `permanentlyDeleteSite`) |
 | `useStorefront(slug)` | `['storefront','detail', slug]` |
 | `useStoreProducts(creatorId)` | `['products','store', creatorId]` |
+| `usePayoutTaxPreview()` | `['earnings','tax-preview']` |
+| `useTaxSummary()` | `['tax','summary']` |
