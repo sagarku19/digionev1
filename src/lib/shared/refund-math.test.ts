@@ -42,4 +42,11 @@ describe('computeRefundSplit', () => {
   it('rejects over-refund past the remaining amount', () => {
     expect(() => computeRefundSplit(1000, 100, 601, 400)).toThrow(RangeError);
   });
+
+  it('rejects invalid total or fee inputs (UI must never preview NaN)', () => {
+    expect(() => computeRefundSplit(0, 0, 1)).toThrow(RangeError);
+    expect(() => computeRefundSplit(Number.NaN, 100, 100)).toThrow(RangeError);
+    expect(() => computeRefundSplit(1000, Number.NaN, 100)).toThrow(RangeError);
+    expect(() => computeRefundSplit(1000, -5, 100)).toThrow(RangeError);
+  });
 });

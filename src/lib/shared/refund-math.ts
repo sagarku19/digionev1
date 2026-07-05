@@ -13,6 +13,11 @@ export interface RefundSplit {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/**
+ * @param priorFeeReversed — must be the sum of feeReversed from all prior
+ *   processing/success refunds on the same order (paired with priorAmount);
+ *   a mismatched pair produces a wrong completing-branch fee.
+ */
 export function computeRefundSplit(
   total: number,
   feeOriginal: number,
@@ -20,6 +25,8 @@ export function computeRefundSplit(
   priorAmount = 0,
   priorFeeReversed = 0
 ): RefundSplit {
+  if (!Number.isFinite(total) || total <= 0) throw new RangeError('total must be a positive finite number');
+  if (!Number.isFinite(feeOriginal) || feeOriginal < 0) throw new RangeError('feeOriginal must be a non-negative finite number');
   const remaining = round2(total - priorAmount);
   if (!(amount >= 1)) throw new RangeError('Refund amount must be at least ₹1');
   if (amount > remaining) throw new RangeError('Refund amount exceeds the remaining refundable amount');
