@@ -28,6 +28,20 @@ export async function POST(req: Request) {
       ({ error: settleErr } = await db.rpc('settle_payout', { p_payout_id: transferId, p_terminal: 'success', p_gateway_payout_id: params.referenceId, p_gateway_metadata: params as Json }));
     } else if (event === 'TRANSFER_FAILED') {
       ({ error: settleErr } = await db.rpc('settle_payout', { p_payout_id: transferId, p_terminal: 'failed', p_gateway_payout_id: params.referenceId, p_gateway_metadata: params as Json, p_failure_reason: params.reason ?? 'transfer_failed' }));
+    } else if (event === 'TRANSFER_REVERSED') {
+      // In-flight reversal = failure (releases the hold). Post-success reversal =
+      // clawback: money came back, total_paid_out shrinks, ledger gets a credit.
+      const { data: failedInFlight, error: e1 } = await db.rpc('settle_payout', {
+        p_payout_id: transferId, p_terminal: 'failed', p_gateway_payout_id: params.referenceId,
+        p_gateway_metadata: params as Json, p_failure_reason: 'transfer_reversed', p_expect_status: 'processing',
+      });
+      if (e1) {
+        settleErr = e1;
+      } else if (failedInFlight !== true) {
+        ({ error: settleErr } = await db.rpc('reverse_settled_payout', {
+          p_payout_id: transferId, p_reason: 'transfer_reversed', p_gateway_metadata: params as Json,
+        }));
+      }
     }
     // A real DB failure must NOT be ACKed — return non-2xx so Cashfree retries. settle_payout is
     // idempotent (status claim), so a duplicate/late retry that finds nothing to claim is a safe no-op.
