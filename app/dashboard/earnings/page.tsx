@@ -20,6 +20,7 @@ import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { formatINR, formatINRCompact } from '@/lib/format';
 import { usePayoutTaxPreview, useTaxSummary, useAddGstin } from '@/hooks/commerce/useTax';
 import { useCommissionMonths, useDownloadCommissionInvoice } from '@/hooks/commerce/useInvoices';
+import { useStatementYears, useDownloadAnnualStatement } from '@/hooks/commerce/useStatements';
 import { isValidGstin } from '@/lib/shared/gstin';
 
 export default function EarningsPage() {
@@ -45,6 +46,8 @@ export default function EarningsPage() {
   const addGstin = useAddGstin();
   const { data: taxSummary } = useTaxSummary();
   const { data: commissionMonths } = useCommissionMonths();
+  const { data: statementYears } = useStatementYears();
+  const downloadStatement = useDownloadAnnualStatement();
   const downloadCommission = useDownloadCommissionInvoice();
   const [gstinOpen, setGstinOpen] = useState(false);
   const [gstinValue, setGstinValue] = useState('');
@@ -351,6 +354,31 @@ export default function EarningsPage() {
                   >
                     <Download size={13} />
                     Invoice
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {!isLoading && (statementYears?.length ?? 0) > 0 && (
+          <Card>
+            <div className="flex items-center gap-2 mb-4">
+              <FileText size={14} className="text-[var(--text-tertiary)]" />
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Annual statements</h3>
+            </div>
+            <p className="text-xs text-[var(--text-tertiary)] mb-3">Your earnings &amp; tax summary per financial year (informational; the statutory Form 16A comes from TRACES).</p>
+            <div className="divide-y divide-[var(--border-subtle)]">
+              {statementYears!.map((fy) => (
+                <div key={fy} className="flex items-center justify-between py-2.5">
+                  <span className="text-sm text-[var(--text-primary)]">FY {fy}</span>
+                  <button
+                    onClick={() => downloadStatement.mutate(fy)}
+                    disabled={downloadStatement.isPending}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] transition disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  >
+                    <Download size={13} />
+                    Statement
                   </button>
                 </div>
               ))}
