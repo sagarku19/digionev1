@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   ArrowUpRight, CheckCircle2, AlertCircle, Clock, TrendingUp,
   Building2, Wallet, CreditCard, History, ChevronRight,
-  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert, Snowflake, FileText,
+  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert, Snowflake, FileText, Download,
 } from 'lucide-react';
 import { useEarnings } from '@/hooks/commerce/useEarnings';
 import { StatusPill } from '@/components/ui/StatusPill';
@@ -19,6 +19,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { formatINR, formatINRCompact } from '@/lib/format';
 import { usePayoutTaxPreview, useTaxSummary, useAddGstin } from '@/hooks/commerce/useTax';
+import { useCommissionMonths, useDownloadCommissionInvoice } from '@/hooks/commerce/useInvoices';
 import { isValidGstin } from '@/lib/shared/gstin';
 
 export default function EarningsPage() {
@@ -43,6 +44,8 @@ export default function EarningsPage() {
   const { data: taxPreview } = usePayoutTaxPreview();
   const addGstin = useAddGstin();
   const { data: taxSummary } = useTaxSummary();
+  const { data: commissionMonths } = useCommissionMonths();
+  const downloadCommission = useDownloadCommissionInvoice();
   const [gstinOpen, setGstinOpen] = useState(false);
   const [gstinValue, setGstinValue] = useState('');
   const [gstinError, setGstinError] = useState('');
@@ -324,6 +327,31 @@ export default function EarningsPage() {
                     <div><p className="text-[11px] text-[var(--text-tertiary)]">TCS §52</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.tcs, 0))}</p></div>
                     <div><p className="text-[11px] text-[var(--text-tertiary)]">GST on fee</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.gstOnCommission, 0))}</p></div>
                   </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {!isLoading && (commissionMonths?.length ?? 0) > 0 && (
+          <Card>
+            <div className="flex items-center gap-2 mb-4">
+              <FileText size={14} className="text-[var(--text-tertiary)]" />
+              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Tax invoices</h3>
+            </div>
+            <p className="text-xs text-[var(--text-tertiary)] mb-3">Monthly DigiOne commission tax invoices (18% GST on platform fees).</p>
+            <div className="divide-y divide-[var(--border-subtle)]">
+              {commissionMonths!.map((m) => (
+                <div key={m.month} className="flex items-center justify-between py-2.5">
+                  <span className="text-sm text-[var(--text-primary)]">{m.label}</span>
+                  <button
+                    onClick={() => downloadCommission.mutate(m.month)}
+                    disabled={downloadCommission.isPending}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] transition disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  >
+                    <Download size={13} />
+                    Invoice
+                  </button>
                 </div>
               ))}
             </div>
