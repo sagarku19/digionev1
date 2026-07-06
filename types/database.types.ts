@@ -1059,6 +1059,109 @@ export type Database = {
           },
         ]
       }
+      invoice_counters: {
+        Row: {
+          fy: string
+          id: string
+          last_number: number
+          series_key: string
+        }
+        Insert: {
+          fy: string
+          id?: string
+          last_number?: number
+          series_key: string
+        }
+        Update: {
+          fy?: string
+          id?: string
+          last_number?: number
+          series_key?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          creator_id: string
+          currency: string
+          fy: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          is_tax_invoice: boolean
+          issuer: string
+          metadata: Json | null
+          order_id: string | null
+          period_month: string | null
+          storage_file_id: string | null
+          subtotal: number
+          tax_amount: number
+          total: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          currency?: string
+          fy: string
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          is_tax_invoice: boolean
+          issuer: string
+          metadata?: Json | null
+          order_id?: string | null
+          period_month?: string | null
+          storage_file_id?: string | null
+          subtotal: number
+          tax_amount?: number
+          total: number
+          type: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          fy?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          is_tax_invoice?: boolean
+          issuer?: string
+          metadata?: Json | null
+          order_id?: string | null
+          period_month?: string | null
+          storage_file_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          total?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_storage_file_id_fkey"
+            columns: ["storage_file_id"]
+            isOneToOne: false
+            referencedRelation: "storage_files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kyc_access_log: {
         Row: {
           admin_id: string
@@ -3663,6 +3766,49 @@ export type Database = {
         Returns: undefined
       }
       is_super_admin: { Args: never; Returns: boolean }
+      issue_invoice: {
+        Args: {
+          p_creator_id: string
+          p_fy: string
+          p_invoice_date: string
+          p_is_tax_invoice: boolean
+          p_issuer: string
+          p_metadata: Json
+          p_order_id: string
+          p_period_month: string
+          p_prefix: string
+          p_series_key: string
+          p_subtotal: number
+          p_tax_amount: number
+          p_total: number
+          p_type: string
+        }
+        Returns: {
+          created_at: string
+          creator_id: string
+          currency: string
+          fy: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          is_tax_invoice: boolean
+          issuer: string
+          metadata: Json | null
+          order_id: string | null
+          period_month: string | null
+          storage_file_id: string | null
+          subtotal: number
+          tax_amount: number
+          total: number
+          type: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       preview_payout_tax: { Args: { p_creator_id: string }; Returns: Json }
       reconcile_creator_balances: { Args: never; Returns: number }
       record_sale_tax: {
