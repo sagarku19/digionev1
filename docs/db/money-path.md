@@ -452,3 +452,13 @@ FY turnover is computed by `public.fy_turnover(creator_id, fy)` using `public.cu
 - A payout withholds pending TDS/TCS and transfers `net_amount`; `creator_payouts.tds_withheld`/`tcs_withheld` are populated.
 - A refund writes a `status='reversed'` `tax_transactions` row.
 - `select public.reconcile_creator_balances();` → still 0 new drift.
+
+### Government return data (Phase 6c)
+
+DigiOne's own ECO filings are exported as accountant-ready CSVs via the terminal script `scripts/tax-export.ts` (service-role; run `npx tsx --env-file=.env.local scripts/tax-export.ts <cmd>`):
+
+- `gstr8 <YYYY-MM>` — **TCS** (registered creators only), from `tax_transactions` net of refunds, grouped by creator GSTIN.
+- `26q <YYYY-YY> <Q1|Q2|Q3|Q4>` — **TDS** (§194-O), from `creator_payouts.tds_withheld` (successful payouts in the quarter) with **decrypted deductee PANs** — the output CSV is a **sensitive artifact** (`./tax-exports/` is gitignored; never commit or share beyond the filing CA).
+- `gstr1 <YYYY-MM>` — DigiOne's **output GST on commission** (`commission_net` + `gst_on_commission`), B2B (per registered-creator GSTIN) vs an aggregated B2C line.
+
+Aggregation lives in the pure, unit-tested `src/lib/server/tax-export.ts`; the script is a thin fetch→build→write wrapper. These are **not** portal-ready JSON/FVU and **not** e-filing — a CA prepares the statutory returns from these figures. TCS/GSTR-1 are on a sale-date basis, 26Q TDS on a payout-date basis.

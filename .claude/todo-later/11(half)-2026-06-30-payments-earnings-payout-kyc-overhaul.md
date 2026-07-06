@@ -5,8 +5,8 @@ tags: []
 
 # Payments / Earnings / Payout / KYC / Tax / Subscriptions — overhaul blueprint
 
-**Captured:** 2026-06-30 · **Last updated:** 2026-07-06 (Phase 6b annual statement built).
-**Status:** `(half)` — **Phases 0–5 + 6a + 6b BUILT** (0 live; 1–5/6a/6b built, some deferrals — see Plan state); Phase 6c not started. Update the status tag + "Plan state" as work continues.
+**Captured:** 2026-06-30 · **Last updated:** 2026-07-06 (Phase 6c tax exports built — overhaul feature-complete).
+**Status:** `(half)` — **All 7 phases (0–6) BUILT** (0 live; 1–6 built with deferred go-live items — see Plan state). The `(half)` tag persists only because deferred go-live items remain (sandbox e2e, provider verification, real billing, admin app); the planned feature scope is complete.
 **Scope:** the entire money surface — earnings, payouts, KYC, refunds, **GST/TDS/TCS tax**,
 invoices, **creator subscriptions (creator → DigiOne billing)**, wallet/ledger maturity, risk
 controls. Both DB and code. Written from four lenses: **developer**, **DB designer**, **UI/UX
@@ -31,9 +31,9 @@ designer**, and **chartered accountant** (Indian e-commerce tax).
 | 5 | **GST / TDS / TCS tax engine** — accrue-per-sale / settle-at-payout model; ₹20L GSTIN payout gate (no registered-creator payout without verified GSTIN); GST-inclusive-commission decision (platform fee computed on gross, GST passed through); `tax_rules` versioned + `tax_transactions` immutable per order; TDS/TCS branching on creator registration; shared `src/lib/shared/tax-math.ts` + `src/lib/shared/gstin.ts`; `useTax` hook | **BUILT** | spec: `docs/superpowers/specs/2026-07-05-phase5-tax-engine-design.md` · plan: `docs/superpowers/plans/2026-07-05-phase5-tax-engine.md` |
 | **6a** | Invoice engine (`@react-pdf/renderer` → private R2, signed-URL only, decoupled from the money path) + **buyer Bill-of-Supply** invoice + **DigiOne→creator monthly commission tax invoice** (18% GST from `tax_transactions`); `invoices` + `invoice_counters` + atomic idempotent `issue_invoice` RPC; per-series numbering (`INV/{fy}` per creator, `DIGI/{fy}` global); download UI on receipt / orders drawer / earnings; `useInvoices` hook | **BUILT** | spec: `docs/superpowers/specs/2026-07-06-phase6a-invoices-design.md` · plan: `docs/superpowers/plans/2026-07-06-phase6a-invoices.md` |
 | **6b** | Creator tax statements: **Annual Earnings & Tax Statement** PDF (per creator per FY — sales/commission/GST net-of-refunds + TDS/TCS withheld from `creator_payouts`), reusing the 6a engine; download card on the earnings page. **Informational only** — the statutory Form 16A comes from TRACES after 26Q filing (real integration deferred). Quarterly TDS statements deferred. | **BUILT** | spec: `docs/superpowers/specs/2026-07-06-phase6b-statements-design.md` · plan: `docs/superpowers/plans/2026-07-06-phase6b-statements.md` |
-| 6c | Government return exports: **GSTR-8** (TCS), **26Q** (TDS), **GSTR-1** (DigiOne output GST) in portal formats | not started | — |
+| **6c** | Government return **data exports** — accountant-ready CSVs for **GSTR-8** (TCS), **26Q** (TDS, with decrypted deductee PANs), **GSTR-1** (DigiOne output GST) via terminal `scripts/tax-export.ts` (pure tested core in `src/lib/server/tax-export.ts`). Portal-ready JSON/FVU + actual e-filing deferred; output is gitignored (`tax-exports/`). | **BUILT** | spec: `docs/superpowers/specs/2026-07-06-phase6c-tax-exports-design.md` · plan: `docs/superpowers/plans/2026-07-06-phase6c-tax-exports.md` |
 
-**Next planned phase:** Phase 6c — GSTR-8 (TCS) / 26Q (TDS) / GSTR-1 (DigiOne output GST) government return exports.
+**Next planned phase:** none — **the 7-phase overhaul (0–6) is feature-complete.** Remaining work is the deferred go-live items recorded in the per-phase deferral notes below (Cashfree Payouts sandbox e2e, provider KYC auto-verify, real PG/recurring subscription billing, sandbox refund-webhook e2e, product-GST-rate capture for registered-creator sale tax invoices, TRACES Form 16A / portal-JSON e-filing, the separate admin app). Populate `DIGIONE_*` env vars before issuing commission invoices.
 
 **Phase 6a deferred / CA-flags:**
 - **Registered-creator buyer *Tax Invoice* with sale-GST breakdown** — 6a issues a **Bill of Supply** for all creators; the registered-creator GST tax invoice needs Phase 5's deferred **product-GST-rate capture**. Buyer GSTIN / B2B ITC also deferred.
