@@ -83,6 +83,19 @@ Separate from the Cashfree PG (payment gateway) credentials above — Cashfree P
 | `CASHFREE_PAYOUT_WEBHOOK_SECRET` | **secret** | `/api/webhook/cashfree-payout` | HMAC key for Cashfree Payouts webhook signature verification. Separate from the PG webhook secret. |
 | `CRON_SECRET` | **secret** | `/api/admin/payouts/sync` | Bearer token for the cron-ready payout-sync route. Pass as `Authorization: Bearer <CRON_SECRET>` from your scheduler. Super-admin session is an alternative auth path. |
 
+## DigiOne identity (invoices)
+
+Read by `src/lib/server/invoices/digione-identity.ts`. All server-only — never expose behind `NEXT_PUBLIC_`. `DIGIONE_GSTIN` is required to issue a commission tax invoice; the route throws `500` if it is absent or blank.
+
+| Var | Scope | Used in | Notes |
+|---|---|---|---|
+| `DIGIONE_LEGAL_NAME` | server | `src/lib/server/invoices/digione-identity.ts` | DigiOne's registered legal entity name, printed on all invoices. |
+| `DIGIONE_GSTIN` | **secret** | `src/lib/server/invoices/digione-identity.ts` | DigiOne's GSTIN. Required for commission tax invoices (18% GST); throws if absent. |
+| `DIGIONE_PAN` | server | `src/lib/server/invoices/digione-identity.ts` | DigiOne's PAN, printed on invoices as supplementary identity. |
+| `DIGIONE_ADDRESS` | server | `src/lib/server/invoices/digione-identity.ts` | Registered address printed on invoice header. |
+| `DIGIONE_STATE` | server | `src/lib/server/invoices/digione-identity.ts` | State name (e.g. `Karnataka`) — used for intra/inter-state GST determination. |
+| `DIGIONE_STATE_CODE` | server | `src/lib/server/invoices/digione-identity.ts` | Two-digit GST state code (e.g. `29`) matching `DIGIONE_STATE`. |
+
 ## Known cleanup
 
 - **`CASHFREE_ENVIRONMENT` vs `NEXT_PUBLIC_CASHFREE_ENV`** — two sources of truth. If they drift, sandbox-signed orders will fail to redirect to prod (or vice versa). Consider deriving the public one from the server one at build time.

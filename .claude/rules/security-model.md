@@ -89,6 +89,8 @@ Tables you should not touch without understanding their RLS:
 | `lead_form`, `linkinbio_analytics` | Creator reads via site ownership. Public insert via service role (rate-limited at the route). |
 | `tax_rules` | Readable by `authenticated` (rates/thresholds). **Writes: service role only.** |
 | `tax_transactions` | Creator reads their own. **Writes: service role only** (record_sale_tax / settle_* RPCs). |
+| `invoices` | Creator reads their own. **Writes: service role only** (issue_invoice RPC). Buyer sale-invoice access is via the API route (verifies order ownership), not RLS. |
+| `invoice_counters` | No policies — service-role only. |
 
 ## Revenue integrity rules
 

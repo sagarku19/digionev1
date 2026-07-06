@@ -45,6 +45,8 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | GET | `/api/deliverables/[productId]` | cookie session | server + service role | — (mints R2 signed download URLs via `storage_files`) |
 | POST | `/api/private/download` | cookie session | server + service role | — (mints R2 signed URL for `creator-content` only) |
 | GET | `/api/admin/kyc/[creatorId]/download` | cookie session (super_admin) | server + service role | `kyc_access_log` (writes on every mint) |
+| GET | `/api/invoices/sale/[orderId]` | cookie session | server + service role | reads `orders`; issues `invoices` + `invoice_counters` (via `issue_invoice`); caches PDF to R2 `storage_files` (`kind='invoice'`) |
+| GET | `/api/invoices/commission/[month]` | cookie session | server + service role | reads `tax_transactions` (posted only); issues `invoices` + `invoice_counters`; caches PDF to R2 |
 
 ---
 
@@ -653,6 +655,17 @@ The **only** route that mints a signed URL for the `digione-kyc-private` bucket.
 ```
 
 **Errors:** `401` (no session), `403` (not super_admin or no KYC record), `404` (creator not found), `502` (R2 sign error), `500`. Every successful call writes a `kyc_access_log` row (`admin_id`, `creator_id`, `file_id`, `object_key`, `created_at`).
+
+---
+
+## Invoices
+
+### `GET /api/invoices/sale/[orderId]` and `GET /api/invoices/commission/[month]` (auth required)
+
+On-demand invoice PDFs (`@react-pdf/renderer`, Node runtime), decoupled from the money path. The first request allocates an idempotent per-series number via the `issue_invoice` RPC (`INV/{fy}/{NNNNNN}` per creator; `DIGIONE`→`DIGI/{fy}/{NNNNNN}` global), stores an `invoices` row with a frozen content snapshot, renders the PDF, caches it in private R2 (`kind='invoice'`), and returns `{ signedUrl, ttlSeconds, invoiceNumber }` (`Cache-Control: no-store`).
+
+- **sale** — Bill of Supply for a paid/refunded order. Access: the sale's creator OR the order's buyer (`orders.user_id` or matching `customer_email`). Errors: `400` (bad orderId), `401`, `403` (not creator/buyer), `404` (order not found / not paid), `500`.
+- **commission** — creator's monthly DigiOne commission tax invoice (18% GST on commission, posted sales only). Requires `DIGIONE_GSTIN` configured. Errors: `400` (bad month), `401`, `404` (no profile / no commission that month), `500`.
 
 ---
 

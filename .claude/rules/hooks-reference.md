@@ -17,7 +17,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `auth/` | `useAuthSession` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`) |
 | `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
-| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart`, `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`) |
+| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart`, `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
 | `analytics/` | `useAnalytics` |
@@ -92,3 +92,4 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useStoreProducts(creatorId)` | `['products','store', creatorId]` |
 | `usePayoutTaxPreview()` | `['earnings','tax-preview']` |
 | `useTaxSummary()` | `['tax','summary']` |
+| `useCommissionMonths()` | `['invoices','commission-months']` |
