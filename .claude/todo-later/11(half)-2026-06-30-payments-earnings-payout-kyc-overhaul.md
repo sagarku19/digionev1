@@ -5,8 +5,8 @@ tags: []
 
 # Payments / Earnings / Payout / KYC / Tax / Subscriptions — overhaul blueprint
 
-**Captured:** 2026-06-30 · **Last updated:** 2026-07-06 (Phase 5 tax engine built).
-**Status:** `(half)` — **Phases 0–5 BUILT** (0 live; 1–5 built, some deferrals — see Plan state); Phase 6 not started. Update the status tag + "Plan state" as work continues.
+**Captured:** 2026-06-30 · **Last updated:** 2026-07-06 (Phase 6a invoice engine built).
+**Status:** `(half)` — **Phases 0–5 + 6a BUILT** (0 live; 1–5/6a built, some deferrals — see Plan state); Phases 6b/6c not started. Update the status tag + "Plan state" as work continues.
 **Scope:** the entire money surface — earnings, payouts, KYC, refunds, **GST/TDS/TCS tax**,
 invoices, **creator subscriptions (creator → DigiOne billing)**, wallet/ledger maturity, risk
 controls. Both DB and code. Written from four lenses: **developer**, **DB designer**, **UI/UX
@@ -29,9 +29,20 @@ designer**, and **chartered accountant** (Indian e-commerce tax).
 | 3 | **Creator subscriptions**: wire `subscription_plans`/`subscriptions`, **platform-fee tiering** (`getPlatformFeeRate` reads the active sub, fail-safe Free), real plan picker, **terminal** activation (`scripts/subscription-admin.ts`). Deferred: real PG billing / recurring mandate / auto-renew / GST invoice on the fee / app-wide feature-gating enforcement. | **BUILT (fee-tiering core; billing deferred)** | spec: `docs/superpowers/specs/2026-07-02-phase3-creator-subscriptions-design.md` · plan: `docs/superpowers/plans/2026-07-02-phase3-creator-subscriptions.md` |
 | 4 | Refunds (freeze → PG refund → webhook-settled clawback) + `frozen_balance` activation + risk controls (one-in-flight payout guard, manual dispute/admin freeze, `TRANSFER_REVERSED` clawback) + **gross-earnings fee double-count fix** (+ ledger-derived backfill) | **BUILT** (terminal-admin interim; refund UI in orders drawer). Deferred: sandbox e2e of the refund webhook (needs a real sandbox payment), payment-link (`pl_`) refunds, dispute-webhook automation, referral-commission clawback. | spec: `docs/superpowers/specs/2026-07-04-phase4-refunds-risk-design.md` · plan: `docs/superpowers/plans/2026-07-04-phase4-refunds-risk.md` |
 | 5 | **GST / TDS / TCS tax engine** — accrue-per-sale / settle-at-payout model; ₹20L GSTIN payout gate (no registered-creator payout without verified GSTIN); GST-inclusive-commission decision (platform fee computed on gross, GST passed through); `tax_rules` versioned + `tax_transactions` immutable per order; TDS/TCS branching on creator registration; shared `src/lib/shared/tax-math.ts` + `src/lib/shared/gstin.ts`; `useTax` hook | **BUILT** | spec: `docs/superpowers/specs/2026-07-05-phase5-tax-engine-design.md` · plan: `docs/superpowers/plans/2026-07-05-phase5-tax-engine.md` |
-| 6 | Invoices + tax statements: creator-sale invoice + DigiOne→creator commission/subscription tax invoice; **PDF generation → R2 (signed-URL only)**; Form 16A / GSTR exports | not started | — |
+| **6a** | Invoice engine (`@react-pdf/renderer` → private R2, signed-URL only, decoupled from the money path) + **buyer Bill-of-Supply** invoice + **DigiOne→creator monthly commission tax invoice** (18% GST from `tax_transactions`); `invoices` + `invoice_counters` + atomic idempotent `issue_invoice` RPC; per-series numbering (`INV/{fy}` per creator, `DIGI/{fy}` global); download UI on receipt / orders drawer / earnings; `useInvoices` hook | **BUILT** | spec: `docs/superpowers/specs/2026-07-06-phase6a-invoices-design.md` · plan: `docs/superpowers/plans/2026-07-06-phase6a-invoices.md` |
+| 6b | Creator tax statements: **Form 16A** (TDS certificate) + annual earnings statement (from `tax_transactions`) | not started | — |
+| 6c | Government return exports: **GSTR-8** (TCS), **26Q** (TDS), **GSTR-1** (DigiOne output GST) in portal formats | not started | — |
 
-**Next planned phase:** Phase 6 — Invoices + tax statements/exports (Form 16A, GSTR-8/26Q/GSTR-1, PDF invoices).
+**Next planned phase:** Phase 6b — Form 16A + annual earnings statement (builds on the 6a PDF engine).
+
+**Phase 6a deferred / CA-flags:**
+- **Registered-creator buyer *Tax Invoice* with sale-GST breakdown** — 6a issues a **Bill of Supply** for all creators; the registered-creator GST tax invoice needs Phase 5's deferred **product-GST-rate capture**. Buyer GSTIN / B2B ITC also deferred.
+- **Subscription SaaS tax invoice** — deferred until Phase 3 subscription *billing* is live (nothing to invoice yet).
+- **GST credit notes for refunds** — the commission tax invoice aggregates **posted sales only** (commission on sales made in the month); refund reductions belong on credit notes, deferred (a `settle_refund` reversal is stamped at refund time, so month-netting was intentionally dropped to avoid cross-month mis-attribution).
+- **Email delivery** of invoices; Form 16A / statements (6b); GSTR-8/26Q/GSTR-1 exports (6c).
+- **Numbering** is by issue (first-download) order, not strict transaction order (`invoice_date` is still the transaction/period date).
+- **Final-review minors (non-blocking):** sale-invoice access returns 404-before-403 (unguessable UUIDs, not material); commission month boundaries are UTC not IST (low-volume edge); `window.open` after the fetch await can be popup-blocked (download still works via the returned URL).
+- **Config prerequisite:** `DIGIONE_GSTIN` (+ the other `DIGIONE_*` env vars) must be set in `.env.local` before commission invoices can be issued (the route 500s otherwise — by design).
 
 **Phase 5 deferred:**
 - **Documents/exports:** Form 16A generation (TDS certificate PDF), GSTR-8 monthly TCS export, GSTR-26Q quarterly TDS return export, GSTR-1/GSTR-3B export for DigiOne's own GST output on commission/subscription. All deferred to Phase 6.
