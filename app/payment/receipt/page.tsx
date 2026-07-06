@@ -2,6 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { notFound } from 'next/navigation';
 import { Receipt } from 'lucide-react';
 import { PrintButton } from './PrintButton';
+import { DownloadInvoiceButton } from './DownloadInvoiceButton';
 
 export const revalidate = 0;
 
@@ -157,6 +158,9 @@ export default async function ReceiptPage({
         </div>
 
         <PrintButton />
+        <div className="mt-3 flex justify-center print:hidden">
+          <DownloadInvoiceButton orderId={details.orderId} />
+        </div>
     </div>
   );
 }

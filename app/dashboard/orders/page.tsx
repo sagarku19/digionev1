@@ -10,10 +10,11 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   ShoppingBag, CheckCircle2, XCircle, Clock, Search,
   ChevronRight, X, Package, Mail, Phone, Calendar,
-  Download, TrendingUp, RotateCcw, FileDown,
+  Download, TrendingUp, RotateCcw, FileDown, FileText,
 } from 'lucide-react';
 import { formatINR } from '@/lib/format';
 import { computeRefundSplit } from '@/lib/shared/refund-math';
+import { useDownloadSaleInvoice } from '@/hooks/commerce/useInvoices';
 
 function exportOrdersCSV(orders: ReturnType<typeof useOrders>['orders']) {
   const header = ['Order ID', 'Customer Name', 'Customer Email', 'Customer Phone', 'Amount', 'Status', 'Products', 'Date'];
@@ -177,6 +178,7 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
   const products = order.order_items ?? [];
   const receiptUrl = `/payment/receipt?order_id=${order.id}`;
   const [showRefund, setShowRefund] = useState(false);
+  const downloadInvoice = useDownloadSaleInvoice();
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -283,6 +285,14 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
                 <Download className="w-4 h-4" />
                 Download Receipt
               </a>
+              <button
+                onClick={() => downloadInvoice.mutate(order.id)}
+                disabled={downloadInvoice.isPending}
+                className="flex items-center justify-center gap-2 w-full py-2.5 border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] font-semibold rounded-[var(--radius-sm)] transition text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <FileText className="w-4 h-4" />
+                {downloadInvoice.isPending ? 'Preparing…' : 'Invoice'}
+              </button>
               {order.gateway_payment_id && (
                 <button
                   onClick={() => setShowRefund((v) => !v)}
