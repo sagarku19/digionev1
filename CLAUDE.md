@@ -34,6 +34,7 @@ DigiOne is a creator monetization platform. Creators sign up, build a storefront
 | Image Crop | react-easy-crop |
 | Storage | Cloudflare R2 (S3-compatible) via @aws-sdk/client-s3 + @aws-sdk/s3-request-presigner |
 | Image Processing | sharp (image → WebP on upload) |
+| PDF generation | @react-pdf/renderer (server-side invoices + tax statements) |
 
 ---
 
@@ -93,9 +94,9 @@ digionev1/
 │   │   ├── customers/
 │   │   ├── orders/
 │   │   ├── marketing/            # Coupons, affiliates, leads, referrals
-│   │   ├── automation/           # Email, WhatsApp, Telegram, Google Sheets
+│   │   ├── integrations/         # Email, WhatsApp, Telegram, Google Sheets
 │   │   ├── settings/             # Profile, billing, subscription
-│   │   └── …                     # autodm, help, integration, media, notifications, payouts
+│   │   └── …                     # admin (payouts), autodm, help, media, notifications, payouts
 │   ├── api/                      # Server-side route handlers — 14+ routes (partial list)
 │   │   ├── checkout/             # Cashfree payment creation
 │   │   ├── webhook/cashfree/     # Payment confirmation (source of truth)

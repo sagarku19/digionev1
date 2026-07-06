@@ -14,10 +14,11 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 
 | Subfolder | Hooks |
 |---|---|
-| `auth/` | `useAuthSession` |
-| `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`) |
+| `admin/` | `usePayoutQueue` (super-admin payout queue) |
+| `auth/` | `useAuthSession`, `useLoginMutation` |
+| `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`), `useSubscription` + `useSubscriptionPlans` (`useSubscription.ts`), `useKycDocuments` |
 | `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
-| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart`, `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
+| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
 | `analytics/` | `useAnalytics` |
@@ -27,6 +28,8 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `storefront/` | `useStorefront` |
 
 Example: `import { useProducts } from '@/hooks/products/useProducts'`.
+
+> Root-level exception: `useConfirm` lives at `src/hooks/useConfirm.tsx` (a UI confirm-dialog hook, not a data hook) — the only hook outside a domain subfolder.
 
 ## Query key convention
 
