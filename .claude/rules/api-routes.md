@@ -47,6 +47,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | GET | `/api/admin/kyc/[creatorId]/download` | cookie session (super_admin) | server + service role | `kyc_access_log` (writes on every mint) |
 | GET | `/api/invoices/sale/[orderId]` | cookie session | server + service role | reads `orders`; issues `invoices` + `invoice_counters` (via `issue_invoice`); caches PDF to R2 `storage_files` (`kind='invoice'`) |
 | GET | `/api/invoices/commission/[month]` | cookie session | server + service role | reads `tax_transactions` (posted only); issues `invoices` + `invoice_counters`; caches PDF to R2 |
+| GET | `/api/statements/annual/[fy]` | cookie session | server + service role | reads `tax_transactions` + `creator_payouts`; renders an informational PDF; caches to R2 `storage_files` (`kind='tax_doc'`) |
 
 ---
 
@@ -666,6 +667,10 @@ On-demand invoice PDFs (`@react-pdf/renderer`, Node runtime), decoupled from the
 
 - **sale** — Bill of Supply for a paid/refunded order. Access: the sale's creator OR the order's buyer (`orders.user_id` or matching `customer_email`). Errors: `400` (bad orderId), `401`, `403` (not creator/buyer), `404` (order not found / not paid), `500`.
 - **commission** — creator's monthly DigiOne commission tax invoice (18% GST on commission, posted sales only). Requires `DIGIONE_GSTIN` configured. Errors: `400` (bad month), `401`, `404` (no profile / no commission that month), `500`.
+
+### `GET /api/statements/annual/[fy]` (auth required, creator-only)
+
+Informational **Annual Earnings & Tax Statement** PDF (`@react-pdf/renderer`, Node runtime). Aggregates the creator's FY sales/commission/GST from `tax_transactions` (net of refunds, sale-date) and TDS/TCS withheld from `creator_payouts` (successful payouts, payout-date), renders a PDF, caches it (always regenerated) to private R2 (`kind='tax_doc'`), and returns `{ signedUrl, ttlSeconds }`. **Not** the statutory Form 16A (which comes from the TRACES portal after 26Q filing). Errors: `400` (bad fy), `401`, `404` (no profile / no activity), `500`.
 
 ---
 
