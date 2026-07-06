@@ -25,5 +25,6 @@ export interface InvoiceModel {
   taxLabel?: string | null;
   taxAmount: number;
   total: number;
+  discount?: number | null;
   note?: string | null;
 }

@@ -34,9 +34,9 @@ export function useCommissionMonths() {
       if (error) throw error;
       const totals = new Map<string, number>();
       for (const r of data ?? []) {
+        if (r.status === 'reversed') continue; // posted sales only (matches the commission route)
         const month = String(r.created_at).slice(0, 7);
-        const sign = r.status === 'reversed' ? -1 : 1;
-        totals.set(month, (totals.get(month) ?? 0) + sign * Number(r.gst_on_commission));
+        totals.set(month, (totals.get(month) ?? 0) + Number(r.gst_on_commission));
       }
       return [...totals.entries()]
         .filter(([, v]) => v > 0)

@@ -23,7 +23,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ orderId
       .eq('id', orderId)
       .maybeSingle();
     if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
-    if (order.status !== 'completed' || Number(order.total_amount) <= 0) {
+    if (!['completed', 'refunded'].includes(order.status) || Number(order.total_amount) <= 0) {
       return NextResponse.json({ error: 'No invoice is available for this order.' }, { status: 404 });
     }
 

@@ -60,10 +60,16 @@ export async function issueAndCacheInvoice(
 
     let file = await findLiveByKey(db, cfg.name, objectKey);
     if (!file) {
-      file = await insertFile(db, {
-        owner_id: p.creatorId, bucket: cfg.name, object_key: objectKey, file_name: `${safeNumber}.pdf`,
-        mime_type: 'application/pdf', size: pdf.length, visibility: 'private', kind: 'invoice', product_id: null,
-      });
+      try {
+        file = await insertFile(db, {
+          owner_id: p.creatorId, bucket: cfg.name, object_key: objectKey, file_name: `${safeNumber}.pdf`,
+          mime_type: 'application/pdf', size: pdf.length, visibility: 'private', kind: 'invoice', product_id: null,
+        });
+      } catch {
+        // concurrent first-download inserted the same (bucket, object_key) first — reuse it
+        file = await findLiveByKey(db, cfg.name, objectKey);
+        if (!file) throw new Error('invoice file metadata could not be resolved after conflict');
+      }
     }
     await db.from('invoices').update({ storage_file_id: file.id }).eq('id', invoice.id);
   }

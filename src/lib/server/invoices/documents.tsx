@@ -67,6 +67,9 @@ export function InvoiceDoc({ model }: { model: InvoiceModel }) {
 
         <View style={s.totals}>
           <View style={s.totalRow}><Text>Subtotal</Text><Text>{inr(model.subtotal)}</Text></View>
+          {model.discount ? (
+            <View style={s.totalRow}><Text>Discount</Text><Text>- {inr(model.discount)}</Text></View>
+          ) : null}
           {model.taxAmount > 0 ? (
             <View style={s.totalRow}><Text>{model.taxLabel}</Text><Text>{inr(model.taxAmount)}</Text></View>
           ) : null}

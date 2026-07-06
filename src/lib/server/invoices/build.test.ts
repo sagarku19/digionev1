@@ -28,6 +28,20 @@ describe('buildSaleInvoiceModel', () => {
     expect(m.seller.name).toBe('Asha Verma');
     expect(m.buyer.name).toBe('Ravi');
   });
+
+  it('adds a discount line so subtotal - discount = total on a coupon order', () => {
+    const m = buildSaleInvoiceModel({
+      invoiceNumber: 'INV/2026-27/000002', invoiceDate: '2026-06-10',
+      creator: { legalName: 'Asha Verma' },
+      buyer: { name: 'Ravi' },
+      items: [{ name: 'Course', price: 1000 }],
+      total: 900,
+    });
+    expect(m.subtotal).toBe(1000);
+    expect(m.discount).toBe(100);
+    expect(m.total).toBe(900);
+    expect(m.subtotal - (m.discount ?? 0)).toBe(m.total);
+  });
 });
 
 describe('buildCommissionInvoiceModel', () => {

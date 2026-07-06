@@ -7,8 +7,8 @@ const fmtDate = (iso: string) =>
 
 export function fyOf(dateIso: string): string {
   const d = new Date(dateIso);
-  const y = d.getFullYear();
-  const m = d.getMonth() + 1;
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth() + 1;
   return m >= 4 ? `${y}-${String(y + 1).slice(2)}` : `${y - 1}-${String(y).slice(2)}`;
 }
 
@@ -26,6 +26,8 @@ export function buildSaleInvoiceModel(input: SaleInvoiceInput): InvoiceModel {
     description: i.name, qty: 1, unitPrice: round2(i.price), amount: round2(i.price),
   }));
   const subtotal = round2(lines.reduce((s, l) => s + l.amount, 0));
+  const total = round2(input.total);
+  const discount = round2(subtotal - total);
   return {
     type: 'sale',
     title: 'Bill of Supply', // 6a: registered-creator GST Tax Invoice deferred (spec §6)
@@ -40,7 +42,8 @@ export function buildSaleInvoiceModel(input: SaleInvoiceInput): InvoiceModel {
     subtotal,
     taxLabel: null,
     taxAmount: 0,
-    total: round2(input.total),
+    total,
+    discount: discount > 0 ? discount : null,
     note: 'This is a Bill of Supply. No GST is charged on this sale.',
   };
 }

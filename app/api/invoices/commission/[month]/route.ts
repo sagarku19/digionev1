@@ -40,12 +40,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ month: 
       .gte('created_at', bounds.start)
       .lt('created_at', bounds.endExclusive);
 
+    // Posted sales only — the commission Tax Invoice reflects commission on sales made this
+    // month. Refund reductions belong on GST credit notes (deferred, Phase 6 follow-up).
     let net = 0, gst = 0, count = 0;
     for (const r of rows ?? []) {
-      const sign = r.status === 'reversed' ? -1 : 1;
-      net += sign * Number(r.commission_net);
-      gst += sign * Number(r.gst_on_commission);
-      if (r.status !== 'reversed') count++;
+      if (r.status === 'reversed') continue;
+      net += Number(r.commission_net);
+      gst += Number(r.gst_on_commission);
+      count++;
     }
     net = Math.round(net * 100) / 100;
     gst = Math.round(gst * 100) / 100;
