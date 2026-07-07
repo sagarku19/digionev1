@@ -1,18 +1,8 @@
-LEFT
-
-
-## from Superpower/Plan
-
-tanstack - ok
-proxy
-supabase - no
-dashboard-ui - yes
-
 
 To Do -- - - -- - - - - -- - - - -
 
 
- 
+
   2. Developmemt plan for cretaing mobile apps
 
   3. Development Plans for Creating Admin Panel/ Other Production tools in nextjs,
@@ -29,10 +19,6 @@ To Do -- - - -- - - - - -- - - - -
 
   10. All Other Automation
 
-  11. Dashboard Profile and KyC
-
-  12. Login / Signup / Forgot-Password for Users
-
  14. Claudflare Security Integration
 
   15. CDN
@@ -43,15 +29,12 @@ To Do -- - - -- - - - - -- - - - -
   --
 
   Learn Data fetching technique..
-  run frontend agent on dashboard 
+  run frontend agent on dashboard
   fix slug page ui and its code structure.
 
 can i disable developer mode in my website.
 
-db tabel for community.
 db table for insta automation
-
-document for ediotor and dasboard so future edits take caare of all.
 
 
 next ediotor contnet fix and its slug page ui fix, after that run frontent on all editor
@@ -63,10 +46,6 @@ create all site skeleton with rich content in it, for use to preview., these typ
 
 ### To do later Updates Audit 25-06-2026
 
-Earning complete fix w db
-
-Storage w aws + sample
-
 Insta w db
 
 Db table name fix
@@ -76,30 +55,23 @@ Also gmail
 
 Ai Integration
 
-Api rate limit and tracking w db
-
 Link shortener under- linkme.you(I will buy this or similar domain for this project it will be using same db or a pipelin that will connect)
 
 Security audit using cloudflare github docs
 
 cart on discover
 
-new header for slug-page/other page like discover 
+new header for slug-page/other page like discover
 
 fix checkout page for both cart and direct buy method.
 
-and also subscription payment and its table
+and also subscription payment and its table (table + fee tiering done Phase 3; recurring billing still pending)
 
 
-
-
-
-next-
-Storage > Earning > Table Update > subscription > KYC
 
 
 Audit 25-06-2026- Do this after Coplete auth setup
-Now the claim Entitlement(From user to creator) have no securtiyy like otp or verifiacttion open a model to verify all required like mobile or Gmail and then convert. 
+Now the claim Entitlement(From user to creator) have no securtiyy like otp or verifiacttion open a model to verify all required like mobile or Gmail and then convert.
 also if a user signup on creator account using google auth c=verify mobile if asking..
 
 When any new user comes to dashboard for the forst ask something about their interests aand other type of question and save that to customize and get feeback time to time
@@ -111,11 +83,24 @@ also update the all site db table
 table naming convention
 
 list out all the filees and folder do a little commnet in all like production app, and rmove the unnecessary ones.
-create md files everywhere it neededd
-
-
-
-if a image is uplaod and then it change, then delete the old also from storage.
 
 
 also add different type of site like upcomimg site and more option
+
+
+if i will add some marketing ad automation tool then, all the table related to it will have prefix start with adtools_
+for instagram  it will start from - insta_
+for marketing update it with marketing_
+
+
+testing- check complete Auth
+check complete payments
+check complete subscription
+kyc and payment.
+
+for updating kyc or bank details user neeeds to first verify mobile numbers.
+
+1 payment page update
+2 all the slug page
+update dashboard
+linkshortener
