@@ -1,8 +1,9 @@
 # DigiOne — Master Roadmap (prioritized)
 
-Reordered 2026-06-14. Goal: **get most things production-ready before go-live.** The order is
-dependency-aware — foundations that de-risk everything come first, then the revenue path, then
-growth features, then hardening; mobile is last. `(was N)` = your original number.
+Reordered 2026-06-14; completed items pruned 2026-07-07. Goal: **get most things
+production-ready before go-live.** The order is dependency-aware — foundations that de-risk
+everything come first, then the revenue path, then growth features, then hardening; mobile is
+last. `(was N)` = your original number.
 
 Why this order, in one line: **you can't safely build or ship features without (a) a place to
 test them and (b) a way to deploy them — so those come before the features themselves; and you
@@ -11,6 +12,14 @@ refactor for maintainability *before* piling on more code, not after.**
 Cross-refs: DB/test details live in `6(left)-2026-06-14-post-dashboard-followups.md`;
 storage items in `1(left)-2026-06-03-storage-followups.md`; the shipped DB work in
 `5(done)-2026-06-13-db-production-audit.md`.
+
+**Shipped since 2026-06-14 (removed from this list):** #3 code standard + dashboard refactor
+(Areas 1–7 done; residual polish → `7(left)…`); #4 auth surface incl. forgot/reset-password;
+#5 Google OAuth (see `google-oauth-reference.md`); #6 Profile + KYC (encrypted, doc upload,
+verify — blueprint `11(half)…` Phases 0–2); the Vitest half of 0a (25 suites / 114 tests, all
+money-path pure libs). Also the entire money overhaul (payouts, subscriptions/fee tiering,
+refunds + frozen balance, GST/TDS/TCS tax engine, invoices, statements, GSTR exports) —
+blueprint `11(half)…` Phases 0–6, all BUILT.
 
 ---
 
@@ -27,54 +36,34 @@ routes deploy together (Next.js API routes deploy WITH the app — they're not a
 preview deploys per branch; env-var management. Pick one host and document the deploy. Deps: none
 (pairs with #1's previews). Effort: M.
 
-**3. Production-grade code standard + dashboard refactor** (was 1)
-Define what "production-grade" means here (file structure, naming, one-responsibility files,
-typed hooks, no `any`, no dead code) and refactor the dashboard's worst offenders to match. Then
-**every later feature follows this standard as you touch it** — don't rewrite everything up front.
-Write a short `CONTRIBUTING`/onboarding doc. *Do this before #6–#11 so new code lands clean.*
-Deps: none. Effort: L (ongoing).
-
-> **+ Added 0a — Automated tests + CI gate.** Vitest (pure logic) + Playwright (5 flows) once #1
-> exists; wire `tsc`+`lint`+`vitest` into GitHub Actions. Full plan already in `6(left)…` A2.
-> **+ Added 0b — Observability.** Sentry (client+server) + a real log backend before launch, so
+> **+ 0a — CI gate.** Tests exist (114, money-path libs); still missing: Playwright (5 flows)
+> once #1 exists, and wiring `tsc`+`lint`+`vitest` into GitHub Actions. Plan in `6(left)…` A2.
+> **+ 0b — Observability.** Sentry (client+server) + a real log backend before launch, so
 > prod failures are visible.
 
 ---
 
-## PHASE 1 — Auth & identity (users can't transact without this; it gates the money path)
+## PHASE 1 — Auth & identity (remaining)
 
-**4. Login / Signup / Forgot-password** (was 12)
-Finish the auth surface — **forgot-password / reset flow** is the likely gap. Needs a
-transactional-email provider (Resend/Postmark/SES) wired for reset + receipts. Deps: #1–#3.
-Effort: M.
-
-**5. OAuth integration** (was 13)
-Extend auth with Google (and any others). Callback + `app_metadata.role` promotion already exist;
-verify per `.claude/rules/google-oauth-reference.md`. Deps: #4. Effort: S–M.
-
-**6. Dashboard Profile + KYC** (was 11)
-Profile editing + KYC capture/verify. **KYC gates payouts** (the money path), so it's required
-before real creators withdraw. Deps: #4. Effort: M.
-
-> **+ Added 1a — Transactional email** (provider + templates: verify, reset, receipt, payout
-> notice). Required by #4 and the receipt/notification flows.
+> **+ 1a — Transactional email** (provider + templates: verify, reset, receipt, payout
+> notice). Resend/Postmark/SES. Required by the receipt/notification flows.
 
 ---
 
 ## PHASE 2 — Revenue path (highest business value; this is what makes money)
 
 **7. Storefront slug pages + payment + checkout + cart + wishlist** (was 7)
-The buyer funnel end-to-end. The money plumbing (checkout→webhook→fulfillment→referral) is solid;
-this is about the buyer UX + cart/wishlist completeness + the public slug pages. Deps: #1–#3.
-Effort: L.
+The buyer funnel end-to-end. The money plumbing (checkout→webhook→fulfillment→referral→refund→
+tax→invoice) is solid; this is about the buyer UX + cart/wishlist completeness + the public slug
+pages. Deps: #1–#2. Effort: L.
 
 **8. The 4 editors (UI + features)** (was 6)
 Link-in-bio / single-page / store / payment-link builders — the creators' core tool. Apply the
-#3 standard. Deps: #3. Effort: L.
+production code standard; site-edit `any` cleanup tracked in `7(left)…`. Deps: none. Effort: L.
 
 **9. Marketing surfaces** (was 8)
 Public landing/pricing/blog/etc. working end-to-end; update the DB SaaS-style where features need
-it (follow the "schema-in-sync" CLAUDE.md rule). Deps: #3. Effort: M.
+it (follow the "schema-in-sync" CLAUDE.md rule). Deps: none. Effort: M.
 
 ---
 
@@ -87,8 +76,7 @@ Effort: L.
 
 **11. Instagram automation** (was 9)
 Note: the `20260418_insta_autodm` migration is a *phantom* (registered, tables not live — see
-`6(left)…` C3). Decide the real schema first, then build. Deps: #4 (auth), provider/API access.
-Effort: L.
+`6(left)…` C3). Decide the real schema first, then build. Deps: provider/API access. Effort: L.
 
 **12. Other automation** (was 10)
 Email / WhatsApp / Telegram / Google-Sheets flows. Deps: #11 patterns + #1a email. Effort: L.
@@ -98,19 +86,22 @@ Email / WhatsApp / Telegram / Google-Sheets flows. Deps: #11 patterns + #1a emai
 ## PHASE 4 — Ops tooling & hardening (the pre-production gate)
 
 **13. Admin panel / production tools** (was 3)
-Start **minimal** (refunds, user/payout management, support lookups) — you need ops tools before
-real users, even if small. `is_super_admin()` read-RLS is already in place. Deps: #6, #7. Effort: M–L.
+Terminal interim tools already exist (kyc-admin, subscription-admin, refund-admin, tax-export)
+plus the `/dashboard/admin/payouts` queue. The real admin app is scoped in
+`12(left)-2026-07-01-admin-app-scratch-plan.md`. Deps: #7. Effort: M–L.
 
 **14. Cloudflare security** (was 14)
 WAF, bot/rate protection, DDoS, proxy. Deps: #2 (deploy/domain). Effort: M.
 
 **15. CDN** (was 15)
-Asset/image CDN (Cloudflare or Supabase Storage CDN). Deps: #14. Effort: S–M.
+Asset/image CDN — R2 public buckets already serve media via CDN URLs; remaining: Cloudflare
+Image Resizing for `/discover` thumbnails (see `10(left)…`). Deps: #14. Effort: S–M.
 
-> **+ Added 4a — Backups / PITR** confirmed on the Supabase tier.
-> **+ Added 4b — Legal/compliance** (privacy, terms, refund policy — marketing has the shells).
-> **+ Added 4c — Go-live checklist:** rotate exposed secrets, leaked-password protection on,
-> advisors clean, load smoke-test, prod env vars set.
+> **+ 4a — Backups / PITR** confirmed on the Supabase tier.
+> **+ 4b — Legal/compliance** (privacy, terms, refund policy — marketing has the shells).
+> **+ 4c — Go-live checklist:** rotate exposed secrets, leaked-password protection on,
+> advisors clean, load smoke-test, prod env vars set (incl. `DIGIONE_*` for invoices),
+> Cashfree Payouts + refund-webhook sandbox e2e (blueprint `11(half)…` deferrals).
 
 ---
 
@@ -122,13 +113,13 @@ Plan + build after the web product is stable in production. Decide native vs cro
 
 ---
 
-## Quick sequence (just the numbers, new order → was)
+## Quick sequence (remaining items, new order → was)
 
-`1(was5) → 2(was4) → 3(was1) → 4(was12) → 5(was13) → 6(was11) → 7(was7) → 8(was6) →
-9(was8) → 10(was16) → 11(was9) → 12(was10) → 13(was3) → 14(was14) → 15(was15) → 16(was2)`
+`1(was5) → 2(was4) → 7(was7) → 8(was6) → 9(was8) → 10(was16) → 11(was9) → 12(was10) →
+13(was3) → 14(was14) → 15(was15) → 16(was2)` — done & removed: 3(was1), 4(was12), 5(was13), 6(was11).
 
-Added (woven in, not numbered): tests/CI, observability, transactional email, backups/PITR,
+Added (woven in, not numbered): CI gate, observability, transactional email, backups/PITR,
 legal/compliance, go-live checklist.
 
-> Tip: items 4–13 are each big enough to get their own `brainstorm → spec → plan → execute`
+> Tip: items 7–13 are each big enough to get their own `brainstorm → spec → plan → execute`
 > cycle when you start them. Knock out Phase 0 first — everything after it is faster and safer.
