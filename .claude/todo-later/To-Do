@@ -13,14 +13,6 @@ Cross-refs: DB/test details live in `6(left)-2026-06-14-post-dashboard-followups
 storage items in `1(left)-2026-06-03-storage-followups.md`; the shipped DB work in
 `5(done)-2026-06-13-db-production-audit.md`.
 
-**Shipped since 2026-06-14 (removed from this list):** #3 code standard + dashboard refactor
-(Areas 1–7 done; residual polish → `7(left)…`); #4 auth surface incl. forgot/reset-password;
-#5 Google OAuth (see `google-oauth-reference.md`); #6 Profile + KYC (encrypted, doc upload,
-verify — blueprint `11(half)…` Phases 0–2); the Vitest half of 0a (25 suites / 114 tests, all
-money-path pure libs). Also the entire money overhaul (payouts, subscriptions/fee tiering,
-refunds + frozen balance, GST/TDS/TCS tax engine, invoices, statements, GSTR exports) —
-blueprint `11(half)…` Phases 0–6, all BUILT.
-
 ---
 
 ## PHASE 0 — Foundations & safety (do FIRST; cheap insurance, unblocks all the rest)
@@ -116,7 +108,7 @@ Plan + build after the web product is stable in production. Decide native vs cro
 ## Quick sequence (remaining items, new order → was)
 
 `1(was5) → 2(was4) → 7(was7) → 8(was6) → 9(was8) → 10(was16) → 11(was9) → 12(was10) →
-13(was3) → 14(was14) → 15(was15) → 16(was2)` — done & removed: 3(was1), 4(was12), 5(was13), 6(was11).
+13(was3) → 14(was14) → 15(was15) → 16(was2)`
 
 Added (woven in, not numbered): CI gate, observability, transactional email, backups/PITR,
 legal/compliance, go-live checklist.
