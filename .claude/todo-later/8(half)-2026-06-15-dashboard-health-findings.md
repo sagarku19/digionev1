@@ -12,11 +12,18 @@ Snapshot from a read-only health sweep (`tsc` + `eslint` + `vitest`) of `app/das
 
 Baseline at capture: `npx tsc --noEmit` = clean repo-wide; `npm test` = 2 files / 12 tests passing. Lint: dashboard **91 errors / 111 warnings**, storefront **9 errors / 31 warnings** (storefront errors all pre-existing cosmetic).
 
-## 1. 🔴 Media library targets a dropped bucket (likely prod-broken)
+## Status update 2026-07-07 — re-tagged (half)
+
+- **#1 — FIXED:** the media library was rebuilt on R2 (`/api/media/*` routes + `useMyMedia`); no `uploads`-bucket references remain in `app/dashboard/media/page.tsx`.
+- **#2 — re-verified still present** (1 `rules-of-hooks` violation in autodm; still a non-wired prototype).
+- **#3 — still present** (repo lint ≈106 `any` errors clustered in site-edit/marketing hooks; tracked in `7(left)-2026-06-14-dashboard-refactor-followups.md`).
+- Baseline drift note: tests are now 25 files / 114 passing (was 2/12 at capture).
+
+## 1. 🔴 Media library targets a dropped bucket (likely prod-broken) — FIXED, see status update
 - `app/dashboard/media/page.tsx:33` — `const BUCKET = 'uploads';` (also referenced in the header comment at line 3 and path-parsing at lines 85–87).
 - Per `CLAUDE.md` / `.claude/rules/api-routes.md`, the `uploads` and `user_files` buckets were **dropped 2026-06-03** (`supabase/migrations/20260605100000_drop_legacy_storage_buckets.sql`). So the media library reads/writes a bucket that no longer exists.
 - The page also does direct `createClient` + `getCreatorProfileId` storage calls rather than going through `/api/upload` (the hardened, quota-checked path).
-- **Fix sketch:** repoint to `creator-public` (public assets) and/or `creator-content`, and route uploads through `POST /api/upload`. Verify against the live bucket list before coding. Read `.claude/todo-later/1(left)-2026-06-03-storage-followups.md` first.
+- **Fix sketch:** repoint to `creator-public` (public assets) and/or `creator-content`, and route uploads through `POST /api/upload`. Verify against the live bucket list before coding. Read `.claude/todo-later/1(half)-2026-06-03-storage-followups.md` first.
 
 ## 2. 🟠 react-hooks/rules-of-hooks violation in autodm
 - `app/dashboard/autodm/page.tsx:1142` — `useTemplate` is called inside a callback (`react-hooks/rules-of-hooks` error). There's a related issue around `:1082`.

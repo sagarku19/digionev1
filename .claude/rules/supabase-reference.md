@@ -150,7 +150,7 @@ File storage has moved from Supabase Storage → **Cloudflare R2** (S3-compatibl
 
 **Provider abstraction:** all storage calls go through `src/lib/storage/index.ts` (exports the `storage` provider + helpers). Concrete implementation: `src/lib/storage/r2.ts`. Routes never import the aws-sdk directly.
 
-**`kyc_documents` (Phase 2):** links a creator's uploaded KYC files (`storage_files` rows, `kind='kyc'`, `bucket=creator-private`) to their KYC by `doc_type` (`pan_card`/`bank_proof`/`aadhaar`). Cols: `id, creator_id → profiles, file_id → storage_files, doc_type, created_at`. RLS: creator INSERT/SELECT-own + super_admin SELECT; no client UPDATE/DELETE. Written via `POST /api/kyc/documents` after the upload→confirm flow. Admin views docs via the terminal `scripts/kyc-admin.ts view` (signed URLs + `kyc_access_log`) — no admin UI in this app (see `.claude/todo-later/12(left)-…admin-app`).
+**`kyc_documents` (Phase 2):** links a creator's uploaded KYC files (`storage_files` rows, `kind='kyc'`, `bucket=creator-private`) to their KYC by `doc_type` (`pan_card`/`bank_proof`/`aadhaar`). Cols: `id, creator_id → profiles, file_id → storage_files, doc_type, created_at`. RLS: creator INSERT/SELECT-own + super_admin SELECT; no client UPDATE/DELETE. Written via `POST /api/kyc/documents` after the upload→confirm flow. Admin views docs via the terminal `scripts/kyc-admin.ts view` (signed URLs + `kyc_access_log`) — no admin UI in this app (see `.claude/todo-later/13(left)-…admin-app`).
 
 **`storage_files` metadata table (single source of truth):**
 

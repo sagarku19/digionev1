@@ -6,7 +6,7 @@ tags: []
 
 # Link-in-Bio folder reorg — deferred until all 4 site editors are upgraded
 
-**Status:** left (not started)
+**Status:** left (not started) — re-checked 2026-07-07: `blockEditors/` unchanged, reorg still pending
 **Added:** 2026-06-19
 **Trigger to resume:** after the **main**, **single-page**, and **payment** editors get the same token + brand-accent + structure upgrade the link-in-bio editor just received. Do the reorg across all of `site-edit/tabs/**` at once so shared components land in the right home.
 

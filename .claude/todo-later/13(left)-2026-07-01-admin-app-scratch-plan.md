@@ -121,5 +121,5 @@ same change-set as each removal (the doc-drift Stop hook will enforce it).
 
 - Phase 2 spec (terminal interim + doc upload): `docs/superpowers/specs/2026-07-01-phase2-kyc-verification-design.md`
 - Money/KYC primitives to reuse: `settle_payout`, `credit_creator_balance`, `src/lib/server/{kyc-crypto,kyc-verify,cashfree-payouts,fulfillment}.ts`
-- The overhaul blueprint: `.claude/todo-later/11(half)-2026-06-30-payments-earnings-payout-kyc-overhaul.md`
+- The overhaul blueprint: `.claude/todo-later/12(half)-2026-06-30-payments-earnings-payout-kyc-overhaul.md`
 - Rules: `.claude/rules/security-model.md`, `.claude/rules/api-routes.md`, `.claude/rules/supabase-reference.md`

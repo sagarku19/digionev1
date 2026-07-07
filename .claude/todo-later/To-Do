@@ -9,8 +9,8 @@ Why this order, in one line: **you can't safely build or ship features without (
 test them and (b) a way to deploy them — so those come before the features themselves; and you
 refactor for maintainability *before* piling on more code, not after.**
 
-Cross-refs: DB/test details live in `6(left)-2026-06-14-post-dashboard-followups.md`;
-storage items in `1(left)-2026-06-03-storage-followups.md`; the shipped DB work in
+Cross-refs: DB/test details live in `6(half)-2026-06-14-post-dashboard-followups.md`;
+storage items in `1(half)-2026-06-03-storage-followups.md`; the shipped DB work in
 `5(done)-2026-06-13-db-production-audit.md`.
 
 ---
@@ -20,7 +20,7 @@ storage items in `1(left)-2026-06-03-storage-followups.md`; the shipped DB work 
 **1. Staging + separate test DB** (was 5)
 Learn how preview/staging works; stand up a Supabase **branch or second project** for testing
 payments + new features so nothing is tested against live prod. *This unblocks safe testing of
-every later item.* → ties to `6(left)…` A1. Deps: none. Effort: M.
+every later item.* → ties to `6(half)…` A1. Deps: none. Effort: M.
 
 **2. Deployment pipeline** (was 4)
 Learn how to ship Next.js: Vercel vs Coolify vs your own app server; how the app code and API
@@ -29,7 +29,7 @@ preview deploys per branch; env-var management. Pick one host and document the d
 (pairs with #1's previews). Effort: M.
 
 > **+ 0a — CI gate.** Tests exist (114, money-path libs); still missing: Playwright (5 flows)
-> once #1 exists, and wiring `tsc`+`lint`+`vitest` into GitHub Actions. Plan in `6(left)…` A2.
+> once #1 exists, and wiring `tsc`+`lint`+`vitest` into GitHub Actions. Plan in `6(half)…` A2.
 > **+ 0b — Observability.** Sentry (client+server) + a real log backend before launch, so
 > prod failures are visible.
 
@@ -68,7 +68,7 @@ Effort: L.
 
 **11. Instagram automation** (was 9)
 Note: the `20260418_insta_autodm` migration is a *phantom* (registered, tables not live — see
-`6(left)…` C3). Decide the real schema first, then build. Deps: provider/API access. Effort: L.
+`6(half)…` C3). Decide the real schema first, then build. Deps: provider/API access. Effort: L.
 
 **12. Other automation** (was 10)
 Email / WhatsApp / Telegram / Google-Sheets flows. Deps: #11 patterns + #1a email. Effort: L.
@@ -80,20 +80,20 @@ Email / WhatsApp / Telegram / Google-Sheets flows. Deps: #11 patterns + #1a emai
 **13. Admin panel / production tools** (was 3)
 Terminal interim tools already exist (kyc-admin, subscription-admin, refund-admin, tax-export)
 plus the `/dashboard/admin/payouts` queue. The real admin app is scoped in
-`12(left)-2026-07-01-admin-app-scratch-plan.md`. Deps: #7. Effort: M–L.
+`13(left)-2026-07-01-admin-app-scratch-plan.md`. Deps: #7. Effort: M–L.
 
 **14. Cloudflare security** (was 14)
 WAF, bot/rate protection, DDoS, proxy. Deps: #2 (deploy/domain). Effort: M.
 
 **15. CDN** (was 15)
 Asset/image CDN — R2 public buckets already serve media via CDN URLs; remaining: Cloudflare
-Image Resizing for `/discover` thumbnails (see `10(left)…`). Deps: #14. Effort: S–M.
+Image Resizing for `/discover` thumbnails (see `11(left)…`). Deps: #14. Effort: S–M.
 
 > **+ 4a — Backups / PITR** confirmed on the Supabase tier.
 > **+ 4b — Legal/compliance** (privacy, terms, refund policy — marketing has the shells).
 > **+ 4c — Go-live checklist:** rotate exposed secrets, leaked-password protection on,
 > advisors clean, load smoke-test, prod env vars set (incl. `DIGIONE_*` for invoices),
-> Cashfree Payouts + refund-webhook sandbox e2e (blueprint `11(half)…` deferrals).
+> Cashfree Payouts + refund-webhook sandbox e2e (blueprint `12(half)…` deferrals).
 
 ---
 

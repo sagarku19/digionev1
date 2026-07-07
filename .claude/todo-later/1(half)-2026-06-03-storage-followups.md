@@ -8,6 +8,16 @@ tags: []
 
 Captured 2026-06-03 after the storage taxonomy + `/api/upload` hardening sweep (commits `d8a065d`, `09fcc1b`, `7e4431c`, `87c2d41`, `92541a9`). Everything here is deliberately deferred — the routes ship as-is, this is the to-do list for when each item becomes blocking.
 
+## Status update 2026-07-07 — re-tagged (half)
+
+The R2 migration (`10(done)-2026-06-25-cloudflare-r2-storage-migration.md`) replaced the Supabase-Storage surface this file audited — read `.claude/rules/api-routes.md` → Storage for the current routes. Re-checked item by item:
+- **#6 upload audit trail — DONE** (`POST /api/upload/confirm` + `storage_files` metadata rows are exactly the confirmation-endpoint fix).
+- **#3 per-plan quota — UNBLOCKED**: `subscriptions` is live (Phase 3 fee tiering); remaining = a per-plan `storage_bytes` quota + replacing the fixed quota in `/api/upload` with a plan lookup.
+- **#1 rate limiting — infra exists** (`rate_limits` + `rateLimitKey`, Phase 5) but is still not applied to the upload/download routes.
+- **#2 resumable uploads, #4 N+1 signing, #5 50-file cap — still open** (now in R2/S3 terms: multipart upload instead of TUS).
+
+Everything below is the original 2026-06-03 Supabase-era text, kept for the item details.
+
 ## Current state of the storage surface
 
 - **4 buckets:** `public-asset` (DigiOne-managed), `creator-public`, `creator-content` (private), `creator-private` (private)

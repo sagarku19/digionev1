@@ -10,6 +10,14 @@ tags: []
 
 ---
 
+## Status update 2026-07-07 — re-tagged (half)
+
+- **A2 — half done:** 25 Vitest suites / 114 tests now cover every money-path pure lib (referrals, balance, kyc-crypto, platform-fee, subscription, refund-math, tax-math, gstin, invoice/statement builders + render smokes, tax-export). Still missing: the CI gate (GitHub Actions), DB-touching integration tests, Playwright E2E (blocked on A1).
+- **A5 — built:** `reconcile_creator_balances()` RPC exists (Phase 4/5; alert-only → `balance_reconciliation_log`, covers earnings/fees/paid/pending/frozen). Remaining = schedule it via `pg_cron`.
+- **B1 — major progress:** payout trio (`creator_payout_methods/requests/request_items`) + `subscriptions`/`subscription_plans` + `storage_files` are now LIVE and wired (Phases 1/3 + R2); `media_library`, `product_files`, `product_licenses`, `storage_file_usages` were DROPPED. Still dead: `user_wallets`, `user_wallet_transactions`, `creator_revenue_shares`, `creator_subscription_orders`, `conversion_events`, `product_view_events`, `site_page_views`, `site_templates`, `user_carts`, `user_wishlist`, `email_events`.
+- **A3 + C2 — re-verified still open** (advisor WARNs, 2026-07-07).
+- **A1, A4, B2–B4, C1, C3, C4, D — unchanged/open.**
+
 ## A. Process / operational maturity (highest value)
 
 | # | Item | Why | Effort |
