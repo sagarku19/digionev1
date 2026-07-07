@@ -14,7 +14,7 @@ Every change goes through three lanes. Where DigiOne currently sits is marked.
 |---|---|---|
 | 1 | `npx tsc --noEmit` | Type errors, missing imports, broken refactors |
 | 2 | `npm run lint` | Unused vars, unsafe patterns, React hook rules |
-| 3 | `npm test` | Regressions in the (small) Vitest suite — see Lane 2 |
+| 3 | `npm test` | Regressions in the Vitest suite (25 files / 114 tests, all money-path pure libs) — see Lane 2 |
 | 4 | `/verify` (this project's slash command) | Rule violations on changed files + smoke-test checklist |
 | 5 | `npm run dev` + manual click-through | UI regressions, runtime errors |
 
@@ -24,7 +24,7 @@ This is what `/verify` automates. Run it before every commit.
 
 **In place now:**
 - **Vitest** is installed and configured (`vitest.config.ts` — `environment: 'node'`, `include: ['{src,app,lib}/**/*.test.{ts,tsx}']`). Run with `npm test` (`vitest run`).
-- One suite exists: `src/lib/server/referrals.test.ts` (5 tests). Add new `*.test.ts` (or `.test.tsx`) files next to the `src/`, `app/`, or `lib/` code they cover and they're picked up automatically.
+- **25 suites / 114 tests** (as of 2026-07-07) covering the money-path pure libs: referrals, balance, kyc-crypto, platform-fee, subscriptions, `refund-math`, `tax-math`, `gstin`, invoice/statement builders + PDF render smokes, `tax-export` builders, and more. Add new `*.test.ts` (or `.test.tsx`) files next to the `src/`, `app/`, or `lib/` code they cover and they're picked up automatically.
 
 **Still missing (what a mature setup adds):**
 - **Unit tests** (Vitest + React Testing Library) for hooks (`src/hooks/use*.ts`) and the rest of the pure utilities in `src/lib/`.
@@ -56,4 +56,4 @@ A mature setup adds:
 | What should I run *today* before committing? | `/verify` → all of Lane 1 |
 | Where should I invest next? | Expand Lane 2 — the harness exists; add unit tests for the money-path libs (`src/lib/server/*`) and the 27 hooks in `src/hooks/`. Cheapest, highest ROI. |
 | When does Lane 3 become worth it? | When more than one person commits, or when a regression hits prod |
-| Why so few tests? | Solo project, fast iteration. Vitest is wired and one money-path suite (`referrals`) exists; coverage is being grown incrementally. Type system + Supabase RLS catch most of the rest. Trade-off, not negligence. |
+| Why this test shape? | Solo project, fast iteration. Every money-path **pure lib** is unit-tested (114 tests); hooks/routes/E2E are not. Type system + Supabase RLS + the atomic-RPC design catch most of the rest. Trade-off, not negligence. |
