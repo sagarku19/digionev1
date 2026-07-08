@@ -533,7 +533,7 @@ export default function ProductSalesPage({ singlePage, palette, isPreview, upsel
 }) {
   // All hooks must run unconditionally before any early return.
   const router = useRouter();
-  const { addItem } = useCart();
+  const { addItem, replaceCartWith } = useCart();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<{ d: number; h: number; m: number; s: number } | null>(null);
 
@@ -602,14 +602,20 @@ export default function ProductSalesPage({ singlePage, palette, isPreview, upsel
   const handleBuyNow = () => {
     if (isPreview) return; // visual only in the editor preview
     if (!product?.id) return;
-    addItem({
+    const item = {
       id: product.id,
       title: product.name || 'Product',
       price: product.price || 0,
       creatorId: product.creator_id || '',
       coverImage: product.thumbnail_url || null,
       slug: product.id,
-    });
+    };
+    const result = addItem(item);
+    if (result === 'conflict') {
+      // Single-product sales page has no drawer; the native confirm is enough here.
+      if (!window.confirm('Your cart has items from another store. Replace it?')) return;
+      replaceCartWith(item);
+    }
     router.push('/checkout');
   };
 

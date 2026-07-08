@@ -48,7 +48,7 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useCustomers()` | `{ customers }` |
 | `useSites()` | `{ sites }` — creator's storefront sites |
 | `useStorefront(slug)` | `{ profile }` — public creator profile for the given slug |
-| `useCart()` | Cart state for buyer checkout |
+| `useCart()` | Cart state for buyer checkout — items + drawer state (`isDrawerOpen`, `openDrawer`, `closeDrawer`); `addItem` returns `'added' \| 'exists' \| 'conflict'` (single-creator rule); `replaceCartWith` for the replace-cart confirm. Also exports `useCartTotal`, `useHydratedCartCount` |
 | `useAnalytics()` | Analytics data |
 | `useCoupons()` | Coupon management |
 | `useAffiliates()` | Affiliate program data |
