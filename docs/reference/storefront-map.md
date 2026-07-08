@@ -1,6 +1,6 @@
 # Storefront Reference Map
 
-> Last synced: 2026-06-25
+> Last synced: 2026-07-08
 > Generated from: `app/(storefront)/**/page.tsx`, `src/components/storefront/**`, the block/section registries
 > Regenerate / audit: `/sync-docs`
 > Read this FIRST for any storefront task. Styling uses creator vars (`var(--creator-primary)`, `var(--creator-text)`, `var(--creator-bg)`, …) — NOT dashboard `--bg-*`/`--text-*` tokens.
@@ -19,6 +19,8 @@ The public **product page is `/discover/[productId]`** (`app/(marketing)/discove
 **Access-control convention (2026-06-20):** storefront **layouts** check existence + `site_type` only (they can't read `searchParams`); the **page** enforces `is_active` and bypasses it when `?preview=1` is present, so the editors' preview iframes can render unpublished sites. Applies to `link`, `site`, `store`, `pay` (the `store` layout was already existence-only; the `link` and `pay` layouts were tightened to match).
 
 **Buyer auth on storefronts (2026-06-25):** `StorefrontHeader.tsx`'s "Log In" button opens the global centered buyer-auth modal (`src/components/auth/BuyerAuthModal.tsx`, mounted once via `BuyerAuthProvider` in `app/providers.tsx`, driven by the `useBuyerAuth` Zustand store) — no navigation away. When logged in it becomes a "My Library" link to `/account/library`. Buyer accounts are low-friction (no email verification); guest purchases are saved by email (`guest_entitlements`) and claimed on sign-in. See `.claude/rules/api-routes.md` → `/api/auth/buyer-signup`, `/api/account/claim-entitlements`.
+
+**Cart on storefronts (2026-07-08):** `StorefrontHeader.tsx`'s cart icon is live — count badge via `useHydratedCartCount`, click opens the shared `src/components/store/CartDrawer.tsx` (mounted in the store layout with `palette="creator"`, and in the marketing/account layouts with `palette="ledger"`; `MarketingNav` shows its cart icon only when the cart has items). Add-to-cart lives on multi-product store sections only — `ProductGrid` and `FeaturedProducts` cards render `src/components/store/AddToCartButton.tsx` (cross-creator adds show a replace-cart confirm mirroring the one-creator-per-order API rule). `SectionRenderer` passes `creatorId` down for cart items. Product cards link to `/discover/{id}`. Single-product surfaces (`ProductSalesPage`, `/discover/[productId]`) keep direct Buy Now only.
 
 ## Link-in-bio block types
 

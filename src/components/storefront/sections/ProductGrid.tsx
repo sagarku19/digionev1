@@ -5,6 +5,7 @@
 import React from 'react';
 import Link from 'next/link';
 import type { StorefrontProduct } from '../SectionRenderer';
+import { AddToCartButton } from '@/components/store/AddToCartButton';
 
 function formatINR(n: number) {
   return `₹${n.toLocaleString('en-IN')}`;
@@ -13,7 +14,15 @@ function formatINR(n: number) {
 interface ProductGridSettings { title?: string; columns?: number; show_price?: boolean; max_items?: number; }
 type GridProduct = StorefrontProduct & { slug?: string | null };
 
-export default function ProductGrid({ settings, products = [] }: { settings: Record<string, unknown>; products?: GridProduct[] }) {
+export default function ProductGrid({
+  settings,
+  products = [],
+  creatorId,
+}: {
+  settings: Record<string, unknown>;
+  products?: GridProduct[];
+  creatorId?: string;
+}) {
   // reason: section settings is jsonb; narrow once to the typed view
   const s = settings as unknown as ProductGridSettings;
   const title     = s?.title     ?? '';
@@ -36,27 +45,43 @@ export default function ProductGrid({ settings, products = [] }: { settings: Rec
       ) : (
         <div className={`grid grid-cols-1 ${colClass} gap-6`}>
           {visible.map((p) => (
-            <Link
+            <div
               key={p.id}
-              href={p.slug ? `#${p.slug}` : '#'}
               className="group flex flex-col bg-white dark:bg-[#0A0A1A] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:shadow-xl hover:border-[--creator-primary]/30 transition-all"
             >
-              {p.thumbnail_url && (
-                <img
-                  src={p.thumbnail_url}
-                  alt={p.name}
-                  className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              )}
-              <div className="p-5 flex flex-col flex-1">
-                <h3 className="font-semibold text-[--creator-text] line-clamp-2 group-hover:text-[--creator-primary] transition-colors">
-                  {p.name}
-                </h3>
-                {showPrice && (
-                  <p className="mt-3 font-bold text-[--creator-primary]">{formatINR(p.price ?? 0)}</p>
+              <Link href={`/discover/${p.id}`} className="flex flex-col flex-1">
+                {p.thumbnail_url && (
+                  <img
+                    src={p.thumbnail_url}
+                    alt={p.name}
+                    className="w-full aspect-[4/3] object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
                 )}
-              </div>
-            </Link>
+                <div className="p-5 pb-0 flex flex-col flex-1">
+                  <h3 className="font-semibold text-[--creator-text] line-clamp-2 group-hover:text-[--creator-primary] transition-colors">
+                    {p.name}
+                  </h3>
+                  {showPrice && (
+                    <p className="mt-3 font-bold text-[--creator-primary]">{formatINR(p.price ?? 0)}</p>
+                  )}
+                </div>
+              </Link>
+              {creatorId && (
+                <div className="p-5 pt-3">
+                  <AddToCartButton
+                    item={{
+                      id: p.id,
+                      title: p.name,
+                      price: p.price ?? 0,
+                      creatorId,
+                      coverImage: p.thumbnail_url,
+                      slug: p.id,
+                    }}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       )}

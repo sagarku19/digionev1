@@ -58,15 +58,16 @@ export interface SectionRendererProps {
   products?: StorefrontProduct[];
   siteMain?: StorefrontSiteMain | null;
   siteId?: string;
+  creatorId?: string;
 }
 
-export default function SectionRenderer({ sections, products = [], siteMain, siteId }: SectionRendererProps) {
+export default function SectionRenderer({ sections, products = [], siteMain, siteId, creatorId }: SectionRendererProps) {
   if (!sections || !Array.isArray(sections)) return null;
 
   return (
     <div className="flex flex-col w-full">
       {sections.map((section, index) => {
-        const props = { settings: section.settings ?? {}, products, siteMain };
+        const props = { settings: section.settings ?? {}, products, siteMain, creatorId };
         const key = section.id ?? index;
 
         switch (section.type) {

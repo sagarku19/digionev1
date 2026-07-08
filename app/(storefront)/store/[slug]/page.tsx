@@ -54,7 +54,7 @@ export default async function MainStorefrontPage({
 
   return (
     <div className="w-full">
-      <SectionRenderer sections={visible} products={products} siteMain={siteMain} siteId={site.id} />
+      <SectionRenderer sections={visible} products={products} siteMain={siteMain} siteId={site.id} creatorId={site.creator_id} />
     </div>
   );
 }
