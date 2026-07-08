@@ -7,12 +7,13 @@
 import { createServiceClient } from '@/lib/supabase/service';
 import { fulfillOrder, fulfillPaymentLinkSubmission } from '@/lib/server/fulfillment';
 import {
-  CheckCircle2, XCircle, Clock, Download, RotateCcw,
+  CheckCircle2, XCircle, Clock, RotateCcw,
   Home, ExternalLink, Package, ArrowRight, ShieldCheck,
-  BookOpen, Video, FileText, Link2,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { CartClearer } from './CartClearer';
+import { LibraryCta } from './LibraryCta';
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -39,6 +40,33 @@ async function getCashfreeStatus(gatewayOrderId: string): Promise<string> {
     return data.order_status ?? 'PENDING';
   } catch {
     return 'PENDING';
+  }
+}
+
+// Fetch the SUCCESS payment's cf_payment_id for a Cashfree order so the
+// status-page reconcile stores the same gateway_payment_id (and ledger
+// record_hash) the webhook would have. Cashfree's guidance: dedupe by
+// cf_payment_id, not order_id. Failure → undefined (fall back to the old
+// behavior: fulfill without a payment id).
+async function getCashfreePaymentId(gatewayOrderId: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(`${CASHFREE_ENV}/orders/${gatewayOrderId}/payments`, {
+      headers: {
+        'x-api-version': '2023-08-01',
+        'x-client-id': process.env.CASHFREE_CLIENT_ID!,
+        'x-client-secret': process.env.CASHFREE_CLIENT_SECRET!,
+      },
+      cache: 'no-store',
+    });
+    if (!res.ok) return undefined;
+    const payments: unknown = await res.json();
+    if (!Array.isArray(payments)) return undefined;
+    // reason: Cashfree response is untyped at the fetch boundary; narrow the two fields used
+    const success = (payments as Array<{ payment_status?: string; cf_payment_id?: string | number }>)
+      .find((p) => p?.payment_status === 'SUCCESS');
+    return success?.cf_payment_id != null ? String(success.cf_payment_id) : undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -106,7 +134,8 @@ export default async function PaymentStatusPage({
         const cfStatus = await getCashfreeStatus(submission.gateway_order_id || order_id);
         status = cfToDbStatus(cfStatus);
         if (status === 'completed') {
-          await fulfillPaymentLinkSubmission(submission.id);
+          const gatewayPaymentId = await getCashfreePaymentId(submission.gateway_order_id || order_id);
+          await fulfillPaymentLinkSubmission(submission.id, gatewayPaymentId);
         }
         // 'failed' is display-only here; the webhook owns failure transitions
       }
@@ -149,7 +178,10 @@ export default async function PaymentStatusPage({
         const cfStatus = await getCashfreeStatus(order.gateway_order_id || order_id);
         status = cfToDbStatus(cfStatus);
         if (status === 'completed') {
-          await fulfillOrder(order.id); // shared claim — no raw writes here (finding #1)
+          const gatewayPaymentId = await getCashfreePaymentId(order.gateway_order_id || order_id);
+          // shared claim — no raw writes here; payment id keeps the ledger
+          // record_hash identical to the webhook path (no more ':free' hashes)
+          await fulfillOrder(order.id, gatewayPaymentId ? { gatewayPaymentId } : undefined);
         }
         // 'failed' is display-only here; the webhook owns failure transitions
       }
@@ -272,10 +304,7 @@ export default async function PaymentStatusPage({
                         </div>
                       ) : (
                         <div className="px-4 pb-4">
-                          <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-xl px-3 py-2.5">
-                            <Clock className="w-3.5 h-3.5 shrink-0" />
-                            <span>The creator will share access details via email shortly.</span>
-                          </div>
+                          <LibraryCta email={customerEmail} />
                         </div>
                       )}
                     </div>

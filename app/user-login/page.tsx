@@ -6,15 +6,24 @@
 // from (browser back), falling back to home on a direct visit.
 
 import { useEffect, useRef, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useBuyerAuth } from '@/stores/buyerAuth';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
+import { rememberBuyerEmail } from '@/lib/shared/buyer-email';
 
 function UserLoginContent() {
   const router = useRouter();
   const { open, isOpen } = useBuyerAuth();
   const { isLoggedIn, isLoading } = useAuthSession();
   const opened = useRef(false);
+  const searchParams = useSearchParams();
+
+  // Email links (purchase confirmation) land here with ?email= so the signup
+  // modal prefills even on a device with no remembered buyer email.
+  useEffect(() => {
+    const email = searchParams.get('email');
+    if (email) rememberBuyerEmail(email);
+  }, [searchParams]);
 
   // Already logged in → straight to the library.
   useEffect(() => {

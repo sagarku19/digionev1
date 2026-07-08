@@ -215,6 +215,8 @@ data.order_status; // "ACTIVE" | "PAID" | "EXPIRED" | "TERMINATED" | ...
 
 `PAID` → calls `fulfillOrder` (same function as the webhook). `EXPIRED | USER_DROPPED | DROPPED | FAILED` → sets `orders.status = 'failed'`. Anything else → still pending.
 
+**Payment-id reconcile (2026-07-08):** before calling `fulfillOrder`, the status page also fetches `GET {CASHFREE_ENV}/orders/{gatewayOrderId}/payments`, extracts the SUCCESS payment's `cf_payment_id`, and passes it as `{ gatewayPaymentId }` (same for `fulfillPaymentLinkSubmission`). This keeps `orders.gateway_payment_id` populated and the ledger `record_hash` identical to the webhook path — no more `:free`-suffixed hashes for status-page-reconciled paid orders. A failed payments fetch falls back to fulfilling without a payment id.
+
 `/payment/status` and `/payment/receipt` use `createServiceClient()` — no more module-scope raw `createClient(URL, SERVICE_KEY)`.
 
 **This is a reconciliation path for the user-facing race**, not the authoritative path. Treat the webhook as authoritative; this exists to handle the case where the user lands on the status page before the webhook arrives. The shared `fulfillOrder` function ensures both paths produce the same result.
@@ -227,10 +229,9 @@ Installed at `^1.0.6` (`package.json`). `types/cashfree.d.ts` is a one-liner `de
 
 | File | Trigger | Returns to | Free-order short-circuit? |
 |---|---|---|---|
-| `app/(buyer)/checkout/page.tsx:42-51` | Cart checkout (`Pay ₹X` button) | `/payment/status?order_id=...` | **No** — assumes `payment_session_id` always present |
-| `app/(storefront)/store/product/[productId]/BuyNowButton.tsx:31-39` | Single-product Buy Now | `/payment/status?order_id=...` | Yes — redirects directly when `data.status === 'completed'` |
-| `app/(storefront)/upsells/[slug]/UpsellCheckoutClient.tsx:84-96` | Upsell page checkout (primary + add-ons) | `/payment/status?order_id=...` | Yes |
-| `src/components/storefront/PaymentLinkPage.tsx:46-56` | Payment-link sites (custom amount) | `/payment/status?order_id=...&sub=...` | N/A (no free path on payment links) |
+| `app/(buyer)/checkout/page.tsx` | Cart checkout (`Pay ₹X` button) | `/payment/status?order_id=...` | Yes |
+| `app/(marketing)/discover/[productId]/BuyNowButton.tsx` | Product-page Buy Now (ledger checkout) | `/payment/status?order_id=...` | Yes |
+| `src/components/storefront/PaymentLinkPage.tsx` | Payment-link sites (custom amount) | `/payment/status?order_id=...&sub=...` | N/A (no free path on payment links) |
 
 ### The reference call pattern (use this shape)
 
@@ -262,17 +263,6 @@ Three things to copy exactly:
 2. **Free-order short-circuit before calling `cashfree.checkout()`.** A free order returns `{ status: 'completed' }` with no session — calling `checkout({ paymentSessionId: undefined })` throws.
 3. **`returnUrl` is the option the SDK reads.** Cashfree also honours the `order_meta.return_url` set server-side, but the browser-passed `returnUrl` wins. Keep both pointing at `/payment/status?order_id=...` so it doesn't matter which wins.
 
-### Inconsistencies in current code — fix on next touch
-
-These are live in the repo and worth knowing before you copy from any one site:
-
-| File | Issue |
-|---|---|
-| `app/(buyer)/checkout/page.tsx:45` | Checks `process.env.NEXT_PUBLIC_CASHFREE_ENV === 'production'` (lowercase) — but `.env.example` sets it to `SANDBOX`/`PRODUCTION` (uppercase). **Result: this page never picks production mode even when the env says it should.** Switch to `data.environment === 'production'` like the other three. |
-| `app/(buyer)/checkout/page.tsx` (no short-circuit) | Doesn't handle the free-order case. If `total === 0`, the API returns `{ status: 'completed' }` with no `payment_session_id` and the SDK call will throw. Add the `if (data.status === 'completed')` branch before `load(...)`. |
-| `app/(buyer)/checkout/page.tsx:43` | Uses dynamic `import('@cashfreepayments/cashfree-js')` with `// @ts-ignore`. The other three use static `import { load } from '...'`. Static is the convention here (the type declaration in `types/cashfree.d.ts` exists specifically so static imports don't need `@ts-ignore`). |
-| `BuyNowButton.tsx`, `UpsellCheckoutClient.tsx`, `PaymentLinkPage.tsx` | Do not pass `redirectTarget`. SDK default is `_self`, which is what we want — fine, but be explicit if you ever need a popup. |
-
 ### SDK options actually in use
 
 | Option | Used in | Notes |
@@ -280,7 +270,7 @@ These are live in the repo and worth knowing before you copy from any one site:
 | `mode` | `load({ mode })` | `'sandbox'` or `'production'`. Picked per the table above. |
 | `paymentSessionId` | `cashfree.checkout({ paymentSessionId })` | Comes from the server response. |
 | `returnUrl` | `cashfree.checkout({ returnUrl })` | Always `${window.location.origin}/payment/status?order_id=${orderId}` (payment-link adds `&sub=${submission_id}`). |
-| `redirectTarget` | Not passed | SDK default is `_self`. Don't use `_blank` — it breaks the post-payment return because Cashfree relies on the same-tab referrer. |
+| `redirectTarget` | Not passed | SDK default is `_self`. Don't use `_blank` — it breaks the post-payment return because Cashfree relies on the same-tab referrer. (discover BuyNowButton.tsx, PaymentLinkPage.tsx) |
 
 ### Server `order_meta.return_url` vs browser `returnUrl`
 
