@@ -16,7 +16,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/auth/buyer-signup` | none (public) | service role | `auth.users` (confirmed, no verification email) |
 | POST | `/api/account/claim-entitlements` | cookie session | server + service role | `user_product_access`, `guest_entitlements` |
 | POST | `/api/account/upgrade-to-creator` | cookie session | server + service role | `auth.users` (`app_metadata.role`), `users.role`, `profiles` |
-| POST | `/api/checkout/create` | none (buyer derived from cookie session when present) | service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
+| POST | `/api/checkout/create` | none (buyer derived from cookie session when present) | server (identity) + service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
 | POST | `/api/refunds/create` | cookie session | server + service role | `refunds`, `wallet_frozen_logs`, `creator_balances.frozen_balance` (via `begin_refund`); Cashfree PG refund create |
 | POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access`; `refunds` + `settle_refund` (REFUND_STATUS_WEBHOOK) |
