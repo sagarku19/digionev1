@@ -35,7 +35,7 @@ export default function BuyerLibraryPage() {
     setRowNotice(null);
     try {
       const res = await fetch(`/api/deliverables/${productId}`);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not prepare your download.');
       if (!data.files?.length) {
         setRowNotice({ id: productId, message: 'No downloadable files have been added to this product yet.' });
@@ -140,6 +140,7 @@ export default function BuyerLibraryPage() {
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search your library…"
                       className={INPUT}
+                      aria-label="Search your library"
                     />
                   </div>
                 </div>
@@ -197,7 +198,7 @@ export default function BuyerLibraryPage() {
                                 href={p.access_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-black/[0.1] hover:border-black/[0.25] text-[#16130F] text-[12.5px] font-semibold transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-black/[0.1] hover:border-black/[0.25] text-[#16130F] text-[12.5px] font-semibold transition-colors"
                               >
                                 Open link
                                 <ExternalLink className="w-3 h-3" />
