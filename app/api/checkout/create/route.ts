@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createServiceClient } from '@/lib/supabase/service';
+import { createClient } from '@/lib/supabase/server';
 import { validateCoupon } from '@/lib/server/coupons';
 import { validateReferral } from '@/lib/server/referrals';
 import { fulfillOrder } from '@/lib/server/fulfillment';
@@ -18,7 +19,13 @@ export async function POST(req: Request) {
     }
 
     const supabase = createServiceClient();
-    const { items, buyerId, couponCode, contact, upsellPageId, referralCode } = await req.json();
+    const { items, couponCode, contact, upsellPageId, referralCode } = await req.json();
+
+    // Buyer identity is derived server-side from the cookie session — never
+    // from the request body. Guests stay null → guest_entitlements path.
+    const authClient = await createClient();
+    const { data: { user } } = await authClient.auth.getUser();
+    const buyerUserId = user?.id ?? null;
 
     // Normalize the contact email up front so the order's customer_email (the key
     // for guest_entitlements) always matches the claim at sign-in.
@@ -72,7 +79,7 @@ export async function POST(req: Request) {
     let referral: Awaited<ReturnType<typeof validateReferral>> = null;
     if (referralCode && creatorProfileId) {
       referral = await validateReferral(supabase, String(referralCode), {
-        buyerUserId: buyerId ?? null,
+        buyerUserId,
         sellingCreatorId: creatorProfileId,
       });
     }
@@ -100,7 +107,7 @@ export async function POST(req: Request) {
     const { error: orderError } = await supabase.from('orders').insert({
       id: orderId,
       gateway_order_id: gatewayOrderId,
-      user_id: buyerId ?? null,
+      user_id: buyerUserId,
       creator_id: creatorProfileId,
       origin_site_id: originSiteId,
       total_amount: total,
@@ -127,7 +134,7 @@ export async function POST(req: Request) {
         order_id: orderId,
         referral_code_id: referral.referralCodeId,
         referrer_creator_id: referral.referrerCreatorId,
-        referred_user_id: buyerId ?? null,
+        referred_user_id: buyerUserId,
         status: 'pending',
         metadata: { reward_percent: referral.rewardPercent },
       }, { onConflict: 'order_id', ignoreDuplicates: true });

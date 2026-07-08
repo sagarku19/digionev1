@@ -16,7 +16,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/auth/buyer-signup` | none (public) | service role | `auth.users` (confirmed, no verification email) |
 | POST | `/api/account/claim-entitlements` | cookie session | server + service role | `user_product_access`, `guest_entitlements` |
 | POST | `/api/account/upgrade-to-creator` | cookie session | server + service role | `auth.users` (`app_metadata.role`), `users.role`, `profiles` |
-| POST | `/api/checkout/create` | none (buyerId optional) | service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
+| POST | `/api/checkout/create` | none (buyer derived from cookie session when present) | service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
 | POST | `/api/refunds/create` | cookie session | server + service role | `refunds`, `wallet_frozen_logs`, `creator_balances.frozen_balance` (via `begin_refund`); Cashfree PG refund create |
 | POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access`; `refunds` + `settle_refund` (REFUND_STATUS_WEBHOOK) |
@@ -111,7 +111,6 @@ Product checkout. Verifies prices server-side, creates an `orders` row, calls Ca
 // Request
 {
   "items": [{ "id": "uuid" }],
-  "buyerId": "uuid?",
   "couponCode": "string?",
   "referralCode": "string?",
   "contact": { "name": "string", "email": "string", "phone": "string" },
@@ -129,7 +128,7 @@ Product checkout. Verifies prices server-side, creates an `orders` row, calls Ca
 
 **Errors:** `400` (empty cart, unpublished product, multi-creator cart), `429` (rate limit — 10/min/IP), `502` (Cashfree failure), `500` (other).
 
-**Side effects:** Inserts pending `orders` row (`status: 'pending'`). All items must belong to one creator. Re-reads `price` from DB — never trusts client. Coupon validation is shared via `src/lib/server/coupons.ts` (full expiry/usage-cap checks); valid coupon stores `coupon_id` + `discount_amount` in `orders.metadata`. Free orders (`total === 0`) run through `fulfillOrder` directly — no Cashfree call. **Referral:** a valid `referralCode` (validated via `src/lib/server/referrals.ts`) writes a pending `order_referrals` row; the platform-fee-funded commission is settled in `fulfillOrder` (step 7). Only creator-owned codes (`owner_creator_id`) pay commission.
+**Side effects:** Inserts pending `orders` row (`status: 'pending'`). All items must belong to one creator. Re-reads `price` from DB — never trusts client. Coupon validation is shared via `src/lib/server/coupons.ts` (full expiry/usage-cap checks); valid coupon stores `coupon_id` + `discount_amount` in `orders.metadata`. Free orders (`total === 0`) run through `fulfillOrder` directly — no Cashfree call. **Referral:** a valid `referralCode` (validated via `src/lib/server/referrals.ts`) writes a pending `order_referrals` row; the platform-fee-funded commission is settled in `fulfillOrder` (step 7). Only creator-owned codes (`owner_creator_id`) pay commission. Buyer identity is server-derived: when a cookie session exists, orders.user_id = auth user id (fulfillment then grants user_product_access directly); guests stay NULL and flow through guest_entitlements.
 
 ---
 
