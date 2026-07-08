@@ -55,7 +55,7 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useProductPage(creatorId, slug)` | Single published product by slug — used on product pages |
 | `useStoreProducts(creatorId)` | All published products for a creator's storefront |
 | `useAbTests()` | `{ tests }` — A/B tests for the logged-in creator; resolves `profiles.id` and selects `products(name)` |
-| `useLibrary()` | Logged-in buyer's purchased products |
+| `useLibrary()` | Logged-in buyer's purchased products — reads user_product_access (RLS SELECT-own) joined to products; snapshot columns keep deleted products accessible; access_url = post_purchase_url ?? product_link |
 | `useGuestLeads(filterSiteId?)` | `{ leads }` — captured email leads, optionally filtered by site |
 | `useProfileQuery(creatorId?)` | `{ data: profile, isLoading, error }` — read-only profile |
 | `useProfileMutations()` | `{ updateProfile, setEmailVerified, setMobileVerified, isUpdating }` |

@@ -82,6 +82,7 @@ Tables you should not touch without understanding their RLS:
 | `creator_payouts` | Creator reads/inserts their own. |
 | `refunds` | Creator reads their own. **Writes: service role only** (begin_refund/settle_refund RPCs). |
 | `wallet_frozen_logs` | Creator reads their own. **Writes: service role only** (freeze/release RPCs). |
+| `user_product_access` | Buyer reads their own rows (`user_id = auth.uid()`) — the library read model. **Writes: service role only** (fulfillment grants + guest-entitlement claims). |
 | `creator_kyc` | Creator **reads** their own (SELECT-own); **no client writes** — all writes go through service-role `POST /api/kyc/submit` (forces `status='pending'`, never accepts `*_verified` from the client; encrypts PAN/bank/UPI via `kyc-crypto`). Admin verification flips `status`/`*_verified` server-side. Payout API checks `status === 'verified'`. |
 | `products` | Creator owns rows where `creator_id = profile.id`. Public read where `is_published AND deleted_at IS NULL`. |
 | `coupons` | Creator owns (no anon read). Public validation goes through `/api/coupons/validate` (service role). |
