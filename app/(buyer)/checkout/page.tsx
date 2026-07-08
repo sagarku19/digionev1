@@ -8,7 +8,7 @@ import { useCart, useCartTotal } from '@/hooks/commerce/useCart';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { useBuyerAuth } from '@/stores/buyerAuth';
 import { getRememberedBuyerEmail, rememberBuyerEmail } from '@/lib/shared/buyer-email';
-import { Loader2, ShieldCheck, Package, Trash2, AlertTriangle } from 'lucide-react';
+import { Loader2, ShieldCheck, Package, Trash2, AlertTriangle, Tag } from 'lucide-react';
 
 export default function CheckoutPage() {
   const { items, removeItem } = useCart();
@@ -24,6 +24,13 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+
+  const payable = Math.max(0, total - (appliedCoupon?.discount ?? 0));
+
   useEffect(() => {
     if (items.length === 0) router.replace('/');
   }, [items, router]);
@@ -34,6 +41,34 @@ export default function CheckoutPage() {
     if (emailTouched) return;
     setEmail(userEmail || getRememberedBuyerEmail());
   }, [userEmail, emailTouched]);
+
+  // Cart changes invalidate an applied coupon (amount/creator may have changed).
+  useEffect(() => {
+    setAppliedCoupon(null);
+    setCouponError(null);
+  }, [items]);
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim();
+    if (!code || items.length === 0) return;
+    setCouponLoading(true);
+    setCouponError(null);
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, cartAmount: total, creatorId: items[0].creatorId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) throw new Error(data.error || 'Invalid coupon code');
+      setAppliedCoupon({ code: code.toUpperCase(), discount: Number(data.discount_amount) || 0 });
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponError(err instanceof Error ? err.message : 'Invalid coupon code');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +88,7 @@ export default function CheckoutPage() {
           items,
           contact: { name: name.trim(), email: email.trim(), phone: phone.trim() || undefined },
           referralCode,
+          couponCode: appliedCoupon?.code,
         }),
       });
       const data = await res.json();
@@ -71,9 +107,9 @@ export default function CheckoutPage() {
         paymentSessionId: data.payment_session_id,
         returnUrl: `${window.location.origin}/payment/status?order_id=${data.orderId}`,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[checkout]', err);
-      setError(err.message || 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -115,9 +151,53 @@ export default function CheckoutPage() {
               </div>
             ))}
           </div>
-          <div className="px-5 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-            <span className="text-sm font-semibold text-gray-500">Total</span>
-            <span className="text-xl font-extrabold text-gray-900 dark:text-white">₹{total.toLocaleString('en-IN')}</span>
+          <div className="px-5 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800 space-y-3">
+            {/* Coupon */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={e => { setCouponCode(e.target.value); setCouponError(null); }}
+                  placeholder="Coupon code"
+                  disabled={!!appliedCoupon}
+                  className="w-full pl-8 pr-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm uppercase text-gray-900 dark:text-white placeholder-gray-400 placeholder:normal-case focus:ring-2 focus:ring-indigo-500/40 outline-none transition disabled:opacity-60"
+                />
+              </div>
+              {appliedCoupon ? (
+                <button
+                  type="button"
+                  onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
+                  className="px-3 py-2 text-xs font-semibold text-gray-500 hover:text-red-500 border border-gray-200 dark:border-gray-700 rounded-lg transition"
+                >
+                  Remove
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={couponLoading || !couponCode.trim()}
+                  className="px-4 py-2 text-sm font-semibold bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 transition"
+                >
+                  {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                </button>
+              )}
+            </div>
+            {couponError && (
+              <p className="text-xs text-red-500 font-medium">{couponError}</p>
+            )}
+            {appliedCoupon && (
+              <div className="flex justify-between items-center text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                <span>Coupon {appliedCoupon.code}</span>
+                <span>−₹{appliedCoupon.discount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+            {/* Total */}
+            <div className="flex justify-between items-center pt-1">
+              <span className="text-sm font-semibold text-gray-500">Total</span>
+              <span className="text-xl font-extrabold text-gray-900 dark:text-white">₹{payable.toLocaleString('en-IN')}</span>
+            </div>
           </div>
         </div>
 
@@ -182,7 +262,7 @@ export default function CheckoutPage() {
             ) : (
               <>
                 <ShieldCheck className="w-5 h-5" />
-                Pay ₹{total.toLocaleString('en-IN')}
+                Pay ₹{payable.toLocaleString('en-IN')}
               </>
             )}
           </button>
