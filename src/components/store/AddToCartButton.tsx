@@ -2,8 +2,9 @@
 
 // Storefront add-to-cart with the replace-cart confirm for cross-creator adds
 // (mirrors the one-creator-per-order rule in /api/checkout/create). Used on
-// multi-product store sections only (ProductGrid, FeaturedProducts) — single-
-// product surfaces keep direct Buy Now.
+// multi-product store sections (ProductGrid, FeaturedProducts, primary variant)
+// and the discover product detail page (secondary variant). The single-page
+// sales site keeps direct Buy Now only.
 
 import { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
