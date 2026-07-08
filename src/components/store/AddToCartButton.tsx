@@ -9,7 +9,15 @@ import { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useCart, type CartItem } from '@/hooks/commerce/useCart';
 
-export function AddToCartButton({ item, className = '' }: { item: CartItem; className?: string }) {
+export function AddToCartButton({
+  item,
+  className = '',
+  variant = 'primary',
+}: {
+  item: CartItem;
+  className?: string;
+  variant?: 'primary' | 'secondary';
+}) {
   const { addItem, replaceCartWith, openDrawer } = useCart();
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -38,12 +46,17 @@ export function AddToCartButton({ item, className = '' }: { item: CartItem; clas
     setShowConfirm(false);
   };
 
+  const variantClass =
+    variant === 'secondary'
+      ? 'bg-transparent border border-[var(--creator-border,rgba(0,0,0,0.12))] text-[var(--creator-text,#16130F)] hover:bg-[var(--creator-surface,#FAF8F6)]'
+      : 'bg-[var(--creator-primary,#E83A2E)] text-white hover:opacity-90';
+
   return (
     <>
       <button
         type="button"
         onClick={handleAdd}
-        className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-[var(--creator-primary,#E83A2E)] text-white hover:opacity-90 transition-opacity ${className}`}
+        className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition ${variantClass} ${className}`}
       >
         <ShoppingCart className="w-4 h-4" />
         Add to cart

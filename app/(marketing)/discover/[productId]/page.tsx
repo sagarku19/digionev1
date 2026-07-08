@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { Rails } from '@/src/components/marketing/Ledger';
 import { BuyNowButton } from './BuyNowButton';
+import { AddToCartButton } from '@/components/store/AddToCartButton';
 
 interface Creator {
   id: string;
@@ -299,6 +300,19 @@ export default function DiscoverProductPage() {
                     </span>
                     {product.price > 0 && <span className="text-[13px] font-medium text-black/40">one-time</span>}
                   </div>
+
+                  <AddToCartButton
+                    item={{
+                      id: product.id,
+                      title: product.name,
+                      price: product.price ?? 0,
+                      creatorId: product.creator_id,
+                      coverImage: product.thumbnail_url,
+                      slug: product.id,
+                    }}
+                    variant="secondary"
+                    className="w-full py-3.5"
+                  />
 
                   {product.product_link ? (
                     <a
