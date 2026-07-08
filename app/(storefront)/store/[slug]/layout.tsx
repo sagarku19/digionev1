@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import StorefrontHeader from '@/components/storefront/StorefrontHeader';
 import StorefrontFooter from '@/components/storefront/StorefrontFooter';
 import PreviewBridge from '@/components/storefront/PreviewBridge';
+import CartDrawer from '@/components/store/CartDrawer';
 import { safeCssColor } from '@/lib/safe-css';
 
 export default async function MainSiteLayout({
@@ -57,6 +58,7 @@ export default async function MainSiteLayout({
       <StorefrontHeader navConfig={nav} siteMain={main} />
       <main className="flex-1 w-full">{children}</main>
       <StorefrontFooter navConfig={nav} siteMain={main} />
+      <CartDrawer palette="creator" />
     </div>
   );
 }

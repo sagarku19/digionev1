@@ -8,6 +8,8 @@ import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRig
 import { supabase } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
+import { CartButton } from '@/components/store/CartButton';
+import { useCart, useHydratedCartCount } from '@/hooks/commerce/useCart';
 
 interface UserProfile {
   full_name: string | null;
@@ -46,6 +48,8 @@ export default function MarketingNav() {
   const queryClient = useQueryClient();
   const { isLoggedIn, userEmail, profile } = useAuthSession();
   const userProfile: UserProfile | null = profile ? { full_name: profile.full_name, avatar_url: profile.avatar_url, email: userEmail } : null;
+  const openCartDrawer = useCart((s) => s.openDrawer);
+  const cartCount = useHydratedCartCount();
 
   // Resolve role so logged-in buyers (not creators) are offered the upgrade.
   const [isBuyer, setIsBuyer] = useState(false);
@@ -201,6 +205,14 @@ export default function MarketingNav() {
 
             {/* Desktop Auth */}
             <div className="hidden lg:flex items-center gap-4">
+              {cartCount > 0 && (
+                <CartButton
+                  itemCount={cartCount}
+                  onClick={openCartDrawer}
+                  className="text-[#16130F] hover:bg-black/[0.04] !rounded-lg"
+                  badgeClassName="bg-[#E83A2E] text-white"
+                />
+              )}
               {isLoggedIn ? (
                 <div
                   ref={dropdownRef}
@@ -305,6 +317,14 @@ export default function MarketingNav() {
 
             {/* Mobile hamburger */}
             <div className="lg:hidden flex items-center">
+              {cartCount > 0 && (
+                <CartButton
+                  itemCount={cartCount}
+                  onClick={openCartDrawer}
+                  className="text-[#16130F] hover:bg-black/[0.04] !rounded-lg mr-1"
+                  badgeClassName="bg-[#E83A2E] text-white"
+                />
+              )}
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 className="text-[#16130F] p-2 -mr-2 rounded-lg hover:bg-black/[0.04] transition-colors"
