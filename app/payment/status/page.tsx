@@ -8,7 +8,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { fulfillOrder, fulfillPaymentLinkSubmission } from '@/lib/server/fulfillment';
 import {
   CheckCircle2, XCircle, Clock, RotateCcw,
-  Home, ExternalLink, Package, ArrowRight, FileText,
+  Home, ExternalLink, Package, ArrowRight, FileText, BookOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { CartClearer } from './CartClearer';
@@ -282,8 +282,8 @@ export default async function PaymentStatusPage({
                         </div>
                       )}
 
-                      <div className="px-4 pb-4">
-                        {accessUrl ? (
+                      {accessUrl ? (
+                        <div className="px-4 pb-4">
                           <a
                             href={accessUrl}
                             target="_blank"
@@ -294,10 +294,15 @@ export default async function PaymentStatusPage({
                             Access product
                             <ArrowRight className="ml-auto h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                           </a>
-                        ) : (
-                          <LibraryCta email={customerEmail} />
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="px-4 pb-4">
+                          <p className="flex items-center gap-2 font-ledger text-[10px] uppercase tracking-[0.14em] text-black/40">
+                            <BookOpen className="h-3.5 w-3.5 text-emerald-600" strokeWidth={1.8} />
+                            Delivered to your library
+                          </p>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -317,6 +322,7 @@ export default async function PaymentStatusPage({
 
           {/* Actions */}
           <div className="space-y-2.5 px-6 pb-6">
+            {!sub && <LibraryCta email={customerEmail} />}
             {receiptUrl && (
               <a
                 href={receiptUrl}
