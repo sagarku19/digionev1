@@ -107,7 +107,7 @@ export async function fulfillOrder(
   if (buyerUserId || guestEmail) {
     const { data: items, error: itemsErr } = await db
       .from('order_items')
-      .select('product_id, price_at_purchase, products(name, product_link, post_purchase_url)')
+      .select('product_id, price_at_purchase, products(name, description, product_link, post_purchase_url, access_links)')
       .eq('order_id', orderId);
 
     if (itemsErr) {
@@ -122,6 +122,8 @@ export async function fulfillOrder(
       const productPrice = Number(item.price_at_purchase) || 0;
 
       if (buyerUserId) {
+        // Snapshot the post-purchase links so they survive product unpublish/delete
+        // (the library falls back to snapshot_metadata when the product join is null).
         const { error: accessErr } = await db.from('user_product_access').upsert(
           {
             user_id: buyerUserId,
@@ -130,6 +132,11 @@ export async function fulfillOrder(
             product_name: productName,
             product_link: productLink,
             product_price: productPrice,
+            snapshot_metadata: {
+              access_links: product?.access_links ?? [],
+              post_purchase_url: product?.post_purchase_url ?? null,
+              description: product?.description ?? null,
+            },
           },
           { onConflict: 'order_id,product_id', ignoreDuplicates: true }
         );

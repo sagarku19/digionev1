@@ -9,7 +9,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
-import { buildAccessLinks, type AccessLink } from '@/lib/shared/access-links';
+import { buildAccessLinks, mergeAccessLinks, type AccessLink } from '@/lib/shared/access-links';
 
 export interface PurchasedProduct {
   id: string;
@@ -32,7 +32,7 @@ type JoinedProduct = {
   access_links: unknown;
 };
 
-type SnapshotMeta = { access_links?: unknown; post_purchase_url?: string | null };
+type SnapshotMeta = { access_links?: unknown; post_purchase_url?: string | null; description?: string | null };
 
 type AccessRow = {
   product_id: string;
@@ -70,14 +70,16 @@ export function useLibrary() {
         seen.add(row.product_id);
         const p = Array.isArray(row.products) ? row.products[0] : row.products;
         const snap = row.snapshot_metadata ?? {};
-        // Live product when present (published), else the immutable snapshot.
-        const links = p
-          ? buildAccessLinks({ postPurchaseUrl: p.post_purchase_url, accessLinks: p.access_links })
-          : buildAccessLinks({ postPurchaseUrl: snap.post_purchase_url ?? row.product_link, accessLinks: snap.access_links });
+        // Never lose a purchased link: merge the creator's CURRENT links (live,
+        // when the product is still published) with the purchased snapshot.
+        // product_link is a pre-purchase marketing link — intentionally excluded.
+        const liveLinks = p ? buildAccessLinks({ postPurchaseUrl: p.post_purchase_url, accessLinks: p.access_links }) : [];
+        const snapshotLinks = buildAccessLinks({ postPurchaseUrl: snap.post_purchase_url, accessLinks: snap.access_links });
+        const links = mergeAccessLinks(liveLinks, snapshotLinks);
         result.push({
           id: row.product_id,
           name: p?.name ?? row.product_name,
-          description: p?.description ?? null,
+          description: p?.description ?? snap.description ?? null,
           thumbnail_url: p?.thumbnail_url ?? null,
           category: p?.category ?? null,
           price_at_purchase: Number(row.product_price) || 0,

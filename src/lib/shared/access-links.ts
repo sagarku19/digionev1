@@ -40,3 +40,27 @@ export function buildAccessLinks(opts: {
   }
   return combined;
 }
+
+/**
+ * Merge the creator's CURRENT (live) links with the buyer's purchased SNAPSHOT so
+ * a link a buyer paid for never silently disappears:
+ * - keyed by label (case-insensitive): a live link REPLACES the same-label snapshot
+ *   link (so an edited/fixed URL updates in place — no stale duplicate),
+ * - snapshot-only labels (a link the creator later removed) are RETAINED,
+ * - live-only labels (a link added after purchase) are included,
+ * - finally deduped by url.
+ * Snapshot order is preserved for shared labels; live-only links append after.
+ */
+export function mergeAccessLinks(live: AccessLink[], snapshot: AccessLink[]): AccessLink[] {
+  const byLabel = new Map<string, AccessLink>();
+  for (const link of snapshot) byLabel.set(link.label.toLowerCase(), link);
+  for (const link of live) byLabel.set(link.label.toLowerCase(), link); // live wins per label
+  const seenUrl = new Set<string>();
+  const out: AccessLink[] = [];
+  for (const link of byLabel.values()) {
+    if (seenUrl.has(link.url)) continue;
+    seenUrl.add(link.url);
+    out.push(link);
+  }
+  return out;
+}
