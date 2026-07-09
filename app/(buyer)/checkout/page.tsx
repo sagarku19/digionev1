@@ -1,14 +1,22 @@
 'use client';
-// Checkout — single page with contact form, order summary, and pay button.
+// Checkout — single focused page: order summary + coupon, contact form, pay.
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { load } from '@cashfreepayments/cashfree-js';
 import { useCart, useCartTotal } from '@/hooks/commerce/useCart';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { useBuyerAuth } from '@/stores/buyerAuth';
 import { getRememberedBuyerEmail, rememberBuyerEmail } from '@/lib/shared/buyer-email';
-import { Loader2, ShieldCheck, Package, Trash2, AlertTriangle, Tag } from 'lucide-react';
+import { Loader2, Lock, Package, Trash2, AlertTriangle, Tag } from 'lucide-react';
+
+const INPUT =
+  'w-full rounded-lg border border-black/[0.1] bg-white px-4 py-3 text-[14px] font-medium text-[#16130F] placeholder:text-black/30 transition-all focus:border-[#E83A2E] focus:outline-none focus:ring-2 focus:ring-[#E83A2E]/15';
+
+function formatINR(n: number) {
+  return `₹${Number(n).toLocaleString('en-IN')}`;
+}
 
 export default function CheckoutPage() {
   const { items, removeItem } = useCart();
@@ -118,161 +126,171 @@ export default function CheckoutPage() {
   if (items.length === 0) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0A0A1A]">
-      <div className="max-w-lg mx-auto px-4 py-10 md:py-16">
+    <div className="mx-auto max-w-md px-5 py-10 sm:py-14">
+      {/* Kicker */}
+      <div className="mb-6 flex items-center gap-3 font-ledger text-[11px]">
+        <span className="font-semibold text-[#E83A2E]">{'>>'}</span>
+        <span className="uppercase tracking-[0.18em] text-black/35">/checkout</span>
+        <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
+        <Link href="/cart" className="text-[12px] font-semibold text-black/45 transition-colors hover:text-[#16130F]">
+          Edit cart
+        </Link>
+      </div>
 
-        {/* Order Summary */}
-        <div className="bg-white dark:bg-[#121226] border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden mb-6">
-          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-            <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Order Summary</h2>
-          </div>
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
-            {items.map(item => (
-              <div key={item.id} className="flex items-center gap-4 px-5 py-4">
-                <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0">
-                  {item.coverImage ? (
-                    <img src={item.coverImage} alt={item.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-5 h-5 text-gray-400" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{item.title}</p>
-                  <p className="text-xs text-gray-500">₹{item.price.toLocaleString('en-IN')}</p>
-                </div>
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+      {/* Order summary */}
+      <div className="mb-5 overflow-hidden rounded-2xl border border-black/[0.07] bg-white">
+        <div className="border-b border-black/[0.06] px-5 py-3.5">
+          <p className="font-ledger text-[10px] uppercase tracking-[0.18em] text-black/35">Order summary</p>
+        </div>
+        <div>
+          {items.map((item, i) => (
+            <div key={item.id} className={`flex items-center gap-3.5 px-5 py-3.5 ${i > 0 ? 'border-t border-black/[0.05]' : ''}`}>
+              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-black/[0.07] bg-[#FAF8F6]">
+                {item.coverImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Package className="h-4 w-4 text-black/25" />
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-          <div className="px-5 py-4 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-800 space-y-3">
-            {/* Coupon */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                <input
-                  type="text"
-                  value={couponCode}
-                  onChange={e => { setCouponCode(e.target.value); setCouponError(null); }}
-                  placeholder="Coupon code"
-                  disabled={!!appliedCoupon}
-                  className="w-full pl-8 pr-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm uppercase text-gray-900 dark:text-white placeholder-gray-400 placeholder:normal-case focus:ring-2 focus:ring-indigo-500/40 outline-none transition disabled:opacity-60"
-                />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13.5px] font-semibold text-[#16130F]">{item.title}</p>
+                <p className="font-ledger text-[11px] text-black/45">{formatINR(item.price)}</p>
               </div>
-              {appliedCoupon ? (
-                <button
-                  type="button"
-                  onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
-                  className="px-3 py-2 text-xs font-semibold text-gray-500 hover:text-red-500 border border-gray-200 dark:border-gray-700 rounded-lg transition"
-                >
-                  Remove
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleApplyCoupon}
-                  disabled={couponLoading || !couponCode.trim()}
-                  className="px-4 py-2 text-sm font-semibold bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 transition"
-                >
-                  {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
-                </button>
-              )}
+              <button
+                onClick={() => removeItem(item.id)}
+                aria-label={`Remove ${item.title}`}
+                className="rounded-lg p-1.5 text-black/35 transition-colors hover:bg-[#E83A2E]/[0.06] hover:text-[#E83A2E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/15"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
-            {couponError && (
-              <p className="text-xs text-red-500 font-medium">{couponError}</p>
-            )}
-            {appliedCoupon && (
-              <div className="flex justify-between items-center text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                <span>Coupon {appliedCoupon.code}</span>
-                <span>−₹{appliedCoupon.discount.toLocaleString('en-IN')}</span>
-              </div>
-            )}
-            {/* Total */}
-            <div className="flex justify-between items-center pt-1">
-              <span className="text-sm font-semibold text-gray-500">Total</span>
-              <span className="text-xl font-extrabold text-gray-900 dark:text-white">₹{payable.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Contact Form + Pay */}
-        <form onSubmit={handlePay} className="bg-white dark:bg-[#121226] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Contact Details</h2>
-            {!isLoggedIn && (
+        {/* Coupon + total */}
+        <div className="space-y-3 border-t border-black/[0.07] bg-[#FAF8F6] px-5 py-4">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Tag className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/30" />
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => { setCouponCode(e.target.value); setCouponError(null); }}
+                placeholder="Coupon code"
+                disabled={!!appliedCoupon}
+                className="w-full rounded-lg border border-black/[0.1] bg-white py-2 pl-8 pr-3 text-[13px] font-medium uppercase text-[#16130F] transition-all placeholder:normal-case placeholder:text-black/30 focus:border-[#E83A2E] focus:outline-none focus:ring-2 focus:ring-[#E83A2E]/15 disabled:opacity-60"
+              />
+            </div>
+            {appliedCoupon ? (
               <button
                 type="button"
-                onClick={() => openBuyerAuth('login')}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 transition"
+                onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
+                className="rounded-lg border border-black/[0.1] px-3 py-2 text-[12.5px] font-semibold text-black/50 transition-colors hover:border-black/25 hover:text-[#E83A2E]"
               >
-                Sign in
+                Remove
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleApplyCoupon}
+                disabled={couponLoading || !couponCode.trim()}
+                className="inline-flex items-center rounded-lg bg-[#16130F] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-black disabled:opacity-40"
+              >
+                {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
               </button>
             )}
           </div>
-
-          <div className="space-y-3">
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Full name"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition"
-            />
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={e => { setEmail(e.target.value); setEmailTouched(true); }}
-              placeholder="Email address"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition"
-            />
-            <input
-              type="tel"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              placeholder="Phone number (optional)"
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500/40 outline-none transition"
-            />
-          </div>
-
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              {error}
+          {couponError && (
+            <div className="flex items-center gap-2 text-[12.5px] font-medium text-[#E83A2E]">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#E83A2E]" /> {couponError}
             </div>
           )}
-
-          <button
-            type="submit"
-            disabled={isLoading || !name.trim() || !email.trim()}
-            className="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-lg shadow-indigo-600/20 text-base"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-5 h-5" />
-                Pay ₹{payable.toLocaleString('en-IN')}
-              </>
-            )}
-          </button>
-
-          <p className="text-xs text-gray-400 text-center pt-1">
-            Secured by Cashfree · UPI, Cards, NetBanking
-          </p>
-        </form>
-
+          {appliedCoupon && (
+            <div className="flex items-center justify-between text-emerald-700">
+              <span className="font-ledger text-[11px] uppercase tracking-[0.12em]">Coupon {appliedCoupon.code}</span>
+              <span className="font-ledger text-[13px] font-medium">-{formatINR(appliedCoupon.discount)}</span>
+            </div>
+          )}
+          <div className="flex items-end justify-between pt-1">
+            <span className="text-[14px] font-bold text-[#16130F]">Total</span>
+            <span className="font-ledger text-[24px] font-semibold leading-none tracking-tight text-[#16130F]">{formatINR(payable)}</span>
+          </div>
+        </div>
       </div>
+
+      {/* Contact form + pay */}
+      <form onSubmit={handlePay} className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_16px_50px_-34px_rgba(22,19,15,0.25)] sm:p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <p className="font-ledger text-[10px] uppercase tracking-[0.18em] text-black/35">Your details</p>
+          {!isLoggedIn && (
+            <button
+              type="button"
+              onClick={() => openBuyerAuth('login')}
+              className="text-[12.5px] font-semibold text-[#E83A2E] transition-colors hover:text-[#C92F24]"
+            >
+              Sign in
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <input
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Full name"
+            className={INPUT}
+          />
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setEmailTouched(true); }}
+            placeholder="Email address"
+            className={INPUT}
+          />
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone number (optional)"
+            className={INPUT}
+          />
+        </div>
+
+        {error && (
+          <div className="mt-4 flex items-center gap-2 rounded-lg border border-[#E83A2E]/15 bg-[#E83A2E]/[0.06] px-4 py-3 text-[13px] font-medium text-[#E83A2E]">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={isLoading || !name.trim() || !email.trim()}
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-[#E83A2E] py-4 text-[15px] font-semibold text-white transition-colors duration-200 hover:bg-[#C92F24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/30 disabled:opacity-50"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Processing…
+            </>
+          ) : (
+            <>
+              <Lock className="h-4 w-4" />
+              Pay {formatINR(payable)}
+            </>
+          )}
+        </button>
+
+        <p className="mt-3 text-center font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">
+          Secured by Cashfree · UPI · Cards · NetBanking
+        </p>
+      </form>
     </div>
   );
 }

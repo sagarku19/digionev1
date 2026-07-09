@@ -3,7 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart, useCartTotal } from '@/hooks/commerce/useCart';
-import { Trash2, ArrowRight, ShieldCheck, ShoppingCart } from 'lucide-react';
+import { Trash2, ArrowRight, ShieldCheck, ShoppingBag, Package } from 'lucide-react';
+
+function formatINR(n: number) {
+  return `₹${Number(n).toLocaleString('en-IN')}`;
+}
 
 export default function CartPage() {
   const { items, removeItem } = useCart();
@@ -11,101 +15,114 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
-          <ShoppingCart className="w-10 h-10 text-gray-400" />
+      <div className="mx-auto max-w-5xl px-5 py-16 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-md rounded-2xl border border-black/[0.07] bg-white p-10 text-center shadow-[0_16px_50px_-30px_rgba(22,19,15,0.25)] sm:p-12">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-black/[0.07] bg-[#FAF8F6]">
+            <ShoppingBag className="h-6 w-6 text-[#E83A2E]" strokeWidth={1.8} />
+          </div>
+          <p className="mb-3 font-ledger text-[10px] uppercase tracking-[0.18em] text-black/35">0 items · empty cart</p>
+          <h1 className="mb-2 text-[22px] font-bold tracking-[-0.02em] text-[#16130F]">Your cart is empty</h1>
+          <p className="mx-auto mb-7 max-w-sm text-[13.5px] font-medium leading-relaxed text-black/50">
+            Browse creators and add digital products — they&apos;ll show up here, ready to check out.
+          </p>
+          <Link
+            href="/discover"
+            className="group inline-flex items-center gap-2 rounded-lg bg-[#E83A2E] px-6 py-3 text-[14px] font-semibold text-white transition-colors duration-200 hover:bg-[#C92F24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/30"
+          >
+            Discover products
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Your cart is empty</h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md text-center">
-          Looks like you have not added any digital products to your cart yet.
-        </p>
-        <Link
-          href="/"
-          className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
-        >
-          Explore Creators
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-8">
+    <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
+      {/* Kicker + heading */}
+      <div className="mb-8">
+        <div className="mb-3 flex items-center gap-3 font-ledger text-[11px]">
+          <span className="font-semibold text-[#E83A2E]">{'>>'}</span>
+          <span className="uppercase tracking-[0.18em] text-black/35">/cart</span>
+          <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
+        </div>
+        <h1 className="text-[28px] font-bold leading-[1.05] tracking-[-0.03em] text-[#16130F] sm:text-[34px]">
+          Your cart <span className="align-middle font-ledger text-[18px] text-black/30">({items.length})</span>
+        </h1>
+      </div>
 
-      {/* Left: Cart Items */}
-      <div className="flex-1 flex flex-col gap-6">
-        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">Shopping Cart ({items.length})</h1>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-          <ul className="divide-y divide-gray-200 dark:divide-gray-800">
-            {items.map((item) => (
-              <li key={item.id} className="p-6 flex items-start gap-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                <div className="w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                  {item.coverImage ? (
-                    <img src={item.coverImage} alt={item.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-2">No Image</div>
-                  )}
-                </div>
-
-                <div className="flex-1 flex flex-col">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">By @{item.creatorId}</p>
-
-                  <div className="mt-auto flex items-center justify-between">
-                    <span className="font-extrabold text-lg text-gray-900 dark:text-white">₹{item.price.toLocaleString('en-IN')}</span>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-sm font-medium text-red-500 hover:text-red-600 flex items-center gap-1 p-2 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Remove
-                    </button>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+        {/* Items */}
+        <div className="overflow-hidden rounded-2xl border border-black/[0.07] bg-white">
+          {items.map((item, i) => (
+            <div
+              key={item.id}
+              className={`flex items-start gap-4 p-4 transition-colors hover:bg-[#FAF8F6] sm:p-5 ${i > 0 ? 'border-t border-black/[0.06]' : ''}`}
+            >
+              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-black/[0.07] bg-[#FAF8F6]">
+                {item.coverImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Package className="h-6 w-6 text-black/20" strokeWidth={1.8} />
                   </div>
+                )}
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col self-stretch">
+                <h3 className="line-clamp-2 text-[15px] font-bold leading-snug tracking-[-0.01em] text-[#16130F]">{item.title}</h3>
+                <p className="mt-1 font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">digital product</p>
+                <div className="mt-auto flex items-center justify-between pt-4">
+                  <span className="font-ledger text-[16px] font-semibold text-[#16130F]">{formatINR(item.price)}</span>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    aria-label={`Remove ${item.title} from cart`}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] font-semibold text-black/45 transition-colors hover:bg-[#E83A2E]/[0.06] hover:text-[#E83A2E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/15"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Remove
+                  </button>
                 </div>
-              </li>
-            ))}
-          </ul>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
 
-      {/* Right: Order Summary */}
-      <div className="w-full md:w-96 shrink-0 flex flex-col gap-6">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl p-6 sticky top-24">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Order Summary</h2>
-
-          <div className="flex flex-col gap-4 mb-6 text-gray-600 dark:text-gray-300">
-            <div className="flex justify-between items-center">
-              <span>Subtotal</span>
-              <span className="font-semibold text-gray-900 dark:text-white">₹{total.toLocaleString('en-IN')}</span>
-            </div>
-
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center mt-2">
-              <span className="font-bold text-gray-900 dark:text-white">Total due</span>
-              <span className="text-3xl font-extrabold text-gray-900 dark:text-white">₹{total.toLocaleString('en-IN')}</span>
-            </div>
+        {/* Summary */}
+        <aside className="h-max rounded-2xl border border-black/[0.07] bg-white p-6 shadow-[0_16px_50px_-34px_rgba(22,19,15,0.25)] lg:sticky lg:top-20">
+          <p className="mb-5 font-ledger text-[10px] uppercase tracking-[0.18em] text-black/35">Order summary</p>
+          <div className="flex items-center justify-between text-[14px]">
+            <span className="font-medium text-black/55">Subtotal</span>
+            <span className="font-ledger font-semibold text-[#16130F]">{formatINR(total)}</span>
           </div>
-
-          <Link href="/checkout" className="w-full py-4 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20">
-            Proceed to Checkout
-            <ArrowRight className="w-5 h-5" />
+          <div className="my-5 h-px bg-black/[0.07]" />
+          <div className="flex items-end justify-between">
+            <span className="text-[15px] font-bold text-[#16130F]">Total</span>
+            <span className="font-ledger text-[28px] font-semibold leading-none tracking-tight text-[#16130F]">{formatINR(total)}</span>
+          </div>
+          <Link
+            href="/checkout"
+            className="group mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#E83A2E] py-3.5 text-[15px] font-semibold text-white transition-colors duration-200 hover:bg-[#C92F24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/30"
+          >
+            Proceed to checkout
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
-
-          <div className="mt-6 flex flex-col items-center gap-3">
-             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium">
-               <ShieldCheck className="w-4 h-4 text-green-500" />
-               Secure checkout via Cashfree
-             </div>
-             {/* Simple visual placeholders for payment methods */}
-             <div className="flex items-center gap-3 opacity-60 grayscale mt-2">
-                <span className="bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 test-xs font-bold px-2 py-1 rounded">UPI</span>
-                <span className="bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 test-xs font-bold px-2 py-1 rounded">Cards</span>
-                <span className="bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 test-xs font-bold px-2 py-1 rounded">NetBanking</span>
-             </div>
+          <div className="mt-5 flex flex-col items-center gap-3">
+            <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-black/50">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" strokeWidth={1.8} /> Secure checkout via Cashfree
+            </div>
+            <div className="flex items-center gap-1.5">
+              {['UPI', 'Cards', 'NetBanking'].map((m) => (
+                <span
+                  key={m}
+                  className="rounded-md border border-black/[0.08] bg-[#FAF8F6] px-2 py-1 font-ledger text-[9px] uppercase tracking-[0.12em] text-black/45"
+                >
+                  {m}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        </aside>
       </div>
-
     </div>
   );
 }
