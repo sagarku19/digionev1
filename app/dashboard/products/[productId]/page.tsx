@@ -21,6 +21,7 @@ import {
   Plus, X, Package, Tag, Trash2, ShieldCheck, Boxes,
 } from 'lucide-react';
 import { formatINR } from '@/lib/format';
+import { normalizeAccessLinks, type AccessLink } from '@/lib/shared/access-links';
 import type { Database, Json } from '@/types/database.types';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -67,6 +68,48 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       <label className="mb-1.5 block text-[13px] font-medium text-[var(--text-secondary)]">{label}</label>
       {children}
       {hint && <p className="mt-1.5 text-xs text-[var(--text-tertiary)]">{hint}</p>}
+    </div>
+  );
+}
+
+function AccessLinksEditor({ links, onChange }: { links: AccessLink[]; onChange: (next: AccessLink[]) => void }) {
+  const update = (i: number, u: Partial<AccessLink>) => onChange(links.map((l, idx) => (idx === i ? { ...l, ...u } : l)));
+  const remove = (i: number) => onChange(links.filter((_, idx) => idx !== i));
+  const add = () => onChange([...links, { label: '', url: '' }]);
+  return (
+    <div className="space-y-2.5">
+      {links.map((link, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <input
+            value={link.label}
+            onChange={(e) => update(i, { label: e.target.value })}
+            placeholder="Label"
+            className={`${INPUT} sm:max-w-[38%]`}
+          />
+          <input
+            type="url"
+            value={link.url}
+            onChange={(e) => update(i, { url: e.target.value })}
+            placeholder="https://..."
+            className={INPUT}
+          />
+          <button
+            type="button"
+            onClick={() => remove(i)}
+            aria-label="Remove link"
+            className="shrink-0 rounded-[var(--radius-md)] border border-[var(--border)] p-2.5 text-[var(--text-tertiary)] transition-colors hover:border-[var(--danger)] hover:text-[var(--danger)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={add}
+        className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      >
+        <Plus className="h-3.5 w-3.5" /> Add link
+      </button>
     </div>
   );
 }
@@ -294,6 +337,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
         is_on_discover_page: formData.is_on_discover_page ?? true,
         product_link: formData.product_link ?? null,
         post_purchase_url: formData.post_purchase_url ?? null,
+        access_links: normalizeAccessLinks(formData.access_links) as unknown as Json,
         post_purchase_instructions: formData.post_purchase_instructions ?? null,
         is_licensable: formData.is_licensable ?? false,
         license_type: formData.license_type ?? null,
@@ -331,6 +375,17 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   const isFree = meta.is_free ?? formData.price === 0;
   const canPreview = !!(formData.is_published || formData.is_on_discover_page);
   const images = (formData.images as string[] | null) ?? [];
+  // Editor-local view preserves half-typed rows (empty url); normalizeAccessLinks
+  // drops those only at save time.
+  const accessLinks: AccessLink[] = Array.isArray(formData.access_links)
+    ? (formData.access_links as unknown[]).map((it) => {
+        const o = it && typeof it === 'object' ? (it as { label?: unknown; url?: unknown }) : {};
+        return {
+          label: typeof o.label === 'string' ? o.label : '',
+          url: typeof o.url === 'string' ? o.url : '',
+        };
+      })
+    : [];
   const patchMeta = (u: Partial<ProductMeta>) => patch({ metadata: { ...meta, ...u } as unknown as Json });
 
   // Publish readiness — must-fix (red) + soft suggestions, shown above the preview.
@@ -339,7 +394,8 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
   if (!formData.thumbnail_url) mustFix.push('Add a cover image');
   if (!formData.description?.trim()) mustFix.push('Write a description');
   if (!isFree && (formData.price ?? 0) <= 0) mustFix.push('Set a price, or switch it to Free');
-  if (!formData.post_purchase_url?.trim() && deliverableFiles.length === 0) mustFix.push('Add a file or an access link buyers receive');
+  const hasAnyAccessLink = !!formData.post_purchase_url?.trim() || normalizeAccessLinks(formData.access_links).length > 0;
+  if (!hasAnyAccessLink && deliverableFiles.length === 0) mustFix.push('Add a file or an access link buyers receive');
 
   const tips: string[] = [];
   if (images.length === 0) tips.push('Add gallery images for a richer page');
@@ -549,6 +605,9 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                 <EditorCard icon={HardDrive} title="Product Access Link" subtitle="Where buyers go after a successful purchase">
                   <Field label="Post-Purchase URL" hint="Redirect buyers here after payment — e.g. a Google Drive link, Notion page, or your own page.">
                     <input type="url" value={formData.post_purchase_url || ''} onChange={(e) => patch({ post_purchase_url: e.target.value || null })} className={INPUT} placeholder="https://drive.google.com/file/..." />
+                  </Field>
+                  <Field label="Additional access links" hint="Optional. Labelled links buyers receive after purchase — e.g. a course portal, Discord invite, or bonus pack. Add as many as you need.">
+                    <AccessLinksEditor links={accessLinks} onChange={(next) => patch({ access_links: next as unknown as Json })} />
                   </Field>
                   <Field label="Access Instructions" hint="Optional message shown to buyers on the payment success page.">
                     <textarea rows={3} value={formData.post_purchase_instructions || ''} onChange={(e) => patch({ post_purchase_instructions: e.target.value || null })} className={`${INPUT} resize-none`} placeholder="e.g. Download from the link above. Password: digione2024" />
