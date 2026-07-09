@@ -1901,6 +1901,7 @@ export type Database = {
       }
       products: {
         Row: {
+          access_links: Json
           category: string | null
           content: Json | null
           created_at: string | null
@@ -1927,6 +1928,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          access_links?: Json
           category?: string | null
           content?: Json | null
           created_at?: string | null
@@ -1953,6 +1955,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          access_links?: Json
           category?: string | null
           content?: Json | null
           created_at?: string | null
