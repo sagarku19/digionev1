@@ -38,7 +38,15 @@ export default function BuyerLibraryPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not prepare your download.');
       if (!data.files?.length) {
-        setRowNotice({ id: productId, message: 'No downloadable files have been added to this product yet.' });
+        // Link-only products deliver via the access link, not files — point there
+        // instead of implying something is missing.
+        const product = products.find((p) => p.id === productId);
+        setRowNotice({
+          id: productId,
+          message: product?.access_url
+            ? 'This product is delivered via a link — use "Open link" to access it.'
+            : 'No downloadable files have been added to this product yet.',
+        });
         return;
       }
       for (const file of data.files) {
