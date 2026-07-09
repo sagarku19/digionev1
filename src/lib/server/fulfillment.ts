@@ -9,6 +9,7 @@ import { getPlatformFeeRate } from './platform-fee';
 import { computeReferralCommission } from './referrals';
 import { recordGuestEntitlement } from './entitlements';
 import { normalizeEmail } from '@/lib/shared/email';
+import { sendPurchaseConfirmation } from './email';
 
 export interface FulfillResult {
   fulfilled: boolean;
@@ -31,7 +32,7 @@ export async function fulfillOrder(
     })
     .eq('id', orderId)
     .eq('status', 'pending')
-    .select('id, user_id, total_amount, creator_id, metadata, customer_email')
+    .select('id, user_id, total_amount, creator_id, metadata, customer_email, customer_name')
     .maybeSingle();
 
   if (claimErr) throw claimErr;
@@ -100,14 +101,13 @@ export async function fulfillOrder(
   // 4. Grant durable access. Logged-in buyers get a user_product_access row now;
   // guests get an email-keyed guest_entitlements row, claimed on later sign-in.
   const buyerUserId = claimed.user_id;
-  const guestEmail = !buyerUserId && claimed.customer_email
-    ? normalizeEmail(claimed.customer_email)
-    : null;
+  const recipientEmail = claimed.customer_email ? normalizeEmail(claimed.customer_email) : null;
+  const guestEmail = !buyerUserId ? recipientEmail : null;
 
   if (buyerUserId || guestEmail) {
     const { data: items, error: itemsErr } = await db
       .from('order_items')
-      .select('product_id, price_at_purchase, products(name, product_link)')
+      .select('product_id, price_at_purchase, products(name, product_link, post_purchase_url)')
       .eq('order_id', orderId);
 
     if (itemsErr) {
@@ -145,6 +145,35 @@ export async function fulfillOrder(
           productPrice,
           productLink,
         });
+      }
+    }
+
+    // 4b. Purchase-confirmation email (Resend) — logged and swallowed;
+    // fulfillment never fails on email. Product orders only.
+    if (recipientEmail && (items?.length ?? 0) > 0) {
+      try {
+        await sendPurchaseConfirmation({
+          to: recipientEmail,
+          customerName: claimed.customer_name ?? 'there',
+          orderId,
+          totalAmount: total,
+          isGuest: !buyerUserId,
+          appUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
+          items: (items ?? []).map((item) => {
+            const product = Array.isArray(item.products) ? item.products[0] : item.products;
+            return {
+              name: product?.name ?? 'Product',
+              price: Number(item.price_at_purchase) || 0,
+              accessUrl: product?.post_purchase_url || product?.product_link || null,
+            };
+          }),
+        });
+      } catch (emailErr) {
+        console.error(
+          '[fulfillment] purchase email failed for order',
+          orderId,
+          emailErr instanceof Error ? emailErr.message : String(emailErr)
+        );
       }
     }
   }

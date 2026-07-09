@@ -19,7 +19,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/checkout/create` | none (buyer derived from cookie session when present) | server (identity) + service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
 | POST | `/api/refunds/create` | cookie session | server + service role | `refunds`, `wallet_frozen_logs`, `creator_balances.frozen_balance` (via `begin_refund`); Cashfree PG refund create |
-| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access`; `refunds` + `settle_refund` (REFUND_STATUS_WEBHOOK) |
+| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access`; `refunds` + `settle_refund` (REFUND_STATUS_WEBHOOK); purchase email (Resend, non-fatal) |
 | POST | `/api/webhook/cashfree-payout` | Cashfree Payouts signature (HMAC) | service role | `settle_payout` (success/failed); `TRANSFER_REVERSED` → `settle_payout('failed')` in-flight / `reverse_settled_payout` post-success; separate from `/api/webhook/cashfree` (PG webhook) |
 | POST | `/api/coupons/validate` | none | service role | — |
 | POST | `/api/leads` | none | service role | `lead_form` |
@@ -177,6 +177,7 @@ data.payment.cf_payment_id     → stored as gateway_payment_id
 3. Insert `transaction_ledger` row with `record_hash = sha256(orderId + ':' + cf_payment_id)` (UNIQUE constraint — replay-safe).
 4. Insert `notifications` row for the creator.
 5. Grant `user_product_access` rows for logged-in buyers (idempotent UNIQUE on `(order_id, product_id)`).
+5b. Send the buyer purchase-confirmation email via Resend (`src/lib/server/email.ts`) — non-fatal, logged and swallowed; skipped when `RESEND_API_KEY`/`EMAIL_FROM` are unset.
 6. Redeem coupon via `increment_coupon_uses` RPC if coupon was applied.
 
 **On `FAILED` / `USER_DROPPED`:** `orders.status = 'failed'` (or `payment_submissions.payment_status = 'failed'` for `pl_` orders).

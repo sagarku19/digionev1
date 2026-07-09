@@ -96,6 +96,15 @@ Read by `src/lib/server/invoices/digione-identity.ts`. All server-only — never
 | `DIGIONE_STATE` | server | `src/lib/server/invoices/digione-identity.ts` | State name (e.g. `Karnataka`) — used for intra/inter-state GST determination. |
 | `DIGIONE_STATE_CODE` | server | `src/lib/server/invoices/digione-identity.ts` | Two-digit GST state code (e.g. `29`) matching `DIGIONE_STATE`. |
 
+## Email (Resend)
+
+Transactional email — currently one email: the buyer purchase confirmation, sent from `fulfillOrder` step 4b. Read by `src/lib/server/email.ts`. Missing values are a safe no-op (console.warn, no send) — fulfillment never fails on email.
+
+| Var | Scope | Used in | Notes |
+|---|---|---|---|
+| `RESEND_API_KEY` | **secret** | `src/lib/server/email.ts` | Resend API key. Server-only. |
+| `EMAIL_FROM` | server | `src/lib/server/email.ts` | From header, e.g. `DigiOne <receipts@digione.ai>`. The domain must be verified in the Resend dashboard (SPF/DKIM DNS records). |
+
 ## Known cleanup
 
 - **`CASHFREE_ENVIRONMENT` vs `NEXT_PUBLIC_CASHFREE_ENV`** — two sources of truth. If they drift, sandbox-signed orders will fail to redirect to prod (or vice versa). Consider deriving the public one from the server one at build time.
