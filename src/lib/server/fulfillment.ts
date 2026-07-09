@@ -157,6 +157,7 @@ export async function fulfillOrder(
           customerName: claimed.customer_name ?? 'there',
           orderId,
           totalAmount: total,
+          discountAmount: typeof metadata.discount_amount === 'number' ? metadata.discount_amount : 0,
           isGuest: !buyerUserId,
           appUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
           items: (items ?? []).map((item) => {

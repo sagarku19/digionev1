@@ -14,6 +14,7 @@ export interface PurchaseEmailInput {
   customerName: string;
   orderId: string;
   totalAmount: number;
+  discountAmount?: number;
   items: PurchaseEmailItem[];
   isGuest: boolean;
   appUrl: string;
@@ -76,6 +77,10 @@ export function buildPurchaseConfirmation(input: PurchaseEmailInput): { subject:
           <tr><td style="padding:20px 32px 0;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
               ${itemRows}
+              ${(input.discountAmount ?? 0) > 0 ? `<tr>
+                <td style="padding:6px 0;font-size:13px;color:rgba(22,19,15,0.55);">Discount</td>
+                <td align="right" style="padding:6px 0;font-size:13px;font-weight:600;color:#16130F;">-${formatINR(input.discountAmount ?? 0)}</td>
+              </tr>` : ''}
               <tr>
                 <td style="padding:14px 0;font-size:13px;font-weight:600;color:rgba(22,19,15,0.55);">Total paid</td>
                 <td align="right" style="padding:14px 0;font-size:16px;font-weight:700;color:#16130F;">${formatINR(input.totalAmount)}</td>
@@ -83,10 +88,10 @@ export function buildPurchaseConfirmation(input: PurchaseEmailInput): { subject:
             </table>
           </td></tr>
           <tr><td style="padding:8px 32px 28px;">
-            <a href="${libraryUrl}" style="display:block;text-align:center;background:#E83A2E;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 20px;border-radius:8px;">${ctaLabel}</a>
+            <a href="${escapeHtml(libraryUrl)}" style="display:block;text-align:center;background:#E83A2E;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 20px;border-radius:8px;">${ctaLabel}</a>
             ${guestNote}
             <p style="font-size:12px;color:rgba(22,19,15,0.4);margin:16px 0 0;">
-              <a href="${receiptUrl}" style="color:rgba(22,19,15,0.55);">Download your receipt</a> · Order ${escapeHtml(input.orderId.slice(0, 8))}
+              <a href="${escapeHtml(receiptUrl)}" style="color:rgba(22,19,15,0.55);">Download your receipt</a> · Order ${escapeHtml(input.orderId.slice(0, 8))}
             </p>
           </td></tr>
         </table>

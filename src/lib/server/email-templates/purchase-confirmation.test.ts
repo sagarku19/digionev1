@@ -59,4 +59,15 @@ describe('buildPurchaseConfirmation', () => {
     expect(buildPurchaseConfirmation(base).subject)
       .toBe('Your purchase is confirmed — 2 products');
   });
+
+  it('shows a discount row when discountAmount is set', () => {
+    const { html } = buildPurchaseConfirmation({ ...base, discountAmount: 200, totalAmount: 1299 });
+    expect(html).toContain('Discount');
+    expect(html).toContain('-₹200');
+  });
+
+  it('omits the discount row when there is no discount', () => {
+    const { html } = buildPurchaseConfirmation(base);
+    expect(html).not.toContain('Discount');
+  });
 });
