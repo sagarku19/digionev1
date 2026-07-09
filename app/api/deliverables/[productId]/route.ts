@@ -52,7 +52,7 @@ export async function GET(
     // user_product_access keys off auth.users.id (the user column), not profiles.id.
     const { data: access } = await serviceDb
       .from('user_product_access')
-      .select('id')
+      .select('id, created_at')
       .eq('user_id', user.id)
       .eq('product_id', productId)
       .maybeSingle();
@@ -60,6 +60,11 @@ export async function GET(
       log('warn', reqId, 'access_denied', { userId: user.id, productId });
       return json(reqId, { error: 'You do not have access to this product' }, 403);
     }
+    // The buyer keeps files that were live at purchase: current files, plus any
+    // archived (soft-deleted) AFTER this buyer purchased. Files removed before
+    // they bought are excluded. toISOString() → 'Z' form (no '+' that a URL could
+    // mangle into a space in the PostgREST or-filter below).
+    const purchasedAt = new Date(access.created_at ?? 0).toISOString();
 
     // Resolve the product's creator to find the storage folder.
     const { data: product } = await serviceDb
@@ -79,7 +84,7 @@ export async function GET(
       .eq('owner_id', product.creator_id)
       .eq('bucket', cfg.name)
       .eq('product_id', productId)
-      .is('deleted_at', null)
+      .or(`deleted_at.is.null,deleted_at.gt.${purchasedAt}`)
       .order('created_at', { ascending: false })
       .limit(MAX_FILES_RETURNED);
     if (listError) {

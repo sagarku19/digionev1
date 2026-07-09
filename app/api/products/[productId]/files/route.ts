@@ -1,6 +1,8 @@
 // GET  /api/products/[productId]/files  — list THIS creator's deliverable files
 //                                          for the product (+ quota usage).
-// DELETE same path, body { fileId }      — remove one file (R2 object + soft row).
+// DELETE same path, body { fileId }      — archive one file: soft-delete the row;
+//                                          keep the R2 object when the product has
+//                                          buyers (so their download survives).
 // Both verify the caller owns the product; DELETE additionally verifies the file
 // is bound to (this creator, this product, the products bucket) — never fileId alone.
 import { NextResponse } from 'next/server';
@@ -86,9 +88,21 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ produ
       return json(reqId, { error: 'Not found' }, 404);
     }
 
-    try { await storage.delete({ bucket: cfg.name, objectKey: row.object_key }); } catch { /* already gone */ }
+    // Archive-instead-of-delete: if any buyer holds this product, keep the R2
+    // object so their download survives (served to pre-deletion buyers by
+    // /api/deliverables via the purchase-date filter). Never-purchased files are
+    // hard-deleted to avoid orphan storage. The row is soft-deleted either way
+    // (removed from the creator's view + frees their quota).
+    const [{ data: upa }, { data: ge }] = await Promise.all([
+      serviceDb.from('user_product_access').select('id').eq('product_id', productId).limit(1).maybeSingle(),
+      serviceDb.from('guest_entitlements').select('id').eq('product_id', productId).limit(1).maybeSingle(),
+    ]);
+    const purchased = Boolean(upa) || Boolean(ge);
+    if (!purchased) {
+      try { await storage.delete({ bucket: cfg.name, objectKey: row.object_key }); } catch { /* already gone */ }
+    }
     await softDelete(serviceDb, row.id, owned.creatorId);
-    return json(reqId, { ok: true }, 200);
+    return json(reqId, { ok: true, archived: purchased }, 200);
   } catch {
     return json(reqId, { error: 'Internal server error' }, 500);
   }
