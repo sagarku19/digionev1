@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { classifyAdd, type AddItemResult, type CartItem } from './cart-logic';
@@ -50,13 +50,16 @@ export function useCartTotal() {
 }
 
 /**
- * SSR-safe item count: returns 0 until the client has mounted so the first
- * client render matches server markup (zustand persist rehydrates from
- * localStorage before React hydration, which would otherwise mismatch).
+ * SSR-safe item count: returns 0 on the server and the first client (hydration)
+ * render, then the real count. useSyncExternalStore uses the server snapshot (0)
+ * for SSR + hydration and switches to the live snapshot afterward, so the count
+ * can never cause a hydration mismatch even though zustand persist rehydrates
+ * from localStorage before React hydration.
  */
 export function useHydratedCartCount() {
-  const count = useCart(s => s.items.length);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  return mounted ? count : 0;
+  return useSyncExternalStore(
+    useCart.subscribe,
+    () => useCart.getState().items.length,
+    () => 0,
+  );
 }
