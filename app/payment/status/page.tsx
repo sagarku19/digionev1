@@ -8,8 +8,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { fulfillOrder, fulfillPaymentLinkSubmission } from '@/lib/server/fulfillment';
 import {
   CheckCircle2, XCircle, Clock, RotateCcw,
-  Home, ExternalLink, Package, ArrowRight, ShieldCheck,
-  FileText,
+  Home, ExternalLink, Package, ArrowRight, FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { CartClearer } from './CartClearer';
@@ -97,10 +96,14 @@ export default async function PaymentStatusPage({
   if (!order_id) {
     return (
       <Shell status="failed">
-        <StatusIcon type="failed" />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Invalid Request</h1>
-        <p className="text-sm text-gray-500 mb-8">Missing order information.</p>
-        <Link href="/" className="text-indigo-600 font-semibold hover:underline">Return home</Link>
+        <div className="px-6 py-10 text-center">
+          <StatusIcon type="failed" />
+          <h1 className="mb-1.5 text-[20px] font-bold tracking-[-0.02em] text-[#16130F]">Invalid request</h1>
+          <p className="mb-7 text-[13.5px] font-medium text-black/50">Missing order information.</p>
+          <Link href="/" className="text-[13.5px] font-semibold text-[#E83A2E] transition-colors hover:text-[#C92F24]">
+            Return home
+          </Link>
+        </div>
       </Shell>
     );
   }
@@ -223,90 +226,78 @@ export default async function PaymentStatusPage({
       {status === 'completed' && (
         <div className="w-full">
           {/* Hero */}
-          <div className="text-center px-6 pt-8 pb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-500/20 mb-4 shadow-lg shadow-emerald-500/10">
-              <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              Payment Successful!
+          <div className="px-6 pt-8 pb-5 text-center">
+            <StatusIcon type="completed" />
+            <p className="mb-2 font-ledger text-[10px] uppercase tracking-[0.18em] text-emerald-700">Payment confirmed</p>
+            <h1 className="mb-1 text-[22px] font-bold tracking-[-0.02em] text-[#16130F]">
+              Thank you, {customerName.split(' ')[0]}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Hi {customerName.split(' ')[0]}, your purchase is confirmed.
-            </p>
+            <p className="text-[13.5px] font-medium text-black/50">Your purchase is confirmed.</p>
             {customerEmail && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                A confirmation has been sent to <span className="font-medium text-gray-600 dark:text-gray-300">{customerEmail}</span>
+              <p className="mt-2 font-ledger text-[10px] text-black/40">
+                Receipt sent to <span className="text-black/60">{customerEmail}</span>
               </p>
             )}
           </div>
 
-          {/* Amount pill */}
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex items-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-full px-5 py-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">{formatINR(amount)}</span>
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">paid</span>
-            </div>
+          {/* Amount */}
+          <div className="mx-6 mb-6 flex items-center justify-between rounded-xl border border-black/[0.07] bg-[#FAF8F6] px-5 py-4">
+            <span className="font-ledger text-[10px] uppercase tracking-[0.18em] text-black/40">Amount paid</span>
+            <span className="font-ledger text-[24px] font-semibold leading-none tracking-tight text-[#16130F]">{formatINR(amount)}</span>
           </div>
 
-          {/* Product access cards */}
+          {/* Product access */}
           {products.length > 0 && (
-            <div className="px-4 mb-4">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3 px-1">
-                Your Products
-              </p>
-              <div className="space-y-3">
+            <div className="mb-5 px-6">
+              <div className="mb-3 flex items-center gap-3 font-ledger text-[10px]">
+                <span className="font-semibold text-[#E83A2E]">{'>>'}</span>
+                <span className="uppercase tracking-[0.18em] text-black/35">your products</span>
+                <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
+              </div>
+              <div className="overflow-hidden rounded-xl border border-black/[0.07]">
                 {products.map((p, i) => {
                   const accessUrl = p.post_purchase_url || p.product_link;
                   return (
-                    <div
-                      key={i}
-                      className="bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/60 rounded-2xl overflow-hidden"
-                    >
+                    <div key={i} className={i > 0 ? 'border-t border-black/[0.06]' : ''}>
                       <div className="flex items-center gap-3 p-4">
-                        {/* Thumbnail */}
-                        <div className="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-800 overflow-hidden shrink-0 flex items-center justify-center">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-black/[0.07] bg-[#FAF8F6]">
                           {p.thumbnail_url ? (
-                            <img src={p.thumbnail_url} alt={p.name} className="w-full h-full object-cover" />
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={p.thumbnail_url} alt={p.name} className="h-full w-full object-cover" />
                           ) : (
-                            <Package className="w-6 h-6 text-gray-400" />
+                            <Package className="h-4 w-4 text-black/25" />
                           )}
                         </div>
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{p.name}</p>
-                          <p className="text-xs text-gray-500">{formatINR(p.price)}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13.5px] font-semibold text-[#16130F]">{p.name}</p>
+                          <p className="font-ledger text-[11px] text-black/45">{formatINR(p.price)}</p>
                         </div>
                       </div>
 
-                      {/* Instructions */}
                       {p.post_purchase_instructions && (
                         <div className="px-4 pb-3">
-                          <p className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800/60 rounded-xl p-3 leading-relaxed border border-gray-100 dark:border-gray-700/40">
+                          <p className="rounded-lg border border-black/[0.06] bg-[#FAF8F6] p-3 text-[12px] leading-relaxed text-black/55">
                             {p.post_purchase_instructions}
                           </p>
                         </div>
                       )}
 
-                      {/* Access button */}
-                      {accessUrl ? (
-                        <div className="px-4 pb-4">
+                      <div className="px-4 pb-4">
+                        {accessUrl ? (
                           <a
                             href={accessUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition shadow-md shadow-indigo-500/20"
+                            className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#16130F] py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-black"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            Access Product
-                            <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Access product
+                            <ArrowRight className="ml-auto h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                           </a>
-                        </div>
-                      ) : (
-                        <div className="px-4 pb-4">
+                        ) : (
                           <LibraryCta email={customerEmail} />
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -314,42 +305,42 @@ export default async function PaymentStatusPage({
             </div>
           )}
 
-          {/* Payment link success (no products) */}
+          {/* Payment-link success (no products) */}
           {products.length === 0 && sub && (
-            <div className="px-4 mb-4">
-              <div className="bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700/60 rounded-2xl p-4 text-center">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{itemName}</p>
-                <p className="text-xs text-gray-500">The creator has been notified of your payment.</p>
+            <div className="mb-5 px-6">
+              <div className="rounded-xl border border-black/[0.07] bg-[#FAF8F6] p-4 text-center">
+                <p className="mb-1 text-[13.5px] font-semibold text-[#16130F]">{itemName}</p>
+                <p className="font-ledger text-[11px] text-black/45">The creator has been notified of your payment.</p>
               </div>
             </div>
           )}
 
-          {/* Action buttons */}
-          <div className="px-4 pb-6 space-y-2.5 mt-2">
+          {/* Actions */}
+          <div className="space-y-2.5 px-6 pb-6">
             {receiptUrl && (
               <a
                 href={receiptUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-3 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-semibold rounded-xl transition"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-black/[0.1] py-3 text-[13.5px] font-semibold text-[#16130F] transition-colors hover:border-black/[0.25] hover:bg-[#FAF8F6]"
               >
-                <FileText className="w-4 h-4 text-gray-400" />
-                Download Receipt
+                <FileText className="h-4 w-4 text-black/40" />
+                Download receipt
               </a>
             )}
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 w-full py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold rounded-xl transition"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#FAF8F6] py-3 text-[13.5px] font-semibold text-black/55 transition-colors hover:bg-black/[0.05]"
             >
-              <Home className="w-4 h-4" />
-              Return to Homepage
+              <Home className="h-4 w-4" />
+              Return home
             </Link>
           </div>
 
-          {/* Order ID */}
-          <div className="px-6 pb-6 text-center">
-            <p className="text-xs text-gray-400 dark:text-gray-600">
-              Order <span className="font-mono">{internalOrderId.slice(0, 8)}…</span>
+          {/* Order id */}
+          <div className="border-t border-black/[0.06] px-6 py-4 text-center">
+            <p className="font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">
+              Order {internalOrderId.slice(0, 8)}
             </p>
           </div>
         </div>
@@ -357,38 +348,43 @@ export default async function PaymentStatusPage({
 
       {/* ── FAILED ── */}
       {status === 'failed' && (
-        <div className="w-full text-center px-6 py-8 space-y-5">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 shadow-lg shadow-red-500/10">
-            <XCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Payment Failed</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">We were unable to process your payment. No charges were made.</p>
+        <div className="w-full px-6 py-8">
+          <div className="text-center">
+            <StatusIcon type="failed" />
+            <h1 className="mb-1.5 text-[22px] font-bold tracking-[-0.02em] text-[#16130F]">Payment failed</h1>
+            <p className="text-[13.5px] font-medium text-black/50">We couldn&apos;t process your payment. No charges were made.</p>
           </div>
 
-          <div className="text-left bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 text-red-700 dark:text-red-400 text-xs space-y-2">
-            <p className="font-semibold text-sm">Common reasons:</p>
-            <ul className="list-disc pl-4 space-y-1">
-              <li>Insufficient funds or daily limit reached</li>
-              <li>Incorrect card details or expired card</li>
-              <li>Payment window closed before completing</li>
-              <li>Bank server timeout — try again in a minute</li>
+          <div className="mt-6 rounded-xl border border-[#E83A2E]/15 bg-[#E83A2E]/[0.05] p-4">
+            <p className="mb-2.5 font-ledger text-[10px] uppercase tracking-[0.16em] text-[#E83A2E]">Common reasons</p>
+            <ul className="space-y-1.5 text-[12.5px] text-black/55">
+              {[
+                'Insufficient funds or daily limit reached',
+                'Incorrect card details or expired card',
+                'Payment window closed before completing',
+                'Bank server timeout — try again in a minute',
+              ].map((r) => (
+                <li key={r} className="flex gap-2">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-black/25" />
+                  {r}
+                </li>
+              ))}
             </ul>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="mt-6 space-y-2.5">
             <Link
               href="/checkout"
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-500/20 text-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#E83A2E] py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#C92F24]"
             >
-              <RotateCcw className="w-4 h-4" />
-              Try Again
+              <RotateCcw className="h-4 w-4" />
+              Try again
             </Link>
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 font-semibold rounded-xl transition hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
+              className="flex w-full items-center justify-center rounded-lg border border-black/[0.1] py-3.5 text-[14px] font-semibold text-[#16130F] transition-colors hover:border-black/[0.25] hover:bg-[#FAF8F6]"
             >
-              Return Home
+              Return home
             </Link>
           </div>
         </div>
@@ -396,26 +392,22 @@ export default async function PaymentStatusPage({
 
       {/* ── PENDING ── */}
       {status === 'pending' && (
-        <div className="w-full text-center px-6 py-8 space-y-5">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-500/20 shadow-lg shadow-amber-500/10">
-            <Clock className="w-8 h-8 text-amber-600 dark:text-amber-400 animate-pulse" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Payment Processing</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-xs mx-auto">
-              We are verifying your payment with the bank. This usually takes a few seconds.
-            </p>
-          </div>
+        <div className="w-full px-6 py-8 text-center">
+          <StatusIcon type="pending" />
+          <h1 className="mb-1.5 text-[22px] font-bold tracking-[-0.02em] text-[#16130F]">Payment processing</h1>
+          <p className="mx-auto max-w-xs text-[13.5px] font-medium leading-relaxed text-black/50">
+            We&apos;re verifying your payment with the bank. This usually takes a few seconds.
+          </p>
 
           <Link
             href={`/payment/status?order_id=${order_id}${sub ? `&sub=${sub}` : ''}`}
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl transition shadow-lg shadow-indigo-500/20 text-sm"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#16130F] py-3.5 text-[14px] font-semibold text-white transition-colors hover:bg-black"
           >
-            <RotateCcw className="w-4 h-4" />
-            Refresh Status
+            <RotateCcw className="h-4 w-4" />
+            Refresh status
           </Link>
-          <p className="text-xs text-gray-400">
-            If you were charged, your access will be granted automatically.
+          <p className="mt-3 font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">
+            Access is granted automatically once confirmed
           </p>
         </div>
       )}
@@ -426,37 +418,31 @@ export default async function PaymentStatusPage({
 // ── Sub-components ───────────────────────────────────────────
 
 function Shell({ children, status }: { children: React.ReactNode; status: 'completed' | 'failed' | 'pending' }) {
-  const glowColor =
-    status === 'completed' ? 'from-emerald-500/10 via-transparent'
-    : status === 'failed' ? 'from-red-500/10 via-transparent'
-    : 'from-amber-500/10 via-transparent';
+  const rule =
+    status === 'completed' ? 'bg-emerald-500'
+    : status === 'failed' ? 'bg-[#E83A2E]'
+    : 'bg-amber-500';
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0A0A0F] p-4">
-      <div className="w-full max-w-md">
-        {/* Glow backdrop */}
-        <div className={`absolute inset-0 flex justify-center pointer-events-none`}>
-          <div className={`w-[600px] h-[600px] rounded-full bg-gradient-radial ${glowColor} blur-3xl opacity-60`} />
-        </div>
-
-        <div className="relative bg-white dark:bg-[#111118] border border-gray-200 dark:border-gray-800/80 rounded-3xl shadow-2xl shadow-black/10 dark:shadow-black/40 overflow-hidden">
-          {/* Top accent line */}
-          {status === 'completed' && (
-            <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500" />
-          )}
-          {status === 'failed' && (
-            <div className="h-1 w-full bg-gradient-to-r from-red-400 to-rose-500" />
-          )}
-          {status === 'pending' && (
-            <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-orange-400" />
-          )}
-
+    <div className="relative flex min-h-screen items-center justify-center bg-[#FAF8F6] px-4 py-10 text-[#16130F]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(22,19,15,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(22,19,15,0.025) 1px, transparent 1px)',
+          backgroundSize: '44px 44px',
+          WebkitMaskImage: 'radial-gradient(ellipse 90% 60% at 50% 0%, #000 0%, transparent 85%)',
+          maskImage: 'radial-gradient(ellipse 90% 60% at 50% 0%, #000 0%, transparent 85%)',
+        }}
+      />
+      <div className="relative w-full max-w-md">
+        <div className="overflow-hidden rounded-2xl border border-black/[0.07] bg-white shadow-[0_24px_70px_-40px_rgba(22,19,15,0.35)]">
+          <div className={`h-1 w-full ${rule}`} />
           {children}
         </div>
-
-        {/* Powered by */}
-        <p className="text-center text-xs text-gray-400 dark:text-gray-600 mt-4">
-          Secured by <span className="font-semibold">DigiOne</span> · Payments via Cashfree
+        <p className="mt-4 text-center font-ledger text-[10px] uppercase tracking-[0.16em] text-black/35">
+          Secured by DigiOne · Payments via Cashfree
         </p>
       </div>
     </div>
@@ -464,15 +450,15 @@ function Shell({ children, status }: { children: React.ReactNode; status: 'compl
 }
 
 function StatusIcon({ type }: { type: 'completed' | 'failed' | 'pending' }) {
-  const config = {
-    completed: { bg: 'bg-emerald-100 dark:bg-emerald-500/20', shadow: 'shadow-emerald-500/10', icon: <CheckCircle2 className="w-9 h-9 text-emerald-600 dark:text-emerald-400" /> },
-    failed:    { bg: 'bg-red-100 dark:bg-red-500/20', shadow: 'shadow-red-500/10', icon: <XCircle className="w-9 h-9 text-red-600 dark:text-red-400" /> },
-    pending:   { bg: 'bg-amber-100 dark:bg-amber-500/20', shadow: 'shadow-amber-500/10', icon: <Clock className="w-9 h-9 text-amber-600 dark:text-amber-400 animate-pulse" /> },
+  const icon = {
+    completed: <CheckCircle2 className="h-7 w-7 text-emerald-600" strokeWidth={1.8} />,
+    failed: <XCircle className="h-7 w-7 text-[#E83A2E]" strokeWidth={1.8} />,
+    pending: <Clock className="h-7 w-7 animate-pulse text-amber-600" strokeWidth={1.8} />,
   }[type];
 
   return (
-    <div className={`w-18 h-18 ${config.bg} rounded-full flex items-center justify-center shadow-lg ${config.shadow} mb-5`}>
-      {config.icon}
+    <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-black/[0.07] bg-[#FAF8F6]">
+      {icon}
     </div>
   );
 }

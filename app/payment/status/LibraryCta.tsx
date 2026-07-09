@@ -3,7 +3,7 @@
 // Post-purchase access CTA — replaces the old "creator will share access via
 // email" copy. Logged-in buyers go straight to the library; guests are nudged
 // to create a free account (email prefilled via the remembered-buyer-email key,
-// which the globally-mounted BuyerAuthModal reads).
+// which the globally-mounted BuyerAuthModal reads). Engineered-ledger styling.
 
 import Link from 'next/link';
 import { BookOpen, UserPlus, ArrowRight } from 'lucide-react';
@@ -21,11 +21,11 @@ export function LibraryCta({ email }: { email: string }) {
     return (
       <Link
         href="/account/library"
-        className="flex items-center justify-center gap-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition shadow-md shadow-indigo-500/20"
+        className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#E83A2E] py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-[#C92F24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/30"
       >
-        <BookOpen className="w-3.5 h-3.5" />
+        <BookOpen className="h-3.5 w-3.5" />
         Go to my library
-        <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+        <ArrowRight className="ml-auto h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
       </Link>
     );
   }
@@ -37,12 +37,12 @@ export function LibraryCta({ email }: { email: string }) {
         if (email) rememberBuyerEmail(email);
         openBuyerAuth('signup', '/account/library');
       }}
-      className="w-full text-left flex items-start gap-2.5 text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-xl px-3 py-2.5 hover:bg-indigo-100/70 dark:hover:bg-indigo-500/15 transition"
+      className="flex w-full items-start gap-2.5 rounded-lg border border-[#E83A2E]/15 bg-[#E83A2E]/[0.06] px-3.5 py-3 text-left text-[12.5px] font-medium transition-colors hover:bg-[#E83A2E]/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E83A2E]/20"
     >
-      <UserPlus className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-      <span>
+      <UserPlus className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#E83A2E]" />
+      <span className="leading-relaxed text-[#16130F]">
         <span className="font-semibold">Create a free account{email ? ` with ${email}` : ''}</span>{' '}
-        to keep lifetime access to your purchases.
+        <span className="text-black/55">to keep lifetime access to your purchases.</span>
       </span>
     </button>
   );
