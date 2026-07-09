@@ -8,11 +8,14 @@ import { createServiceClient } from '@/lib/supabase/service';
 import { fulfillOrder, fulfillPaymentLinkSubmission } from '@/lib/server/fulfillment';
 import {
   CheckCircle2, XCircle, Clock, RotateCcw,
-  Home, ExternalLink, Package, ArrowRight, FileText, BookOpen,
+  Home, Package, FileText,
 } from 'lucide-react';
 import Link from 'next/link';
+import { buildAccessLinks, type AccessLink } from '@/lib/shared/access-links';
 import { CartClearer } from './CartClearer';
 import { LibraryCta } from './LibraryCta';
+import { DeliveryLinks } from '@/components/store/DeliveryLinks';
+import { StatusFiles } from './StatusFiles';
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -76,12 +79,12 @@ function cfToDbStatus(cfStatus: string): 'completed' | 'failed' | 'pending' {
 }
 
 type ProductAccess = {
+  id: string;
   name: string;
   thumbnail_url: string | null;
-  product_link: string | null;
-  post_purchase_url: string | null;
   post_purchase_instructions: string | null;
   price: number;
+  links: AccessLink[];
 };
 
 // ── Page ─────────────────────────────────────────────────────
@@ -163,7 +166,7 @@ export default async function PaymentStatusPage({
         *,
         order_items(
           price_at_purchase,
-          products(name, thumbnail_url, product_link, post_purchase_url, post_purchase_instructions)
+          products(id, name, thumbnail_url, post_purchase_instructions, post_purchase_url, access_links)
         )
       `)
       .eq(col, order_id)
@@ -200,12 +203,12 @@ export default async function PaymentStatusPage({
           const p = Array.isArray(item.products) ? item.products[0] : item.products;
           return p
             ? {
+                id: p.id,
                 name: p.name,
                 thumbnail_url: p.thumbnail_url,
-                product_link: p.product_link,
-                post_purchase_url: p.post_purchase_url,
                 post_purchase_instructions: p.post_purchase_instructions,
                 price: Number(item.price_at_purchase) || 0,
+                links: buildAccessLinks({ postPurchaseUrl: p.post_purchase_url, accessLinks: p.access_links }),
               }
             : null;
         })
@@ -255,57 +258,38 @@ export default async function PaymentStatusPage({
                 <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
               </div>
               <div className="overflow-hidden rounded-xl border border-black/[0.07]">
-                {products.map((p, i) => {
-                  const accessUrl = p.post_purchase_url || p.product_link;
-                  return (
-                    <div key={i} className={i > 0 ? 'border-t border-black/[0.06]' : ''}>
-                      <div className="flex items-center gap-3 p-4">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-black/[0.07] bg-[#FAF8F6]">
-                          {p.thumbnail_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={p.thumbnail_url} alt={p.name} className="h-full w-full object-cover" />
-                          ) : (
-                            <Package className="h-4 w-4 text-black/25" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-[13.5px] font-semibold text-[#16130F]">{p.name}</p>
-                          <p className="font-ledger text-[11px] text-black/45">{formatINR(p.price)}</p>
-                        </div>
+                {products.map((p, i) => (
+                  <div key={i} className={i > 0 ? 'border-t border-black/[0.06]' : ''}>
+                    <div className="flex items-center gap-3 p-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-black/[0.07] bg-[#FAF8F6]">
+                        {p.thumbnail_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.thumbnail_url} alt={p.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <Package className="h-4 w-4 text-black/25" />
+                        )}
                       </div>
-
-                      {p.post_purchase_instructions && (
-                        <div className="px-4 pb-3">
-                          <p className="rounded-lg border border-black/[0.06] bg-[#FAF8F6] p-3 text-[12px] leading-relaxed text-black/55">
-                            {p.post_purchase_instructions}
-                          </p>
-                        </div>
-                      )}
-
-                      {accessUrl ? (
-                        <div className="px-4 pb-4">
-                          <a
-                            href={accessUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="group flex w-full items-center justify-center gap-2 rounded-lg bg-[#16130F] py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-black"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            Access product
-                            <ArrowRight className="ml-auto h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-                          </a>
-                        </div>
-                      ) : (
-                        <div className="px-4 pb-4">
-                          <p className="flex items-center gap-2 font-ledger text-[10px] uppercase tracking-[0.14em] text-black/40">
-                            <BookOpen className="h-3.5 w-3.5 text-emerald-600" strokeWidth={1.8} />
-                            Delivered to your library
-                          </p>
-                        </div>
-                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13.5px] font-semibold text-[#16130F]">{p.name}</p>
+                        <p className="font-ledger text-[11px] text-black/45">{formatINR(p.price)}</p>
+                      </div>
                     </div>
-                  );
-                })}
+
+                    {p.post_purchase_instructions && (
+                      <div className="px-4 pb-3">
+                        <p className="rounded-lg border border-black/[0.06] bg-[#FAF8F6] p-3 text-[12px] leading-relaxed text-black/55">
+                          {p.post_purchase_instructions}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Files (logged-in + access gated) + labelled links */}
+                    <div className="space-y-2.5 px-4 pb-4">
+                      <StatusFiles productId={p.id} />
+                      {p.links.length > 0 && <DeliveryLinks links={p.links} />}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
