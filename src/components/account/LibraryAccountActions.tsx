@@ -29,10 +29,16 @@ export default function LibraryAccountActions() {
       try {
         const res = await fetch('/api/account/claim-entitlements', { method: 'POST' });
         const data = await res.json();
-        if (res.ok && data.claimed > 0) router.refresh();
+        if (res.ok && data.claimed > 0) {
+          // useLibrary is a client-side query — invalidate it so newly-claimed
+          // purchases appear without a manual reload. router.refresh() only
+          // re-runs Server Components (none feed this query).
+          await queryClient.invalidateQueries({ queryKey: ['library', 'list'] });
+          router.refresh();
+        }
       } catch { /* non-blocking */ }
     })();
-  }, [isLoading, isLoggedIn, router]);
+  }, [isLoading, isLoggedIn, router, queryClient]);
 
   // Resolve current role to decide whether to show the upgrade card.
   useEffect(() => {
