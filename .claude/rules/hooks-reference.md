@@ -55,7 +55,7 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useProductPage(creatorId, slug)` | Single published product by slug — used on product pages |
 | `useStoreProducts(creatorId)` | All published products for a creator's storefront |
 | `useAbTests()` | `{ tests }` — A/B tests for the logged-in creator; resolves `profiles.id` and selects `products(name)` |
-| `useLibrary()` | Logged-in buyer's purchased products — reads user_product_access (RLS SELECT-own) joined to products; snapshot columns + `snapshot_metadata` keep deleted products accessible; returns `links[]` (`post_purchase_url` + `products.access_links`, deduped; snapshot fallback). Files minted on demand via `GET /api/deliverables/[productId]`. See `src/lib/shared/access-links.ts` + `src/components/store/DeliveryLinks.tsx` |
+| `useLibrary()` | Logged-in buyer's purchased products — reads user_product_access (RLS SELECT-own) joined to products; snapshot columns + `snapshot_metadata` keep deleted products accessible; returns `links[]` — the live product's links **merged** with the purchased `snapshot_metadata` (`mergeAccessLinks`: live wins per label, removed links retained, edits update in place) so a purchased link never disappears. Files minted on demand via `GET /api/deliverables/[productId]` (archive-aware: keeps files removed after purchase). See `src/lib/shared/access-links.ts` + `src/components/store/DeliveryLinks.tsx` |
 | `useGuestLeads(filterSiteId?)` | `{ leads }` — captured email leads, optionally filtered by site |
 | `useProfileQuery(creatorId?)` | `{ data: profile, isLoading, error }` — read-only profile |
 | `useProfileMutations()` | `{ updateProfile, setEmailVerified, setMobileVerified, isUpdating }` |

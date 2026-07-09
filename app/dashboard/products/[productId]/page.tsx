@@ -606,7 +606,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   <Field label="Post-Purchase URL" hint="Redirect buyers here after payment — e.g. a Google Drive link, Notion page, or your own page.">
                     <input type="url" value={formData.post_purchase_url || ''} onChange={(e) => patch({ post_purchase_url: e.target.value || null })} className={INPUT} placeholder="https://drive.google.com/file/..." />
                   </Field>
-                  <Field label="Additional access links" hint="Optional. Labelled links buyers receive after purchase — e.g. a course portal, Discord invite, or bonus pack. Add as many as you need.">
+                  <Field label="Additional access links" hint="Optional. Labelled links buyers receive after purchase — e.g. a course portal, Discord invite, or bonus pack. Removing a link keeps it for buyers who already purchased; only new buyers stop seeing it.">
                     <AccessLinksEditor links={accessLinks} onChange={(next) => patch({ access_links: next as unknown as Json })} />
                   </Field>
                   <Field label="Access Instructions" hint="Optional message shown to buyers on the payment success page.">

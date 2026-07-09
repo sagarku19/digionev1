@@ -610,6 +610,8 @@ Buyer-facing endpoint. Returns short-TTL signed download URLs by querying `stora
 
 **Access:** verifies a `user_product_access` row exists for `(auth user.id, productId)`. 403 if no row.
 
+**Archive/retention:** files are filtered `deleted_at IS NULL OR deleted_at > user_product_access.created_at` — the buyer keeps files that were live when they purchased, including ones the creator later **archived** (soft-deleted). Files removed before they bought are excluded. Deliverable files are archived (row soft-deleted, R2 object **kept**) when the product has buyers — see the `DELETE` on `/api/products/[productId]/files`; the R2 object is only hard-deleted for never-purchased products. Links follow the same never-disappear rule via `user_product_access.snapshot_metadata` (`access_links` + `post_purchase_url` + `description`) merged with the live product in `useLibrary` (`src/lib/shared/access-links.ts` `mergeAccessLinks`). A **permanent** product delete is still destructive (files 404).
+
 ```json
 // Success
 {

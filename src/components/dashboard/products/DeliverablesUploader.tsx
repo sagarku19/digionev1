@@ -137,7 +137,7 @@ export default function DeliverablesUploader({ productId }: { productId: string 
               <div className="w-9 h-9 rounded-[var(--radius-md)] bg-[var(--surface-muted)] border border-[var(--border)] flex items-center justify-center shrink-0"><FileIcon className="w-4 h-4 text-[var(--text-secondary)]" /></div>
               <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-[var(--text-primary)] truncate">{f.name}</p><p className="text-xs text-[var(--text-tertiary)]">{formatBytes(f.size)} · {new Date(f.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p></div>
               <button
-                onClick={async () => { if (await confirm({ title: 'Delete file?', description: `"${f.name}" will be permanently removed. Buyers will no longer be able to download it.`, confirmLabel: 'Delete', isDestructive: true })) deleteFile(f.id); }}
+                onClick={async () => { if (await confirm({ title: 'Remove file?', description: `"${f.name}" will be removed for new buyers. Buyers who already purchased keep their copy.`, confirmLabel: 'Remove', isDestructive: true })) deleteFile(f.id); }}
                 className="p-1.5 rounded-[var(--radius-md)] text-[var(--text-tertiary)] hover:text-[var(--danger)] hover:bg-[var(--danger-bg)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               ><Trash2 className="w-4 h-4" /></button>
             </div>
