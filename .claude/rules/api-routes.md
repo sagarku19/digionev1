@@ -134,7 +134,7 @@ Product checkout. Verifies prices server-side, creates an `orders` row, calls Ca
 
 ### `POST /api/checkout/payment-link`
 
-Custom-amount payment links for `payment_requests` sites. Does **not** auto-create a `payment_requests` row — the site must exist, be active (`is_active = true`), and have `site_type = 'payment'`; otherwise 404.
+Custom-amount payment links for `payment_requests` sites. The site must exist, be active (`is_active = true`), and have `site_type = 'payment'` — otherwise 404. If that valid site has no `payment_requests` row yet, one is **auto-created** on first use (the previous abuse hole — auto-creating for *arbitrary* siteIds — is closed by the site check).
 
 ```json
 // Request
@@ -328,7 +328,7 @@ All operations key on the creator's `profiles.id`, resolved via `resolveProfileI
 1. `profiles.id` resolved → else 404
 2. `amount` ≥ 100 (₹100 minimum) → else 400
 3. `creator_kyc.status === 'verified'` → else 403
-4. No in-flight payout: no existing `creator_payouts` row for the creator in `pending`/`processing` → else 409 (risk control — one payout at a time)
+4. No in-flight payout: no existing `creator_payouts` row for the creator in `pending`/`processing` → else 409 (risk control — one payout at a time). **DB-enforced** by the partial unique index `uq_creator_payouts_one_inflight_per_creator`: a concurrent request that races past this SELECT check hits a 23505 on insert, which the route maps back to 409 (releasing its `pending_payout` reservation).
 5. `payoutMethodId` belongs to the creator (`creator_payout_methods`) → else 400
 6. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout - frozen_balance` (shared `availableBalance()`, `src/lib/shared/balance.ts` — frozen refund/dispute holds are **not** withdrawable) ≥ `amount` → else 400
 7. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409

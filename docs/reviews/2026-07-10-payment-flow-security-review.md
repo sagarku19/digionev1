@@ -17,7 +17,7 @@ against the live test Supabase project (`qcendfisvyjnwmefruba`).
 ## How to run
 
 ```bash
-npm run test:integration     # 26 tests across 5 files, ~3.5 min (network-bound)
+npm run test:integration     # 37 tests across 7 files, ~5 min (network-bound)
 npm test                     # unchanged unit suite (148 tests)
 ```
 
@@ -33,11 +33,13 @@ Files:
 | File | What it proves |
 |---|---|
 | `test/integration/world.ts` | Seeding + teardown harness (creator/buyer/product/order/referral/payment-link) |
-| `fulfillment.integration.test.ts` | Credit path, idempotency, tax accrual, guest vs logged-in access, referral funding, payment-link fulfillment |
+| `fulfillment.integration.test.ts` | Credit path, idempotency, tax accrual, guest vs logged-in access, referral funding, coupon redemption, payment-link fulfillment |
 | `refund.integration.test.ts` | Freeze-then-settle, proportional fee reversal, access revoke, guardrails |
-| `payout.integration.test.ts` | Request guards (min/KYC/balance/in-flight), tax withholding, `settle_payout` success/fail |
+| `payout.integration.test.ts` | Request guards (min/KYC/balance/in-flight), concurrency race, tax withholding, `settle_payout` success/fail |
+| `payment-link.integration.test.ts` | `/api/checkout/payment-link` route: field/amount/site validation + pending submission creation |
 | `webhook-security.integration.test.ts` | HMAC signature gate + idempotent fulfillment via the real webhook route |
 | `checkout-security.integration.test.ts` | Server-side price verification, single-creator cart, free short-circuit |
+| `rls.integration.test.ts` | Cross-tenant isolation with anon / signed-in JWTs (orders, balances, ledger, access, revenue-write block) |
 
 ---
 
@@ -89,6 +91,29 @@ real behaviour (`total_earnings=1000` gross, `total_platform_fees=100` separatel
 
 ---
 
+### 4. [MEDIUM — FIXED] "One in-flight payout" was not atomic (TOCTOU)
+
+`/api/payouts/request` guards on a `SELECT` for an existing `pending`/`processing`
+payout, but that check-then-insert is a TOCTOU window. A concurrency test fired two
+simultaneous ₹100 requests for the same creator and **both returned 200** — two pending
+payouts. The optimistic `pending_payout` compare-and-set still prevents *over-withdrawal*
+(each request re-reads `pending_payout` and re-checks `available >= amount`, so the total
+can never exceed the balance), so this is a **risk-control** gap, not a money-loss bug —
+but the documented "one payout at a time" invariant was not actually enforced.
+
+**Fixed:** partial unique index `uq_creator_payouts_one_inflight_per_creator (creator_id)
+WHERE status IN ('pending','processing')` (migration `20260710000001…`), mirroring
+`uq_refunds_one_processing_per_order`. The route now maps the 23505 insert violation to
+409 and releases its reservation. The concurrency test now deterministically asserts one
+200 + one 409 and a single payout row.
+
+### 5. [LOW — FIXED] `api-routes.md` said payment-link "does not auto-create"
+
+The doc claimed `/api/checkout/payment-link` does **not** auto-create a `payment_requests`
+row. The route actually **does** auto-create one — but only after confirming the site is a
+valid, active `payment` site (the real fix for the old abuse hole was the site check, not
+removing the auto-create). Corrected the wording. Now covered by a payment-link route test.
+
 ## Constraint-drift sweep (follow-up)
 
 Prompted by finding #1, I audited **all 33 enum-style CHECK constraints** in `public`
@@ -139,18 +164,14 @@ One **doc** inaccuracy found and fixed: `money-path.md` §9 said tax rows are in
 
 ## Not covered (honest scope boundaries → recommended next)
 
-- **Live Cashfree calls** are stubbed (refund gateway) or not exercised (order creation,
-  payout transfer + beneficiary creation, `/payment/status` reconciliation polling). These
-  need a real sandbox + a real completed payment. The **Cashfree Payouts webhook signature**
-  and `/api/admin/payouts/[id]/approve` are not integration-tested here.
-- **RLS boundaries** (anon/creator/buyer isolation) — these tests use the service role by
-  design; RLS is a separate surface worth its own suite (attempt cross-tenant reads/writes
-  with anon + a creator JWT).
-- **Payout optimistic-concurrency race** — only the one-in-flight guard is tested; the
-  `pending_payout` compare-and-set collision (409) isn't forced as a true race.
-- **Coupon redemption at fulfillment** — not asserted (no coupon seeded).
-- **`/api/checkout/payment-link` route** (custom-amount submission creation) — only the
-  downstream `fulfillPaymentLinkSubmission` is covered.
+- **Live Cashfree calls** are stubbed (refund gateway, order/payment-link create) or not
+  exercised (payout transfer + beneficiary creation, `/payment/status` reconciliation
+  polling). These need a real sandbox + a real completed payment. The **Cashfree Payouts
+  webhook signature** and `/api/admin/payouts/[id]/approve` are not integration-tested here.
+
+> Follow-up (2026-07-10, same review): RLS cross-tenant isolation, the payout concurrency
+> race, coupon redemption, and the `/api/checkout/payment-link` route are **now covered**
+> (see the file table above). The concurrency work surfaced + fixed finding #4.
 
 ---
 
@@ -159,6 +180,10 @@ One **doc** inaccuracy found and fixed: `money-path.md` §9 said tax rows are in
 | File | Change |
 |---|---|
 | `supabase/migrations/20260710000000_fix_payment_submissions_status_check.sql` | **New** — fixes finding #1 (applied to the test project) |
+| `supabase/migrations/20260710000001_one_inflight_payout_per_creator.sql` | **New** — fixes finding #4 (partial unique index; applied to the test project) |
+| `src/lib/server/fulfillment.ts` | Skip ₹0 ledger insert (finding #2) |
+| `app/api/payouts/request/route.ts` | Map the in-flight unique-violation to 409 + release reservation (finding #4) |
+| `docs/db/money-path.md`, `.claude/rules/api-routes.md` | Doc-drift fixes (findings #3, #5, and payout-index note) |
 | `vitest.integration.config.ts` | **New** — integration runner (own `@/` path resolver, sequential, DB timeouts) |
 | `package.json` | Added `test:integration` script |
-| `test/integration/**` | **New** — setup, world harness, 5 test files (26 tests) |
+| `test/integration/**` | **New** — setup, world harness, 7 test files (37 tests) |
