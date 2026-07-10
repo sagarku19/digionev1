@@ -63,28 +63,33 @@ export async function fulfillOrder(
     console.error('[fulfillment] order has no creator_id and no metadata.creator_profile_id — needs reconciliation:', orderId);
   }
 
-  // 3. Ledger row — deterministic hash makes replays unique-violation no-ops
-  const recordHash = crypto
-    .createHash('sha256')
-    .update(`${orderId}:${opts?.gatewayPaymentId ?? 'free'}`)
-    .digest('hex');
+  // 3. Ledger row — deterministic hash makes replays unique-violation no-ops.
+  // Skipped for ₹0 orders: transaction_ledger enforces amount > 0 (a free order
+  // moves no money, so there's nothing to record). Replay safety still holds via
+  // the atomic order claim above.
+  if (total > 0) {
+    const recordHash = crypto
+      .createHash('sha256')
+      .update(`${orderId}:${opts?.gatewayPaymentId ?? 'free'}`)
+      .digest('hex');
 
-  const { error: ledgerErr } = await db.from('transaction_ledger').insert({
-    creator_id: creatorId,
-    order_id: orderId,
-    amount: total,
-    direction: 'credit',
-    tx_type: 'sale',
-    currency: 'INR',
-    record_hash: recordHash,
-    meta: {
-      platform_fee: platformFee,
-      net_amount: creatorProceeds,
-      ...(creatorId ? {} : { needs_reconciliation: true }),
-    },
-  });
-  if (ledgerErr) {
-    console.error('[fulfillment] ledger insert failed for order', orderId, ledgerErr.message);
+    const { error: ledgerErr } = await db.from('transaction_ledger').insert({
+      creator_id: creatorId,
+      order_id: orderId,
+      amount: total,
+      direction: 'credit',
+      tx_type: 'sale',
+      currency: 'INR',
+      record_hash: recordHash,
+      meta: {
+        platform_fee: platformFee,
+        net_amount: creatorProceeds,
+        ...(creatorId ? {} : { needs_reconciliation: true }),
+      },
+    });
+    if (ledgerErr) {
+      console.error('[fulfillment] ledger insert failed for order', orderId, ledgerErr.message);
+    }
   }
 
   // 3b. Phase 5 — accrue immutable per-sale tax (no balance change; RPC is idempotent). Non-fatal.
