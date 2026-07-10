@@ -3,6 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useOrders, useRefundOrder, useOrderRefundInfo, type Order } from '@/hooks/commerce/useOrders';
+import { useEarnings } from '@/hooks/commerce/useEarnings';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -10,15 +11,42 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   ShoppingBag, CheckCircle2, XCircle, Clock, Search,
   ChevronRight, X, Package, Mail, Phone, Calendar,
-  Download, TrendingUp, RotateCcw, FileDown, FileText,
+  Download, TrendingUp, RotateCcw, FileDown, FileText, Copy, Check,
 } from 'lucide-react';
 import { formatINR } from '@/lib/format';
 import { computeRefundSplit } from '@/lib/shared/refund-math';
+import { orderRef, matchesOrderRef } from '@/lib/shared/order-ref';
 import { useDownloadSaleInvoice } from '@/hooks/commerce/useInvoices';
 
+// Middle-truncate a long gateway/payment id so it fits one line but stays recognisable.
+function shortenMiddle(s: string, head = 10, tail = 5) {
+  return s.length <= head + tail + 1 ? s : `${s.slice(0, head)}…${s.slice(-tail)}`;
+}
+
+function CopyableValue({ display, copy }: { display: string; copy: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center gap-1.5 min-w-0">
+      <span className="font-mono text-xs text-[var(--text-primary)] truncate">{display}</span>
+      <button
+        onClick={() => {
+          navigator.clipboard?.writeText(copy);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }}
+        title="Copy"
+        className="shrink-0 p-1 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      >
+        {copied ? <Check className="w-3 h-3 text-[var(--success)]" /> : <Copy className="w-3 h-3" />}
+      </button>
+    </div>
+  );
+}
+
 function exportOrdersCSV(orders: ReturnType<typeof useOrders>['orders']) {
-  const header = ['Order ID', 'Customer Name', 'Customer Email', 'Customer Phone', 'Amount', 'Status', 'Products', 'Date'];
+  const header = ['DO Code', 'Order ID', 'Customer Name', 'Customer Email', 'Customer Phone', 'Amount', 'Status', 'Products', 'Date'];
   const rows = orders.map(o => [
+    orderRef(o.id),
     o.id,
     o.customer_name ?? '',
     o.customer_email ?? '',
@@ -69,6 +97,8 @@ function StatusBadge({ status }: { status: string }) {
 function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) {
   const { data: info, isLoading } = useOrderRefundInfo(order.id);
   const refundOrder = useRefundOrder();
+  const { creatorBalances } = useEarnings();
+  const availableBal = creatorBalances?.available_balance ?? 0;
   const [amountStr, setAmountStr] = useState('');
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
@@ -87,6 +117,8 @@ function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) 
       previewError = e instanceof Error ? e.message : 'Invalid amount';
     }
   }
+
+  const insufficientBalance = !!preview && preview.netClawback > availableBal;
 
   const blocked = isLoading || !info?.hasLedger || info?.hasProcessing || remaining < 1;
   const blockedMessage = !isLoading && info
@@ -150,11 +182,16 @@ function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) 
               deducted from your balance. The {formatINR(preview.feeReversed)} platform fee on this portion is returned.
             </p>
           )}
+          {insufficientBalance && preview && (
+            <p className="text-xs text-[var(--danger)]">
+              Your available balance ({formatINR(availableBal)}) can’t cover the {formatINR(preview.netClawback)} clawback on this refund. Reduce the amount or contact support.
+            </p>
+          )}
           {previewError && <p className="text-xs text-[var(--danger)]">{previewError}</p>}
           {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
           <button
             onClick={() => setConfirmOpen(true)}
-            disabled={!preview || refundOrder.isPending}
+            disabled={!preview || insufficientBalance || refundOrder.isPending}
             className="w-full py-2.5 bg-[var(--danger)] hover:opacity-90 text-[var(--text-on-brand)] font-semibold rounded-[var(--radius-sm)] transition text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
             {refundOrder.isPending ? 'Processing…' : `Refund ${Number.isFinite(amount) ? formatINR(amount) : ''}`}
@@ -188,7 +225,7 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
         <div className="sticky top-0 bg-[var(--surface)] border-b border-[var(--border)] px-6 py-4 flex items-center justify-between z-10">
           <div>
             <p className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Order</p>
-            <p className="font-mono text-sm text-[var(--text-primary)] font-semibold">{order.id.slice(0, 8)}…</p>
+            <p className="font-mono text-sm text-[var(--text-primary)] font-semibold">{orderRef(order.id)}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
             <X className="w-5 h-5" />
@@ -255,18 +292,32 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
           <div className="space-y-2">
             <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Details</p>
             <div className="divide-y divide-[var(--border-subtle)]">
-              {[
-                { label: 'Order ID', value: order.id },
-                { label: 'Gateway ID', value: order.gateway_order_id ?? '—' },
-                { label: 'Payment ID', value: order.gateway_payment_id ?? '—' },
-                { label: 'Date', value: new Date(order.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) },
-                ...(order.payment_verified_at ? [{ label: 'Verified At', value: new Date(order.payment_verified_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }] : []),
-              ].map(({ label, value }) => (
-                <div key={label} className="flex justify-between py-2.5 text-sm">
-                  <span className="text-[var(--text-secondary)]">{label}</span>
-                  <span className="font-mono text-xs text-[var(--text-primary)] text-right max-w-[200px] truncate">{value}</span>
+              <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="text-[var(--text-secondary)] shrink-0">Order ID</span>
+                <CopyableValue display={orderRef(order.id)} copy={orderRef(order.id)} />
+              </div>
+              <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="text-[var(--text-secondary)] shrink-0">Gateway ID</span>
+                {order.gateway_order_id
+                  ? <CopyableValue display={shortenMiddle(order.gateway_order_id)} copy={order.gateway_order_id} />
+                  : <span className="font-mono text-xs text-[var(--text-tertiary)]">—</span>}
+              </div>
+              <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="text-[var(--text-secondary)] shrink-0">Payment ID</span>
+                {order.gateway_payment_id
+                  ? <CopyableValue display={shortenMiddle(order.gateway_payment_id)} copy={order.gateway_payment_id} />
+                  : <span className="font-mono text-xs text-[var(--text-tertiary)]">{order.status === 'pending' ? 'Awaiting payment' : '—'}</span>}
+              </div>
+              <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span className="text-[var(--text-secondary)] shrink-0">Date</span>
+                <span className="font-mono text-xs text-[var(--text-primary)] text-right">{new Date(order.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              {order.payment_verified_at && (
+                <div className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                  <span className="text-[var(--text-secondary)] shrink-0">Verified At</span>
+                  <span className="font-mono text-xs text-[var(--text-primary)] text-right">{new Date(order.payment_verified_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -326,7 +377,8 @@ export default function OrdersPage() {
     const matchSearch = !q
       || o.customer_email?.toLowerCase().includes(q)
       || o.customer_name?.toLowerCase().includes(q)
-      || o.id.includes(q);
+      || o.id.includes(q)
+      || matchesOrderRef(o.id, search);
     const orderDate = o.created_at.split('T')[0];
     const matchFrom = !dateFrom || orderDate >= dateFrom;
     const matchTo = !dateTo || orderDate <= dateTo;

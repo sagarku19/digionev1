@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { PrintButton } from './PrintButton';
 import { DownloadInvoiceButton } from './DownloadInvoiceButton';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
+import { orderRef } from '@/lib/shared/order-ref';
 
 export const revalidate = 0;
 
@@ -36,6 +37,7 @@ export default async function ReceiptPage({
     customerEmail: '',
     itemName: 'Digital Product / Service',
     orderId: order_id,
+    refNo: '',
   };
 
   if (sub) {
@@ -73,6 +75,7 @@ export default async function ReceiptPage({
       customerEmail: submission.customer_email || '',
       itemName: title,
       orderId: submission.gateway_order_id || order_id,
+      refNo: orderRef(submission.id),
     };
   } else {
     // Standard Checkout Order — order_id can be a UUID or a gateway order id (ord_...)
@@ -108,6 +111,7 @@ export default async function ReceiptPage({
       customerEmail: buyerEmail,
       itemName: itemNames || 'Digital Products',
       orderId: order.id,
+      refNo: orderRef(order.id),
     };
   }
 
@@ -129,7 +133,7 @@ export default async function ReceiptPage({
             </div>
             <div className="text-right">
               <p className="mb-1 font-ledger text-[9px] uppercase tracking-[0.16em] text-black/35">Receipt no.</p>
-              <p className="break-all font-ledger text-[12px] text-[#16130F]">{details.orderId}</p>
+              <p className="break-all font-ledger text-[12px] text-[#16130F]">{details.refNo}</p>
               <p className="mt-1.5 font-ledger text-[11px] text-black/45">{details.date}</p>
             </div>
           </div>
