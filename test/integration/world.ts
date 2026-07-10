@@ -22,12 +22,31 @@ export function serviceClient(): SupabaseClient<Database> {
   );
 }
 
+// Anon (RLS-enforced) client — used by the isolation tests to prove policies hold.
+export function anonClient(): SupabaseClient<Database> {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
+
+// A client authenticated as a seeded user — subsequent queries run under that user's
+// JWT, so RLS applies exactly as it would in the app.
+export async function signInAs(email: string, password: string): Promise<SupabaseClient<Database>> {
+  const c = anonClient();
+  const { error } = await c.auth.signInWithPassword({ email, password });
+  if (error) throw new Error(`signInAs(${email}) failed: ${error.message}`);
+  return c;
+}
+
 const short = () => crypto.randomUUID().slice(0, 8);
 
 export interface SeededUser {
   authId: string;
   profileId: string;
   email: string;
+  password: string;
 }
 
 export interface SeededOrder {
@@ -47,12 +66,14 @@ export class World {
   private paymentRequestIds: string[] = [];
   private submissionIds: string[] = [];
   private referralCodeIds: string[] = [];
+  private couponIds: string[] = [];
 
   async createUser(role: 'creator' | 'buyer'): Promise<SeededUser> {
     const email = `pf-int-${role}-${this.runId}-${short()}@example.test`;
+    const password = `Pw-${crypto.randomUUID()}`;
     const { data, error } = await this.db.auth.admin.createUser({
       email,
-      password: crypto.randomUUID(),
+      password,
       email_confirm: true,
       user_metadata: { role, full_name: `Test ${role}` },
     });
@@ -67,7 +88,37 @@ export class World {
       .maybeSingle();
     if (pErr || !profile) throw new Error(`profile not created by trigger for ${authId}: ${pErr?.message}`);
     this.profileIds.push(profile.id);
-    return { authId, profileId: profile.id, email };
+    return { authId, profileId: profile.id, email, password };
+  }
+
+  async createCoupon(creatorId: string, opts?: { percent?: number; maxUses?: number | null }): Promise<string> {
+    const { data, error } = await this.db
+      .from('coupons')
+      .insert({
+        creator_id: creatorId,
+        code: `CPN${this.runId}${short()}`.toUpperCase().slice(0, 20),
+        discount_type: 'percentage',
+        discount_value: opts?.percent ?? 10,
+        current_uses: 0,
+        max_uses: opts?.maxUses ?? null,
+        is_active: true,
+      })
+      .select('id')
+      .single();
+    if (error || !data) throw new Error(`createCoupon failed: ${error?.message}`);
+    this.couponIds.push(data.id);
+    return data.id;
+  }
+
+  async createPaymentSite(creatorId: string): Promise<string> {
+    const { data: site, error } = await this.db
+      .from('sites')
+      .insert({ creator_id: creatorId, site_type: 'payment', slug: `pay-${this.runId}-${short()}`, is_active: true })
+      .select('id')
+      .single();
+    if (error || !site) throw new Error(`createPaymentSite failed: ${error?.message}`);
+    this.siteIds.push(site.id);
+    return site.id;
   }
 
   async createProduct(creatorId: string, opts?: { price?: number; published?: boolean; name?: string }): Promise<string> {
@@ -190,17 +241,11 @@ export class World {
   }
 
   async createPaymentLinkSubmission(creatorId: string, amount: number): Promise<{ submissionId: string; gatewayOrderId: string }> {
-    const { data: site, error: sErr } = await this.db
-      .from('sites')
-      .insert({ creator_id: creatorId, site_type: 'payment', slug: `pay-${this.runId}-${short()}`, is_active: true })
-      .select('id')
-      .single();
-    if (sErr || !site) throw new Error(`site insert failed: ${sErr?.message}`);
-    this.siteIds.push(site.id);
+    const siteId = await this.createPaymentSite(creatorId);
 
     const { data: pr, error: prErr } = await this.db
       .from('payment_requests')
-      .insert({ site_id: site.id, title: 'Int Test Payment' })
+      .insert({ site_id: siteId, title: 'Int Test Payment' })
       .select('id')
       .single();
     if (prErr || !pr) throw new Error(`payment_requests insert failed: ${prErr?.message}`);
@@ -267,6 +312,15 @@ export class World {
       await swallow(db.from('creator_payout_methods').delete().in('creator_id', this.profileIds));
       await swallow(db.from('subscriptions').delete().in('creator_id', this.profileIds));
       await swallow(db.from('creator_kyc').delete().in('creator_id', this.profileIds));
+      await swallow(db.from('coupons').delete().in('creator_id', this.profileIds));
+    }
+    // Payment-link rows may be created by a route under test (not tracked by id),
+    // so clear them by their tracked site first.
+    if (this.siteIds.length) {
+      const { data: prs } = await db.from('payment_requests').select('id').in('site_id', this.siteIds);
+      const prIds = (prs ?? []).map((r) => r.id);
+      if (prIds.length) await swallow(db.from('payment_submissions').delete().in('payment_request_id', prIds));
+      await swallow(db.from('payment_requests').delete().in('site_id', this.siteIds));
     }
     if (this.submissionIds.length) await swallow(db.from('payment_submissions').delete().in('id', this.submissionIds));
     if (this.paymentRequestIds.length) await swallow(db.from('payment_requests').delete().in('id', this.paymentRequestIds));

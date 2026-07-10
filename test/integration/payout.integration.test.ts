@@ -88,6 +88,21 @@ describe.skipIf(!hasCreds())('payouts — request guards + settlement', () => {
     expect(String(second.body.error)).toMatch(/in progress/i);
   });
 
+  it('serializes concurrent payout requests — exactly one succeeds, the other 409s', async () => {
+    const creator = await creatorWithBalance(world, 1000); // available 900
+    authState.user = { id: creator.authId, email: creator.email };
+
+    const [a, b] = await Promise.all([callPayout(100), callPayout(100)]);
+    expect([a.status, b.status].sort()).toEqual([200, 409]);
+
+    // The optimistic pending_payout guard / in-flight check ensures a single payout row.
+    const { count } = await world.db
+      .from('creator_payouts')
+      .select('*', { count: 'exact', head: true })
+      .eq('creator_id', creator.profileId);
+    expect(count).toBe(1);
+  });
+
   it('settle_payout(success) pays the net, releases the reservation, settles tax and writes a ledger debit', async () => {
     const creator = await creatorWithBalance(world, 1000);
 

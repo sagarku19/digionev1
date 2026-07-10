@@ -218,6 +218,29 @@ describe.skipIf(!hasCreds())('fulfillment — money credit + idempotency', () =>
     expect(Number(refLedger![0].amount)).toBe(50);
   });
 
+  it('redeems the coupon (increments current_uses) when the order carries a coupon_id', async () => {
+    const creator = await world.createUser('creator');
+    await world.setKyc(creator.profileId, { panLast4: '4242' });
+    const productId = await world.createProduct(creator.profileId, { price: 1000 });
+    const couponId = await world.createCoupon(creator.profileId, { percent: 10 });
+    const { orderId } = await world.createPendingOrder({
+      creatorId: creator.profileId,
+      productId,
+      price: 900, // 10% off — the route already computed the discounted total
+      email: `buyer-${world.runId}@example.test`,
+      couponId,
+    });
+
+    await fulfillOrder(orderId, { gatewayPaymentId: `cfpay_${world.runId}_c` });
+
+    const { data: coupon } = await world.db
+      .from('coupons')
+      .select('current_uses')
+      .eq('id', couponId)
+      .single();
+    expect(coupon?.current_uses).toBe(1);
+  });
+
   it('fulfillPaymentLinkSubmission credits the creator resolved via site ownership', async () => {
     const creator = await world.createUser('creator');
     await world.setKyc(creator.profileId, { panLast4: '4242' });
