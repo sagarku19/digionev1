@@ -422,11 +422,11 @@ The split is recorded in `tax_transactions` at fulfillment. The balance formula 
 **At sale (`fulfillOrder`):** `record_sale_tax` RPC snapshots an immutable `tax_transactions` row:
 - commission split (net fee / GST-on-commission)
 - pending TDS and TCS amounts (₹0 until the respective thresholds are met)
-- `status = 'pending'`
+- `status = 'posted'` (the `tax_transactions_status_check` constraint only allows `posted`/`reversed`; "unsettled" is tracked by the `settled` boolean + `settling_payout_id`, not by the status)
 
 No balance columns change at this point.
 
-**At payout (`begin_payout_tax`):** sums all unsettled `pending` `tax_transactions` rows (net of `reversed` counter-rows) to compute `tds_withheld`, `tcs_withheld`, and `net_amount = amount − tds_withheld − tcs_withheld`. These three values are stored on the `creator_payouts` row. The Cashfree transfer uses `net_amount`; the withheld amounts are remitted to the government by DigiOne.
+**At payout (`begin_payout_tax`):** sums all unsettled `posted` `tax_transactions` rows (net of `reversed` counter-rows) to compute `tds_withheld`, `tcs_withheld`, and `net_amount = amount − tds_withheld − tcs_withheld`. These three values are stored on the `creator_payouts` row. The Cashfree transfer uses `net_amount`; the withheld amounts are remitted to the government by DigiOne.
 
 **At payout settlement (`settle_payout`):** marks the associated `tax_transactions` rows `settled`.
 

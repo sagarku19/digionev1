@@ -89,6 +89,25 @@ real behaviour (`total_earnings=1000` gross, `total_platform_fees=100` separatel
 
 ---
 
+## Constraint-drift sweep (follow-up)
+
+Prompted by finding #1, I audited **all 33 enum-style CHECK constraints** in `public`
+against the literal values the code actually writes (`notifications.type`,
+`orders.status`, `refunds.status`, `creator_payouts.status`, `payment_submissions.
+payment_status`, `tax_transactions.status`, `subscriptions.status`, `creator_kyc.status`,
+`creator_payout_methods.status`, `order_referrals.status`, `wallet_frozen_logs.*`,
+`preferred_payout_method`, …).
+
+**Result: no further code-vs-constraint mismatches.** Every status/type/enum value written
+by the app is within its constraint (`creator_payouts` correctly includes `processing`/
+`reversed`; `notifications.type` only writes `sale`/`refund`; `preferred_payout_method`
+is forced to `bank`/`upi`; etc.). The payment-link `completed` case (finding #1) was the
+only real drift.
+
+One **doc** inaccuracy found and fixed: `money-path.md` §9 said tax rows are inserted
+`status = 'pending'`, but `record_sale_tax` inserts `'posted'` (the constraint only allows
+`posted`/`reversed`; "unsettled" is the `settled` boolean). Corrected.
+
 ## Security properties confirmed solid (each backed by a passing test)
 
 - **Webhook is the only door, and it's locked.** Missing signature → 401; forged signature
