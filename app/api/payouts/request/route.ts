@@ -139,6 +139,22 @@ export async function POST(req: Request) {
       .single();
 
     if (payoutError || !payout) {
+      // Release the reservation we just made so a failed insert never strands
+      // pending_payout (guarded so we don't clobber a concurrent change).
+      await supabaseAdmin
+        .from('creator_balances')
+        .update({ pending_payout: balanceData.pending_payout })
+        .eq('creator_id', profileId)
+        .eq('pending_payout', newPending);
+
+      // 23505 = uq_creator_payouts_one_inflight_per_creator — a concurrent request
+      // won the race for the single in-flight slot. Report it as the in-flight 409.
+      if (payoutError?.code === '23505') {
+        return NextResponse.json(
+          { error: 'You already have a payout in progress. Wait for it to complete before requesting another.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json({ error: 'Failed to record payout ledger.' }, { status: 500 });
     }
 
