@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "update-types": "npx supabase gen types typescript --project-id qcendfisvyjnwmefruba > types/database.types.ts",
     "assets:migrate-stock": "node --env-file=.env.local scripts/upload-platform-assets.mjs migrate-stock",
     "assets:seed-stock": "node --env-file=.env.local scripts/upload-platform-assets.mjs seed-stock",
