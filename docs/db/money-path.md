@@ -152,15 +152,15 @@ If `claimed` is null, the order was already processed (by a concurrent webhook r
 ### Step 2 — Credit creator balance
 
 ```ts
-// fulfillment.ts:50-54
+// fulfillment.ts:53-58
 await db.rpc('credit_creator_balance', {
   p_creator_id: creatorId,
-  p_earnings_delta: creatorProceeds,   // total − platformFee
+  p_earnings_delta: total,        // GROSS — availableBalance() subtracts the fee
   p_fees_delta:     platformFee,
 });
 ```
 
-The platform fee rate is 10% (`DEFAULT_PLATFORM_FEE_RATE = 0.10` in `src/lib/server/platform-fee.ts`). `credit_creator_balance` is an atomic Postgres RPC — no read-modify-write race on the balance row.
+`total_earnings` holds the **GROSS** sale amount (fixed 2026-07-04 — it previously credited net, double-counting the fee); `availableBalance()` subtracts `total_platform_fees`. The fee rate comes from `getPlatformFeeRate(creatorId)` in `src/lib/server/platform-fee.ts` (the creator's active-subscription rate, failing safe to the Free `0.10`) — no longer a hardcoded constant. `credit_creator_balance` is an atomic Postgres RPC — no read-modify-write race on the balance row.
 
 ### Step 3 — Transaction ledger row
 
