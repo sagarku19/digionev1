@@ -22,6 +22,7 @@ import { usePayoutTaxPreview, useTaxSummary, useAddGstin } from '@/hooks/commerc
 import { useCommissionMonths, useDownloadCommissionInvoice } from '@/hooks/commerce/useInvoices';
 import { useStatementYears, useDownloadAnnualStatement } from '@/hooks/commerce/useStatements';
 import { isValidGstin } from '@/lib/shared/gstin';
+import { MIN_PAYOUT_INR } from '@/lib/server/payout-policy';
 
 export default function EarningsPage() {
   const { creatorBalances, payouts, kyc, isLoading, requestPayout, isRequestingPayout } = useEarnings();
@@ -35,6 +36,9 @@ export default function EarningsPage() {
 
   const isKycVerified = kyc?.status === 'verified';
   const available = creatorBalances?.available_balance ?? 0;
+  // Withdrawable can never be negative — a creator whose frozen/refund holds exceed
+  // their balance is over-committed, not "owed a negative payout". Clamp the KPI.
+  const withdrawable = Math.max(0, available);
   const pending = creatorBalances?.pending_payout ?? 0;
   const totalEarnings = creatorBalances?.total_earnings ?? 0;
   const totalPaidOut = creatorBalances?.total_paid_out ?? 0;
@@ -123,7 +127,7 @@ export default function EarningsPage() {
   ) : (
     <button
       onClick={openDrawer}
-      disabled={available <= 0 || isLoading}
+      disabled={available < MIN_PAYOUT_INR || isLoading}
       className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--text-on-brand)] px-5 py-2.5 rounded-[var(--radius-sm)] font-semibold shadow-[var(--shadow-xs)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
     >
       <ArrowUpRight size={16} />
@@ -239,7 +243,7 @@ export default function EarningsPage() {
                     <span className="text-xs font-semibold text-[var(--text-on-brand)]/70 uppercase tracking-wider">Available</span>
                     <Wallet size={16} className="text-[var(--text-on-brand)]/70" />
                   </div>
-                  <p className="text-3xl font-bold tracking-tight tabular-nums mb-1">{formatINRCompact(available)}</p>
+                  <p className="text-3xl font-bold tracking-tight tabular-nums mb-1">{formatINRCompact(withdrawable)}</p>
                   <p className="text-xs text-[var(--text-on-brand)]/70">Ready to withdraw</p>
                 </div>
               </div>
