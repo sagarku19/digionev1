@@ -104,3 +104,10 @@ for updating kyc or bank details user neeeds to first verify mobile numbers.
 2 all the slug page
 update dashboard
 linkshortener
+insatautomation
+other automation tools
+
+
+dashboard profile updates and also libray of daahbaord
+
+done - create some tests and check complete payment flow from buying a product and till the payout and everything around it. and also security around it.

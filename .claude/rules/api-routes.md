@@ -330,7 +330,7 @@ All operations key on the creator's `profiles.id`, resolved via `resolveProfileI
 3. `creator_kyc.status === 'verified'` → else 403
 4. No in-flight payout: no existing `creator_payouts` row for the creator in `pending`/`processing` → else 409 (risk control — one payout at a time)
 5. `payoutMethodId` belongs to the creator (`creator_payout_methods`) → else 400
-6. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout` ≥ `amount` → else 400
+6. Available balance = `total_earnings - total_platform_fees - total_paid_out - pending_payout - frozen_balance` (shared `availableBalance()`, `src/lib/shared/balance.ts` — frozen refund/dispute holds are **not** withdrawable) ≥ `amount` → else 400
 7. Optimistic concurrency: `creator_balances.pending_payout` matches the value just read → else 409
 
 **On success:** `pending_payout += amount`, inserts `creator_payouts` row with `status: 'pending'`, `currency: 'INR'`, and `payout_method_id` linked to the chosen `creator_payout_methods` row.

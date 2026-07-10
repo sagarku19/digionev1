@@ -57,6 +57,13 @@ Build in this order (each is a vertical slice: DB reads via RLS, writes via serv
 2. **Payout approval queue** — the Phase 1 flow, **migrated** out of DigiOne: list `creator_payouts`, Approve
    (beneficiary → transfer), Reject (pending-only), Sync statuses. Reuses `settle_payout`, `cashfree-payouts`.
 3. **Refunds / disputes console** — Phase 4 (Cashfree refund API + ledger reversal + `frozen_balance` clawback).
+   **Decision (2026-07-10):** refunds move **entirely to admin**, triggered on a buyer **dispute** — creators do
+   **not** self-refund. The creator-facing self-refund path in DigiOne (`RefundPanel` in
+   `app/dashboard/orders/page.tsx` + `POST /api/refunds/create`) is slated for **removal** (see §6). Because of
+   that, the server-side "block a creator refund when `available_balance` < clawback" guard is intentionally
+   **not** built in DigiOne — it's moot once creators can't self-refund. The guard that exists there today is
+   **UI-only** (disables the refund button, `orders/page.tsx` `RefundPanel`, via `useEarnings`) and is fine as an
+   interim. The `initiateRefund` / `begin_refund` / `settle_refund` primitives stay — the admin console reuses them.
 4. **Ledger + balance viewer** — read `transaction_ledger`, `creator_balances`, `balance_reconciliation_log`;
    run `reconcile_creator_balances()`; investigate drift. Also the payout reconcile ("Sync") lives here.
 5. **Creator management** — search creators, view profile/KYC/payout history, suspend, adjust (audited).
@@ -102,6 +109,9 @@ Remove from DigiOne once the admin app covers each:
 - `app/api/admin/kyc/[creatorId]/download`.
 - The `super_admin` branch + `/dashboard/admin/*` gate in `proxy.ts`; the super_admin sidebar link.
 - `scripts/kyc-admin.ts` (superseded by A1).
+- `app/api/refunds/create` + the `RefundPanel` self-refund UI in `app/dashboard/orders/page.tsx` (refunds become
+  admin/dispute-only per §3.3). Keep the `initiateRefund`/`begin_refund`/`settle_refund` primitives + the refund
+  webhook branch — the admin console reuses them.
 Keep in DigiOne: the **webhook** (`/api/webhook/cashfree-payout`) unless explicitly moved; all **creator-facing**
 KYC (submit, doc upload, wizard) and payout **request** flow. Update `.claude/rules/*` + `docs/reference/*` in the
 same change-set as each removal (the doc-drift Stop hook will enforce it).
