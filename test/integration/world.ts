@@ -14,6 +14,18 @@ export function hasCreds(): boolean {
   return Boolean(process.env.SUPABASE_SERVICE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
+// Live-Cashfree e2e also needs the PG sandbox credentials. Absent in most local envs,
+// so the sandbox suite self-skips until they're added to .env.local.
+export function hasCashfree(): boolean {
+  return hasCreds() && Boolean(process.env.CASHFREE_CLIENT_ID && process.env.CASHFREE_CLIENT_SECRET);
+}
+
+export function cashfreeBaseUrl(): string {
+  return process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
+    ? 'https://api.cashfree.com/pg'
+    : 'https://sandbox.cashfree.com/pg';
+}
+
 export function serviceClient(): SupabaseClient<Database> {
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -17,7 +17,7 @@ against the live test Supabase project (`qcendfisvyjnwmefruba`).
 ## How to run
 
 ```bash
-npm run test:integration     # 37 tests across 7 files, ~5 min (network-bound)
+npm run test:integration     # 38 tests across 8 files (the live-Cashfree test self-skips without CASHFREE_* creds)
 npm test                     # unchanged unit suite (148 tests)
 ```
 
@@ -40,6 +40,7 @@ Files:
 | `webhook-security.integration.test.ts` | HMAC signature gate + idempotent fulfillment via the real webhook route |
 | `checkout-security.integration.test.ts` | Server-side price verification, single-creator cart, free short-circuit |
 | `rls.integration.test.ts` | Cross-tenant isolation with anon / signed-in JWTs (orders, balances, ledger, access, revenue-write block) |
+| `cashfree-sandbox.integration.test.ts` | LIVE sandbox: `/api/checkout/create` makes a real Cashfree order that reads back `ACTIVE` (self-skips without `CASHFREE_*`) |
 
 ---
 
@@ -164,10 +165,15 @@ One **doc** inaccuracy found and fixed: `money-path.md` §9 said tax rows are in
 
 ## Not covered (honest scope boundaries → recommended next)
 
-- **Live Cashfree calls** are stubbed (refund gateway, order/payment-link create) or not
-  exercised (payout transfer + beneficiary creation, `/payment/status` reconciliation
-  polling). These need a real sandbox + a real completed payment. The **Cashfree Payouts
-  webhook signature** and `/api/admin/payouts/[id]/approve` are not integration-tested here.
+- **Live Cashfree** order creation + order-status read are now exercised against the real
+  sandbox (`cashfree-sandbox.integration.test.ts`, when `CASHFREE_*` creds are present).
+  Still **not** automatable in-harness: completing the hosted payment (needs a human on the
+  sandbox checkout page — no public auto-pay API), real webhook delivery (Cashfree posts to
+  the deployed `NEXT_PUBLIC_APP_URL`, not this process — but the signature gate is covered by
+  `webhook-security.*`), the `/payment/status` post-payment reconcile, the **payout transfer
+  + beneficiary creation**, `/api/admin/payouts/[id]/approve`, and the **Cashfree Payouts
+  webhook signature**. The sandbox test's header documents the manual steps to finish a real
+  end-to-end payment.
 
 > Follow-up (2026-07-10, same review): RLS cross-tenant isolation, the payout concurrency
 > race, coupon redemption, and the `/api/checkout/payment-link` route are **now covered**
@@ -186,4 +192,4 @@ One **doc** inaccuracy found and fixed: `money-path.md` §9 said tax rows are in
 | `docs/db/money-path.md`, `.claude/rules/api-routes.md` | Doc-drift fixes (findings #3, #5, and payout-index note) |
 | `vitest.integration.config.ts` | **New** — integration runner (own `@/` path resolver, sequential, DB timeouts) |
 | `package.json` | Added `test:integration` script |
-| `test/integration/**` | **New** — setup, world harness, 7 test files (37 tests) |
+| `test/integration/**` | **New** — setup, world harness, 8 test files (38 tests; live-Cashfree self-skips without creds) |
