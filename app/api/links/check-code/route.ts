@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
   }
 
   const db = createServiceClient();
-  const { data } = await db.from('linksh_links').select('id').eq('code', code).maybeSingle();
+  const { data, error } = await db.from('linksh_links').select('id').eq('code', code).maybeSingle();
+  if (error) return NextResponse.json({ available: false, error: 'Lookup failed' }, { status: 500 });
   return NextResponse.json({ available: data === null });
 }

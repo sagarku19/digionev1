@@ -30,7 +30,7 @@ function appHostOf(appUrl?: string): string | undefined {
   try { return new URL(appUrl).host; } catch { return undefined; }
 }
 
-async function authCreator(req: Request): Promise<{ creatorId: string } | NextResponse> {
+async function authCreator(): Promise<{ creatorId: string } | NextResponse> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -42,7 +42,7 @@ async function authCreator(req: Request): Promise<{ creatorId: string } | NextRe
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const auth = await authCreator(req);
+    const auth = await authCreator();
     if (auth instanceof NextResponse) return auth;
 
     const body = (await req.json().catch(() => null)) as PatchBody | null;
@@ -95,13 +95,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const auth = await authCreator(req);
+    const auth = await authCreator();
     if (auth instanceof NextResponse) return auth;
 
     const db = createServiceClient();
-    const { error } = await db
-      .from('linksh_links').delete().eq('id', id).eq('creator_id', auth.creatorId);
+    const { data, error } = await db
+      .from('linksh_links')
+      .delete()
+      .eq('id', id)
+      .eq('creator_id', auth.creatorId)
+      .select('id');
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data || data.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ deleted: true });
   } catch (err) {
     console.error('[api/links DELETE]', err);
