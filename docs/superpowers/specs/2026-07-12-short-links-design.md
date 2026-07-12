@@ -36,6 +36,8 @@ A link shortener for DigiOne creators. Creators mint short links on a dedicated 
 | Redirect status | `302` + `Cache-Control: no-store` (never `301` — cached 301s break edits + analytics) |
 | UI aesthetic | Modern link-shortener look (Dub.co / Bitly idiom) — favicon-led link rows, inline copy + QR, click badges, live-preview create panel, dedicated analytics page — rebuilt entirely on DigiOne CSS-var tokens (no hardcoded hex, lucide-only, compact density, brand red reserved for the primary CTA). |
 | Analytics surface | Dedicated detail page `/dashboard/links/[id]` (resolves the earlier drawer-vs-page question in favor of the modern-tool feel). |
+| Redirect caching | Short-TTL (30s) **in-process** cache of the `code → link` resolution to cut DB reads on popular links. 302 stays `no-store` for clients. Trade-off: pause/edit/disable propagate after ≤TTL on the hot path. Shared-cache cross-instance invalidation (Redis) deferred. |
+| Click idempotency | Insert + counter bump collapsed into one atomic RPC `linksh_record_click` guarded by a UNIQUE `dedup_hash` — double-processing a click is a no-op. |
 
 ---
 
@@ -124,13 +126,21 @@ Mirrors the `linkinbio_analytics` shape.
 | `os` | text? | iOS / Android / Windows / … |
 | `referrer_url` | text? | |
 | `user_agent` | text? | raw UA retained |
+| `resolved_destination_url` | text? | Where this click was actually sent at click time. Survives later `destination_url` edits, so historical analytics stay accurate. |
+| `dedup_hash` | text | `sha256(link_id : ip_hash : floor(epoch/30))`. **UNIQUE** — the idempotency + 30s-dedupe guard. |
 | `is_unique` | bool | default `false` |
 | `created_at` | timestamptz | default `now()` |
 
-**Indexes:** btree on `link_id`, `creator_id`, `created_at`.
+**Indexes:** UNIQUE on `dedup_hash`; btree on `link_id`, `creator_id`, `created_at`.
 
-### RPC `linksh_increment_click(p_link_id uuid, p_is_unique bool)`
-`SECURITY DEFINER`. Bumps `click_count`, adds to `unique_click_count` when `p_is_unique`, sets `last_clicked_at = now()`. Same pattern as the existing `increment_link_click_count`.
+### RPC `linksh_record_click(...)`
+`SECURITY DEFINER`. **Atomic + idempotent** — the single write path for a click, replacing a separate SELECT-dedupe + insert + increment (mirrors the `transaction_ledger` `record_hash`-UNIQUE idiom already used in fulfillment). Given the parsed click fields + `p_dedup_hash`:
+
+1. `INSERT INTO linksh_click_events (…) ON CONFLICT (dedup_hash) DO NOTHING` — a duplicate delivery (retry, double `after()` fire, same IP within the 30s bucket) inserts nothing.
+2. **Only when a row was actually inserted**, bump `linksh_links.click_count` (+1), `unique_click_count` (+1 when this is the first-ever event for `(link_id, ip_hash)`), and set `last_clicked_at = now()`.
+3. Return whether the click counted.
+
+Double-processing the same event is therefore a guaranteed no-op — counters never inflate.
 
 ### RLS
 
@@ -171,14 +181,23 @@ Service client (`createServiceClient()`), no auth.
 4. **Live** → build final URL: `destination_url` + appended UTM params (only those set) → **302 + `Cache-Control: no-store`**.
 5. **Tracking** runs post-response via `after()` (from `next/server`), wrapped in try/catch so it never blocks or fails the redirect — mirrors the best-effort, always-2xx spirit of `app/api/linkinbio/track/route.ts`:
    - Skip bots via a UA bot-skip regex.
-   - `ip_hash` = sha256(ip).slice(0,16); 30s dedupe on `(link_id, ip_hash)`.
+   - `ip_hash` = sha256(ip).slice(0,16).
    - `country` from `x-vercel-ip-country` (fallback `cf-ipcountry`).
    - Inline UA parse → `device_type` / `browser` / `os`.
-   - `is_unique` = no prior `linksh_click_events` row for `(link_id, ip_hash)`.
-   - Insert `linksh_click_events` + call `linksh_increment_click(link_id, is_unique)`.
+   - Capture `resolved_destination_url` = the URL this click was sent to (step 4's final destination).
+   - Compute `dedup_hash = sha256(link_id : ip_hash : floor(epoch/30))`.
+   - Call **`linksh_record_click(...)`** — one atomic, idempotent RPC that dedupes via the UNIQUE `dedup_hash`, inserts the event, and bumps counters only on a real insert (see §4). No separate SELECT-dedupe or increment call.
 
 ### 5.3 Bare-root and reserved handling
 `{shortdomain}/` → digione.ai. `isReserved()` covers `robots.txt`, `sitemap.xml`, `report`, and empty. Everything else is treated as a code.
+
+### 5.4 Redirect lookup cache
+The hot path (resolve `code` → link row) is wrapped in a **short-TTL in-process cache** (a `Map<code, { row, expiresAt }>` with a 30s TTL, zero dependencies) so a viral link doesn't hit Postgres on every click. Negative lookups (unknown code) are cached briefly too, to blunt enumeration/scan traffic.
+
+- **Client caching is unchanged:** every 302 still carries `Cache-Control: no-store`. Only the *server-side* row resolution is cached.
+- **Propagation delay:** because the cached row carries `is_active` / `archived_at` / `expires_at`, a pause / edit / disable takes effect on the hot path after **≤ TTL (30s)**. Accepted at this TTL; abuse takedowns tolerate a ≤30s tail.
+- **Serverless caveat:** the cache is per-lambda-instance and ephemeral across cold starts, so it helps warm instances under sustained traffic but is not a global guarantee. Cross-instance invalidation on edit (a shared Redis/Upstash cache with explicit bust-on-write) is a **Phase 2 upgrade**, not MVP — it would need a new dependency (ask first).
+- Tracking in `after()` still reads/writes the DB (the cache only covers resolution), so analytics remain exact regardless of cache hits.
 
 ---
 
@@ -260,6 +279,8 @@ Per project rules, the following ship **in the same change-set**:
 - **302 not 301** — cached 301s silently break edited destinations and click counts. Always 302/307 + `Cache-Control: no-store`.
 - **Bot inflation** — without a UA bot-skip, analytics inflate fast. The bot regex is mandatory in the tracking step.
 - **Redirect latency** — tracking must not block the 302. Use `after()` (or inline try/catch that always returns the redirect first).
+- **Cache propagation delay** — the 30s in-process resolution cache (§5.4) means pause/edit/disable lags ≤30s on the hot path. Keep the TTL short; treat abuse-disable as tolerating a ≤30s tail. Don't raise the TTL without moving to a shared cache with bust-on-write.
+- **Click idempotency** — the click write must go through `linksh_record_click` with its UNIQUE `dedup_hash`; never insert `linksh_click_events` + bump counters as two separate un-guarded steps, or a retried `after()` double-counts.
 - **Type sync** — the `/api/links` and redirect routes reference the new tables/RPC; regenerate types before writing them or `tsc` fails on `never`.
 - **No slug collision with existing storefronts** — the short domain is bare-root and separate; `/link/`, `/site/`, `/store/`, `/pay/` live on the main domain and never interact.
 
