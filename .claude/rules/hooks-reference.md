@@ -20,7 +20,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
 | `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
-| `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices` |
+| `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices`, `useShortLinks` |
 | `analytics/` | `useAnalytics` |
 | `notifications/` | `useNotifications` |
 | `sites/` | `useSites`, `useSiteEdit`, `useLinkInBioSite`, `useSinglePageSite` |
@@ -97,3 +97,5 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useTaxSummary()` | `['tax','summary']` |
 | `useCommissionMonths()` | `['invoices','commission-months']` |
 | `useStatementYears()` | `['statements','years']` |
+| `useShortLinks()` | `['short-links','list']` |
+| `useShortLinkAnalytics(id)` | `['short-links','analytics', id]` |

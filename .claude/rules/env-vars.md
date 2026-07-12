@@ -38,6 +38,7 @@ Canonical inventory of every `process.env.*` read by the codebase. If you add or
 |---|---|---|---|
 | `NEXT_PUBLIC_APP_URL` | public | `app/layout.tsx` (OG metadata), `/api/checkout/create`, `/api/checkout/payment-link` | Absolute URL of this app. No trailing slash. Used as Cashfree `return_url` / `notify_url` base. |
 | `NEXT_PUBLIC_ROOT_DOMAIN` | public | `proxy.ts` | Root domain for custom-domain detection. Storefront hosts that don't match this fall into the `/_custom/[domain]/*` rewrite. Defaults to `localhost:3000` if unset. |
+| `NEXT_PUBLIC_SHORTLINK_DOMAIN` | public | `proxy.ts`, `src/lib/shared/shortlink.ts` | Dedicated short-link domain (e.g. `linkme.you`). Bare-root `{domain}/{code}` redirects. No scheme/trailing slash. Unset → short-link routing disabled. |
 
 ## Cloudflare R2 (object storage)
 

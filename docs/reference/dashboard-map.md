@@ -21,6 +21,7 @@
 | `/dashboard/integrations/google-sheets` | Google Sheets sync config (UI only) | — | — | — | No persistence yet; prototype |
 | `/dashboard/integrations/telegram` | Telegram bot config + event toggles (UI only) | — | — | — | No persistence yet; prototype |
 | `/dashboard/integrations/whatsapp` | WhatsApp API config + message templates (UI only) | — | — | — | No persistence yet; prototype |
+| `/dashboard/links` | Short Links — modern-shortener UI: link-card list (favicon + inline copy/QR + click badge), create/edit `SideDrawer` with live QR preview + code availability, tag search. `/dashboard/links/[id]` = analytics detail (KPIs, recharts time-series, country/device/browser/OS/referrer breakdowns). | `useShortLinks`, `useShortLinkAnalytics` | `PageHeader`, `KpiGrid`, `StatCard`, `EmptyState`, `SideDrawer`, `StatusPill` | `POST /api/links`, `PATCH/DELETE /api/links/[id]`, `GET /api/links/check-code`, `GET /api/s/[code]` (redirect) | `linksh_links` owner-CRUD via RLS (`current_profile_id()`); `linksh_click_events` SELECT-own; writes via service-role routes |
 | `/dashboard/marketing` | Marketing hub — stats overview + links to sub-tools | `useMarketingStats` | — | — | — |
 | `/dashboard/marketing/affiliates` | Affiliate CRUD — invite partners, set commission, toggle, copy link | `useAffiliates` | `StatusPill` | — | — |
 | `/dashboard/marketing/community` | Community posts — compose, like, delete, category filter | `useCreator`, `useCommunity` | — | — | reads `community_posts`, `community_reactions` |
