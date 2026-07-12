@@ -7,6 +7,7 @@ import { KpiGrid } from '@/components/ui/KpiGrid';
 import { StatCard } from '@/components/ui/StatCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useShortLinks, type ShortLink } from '@/hooks/marketing/useShortLinks';
 import { LinkCard } from '@/components/dashboard/links/LinkCard';
 import { LinkFormModal } from '@/components/dashboard/links/LinkFormModal';
@@ -15,6 +16,7 @@ export default function ShortLinksPage() {
   const { links, isLoading, createLink, isCreating, updateLink, isUpdating, deleteLink } = useShortLinks();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ShortLink | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ShortLink | null>(null);
   const [search, setSearch] = useState('');
 
   const stats = useMemo(() => ({
@@ -38,7 +40,7 @@ export default function ShortLinksPage() {
   const openEdit = (l: ShortLink) => { setEditing(l); setModalOpen(true); };
   const toggle = (l: ShortLink) => updateLink({ id: l.id, is_active: !l.is_active });
   const archive = (l: ShortLink) => updateLink({ id: l.id, archived_at: l.archived_at ? null : new Date().toISOString() });
-  const remove = (l: ShortLink) => { if (confirm(`Delete ${l.code}? This cannot be undone.`)) deleteLink(l.id); };
+  const remove = (l: ShortLink) => setDeleteTarget(l);
 
   return (
     <div className="space-y-6 pb-12">
@@ -117,6 +119,16 @@ export default function ShortLinksPage() {
         onCreate={createLink}
         onUpdate={updateLink}
         busy={isCreating || isUpdating}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={async () => { if (deleteTarget) await deleteLink(deleteTarget.id); }}
+        title="Delete short link?"
+        description={deleteTarget ? `${deleteTarget.code} will be permanently deleted. Anyone who has this link will get a 404. This cannot be undone.` : ''}
+        confirmLabel="Delete"
+        isDestructive
       />
     </div>
   );

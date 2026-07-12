@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Copy, Check, BarChart2, Lock, MoreHorizontal, Pencil, Trash2, Pause, Play, Link2, Archive, ArchiveRestore, type LucideIcon } from 'lucide-react';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { QRButton } from './QRButton';
@@ -32,9 +34,12 @@ export function LinkCard({
   onArchive: (l: ShortLink) => void;
   onDelete: (l: ShortLink) => void;
 }) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
   const [imgOk, setImgOk] = useState(true);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const url = shortUrl(link.code);
   const fav = faviconUrl(link.destination_url);
 
@@ -43,6 +48,28 @@ export function LinkCard({
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
+
+  const openMenu = () => {
+    const r = btnRef.current?.getBoundingClientRect();
+    if (r) setMenuPos({ top: r.bottom + 6, right: Math.max(8, window.innerWidth - r.right) });
+    setMenu(true);
+  };
+
+  // Close the (portalled, fixed-positioned) menu on scroll/resize/Escape so it
+  // never lingers detached from its button.
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(false);
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(false); };
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menu]);
 
   return (
     <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-[var(--surface-hover)] transition group">
@@ -73,7 +100,7 @@ export function LinkCard({
         </div>
       </div>
 
-      {/* Clicks */}
+      {/* Clicks → analytics */}
       <Link
         href={`/dashboard/links/${link.id}`}
         className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded px-1"
@@ -85,21 +112,26 @@ export function LinkCard({
 
       <StatusPill status={statusOf(link)} />
 
-      {/* Overflow */}
-      <div className="relative shrink-0">
+      {/* Overflow menu */}
+      <div className="shrink-0">
         <button
-          onClick={() => setMenu((v) => !v)}
+          ref={btnRef}
+          onClick={() => (menu ? setMenu(false) : openMenu())}
+          aria-haspopup="menu"
+          aria-expanded={menu}
           className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
           <MoreHorizontal className="w-4 h-4" />
         </button>
-        {menu && (
+        {menu && createPortal(
           <>
-            <div className="fixed inset-0 z-10" onClick={() => setMenu(false)} />
+            <div className="fixed inset-0 z-[55]" onClick={() => setMenu(false)} />
             <div
-              className="absolute right-0 top-full mt-1 w-40 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] shadow-[var(--shadow-md)] py-1 z-20"
-              onMouseLeave={() => setMenu(false)}
+              role="menu"
+              style={{ top: menuPos.top, right: menuPos.right }}
+              className="fixed z-[56] w-44 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] shadow-[var(--shadow-md)] py-1"
             >
+              <MenuItem icon={BarChart2} label="View analytics" onClick={() => { setMenu(false); router.push(`/dashboard/links/${link.id}`); }} />
               <MenuItem icon={Pencil} label="Edit" onClick={() => { setMenu(false); onEdit(link); }} />
               <MenuItem
                 icon={link.is_active ? Pause : Play}
@@ -109,7 +141,8 @@ export function LinkCard({
               <MenuItem icon={link.archived_at ? ArchiveRestore : Archive} label={link.archived_at ? 'Unarchive' : 'Archive'} onClick={() => { setMenu(false); onArchive(link); }} />
               <MenuItem icon={Trash2} label="Delete" danger onClick={() => { setMenu(false); onDelete(link); }} />
             </div>
-          </>
+          </>,
+          document.body
         )}
       </div>
     </div>
@@ -121,6 +154,7 @@ function MenuItem({ icon: Icon, label, onClick, danger }: {
 }) {
   return (
     <button
+      role="menuitem"
       onClick={onClick}
       className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
         danger
