@@ -17,7 +17,7 @@ against the live test Supabase project (`qcendfisvyjnwmefruba`).
 ## How to run
 
 ```bash
-npm run test:integration     # 43 tests across 9 files (the live-Cashfree test self-skips without CASHFREE_* creds)
+npm run test:integration     # 48 tests across 10 files (the live-Cashfree test self-skips without CASHFREE_* creds)
 npm test                     # unchanged unit suite (148 tests)
 ```
 
@@ -39,6 +39,7 @@ Files:
 | `payment-link.integration.test.ts` | `/api/checkout/payment-link` route: field/amount/site validation + pending submission creation |
 | `webhook-security.integration.test.ts` | HMAC signature gate + idempotent fulfillment via the real webhook route |
 | `webhook-settlement.integration.test.ts` | Cashfree **Payouts** webhook (legacy HMAC + `settle_payout` success/fail) and PG **refund-status** webhook routing (`settle_refund`) |
+| `admin-approve.integration.test.ts` | `/api/admin/payouts/[id]/approve`: super-admin role gate, KYC-decrypt → beneficiary, transfer of `net_amount`, pending→processing claim, settle-on-fail (Payouts API mocked) |
 | `checkout-security.integration.test.ts` | Server-side price verification, single-creator cart, free short-circuit |
 | `rls.integration.test.ts` | Cross-tenant isolation with anon / signed-in JWTs (orders, balances, ledger, access, revenue-write block) |
 | `cashfree-sandbox.integration.test.ts` | LIVE sandbox: `/api/checkout/create` makes a real Cashfree order that reads back `ACTIVE` (self-skips without `CASHFREE_*`) |
@@ -172,9 +173,11 @@ One **doc** inaccuracy found and fixed: `money-path.md` §9 said tax rows are in
   sandbox checkout page — no public auto-pay API), real webhook delivery (Cashfree posts to
   the deployed `NEXT_PUBLIC_APP_URL`, not this process — but the signature + settlement gates
   are covered by `webhook-security.*` and `webhook-settlement.*`), the `/payment/status`
-  post-payment reconcile, and the **payout transfer + beneficiary creation** live API
-  (`initiateTransfer`/`createBeneficiary`) behind `/api/admin/payouts/[id]/approve`. The
-  sandbox test's header documents the manual steps to finish a real end-to-end payment.
+  post-payment reconcile, and the **live** Cashfree Payouts API calls
+  (`initiateTransfer`/`createBeneficiary`) themselves — the approve route's *orchestration*
+  around them is now covered (`admin-approve.integration.test.ts`, Payouts API mocked); only
+  the real sandbox transfer network call is not exercised. The sandbox test's header
+  documents the manual steps to finish a real end-to-end payment.
 
 > Both webhook **settlement** gates — the Cashfree Payouts webhook (`settle_payout`) and the
 > PG refund-status webhook (`settle_refund`) — are now covered end-to-end with a test-set
@@ -197,4 +200,4 @@ One **doc** inaccuracy found and fixed: `money-path.md` §9 said tax rows are in
 | `docs/db/money-path.md`, `.claude/rules/api-routes.md` | Doc-drift fixes (findings #3, #5, and payout-index note) |
 | `vitest.integration.config.ts` | **New** — integration runner (own `@/` path resolver, sequential, DB timeouts) |
 | `package.json` | Added `test:integration` script |
-| `test/integration/**` | **New** — setup, world harness, 9 test files (43 tests; live-Cashfree self-skips without creds) |
+| `test/integration/**` | **New** — setup, world harness, 10 test files (48 tests; live-Cashfree self-skips without creds) |
