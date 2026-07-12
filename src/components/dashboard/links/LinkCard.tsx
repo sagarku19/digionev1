@@ -98,6 +98,16 @@ export function LinkCard({
         </div>
       </div>
 
+      {/* Analytics */}
+      <Link
+        href={`/dashboard/links/${link.id}`}
+        title="Analytics"
+        aria-label="Analytics"
+        className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      >
+        <BarChart2 className="w-4 h-4" />
+      </Link>
+
       {/* Clicks count */}
       <div className="flex items-center gap-1 text-sm shrink-0">
         <span className="font-semibold text-[var(--text-primary)]">{link.click_count.toLocaleString('en-IN')}</span>
@@ -106,16 +116,8 @@ export function LinkCard({
 
       <StatusPill status={statusOf(link)} />
 
-      {/* Always-visible actions + overflow */}
+      {/* Edit + overflow */}
       <div className="flex items-center gap-0.5 shrink-0">
-        <Link
-          href={`/dashboard/links/${link.id}`}
-          title="Analytics"
-          aria-label="Analytics"
-          className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-        >
-          <BarChart2 className="w-4 h-4" />
-        </Link>
         <button
           onClick={() => onEdit(link)}
           title="Edit"
