@@ -12,16 +12,17 @@ import fs from 'fs';
 import path from 'path';
 import { Agent, RetryAgent, setGlobalDispatcher } from 'undici';
 
-// The suite makes hundreds of sequential network calls; on a degraded link undici's
-// default 10s connect timeout produces flaky UND_ERR_CONNECT_TIMEOUT failures. Raise
-// the connect timeout and retry ONLY on pre-connection errors (the request never left
-// the client, so retrying a POST can't double-submit). Affects global fetch — i.e. the
-// supabase clients and the route-driven Cashfree calls too.
+// The suite makes hundreds of sequential network calls; on a briefly degraded link
+// undici's connect can throw a transient UND_ERR_CONNECT_TIMEOUT. Retry ONLY on
+// pre-connection errors (the request never left the client, so retrying a POST can't
+// double-submit), with bounded attempts so a genuine outage still fails FAST — the
+// worst case (3 attempts × 8s + backoff ≈ 18s) stays well under the 40s testTimeout
+// rather than hanging. Affects global fetch — the supabase clients + route Cashfree calls.
 setGlobalDispatcher(
-  new RetryAgent(new Agent({ connect: { timeout: 30_000 } }), {
-    maxRetries: 4,
-    minTimeout: 500,
-    maxTimeout: 4_000,
+  new RetryAgent(new Agent({ connect: { timeout: 8_000 } }), {
+    maxRetries: 2,
+    minTimeout: 300,
+    maxTimeout: 1_500,
     timeoutFactor: 2,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     errorCodes: ['UND_ERR_CONNECT_TIMEOUT', 'ECONNREFUSED', 'ENOTFOUND', 'ENETUNREACH', 'EHOSTUNREACH'],
