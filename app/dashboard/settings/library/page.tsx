@@ -1,49 +1,56 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, Library, ExternalLink, Package, FileText, BookOpen, Tag, Search, Loader2, AlertCircle } from 'lucide-react';
+import { Download, Library, ExternalLink, Package, ChevronDown, Search, Loader2, AlertCircle } from 'lucide-react';
 import { useLibrary } from '@/hooks/commerce/useLibrary';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { formatBytes } from '@/lib/format-bytes';
 
-const CATEGORY_ICON: Record<string, React.ElementType> = {
-  digital: FileText,
-  course: BookOpen,
-  template: Tag,
-  other: Package,
-};
+function formatINR(n: number) {
+  return `₹${Number(n).toLocaleString('en-IN')}`;
+}
+
+function formatDate(iso: string) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+type DeliverableFile = { name: string; signedUrl: string; bytes: number };
+type FileState = { loading: boolean; files: DeliverableFile[]; error: string | null };
 
 export default function LibraryPage() {
   const { data: products = [], isLoading } = useLibrary();
   const [search, setSearch] = useState('');
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filesById, setFilesById] = useState<Record<string, FileState>>({});
 
-  const filtered = products.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
 
-  // Deliverables live in R2, not on the product row. Mint signed URLs on demand.
-  const handleDownload = async (productId: string) => {
-    setDownloadingId(productId);
-    setDownloadError(null);
+  // Deliverables live in R2, not on the product row. Fetch signed URLs once per
+  // product when its row is expanded, then list each file as its own download link
+  // (a single user gesture each — no multi-popup that browsers block).
+  const toggleRow = async (productId: string) => {
+    if (expandedId === productId) { setExpandedId(null); return; }
+    setExpandedId(productId);
+    if (filesById[productId]) return; // already loaded
+    setFilesById(s => ({ ...s, [productId]: { loading: true, files: [], error: null } }));
     try {
       const res = await fetch(`/api/deliverables/${productId}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Could not prepare your download.');
-      if (!data.files?.length) {
-        setDownloadError('No downloadable files have been added to this product yet.');
-        return;
-      }
-      for (const file of data.files) {
-        window.open(file.signedUrl, '_blank', 'noopener');
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Could not load your files.');
+      const raw = (data.files ?? []) as Array<{ name?: string; signedUrl?: string; bytes?: number }>;
+      const files: DeliverableFile[] = raw
+        .filter(f => typeof f.signedUrl === 'string')
+        .map(f => ({ name: f.name || 'File', signedUrl: f.signedUrl as string, bytes: Number(f.bytes) || 0 }));
+      setFilesById(s => ({ ...s, [productId]: { loading: false, files, error: null } }));
     } catch (err) {
-      setDownloadError(err instanceof Error ? err.message : 'Download failed. Please try again.');
-    } finally {
-      setDownloadingId(null);
+      setFilesById(s => ({
+        ...s,
+        [productId]: { loading: false, files: [], error: err instanceof Error ? err.message : 'Failed to load files.' },
+      }));
     }
   };
 
@@ -66,25 +73,21 @@ export default function LibraryPage() {
         </div>
       )}
 
-      {downloadError && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-[var(--radius-md)] bg-[var(--danger-bg)] text-[var(--danger)] text-sm font-medium border border-[var(--danger)]/20">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          {downloadError}
-        </div>
-      )}
-
       {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <Card key={i} padded={false}>
-              <Skeleton className="w-full aspect-[4/3]" rounded="md" />
-              <div className="p-4 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
+        <Card padded={false}>
+          <div className="divide-y divide-[var(--border-subtle)]">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex items-center gap-4 p-4">
+                <Skeleton className="w-12 h-12" rounded="md" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/4" />
+                </div>
+                <Skeleton className="h-8 w-20" rounded="sm" />
               </div>
-            </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        </Card>
       )}
 
       {!isLoading && products.length === 0 && (
@@ -97,81 +100,131 @@ export default function LibraryPage() {
         </Card>
       )}
 
-      {!isLoading && products.length > 0 && filtered.length === 0 && (
+      {!isLoading && products.length > 0 && (
         <Card padded={false}>
-          <EmptyState
-            title={`No products match "${search}"`}
-            action={
-              <button
-                onClick={() => setSearch('')}
-                className="text-sm font-medium text-[var(--text-primary)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
-              >
-                Clear search
-              </button>
-            }
-          />
-        </Card>
-      )}
+          {filtered.length === 0 ? (
+            <EmptyState
+              title={`No products match "${search}"`}
+              action={
+                <button
+                  onClick={() => setSearch('')}
+                  className="text-sm font-medium text-[var(--text-primary)] bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] border border-[var(--border)] px-3 py-1.5 rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
+                >
+                  Clear search
+                </button>
+              }
+            />
+          ) : (
+            <div className="divide-y divide-[var(--border-subtle)]">
+              {filtered.map(product => {
+                const isOpen = expandedId === product.id;
+                const fs = filesById[product.id];
 
-      {!isLoading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(product => {
-            const CategoryIcon = CATEGORY_ICON[product.category ?? 'other'] ?? Package;
-            const purchaseDate = new Date(product.purchased_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                return (
+                  <div key={product.id}>
+                    <div className="flex items-center gap-3 sm:gap-4 p-4 hover:bg-[var(--surface-hover)] transition-colors">
+                      <div className="w-12 h-12 rounded-[var(--radius-md)] bg-[var(--surface-muted)] border border-[var(--border)] overflow-hidden flex items-center justify-center shrink-0">
+                        {product.thumbnail_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Package className="w-5 h-5 text-[var(--text-tertiary)]" />
+                        )}
+                      </div>
 
-            return (
-              <Card key={product.id} padded={false} hoverable className="flex flex-col overflow-hidden">
-                <div className="w-full aspect-[4/3] bg-[var(--surface-muted)] overflow-hidden">
-                  {product.thumbnail_url ? (
-                    <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover object-center" />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-[var(--text-tertiary)]">
-                      <CategoryIcon className="w-10 h-10 opacity-40" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{product.name}</p>
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-tertiary)] mt-0.5">
+                          {(product.category ?? 'Digital')} · {formatDate(product.purchased_at)}
+                        </p>
+                      </div>
+
+                      <span className="hidden sm:block text-[13px] font-semibold text-[var(--text-primary)] shrink-0">
+                        {formatINR(product.price_at_purchase)}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleRow(product.id)}
+                        aria-expanded={isOpen}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] text-xs font-semibold transition-colors shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                      >
+                        Access
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                      </button>
                     </div>
-                  )}
-                </div>
 
-                <div className="p-4 flex flex-col flex-1">
-                  <h3 className="font-semibold text-sm text-[var(--text-primary)] line-clamp-1 mb-1">{product.name}</h3>
-                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-tertiary)] uppercase tracking-wide mb-3">
-                    <CategoryIcon className="w-3 h-3" />
-                    <span>{product.category ?? 'Digital'}</span>
-                    <span className="mx-1">·</span>
-                    <span>{purchaseDate}</span>
-                  </div>
+                    {isOpen && (
+                      <div className="px-4 pb-4">
+                        <div className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-muted)] p-3.5 space-y-3.5">
+                          {fs?.loading && (
+                            <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span className="text-[11px] uppercase tracking-wide font-medium">Loading files…</span>
+                            </div>
+                          )}
 
-                  <div className="mt-auto flex items-center gap-2">
-                    <button
-                      onClick={() => handleDownload(product.id)}
-                      disabled={downloadingId === product.id}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-[var(--radius-sm)] text-xs font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {downloadingId === product.id ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Preparing...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-3.5 h-3.5" />
-                          Download
-                        </>
-                      )}
-                    </button>
-                    <a
-                      href={`/discover/${product.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 flex items-center justify-center bg-[var(--surface-muted)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
+                          {fs && !fs.loading && fs.files.length > 0 && (
+                            <div className="space-y-1.5">
+                              <p className="text-[11px] uppercase tracking-wide font-medium text-[var(--text-tertiary)]">Files</p>
+                              {fs.files.map((f, idx) => (
+                                <a
+                                  key={idx}
+                                  href={f.signedUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                                >
+                                  <Download className="w-3.5 h-3.5 shrink-0 text-[var(--brand)]" />
+                                  <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                                  {f.bytes > 0 && <span className="text-[10px] text-[var(--text-tertiary)] shrink-0">{formatBytes(f.bytes)}</span>}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+
+                          {product.links.length > 0 && (
+                            <div className="space-y-1.5">
+                              <p className="text-[11px] uppercase tracking-wide font-medium text-[var(--text-tertiary)]">Links</p>
+                              {product.links.map((link, i) => (
+                                <a
+                                  key={`${link.url}-${i}`}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="group flex items-center gap-2.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2.5 text-[13px] font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5 shrink-0 text-[var(--brand)]" />
+                                  <span className="min-w-0 flex-1 truncate">{link.label}</span>
+                                  <span aria-hidden="true" className="text-[10px] uppercase tracking-wide text-[var(--text-tertiary)] transition-transform group-hover:translate-x-0.5">
+                                    open
+                                  </span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+
+                          {fs && !fs.loading && fs.files.length === 0 && product.links.length === 0 && !fs.error && (
+                            <p className="text-[13px] font-medium text-[var(--text-secondary)]">
+                              No downloadable files or links have been added to this product yet.
+                            </p>
+                          )}
+
+                          {fs?.error && (
+                            <p className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--danger)]">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                              {fs.error}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );
