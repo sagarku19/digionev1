@@ -14,6 +14,8 @@ describe('password', () => {
   it('rejects malformed stored values', () => {
     expect(verifyPassword('x', 'garbage')).toBe(false);
     expect(verifyPassword('x', 'scrypt$only')).toBe(false);
+    expect(verifyPassword('x', 'scrypt$$')).toBe(false);
+    expect(verifyPassword('x', 'scrypt$aabbcc$')).toBe(false);
   });
   it('produces a deterministic, per-link unlock token', () => {
     expect(unlockToken('abc', 'HASH')).toBe(unlockToken('abc', 'HASH'));

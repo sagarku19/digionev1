@@ -15,6 +15,7 @@ export function renderOgHtml(og: {
   const desc = og.description ? escapeHtml(og.description) : '';
   const image = og.image ? escapeHtml(og.image) : '';
   const url = escapeHtml(og.url);
+  const safeHref = /^https?:\/\//i.test(og.url) ? url : '';
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${title}">
@@ -23,7 +24,7 @@ ${desc ? `<meta property="og:description" content="${desc}">\n` : ''}${image ? `
 <meta name="twitter:title" content="${title}">
 ${desc ? `<meta name="twitter:description" content="${desc}">\n` : ''}${image ? `<meta name="twitter:image" content="${image}">\n` : ''}<title>${title}</title>
 <meta http-equiv="refresh" content="0;url=${url}"></head>
-<body><a href="${url}">Continue</a></body></html>`;
+<body>${safeHref ? `<a href="${safeHref}">Continue</a>` : ''}</body></html>`;
 }
 
 export function renderUnlockHtml(opts: { action: string; error?: boolean }): string {
