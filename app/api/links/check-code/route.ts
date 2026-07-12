@@ -2,9 +2,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { rateLimit } from '@/lib/server/rate-limit';
 import { isValidCode, normalizeCode } from '@/lib/server/shortlinks/code';
 
 export async function GET(req: NextRequest) {
+  if (!(await rateLimit(req, 'links-check-code', { max: 30, windowSeconds: 60 }))) {
+    return NextResponse.json({ available: false, error: 'Too many requests' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(req.url);
   const code = normalizeCode(searchParams.get('code') ?? '');
 

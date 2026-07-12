@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { KpiGrid } from '@/components/ui/KpiGrid';
 import { StatCard } from '@/components/ui/StatCard';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { QRButton } from '@/components/dashboard/links/QRButton';
 import { ClicksChart } from '@/components/dashboard/links/ClicksChart';
 import { BreakdownList } from '@/components/dashboard/links/BreakdownList';
@@ -71,7 +72,10 @@ export default function LinkAnalyticsPage({ params }: { params: Promise<{ id: st
       </KpiGrid>
 
       {isLoading ? (
-        <div className="p-10 text-center text-sm text-[var(--text-tertiary)]">Loading…</div>
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6 space-y-4 shadow-[var(--shadow-xs)]">
+          <Skeleton className="h-5 w-32" rounded="md" />
+          <Skeleton className="h-48 w-full" rounded="lg" />
+        </div>
       ) : events.length === 0 ? (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)]">
           <EmptyState icon={MousePointerClick} title="No clicks yet" description="Share this link to start seeing analytics." />

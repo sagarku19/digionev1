@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { KpiGrid } from '@/components/ui/KpiGrid';
 import { StatCard } from '@/components/ui/StatCard';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useShortLinks, type ShortLink } from '@/hooks/marketing/useShortLinks';
 import { LinkCard } from '@/components/dashboard/links/LinkCard';
 import { LinkFormDrawer } from '@/components/dashboard/links/LinkFormDrawer';
@@ -72,7 +73,18 @@ export default function ShortLinksPage() {
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-xs)]">
         {isLoading ? (
-          <div className="p-10 text-center text-sm text-[var(--text-tertiary)]">Loading…</div>
+          <div className="divide-y divide-[var(--border-subtle)]">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-5 py-4">
+                <Skeleton className="w-8 h-8 shrink-0" rounded="md" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-48" rounded="md" />
+                  <Skeleton className="h-3 w-72" rounded="md" />
+                </div>
+                <Skeleton className="h-5 w-16 shrink-0" rounded="sm" />
+              </div>
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={Link2}
