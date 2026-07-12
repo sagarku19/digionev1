@@ -34,6 +34,8 @@ A link shortener for DigiOne creators. Creators mint short links on a dedicated 
 | Attribution | Pure MVP — links model a generic external destination only. No `product_id` / `referral_code` / `link_target`, no order stamping. Attribution lands wholesale in Phase 3. |
 | Access | All creators, free plan included (same as coupons / affiliates). Not plan-gated in Phase 1. |
 | Redirect status | `302` + `Cache-Control: no-store` (never `301` — cached 301s break edits + analytics) |
+| UI aesthetic | Modern link-shortener look (Dub.co / Bitly idiom) — favicon-led link rows, inline copy + QR, click badges, live-preview create panel, dedicated analytics page — rebuilt entirely on DigiOne CSS-var tokens (no hardcoded hex, lucide-only, compact density, brand red reserved for the primary CTA). |
+| Analytics surface | Dedicated detail page `/dashboard/links/[id]` (resolves the earlier drawer-vs-page question in favor of the modern-tool feel). |
 
 ---
 
@@ -182,13 +184,44 @@ Service client (`createServiceClient()`), no auth.
 
 ## 6. Creator surface (dashboard)
 
-- **Sidebar:** add **Short Links** (`Link2` lucide icon) to the **Grow** group `NAV` array in `src/components/dashboard/Sidebar.tsx`.
-- **Page:** `app/dashboard/links/page.tsx` — **list archetype** (per `dashboard-design.md`): `PageHeader` + `Toolbar` (search + tag filter) + `Card padded={false}` wrapping `DataTable` (columns: code, title, destination, clicks, unique, status `StatusPill`, actions). `EmptyState` when none. `Skeleton` while loading.
-- **Create / edit:** `SideDrawer` panel — destination URL, custom code (live availability check) or auto-generated, UTM builder, tags, expiration + fallback URL. Pause / archive inline from the row.
-- **Per-link analytics:** detail `SideDrawer` (or `/dashboard/links/[id]` — decided at plan time) with recharts time-series + country / device / browser breakdown (aggregated client-side from RLS-read `linksh_click_events` at MVP scale) and a **QR code** via `qrcode.react`.
-- **Hook:** `useShortLinks` in `src/hooks/marketing/` — query key `['short-links','list']`, reads via the browser client + RLS (mirrors `useCoupons`). Mutations call the write routes below and invalidate `['short-links']`.
+**Aesthetic target:** the modern link-shortener idiom (Dub.co / Bitly), which is itself a Vercel-like SaaS look — the same target as `dashboard-design.md`. Every piece below is rebuilt on DigiOne CSS-var tokens: no hardcoded hex (except the literal-white QR canvas / toggle knobs), lucide-react icons only, compact density, focus rings on every interactive, brand red (`--brand`) reserved for the primary CTA + active/click accents, light + dark both verified.
 
-All dashboard UI uses CSS-variable tokens, focus rings, and compact sizing per `dashboard-design.md`. Light + dark verified.
+```
+┌── Short Links ─────────────────────────────  [ + Create link ]──┐
+│  🔎 Search    ⌄ Tags    ⌄ Sort: Recent            ⟳ Archived    │
+├─────────────────────────────────────────────────────────────────┤
+│ ▢fav  linkme.you/spring-sale   ⧉ copy   ▪ QR   ● Active    •••   │
+│       → creators.digione.ai/p/xyz…   #promo #ig                  │
+│                                            ▮ 1,204 clicks  ›     │
+├─────────────────────────────────────────────────────────────────┤
+│ ▢fav  linkme.you/aB3xK9p       ⧉ copy   ▪ QR   ⏸ Paused    •••   │
+│       → youtube.com/watch?v=…                                    │
+│                                              ▮ 87 clicks   ›     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+- **Sidebar:** add **Short Links** (`Link2` lucide icon) to the **Grow** group `NAV` array in `src/components/dashboard/Sidebar.tsx`.
+
+- **List page** `app/dashboard/links/page.tsx` — list archetype with a **link-card stack instead of a `DataTable`** (the signature shortener look; a deliberate, justified deviation from the DataTable default):
+  - `PageHeader` "Short Links" + description, brand-red **Create link** button on the right.
+  - `Toolbar`: search (code / destination / title), tag filter, sort (Recent / Most clicks), archived toggle.
+  - Each **link card** (custom row composition on `Card`/tokens, hover `--surface-hover`):
+    - **Favicon** of the destination in a rounded `--surface-muted` well (fetched from a favicon service — Google `s2/favicons` or DuckDuckGo `icons.duckduckgo.com` — with a `Link2` fallback). *Privacy note: this leaks the destination host to the favicon provider; acceptable for MVP, revisit with an own-proxy later.*
+    - Short URL `{domain}/{code}` in `text-sm font-semibold` with an inline **copy** button (`Copy` → `Check`) and a **QR** trigger (`QrCode`); destination URL truncated in `--text-secondary` beneath, with token-colored **tag chips**.
+    - Right side: a **click badge** (`BarChart2` + formatted count) linking to analytics, a `StatusPill` (Active / Paused / Expired / Archived), and a `MoreHorizontal` overflow menu (Edit, Copy link, QR, Share, Pause/Resume, Archive, Delete).
+  - `EmptyState` (`Link2`) with a "Create your first link" CTA; `Skeleton` rows while loading.
+
+- **Create / edit** — `SideDrawer` in the Dub idiom, two regions:
+  - **Live preview** at the top: the `{domain}/{code}` chip + a live **QR** (`qrcode.react`) that re-renders as the code changes, with a copy affordance.
+  - **Form:** Destination URL (favicon auto-pulls once valid), **Short link** = read-only domain + editable `code` field with live availability (`GET /api/links/check-code`, green check / red taken) or auto-generate; **Tags**; collapsible **UTM builder** (source / medium / campaign / term / content); collapsible **Expiration** (date + fallback URL). Brand-red **Save** in the footer.
+
+- **Analytics** — dedicated detail page `/dashboard/links/[id]` (Dub-style, room for charts):
+  - Header: the link chip + copy/QR + edit + `DateRangePicker`.
+  - `KpiGrid` of `StatCard`s: Total clicks, Unique clicks, Top country, Top referrer.
+  - recharts **area/line time-series** of clicks, themed with tokens per `dashboard-design.md`.
+  - **Breakdown panels** as horizontal-bar lists (label + `--brand` mini progress bar + count): Countries, Devices, Browsers, OS, Referrers — aggregated **client-side from RLS-read `linksh_click_events`** at MVP scale. QR PNG download available here too.
+
+- **Hook:** `useShortLinks` in `src/hooks/marketing/` — query key `['short-links','list']`, reads via the browser client + RLS (mirrors `useCoupons`). A per-link `['short-links','analytics', id]` query reads that link's events (RLS SELECT-own). Mutations call the write routes in §7 and invalidate `['short-links']`.
 
 ---
 
