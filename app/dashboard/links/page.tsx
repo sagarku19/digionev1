@@ -9,11 +9,11 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useShortLinks, type ShortLink } from '@/hooks/marketing/useShortLinks';
 import { LinkCard } from '@/components/dashboard/links/LinkCard';
-import { LinkFormDrawer } from '@/components/dashboard/links/LinkFormDrawer';
+import { LinkFormModal } from '@/components/dashboard/links/LinkFormModal';
 
 export default function ShortLinksPage() {
   const { links, isLoading, createLink, isCreating, updateLink, isUpdating, deleteLink } = useShortLinks();
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ShortLink | null>(null);
   const [search, setSearch] = useState('');
 
@@ -34,8 +34,8 @@ export default function ShortLinksPage() {
     );
   }, [links, search]);
 
-  const openCreate = () => { setEditing(null); setDrawerOpen(true); };
-  const openEdit = (l: ShortLink) => { setEditing(l); setDrawerOpen(true); };
+  const openCreate = () => { setEditing(null); setModalOpen(true); };
+  const openEdit = (l: ShortLink) => { setEditing(l); setModalOpen(true); };
   const toggle = (l: ShortLink) => updateLink({ id: l.id, is_active: !l.is_active });
   const archive = (l: ShortLink) => updateLink({ id: l.id, archived_at: l.archived_at ? null : new Date().toISOString() });
   const remove = (l: ShortLink) => { if (confirm(`Delete ${l.code}? This cannot be undone.`)) deleteLink(l.id); };
@@ -110,9 +110,9 @@ export default function ShortLinksPage() {
         )}
       </div>
 
-      <LinkFormDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+      <LinkFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
         editing={editing}
         onCreate={createLink}
         onUpdate={updateLink}
