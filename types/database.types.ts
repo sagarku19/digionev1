@@ -1569,6 +1569,7 @@ export type Database = {
       }
       linksh_links: {
         Row: {
+          android_url: string | null
           archived_at: string | null
           click_count: number
           code: string
@@ -1577,9 +1578,16 @@ export type Database = {
           destination_url: string
           expired_redirect_url: string | null
           expires_at: string | null
+          geo: Json | null
           id: string
+          ios_url: string | null
           is_active: boolean
           last_clicked_at: string | null
+          max_clicks: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          password_hash: string | null
           tags: string[]
           title: string | null
           unique_click_count: number
@@ -1591,6 +1599,7 @@ export type Database = {
           utm_term: string | null
         }
         Insert: {
+          android_url?: string | null
           archived_at?: string | null
           click_count?: number
           code: string
@@ -1599,9 +1608,16 @@ export type Database = {
           destination_url: string
           expired_redirect_url?: string | null
           expires_at?: string | null
+          geo?: Json | null
           id?: string
+          ios_url?: string | null
           is_active?: boolean
           last_clicked_at?: string | null
+          max_clicks?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          password_hash?: string | null
           tags?: string[]
           title?: string | null
           unique_click_count?: number
@@ -1613,6 +1629,7 @@ export type Database = {
           utm_term?: string | null
         }
         Update: {
+          android_url?: string | null
           archived_at?: string | null
           click_count?: number
           code?: string
@@ -1621,9 +1638,16 @@ export type Database = {
           destination_url?: string
           expired_redirect_url?: string | null
           expires_at?: string | null
+          geo?: Json | null
           id?: string
+          ios_url?: string | null
           is_active?: boolean
           last_clicked_at?: string | null
+          max_clicks?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          password_hash?: string | null
           tags?: string[]
           title?: string | null
           unique_click_count?: number
