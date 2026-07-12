@@ -4,6 +4,11 @@ import type { Database } from '@/types/database.types';
 
 const GUARDED_PREFIXES = ['/dashboard', '/account'];
 
+const SHORTLINK_DOMAIN = (process.env.NEXT_PUBLIC_SHORTLINK_DOMAIN || '')
+  .toLowerCase()
+  .split(':')[0];
+const SHORTLINK_RESERVED = new Set(['robots.txt', 'sitemap.xml', 'report', 'favicon.ico']);
+
 function isMainHost(hostHeader: string): boolean {
   const host = hostHeader.toLowerCase().split(':')[0];
   const root = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000')
@@ -22,6 +27,20 @@ function isMainHost(hostHeader: string): boolean {
 export default async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
+
+  // 0. Dedicated short-link domain — bare-root {shortdomain}/{code}
+  const bareHost = hostname.toLowerCase().split(':')[0];
+  if (SHORTLINK_DOMAIN && bareHost === SHORTLINK_DOMAIN) {
+    if (url.pathname === '/') {
+      return NextResponse.redirect(process.env.NEXT_PUBLIC_APP_URL || 'https://digione.ai');
+    }
+    const code = url.pathname.slice(1);
+    if (SHORTLINK_RESERVED.has(code) || code.includes('/')) {
+      return NextResponse.next();
+    }
+    url.pathname = `/api/s/${code}`;
+    return NextResponse.rewrite(url);
+  }
 
   // 1. Custom-domain rewrite — exact host matching, no Supabase client
   if (!isMainHost(hostname)) {

@@ -1501,6 +1501,173 @@ export type Database = {
           },
         ]
       }
+      linksh_click_events: {
+        Row: {
+          browser: string | null
+          country: string | null
+          created_at: string
+          creator_id: string
+          dedup_hash: string
+          device_type: string | null
+          id: string
+          ip_hash: string | null
+          is_unique: boolean
+          link_id: string
+          os: string | null
+          referrer_url: string | null
+          resolved_destination_url: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          creator_id: string
+          dedup_hash: string
+          device_type?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_unique?: boolean
+          link_id: string
+          os?: string | null
+          referrer_url?: string | null
+          resolved_destination_url?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          browser?: string | null
+          country?: string | null
+          created_at?: string
+          creator_id?: string
+          dedup_hash?: string
+          device_type?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_unique?: boolean
+          link_id?: string
+          os?: string | null
+          referrer_url?: string | null
+          resolved_destination_url?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linksh_click_events_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "linksh_click_events_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "linksh_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      linksh_links: {
+        Row: {
+          android_url: string | null
+          archived_at: string | null
+          click_count: number
+          code: string
+          created_at: string
+          creator_id: string
+          destination_url: string
+          expired_redirect_url: string | null
+          expires_at: string | null
+          geo: Json | null
+          id: string
+          ios_url: string | null
+          is_active: boolean
+          last_clicked_at: string | null
+          max_clicks: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          password_hash: string | null
+          tags: string[]
+          title: string | null
+          unique_click_count: number
+          updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          android_url?: string | null
+          archived_at?: string | null
+          click_count?: number
+          code: string
+          created_at?: string
+          creator_id: string
+          destination_url: string
+          expired_redirect_url?: string | null
+          expires_at?: string | null
+          geo?: Json | null
+          id?: string
+          ios_url?: string | null
+          is_active?: boolean
+          last_clicked_at?: string | null
+          max_clicks?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          password_hash?: string | null
+          tags?: string[]
+          title?: string | null
+          unique_click_count?: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          android_url?: string | null
+          archived_at?: string | null
+          click_count?: number
+          code?: string
+          created_at?: string
+          creator_id?: string
+          destination_url?: string
+          expired_redirect_url?: string | null
+          expires_at?: string | null
+          geo?: Json | null
+          id?: string
+          ios_url?: string | null
+          is_active?: boolean
+          last_clicked_at?: string | null
+          max_clicks?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          password_hash?: string | null
+          tags?: string[]
+          title?: string | null
+          unique_click_count?: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linksh_links_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -3811,6 +3978,22 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      linksh_record_click: {
+        Args: {
+          p_browser: string
+          p_country: string
+          p_creator_id: string
+          p_dedup_hash: string
+          p_device_type: string
+          p_ip_hash: string
+          p_link_id: string
+          p_os: string
+          p_referrer_url: string
+          p_resolved_destination_url: string
+          p_user_agent: string
+        }
+        Returns: boolean
       }
       preview_payout_tax: { Args: { p_creator_id: string }; Returns: Json }
       reconcile_creator_balances: { Args: never; Returns: number }

@@ -9,7 +9,7 @@ import {
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
   Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, MessageCircle, HelpCircle,
-  Instagram, Zap, Calendar, ShoppingBag, Sparkles, ShieldCheck,
+  Instagram, Zap, Calendar, ShoppingBag, Sparkles, ShieldCheck, Link2,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/creator/useCreator';
 import { useNotifications } from '@/hooks/notifications/useNotifications';
@@ -48,6 +48,7 @@ const NAV: NavGroup[] = [
       { label: 'Auto DM', href: '/dashboard/autodm', icon: Instagram },
       { label: 'Integrations', href: '/dashboard/integrations', icon: Zap },
       { label: 'Community', href: '/dashboard/marketing/community', icon: MessageCircle },
+      { label: 'Short Links', href: '/dashboard/links', icon: Link2 },
 
       {
         label: 'Marketing',
