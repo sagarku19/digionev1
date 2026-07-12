@@ -110,7 +110,7 @@ export function LinkFormDrawer({
       footer={
         <button
           onClick={submit}
-          disabled={busy || !destination.trim() || availability === 'taken' || availability === 'invalid'}
+          disabled={busy || !destination.trim() || availability === 'checking' || availability === 'taken' || availability === 'invalid'}
           className="w-full bg-[var(--brand)] hover:bg-[var(--brand-hover)] disabled:opacity-50 text-[var(--text-on-brand)] py-2.5 rounded-[var(--radius-sm)] text-sm font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
           {busy ? 'Saving…' : editing ? 'Save changes' : 'Create link'}
