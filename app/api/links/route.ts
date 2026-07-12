@@ -9,6 +9,8 @@ import { rateLimitKey } from '@/lib/server/rate-limit';
 import { generateCode, isValidCode, normalizeCode } from '@/lib/server/shortlinks/code';
 import { validateDestinationUrl } from '@/lib/server/shortlinks/url-safety';
 import { getShortlinkDomain } from '@/lib/shared/shortlink';
+import { hashPassword } from '@/lib/server/shortlinks/password';
+import { sanitizePhase2Fields } from '@/lib/server/shortlinks/link-input';
 
 interface CreateBody {
   destination_url?: string;
@@ -22,6 +24,14 @@ interface CreateBody {
   utm_content?: string;
   expires_at?: string | null;
   expired_redirect_url?: string | null;
+  password?: string;
+  ios_url?: string;
+  android_url?: string;
+  geo?: Record<string, string>;
+  og_title?: string;
+  og_description?: string;
+  og_image?: string;
+  max_clicks?: number | null;
 }
 
 function appHostOf(appUrl?: string): string | undefined {
@@ -62,6 +72,12 @@ export async function POST(req: Request) {
     });
     if (!urlCheck.ok) return NextResponse.json({ error: urlCheck.error }, { status: 400 });
 
+    const phase2 = sanitizePhase2Fields(body, {
+      shortDomain: getShortlinkDomain(),
+      appHost: appHostOf(process.env.NEXT_PUBLIC_APP_URL),
+    });
+    if (!phase2.ok) return NextResponse.json({ error: phase2.error }, { status: 400 });
+
     const db = createServiceClient();
 
     let code: string;
@@ -89,6 +105,14 @@ export async function POST(req: Request) {
       utm_content: body.utm_content?.trim() || null,
       expires_at: body.expires_at || null,
       expired_redirect_url: body.expired_redirect_url?.trim() || null,
+      password_hash: body.password && body.password.trim() ? hashPassword(body.password) : null,
+      ios_url: phase2.fields.ios_url ?? null,
+      android_url: phase2.fields.android_url ?? null,
+      geo: phase2.fields.geo ?? null,
+      og_title: phase2.fields.og_title ?? null,
+      og_description: phase2.fields.og_description ?? null,
+      og_image: phase2.fields.og_image ?? null,
+      max_clicks: phase2.fields.max_clicks ?? null,
     }).select().single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

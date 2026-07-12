@@ -20,6 +20,14 @@ export interface CreateLinkInput {
   utm_content?: string;
   expires_at?: string | null;
   expired_redirect_url?: string | null;
+  password?: string;
+  ios_url?: string | null;
+  android_url?: string | null;
+  geo?: Record<string, string> | null;
+  og_title?: string | null;
+  og_description?: string | null;
+  og_image?: string | null;
+  max_clicks?: number | null;
 }
 
 export type UpdateLinkInput = Partial<CreateLinkInput> & {

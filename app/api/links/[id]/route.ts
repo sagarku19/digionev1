@@ -8,6 +8,8 @@ import { resolveProfileId } from '@/lib/server/resolve-profile';
 import { isValidCode, normalizeCode } from '@/lib/server/shortlinks/code';
 import { validateDestinationUrl } from '@/lib/server/shortlinks/url-safety';
 import { getShortlinkDomain } from '@/lib/shared/shortlink';
+import { hashPassword } from '@/lib/server/shortlinks/password';
+import { sanitizePhase2Fields } from '@/lib/server/shortlinks/link-input';
 
 interface PatchBody {
   destination_url?: string;
@@ -23,6 +25,14 @@ interface PatchBody {
   expired_redirect_url?: string | null;
   is_active?: boolean;
   archived_at?: string | null;
+  password?: string;
+  ios_url?: string | null;
+  android_url?: string | null;
+  geo?: Record<string, string> | null;
+  og_title?: string | null;
+  og_description?: string | null;
+  og_image?: string | null;
+  max_clicks?: number | null;
 }
 
 function appHostOf(appUrl?: string): string | undefined {
@@ -74,6 +84,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       if (body[key] !== undefined) patch[key] = body[key];
     }
     if (body.tags !== undefined) patch.tags = Array.isArray(body.tags) ? body.tags.slice(0, 20) : [];
+
+    const phase2 = sanitizePhase2Fields(body, {
+      shortDomain: getShortlinkDomain(),
+      appHost: appHostOf(process.env.NEXT_PUBLIC_APP_URL),
+    });
+    if (!phase2.ok) return NextResponse.json({ error: phase2.error }, { status: 400 });
+    Object.assign(patch, phase2.fields); // only keys the client sent are present
+
+    // Password: undefined = leave unchanged; '' = clear; non-empty = re-hash.
+    if (body.password !== undefined) {
+      patch.password_hash = body.password.trim() ? hashPassword(body.password) : null;
+    }
 
     const { data, error } = await db
       .from('linksh_links')
