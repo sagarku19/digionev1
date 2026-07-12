@@ -48,7 +48,7 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | GET | `/api/invoices/sale/[orderId]` | cookie session | server + service role | reads `orders`; issues `invoices` + `invoice_counters` (via `issue_invoice`); caches PDF to R2 `storage_files` (`kind='invoice'`) |
 | GET | `/api/invoices/commission/[month]` | cookie session | server + service role | reads `tax_transactions` (posted only); issues `invoices` + `invoice_counters`; caches PDF to R2 |
 | GET | `/api/statements/annual/[fy]` | cookie session | server + service role | reads `tax_transactions` + `creator_payouts`; renders an informational PDF; caches to R2 `storage_files` (`kind='tax_doc'`) |
-| GET | `/api/s/[code]` | none (public) | service role | — (reads `linksh_links`; writes `linksh_click_events` + counters via `linksh_record_click`, post-response) |
+| GET/POST | `/api/s/[code]` | none (public) | service role | — (redirect resolver: max-clicks/expiry gate, social-crawler OG shell, password interstitial + POST verify w/ unlock cookie, geo→device→default targeting; writes `linksh_click_events` + counters via `linksh_record_click`, post-response) |
 | POST | `/api/links` | cookie session | server + service role | `linksh_links` (create; URL-safety + code validation + per-creator rate limit) |
 | PATCH/DELETE | `/api/links/[id]` | cookie session | server + service role | `linksh_links` (owner-scoped edit / delete) |
 | GET | `/api/links/check-code` | none (public) | service role | — (code availability) |
