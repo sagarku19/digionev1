@@ -19,7 +19,7 @@ describe('TtlCache', () => {
   });
 
   it('distinguishes a cached null from a miss', () => {
-    let now = 0;
+    const now = 0;
     const c = new TtlCache<number | null>(1000, () => now);
     c.set('a', null);
     expect(c.get('a')).toBeNull();      // cached negative lookup

@@ -37,6 +37,10 @@ export function LinkFormDrawer({
 
   useEffect(() => {
     if (!open) return;
+    // Prop→state sync: reset the form from `editing` each time the drawer opens.
+    // This is a legitimate effect use; the rule's cascading-render concern doesn't
+    // apply (runs once per open, guarded by `if (!open) return`).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError('');
     setAvailability('idle');
     if (editing) {
@@ -60,10 +64,10 @@ export function LinkFormDrawer({
 
   // Debounced code availability check (skip when unchanged in edit mode).
   useEffect(() => {
-    if (!open || !code) { setAvailability('idle'); return; }
-    if (editing && code === editing.code) { setAvailability('idle'); return; }
-    setAvailability('checking');
     const t = setTimeout(async () => {
+      if (!open || !code) { setAvailability('idle'); return; }
+      if (editing && code === editing.code) { setAvailability('idle'); return; }
+      setAvailability('checking');
       try {
         const res = await fetch(`/api/links/check-code?code=${encodeURIComponent(code)}`);
         const data = await res.json();
