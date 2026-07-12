@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Copy, Check, BarChart2, MoreHorizontal, Pencil, Trash2, Pause, Play, Link2, Archive, ArchiveRestore, type LucideIcon } from 'lucide-react';
+import { Copy, Check, BarChart2, Lock, MoreHorizontal, Pencil, Trash2, Pause, Play, Link2, Archive, ArchiveRestore, type LucideIcon } from 'lucide-react';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { QRButton } from './QRButton';
 import { shortUrl } from '@/lib/shared/shortlink';
@@ -63,6 +63,7 @@ export function LinkCard({
             {copied ? <Check className="w-3.5 h-3.5 text-[var(--success)]" /> : <Copy className="w-3.5 h-3.5" />}
           </button>
           <QRButton url={url} label={link.code} />
+          {link.password_hash ? <Lock className="w-3.5 h-3.5 text-[var(--text-tertiary)]" aria-label="Password protected" /> : null}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-xs text-[var(--text-secondary)] truncate">{link.destination_url}</span>

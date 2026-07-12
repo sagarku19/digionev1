@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { ChevronDown, Check, Loader2 } from 'lucide-react';
+import { ChevronDown, Check, Loader2, Plus, X } from 'lucide-react';
 import { SideDrawer } from '@/components/ui/SideDrawer';
 import { getShortlinkDomain, shortUrl } from '@/lib/shared/shortlink';
 import type { ShortLink, CreateLinkInput, UpdateLinkInput } from '@/hooks/marketing/useShortLinks';
@@ -35,6 +35,15 @@ export function LinkFormDrawer({
   const [availability, setAvailability] = useState<Availability>('idle');
   const [error, setError] = useState('');
 
+  // Phase 2 state
+  const [password, setPassword] = useState('');
+  const [iosUrl, setIosUrl] = useState('');
+  const [androidUrl, setAndroidUrl] = useState('');
+  const [geoRows, setGeoRows] = useState<Array<{ cc: string; url: string }>>([]);
+  const [og, setOg] = useState({ title: '', description: '', image: '' });
+  const [maxClicks, setMaxClicks] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   useEffect(() => {
     if (!open) return;
     // Prop→state sync: reset the form from `editing` each time the drawer opens.
@@ -55,10 +64,30 @@ export function LinkFormDrawer({
       });
       setExpiresAt(editing.expires_at ? editing.expires_at.slice(0, 10) : '');
       setFallback(editing.expired_redirect_url ?? '');
+      // Phase 2 — password is NEVER prefilled
+      setPassword('');
+      setIosUrl(editing.ios_url ?? '');
+      setAndroidUrl(editing.android_url ?? '');
+      setGeoRows(editing.geo && typeof editing.geo === 'object'
+        ? Object.entries(editing.geo as Record<string, string>).map(([cc, url]) => ({ cc, url }))
+        : []);
+      setOg({
+        title: editing.og_title ?? '',
+        description: editing.og_description ?? '',
+        image: editing.og_image ?? '',
+      });
+      setMaxClicks(editing.max_clicks != null ? String(editing.max_clicks) : '');
     } else {
       setDestination(''); setCode(''); setTitle(''); setTags('');
       setUtm({ source: '', medium: '', campaign: '', term: '', content: '' });
       setExpiresAt(''); setFallback('');
+      // Phase 2 resets
+      setPassword('');
+      setIosUrl('');
+      setAndroidUrl('');
+      setGeoRows([]);
+      setOg({ title: '', description: '', image: '' });
+      setMaxClicks('');
     }
   }, [open, editing]);
 
@@ -97,6 +126,19 @@ export function LinkFormDrawer({
         utm_content: utm.content.trim() || undefined,
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
         expired_redirect_url: fallback.trim() || null,
+        // Phase 2 fields
+        ...(password.trim() ? { password } : {}),
+        ios_url: iosUrl.trim() || null,
+        android_url: androidUrl.trim() || null,
+        geo: geoRows.reduce((acc, r) => {
+          const cc = r.cc.trim().toUpperCase();
+          if (cc && r.url.trim()) acc[cc] = r.url.trim();
+          return acc;
+        }, {} as Record<string, string>),
+        og_title: og.title.trim() || null,
+        og_description: og.description.trim() || null,
+        og_image: og.image.trim() || null,
+        max_clicks: maxClicks.trim() ? Number(maxClicks) : null,
       };
       if (editing) await onUpdate({ id: editing.id, ...payload });
       else await onCreate(payload);
@@ -211,6 +253,141 @@ export function LinkFormDrawer({
             <div>
               <label className={LABEL}>Fallback URL when expired</label>
               <input value={fallback} onChange={(e) => setFallback(e.target.value)} placeholder="https://…" className={INPUT} />
+            </div>
+          </div>
+        )}
+
+        {/* Advanced section */}
+        <button
+          type="button"
+          onClick={() => setShowAdvanced((v) => !v)}
+          className="flex items-center gap-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} /> Advanced
+        </button>
+        {showAdvanced && (
+          <div className="space-y-5">
+            {/* Password */}
+            <div>
+              <label className={LABEL}>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Leave blank for no password"
+                className={INPUT}
+              />
+              <p className="mt-1 text-xs text-[var(--text-tertiary)]">
+                {editing?.password_hash
+                  ? 'This link is password-protected. Leave blank to keep the current password; type a new one to change it.'
+                  : 'Require a password before redirecting.'}
+              </p>
+            </div>
+
+            {/* Device targeting */}
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Device targeting</p>
+              <div>
+                <label className={LABEL}>iOS URL</label>
+                <input
+                  value={iosUrl}
+                  onChange={(e) => setIosUrl(e.target.value)}
+                  placeholder="https://apps.apple.com/…"
+                  className={INPUT}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Android URL</label>
+                <input
+                  value={androidUrl}
+                  onChange={(e) => setAndroidUrl(e.target.value)}
+                  placeholder="https://play.google.com/…"
+                  className={INPUT}
+                />
+              </div>
+            </div>
+
+            {/* Geo targeting */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Geo targeting</p>
+              {geoRows.map((row, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={row.cc}
+                    onChange={(e) => setGeoRows((prev) => prev.map((r, j) => j === i ? { ...r, cc: e.target.value.toUpperCase().slice(0, 2) } : r))}
+                    placeholder="IN"
+                    maxLength={2}
+                    className="w-14 px-2 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow uppercase"
+                  />
+                  <input
+                    value={row.url}
+                    onChange={(e) => setGeoRows((prev) => prev.map((r, j) => j === i ? { ...r, url: e.target.value } : r))}
+                    placeholder="https://…"
+                    className={`${INPUT} flex-1`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setGeoRows((prev) => prev.filter((_, j) => j !== i))}
+                    className="p-1.5 rounded text-[var(--text-tertiary)] hover:text-[var(--danger)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                    aria-label="Remove country"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setGeoRows((prev) => [...prev, { cc: '', url: '' }])}
+                className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded py-1"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add country
+              </button>
+            </div>
+
+            {/* Social preview (OG) */}
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-[var(--text-tertiary)] uppercase tracking-wide">Social preview</p>
+              <div>
+                <label className={LABEL}>OG title</label>
+                <input
+                  value={og.title}
+                  onChange={(e) => setOg((p) => ({ ...p, title: e.target.value }))}
+                  placeholder="Title shown when shared"
+                  className={INPUT}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>OG description</label>
+                <input
+                  value={og.description}
+                  onChange={(e) => setOg((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="Short description"
+                  className={INPUT}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>OG image URL</label>
+                <input
+                  value={og.image}
+                  onChange={(e) => setOg((p) => ({ ...p, image: e.target.value }))}
+                  placeholder="https://…"
+                  className={INPUT}
+                />
+              </div>
+            </div>
+
+            {/* Limits */}
+            <div>
+              <label className={LABEL}>Max clicks</label>
+              <input
+                type="number"
+                min={1}
+                value={maxClicks}
+                onChange={(e) => setMaxClicks(e.target.value)}
+                placeholder="Unlimited"
+                className={INPUT}
+              />
+              <p className="mt-1 text-xs text-[var(--text-tertiary)]">Link stops working after this many clicks.</p>
             </div>
           </div>
         )}
