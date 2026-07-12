@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Copy, Check, BarChart2, Lock, MoreHorizontal, Pencil, Trash2, Pause, Play, Link2, Archive, ArchiveRestore, type LucideIcon } from 'lucide-react';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { QRButton } from './QRButton';
@@ -34,7 +33,6 @@ export function LinkCard({
   onArchive: (l: ShortLink) => void;
   onDelete: (l: ShortLink) => void;
 }) {
-  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [menu, setMenu] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
@@ -100,20 +98,32 @@ export function LinkCard({
         </div>
       </div>
 
-      {/* Clicks → analytics */}
-      <Link
-        href={`/dashboard/links/${link.id}`}
-        className="flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded px-1"
-      >
-        <BarChart2 className="w-4 h-4" />
+      {/* Clicks count */}
+      <div className="flex items-center gap-1 text-sm shrink-0">
         <span className="font-semibold text-[var(--text-primary)]">{link.click_count.toLocaleString('en-IN')}</span>
-        <span className="hidden sm:inline text-xs">clicks</span>
-      </Link>
+        <span className="hidden sm:inline text-xs text-[var(--text-secondary)]">clicks</span>
+      </div>
 
       <StatusPill status={statusOf(link)} />
 
-      {/* Overflow menu */}
-      <div className="shrink-0">
+      {/* Always-visible actions + overflow */}
+      <div className="flex items-center gap-0.5 shrink-0">
+        <Link
+          href={`/dashboard/links/${link.id}`}
+          title="Analytics"
+          aria-label="Analytics"
+          className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        >
+          <BarChart2 className="w-4 h-4" />
+        </Link>
+        <button
+          onClick={() => onEdit(link)}
+          title="Edit"
+          aria-label="Edit"
+          className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        >
+          <Pencil className="w-4 h-4" />
+        </button>
         <button
           ref={btnRef}
           onClick={() => (menu ? setMenu(false) : openMenu())}
@@ -131,8 +141,6 @@ export function LinkCard({
               style={{ top: menuPos.top, right: menuPos.right }}
               className="fixed z-[56] w-44 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] shadow-[var(--shadow-md)] py-1"
             >
-              <MenuItem icon={BarChart2} label="View analytics" onClick={() => { setMenu(false); router.push(`/dashboard/links/${link.id}`); }} />
-              <MenuItem icon={Pencil} label="Edit" onClick={() => { setMenu(false); onEdit(link); }} />
               <MenuItem
                 icon={link.is_active ? Pause : Play}
                 label={link.is_active ? 'Pause' : 'Resume'}
