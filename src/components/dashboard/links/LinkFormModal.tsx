@@ -28,6 +28,7 @@ export function LinkFormModal({
   const [utm, setUtm] = useState({ source: '', medium: '', campaign: '', term: '', content: '' });
   const [expiresAt, setExpiresAt] = useState('');
   const [fallback, setFallback] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
   const [showUtm, setShowUtm] = useState(false);
   const [showExpiry, setShowExpiry] = useState(false);
   const [availability, setAvailability] = useState<Availability>('idle');
@@ -207,15 +208,26 @@ export function LinkFormModal({
               {availability === 'invalid' && <p className="mt-1 text-xs text-[var(--danger)]">3–50 chars: letters, numbers, - or _.</p>}
             </div>
 
-            <div>
-              <label className={LABEL}>Title <span className="text-[var(--text-tertiary)] font-normal">optional</span></label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Spring sale promo" className={INPUT} />
-            </div>
-
-            <div>
-              <label className={LABEL}>Tags <span className="text-[var(--text-tertiary)] font-normal">comma-separated</span></label>
-              <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="promo, instagram" className={INPUT} />
-            </div>
+            {/* Title & tags section */}
+            <button
+              type="button"
+              onClick={() => setShowDetails((v) => !v)}
+              className="flex items-center gap-1.5 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded"
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-180' : ''}`} /> Title &amp; tags
+            </button>
+            {showDetails && (
+              <div className="space-y-4">
+                <div>
+                  <label className={LABEL}>Title <span className="text-[var(--text-tertiary)] font-normal">optional</span></label>
+                  <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Spring sale promo" className={INPUT} />
+                </div>
+                <div>
+                  <label className={LABEL}>Tags <span className="text-[var(--text-tertiary)] font-normal">comma-separated</span></label>
+                  <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="promo, instagram" className={INPUT} />
+                </div>
+              </div>
+            )}
 
             {/* UTM section */}
             <button
