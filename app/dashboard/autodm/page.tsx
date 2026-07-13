@@ -7,6 +7,7 @@
 // docs/superpowers/specs/2026-06-14-dashboard-production-audit-design.md.
 
 import React, { useState, useCallback } from 'react';
+import { AutoDmProvider } from '@/components/dashboard/autodm/AutoDmContext';
 import {
   Instagram, Zap, MessageCircle, Users, BarChart3, Settings,
   Image, ChevronRight, Plus, Play, Pause, Trash2, Edit3,
@@ -1268,6 +1269,7 @@ export default function AutoDMPage() {
   }
 
   return (
+    <AutoDmProvider>
     <>
       {/* ── Sub-sidebar: fixed, anchored right after the main 256px sidebar ── */}
       <aside
@@ -1353,5 +1355,6 @@ export default function AutoDMPage() {
         </div>
       </div>
     </>
+    </AutoDmProvider>
   );
 }
