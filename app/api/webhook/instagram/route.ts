@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       const events = parseWebhookEnvelope(envelope);
       const byAccount = new Map<string, string>(); // igAccountId → account.id
       for (const ev of events) {
-        let accountId = byAccount.get(ev.accountIgId);
+        const accountId = byAccount.get(ev.accountIgId);
         let account;
         if (!accountId) {
           const { data } = await db.from('instaauto_accounts').select('*')
