@@ -1,6 +1,6 @@
 # Dashboard Reference Map
 
-> Last synced: 2026-07-06
+> Last synced: 2026-07-13
 > Generated from: `app/dashboard/**/page.tsx` + `src/components/dashboard/site-edit/tabs/**`
 > Regenerate / audit: `/sync-docs`
 > Read this FIRST for any `app/dashboard/**` task instead of globbing pages.

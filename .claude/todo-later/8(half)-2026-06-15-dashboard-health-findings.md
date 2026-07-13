@@ -15,7 +15,7 @@ Baseline at capture: `npx tsc --noEmit` = clean repo-wide; `npm test` = 2 files 
 ## Status update 2026-07-07 — re-tagged (half)
 
 - **#1 — FIXED:** the media library was rebuilt on R2 (`/api/media/*` routes + `useMyMedia`); no `uploads`-bucket references remain in `app/dashboard/media/page.tsx`.
-- **#2 — re-verified still present** (1 `rules-of-hooks` violation in autodm; still a non-wired prototype).
+- **#2 — FIXED (2026-07-13):** `useTemplate`-in-callback renamed to `applyTemplate` (plain function); autodm page rewired to real data on `feat/instagram-auto-dm`.
 - **#3 — still present** (repo lint ≈106 `any` errors clustered in site-edit/marketing hooks; tracked in `7(left)-2026-06-14-dashboard-refactor-followups.md`).
 - Baseline drift note: tests are now 25 files / 114 passing (was 2/12 at capture).
 
@@ -25,9 +25,8 @@ Baseline at capture: `npx tsc --noEmit` = clean repo-wide; `npm test` = 2 files 
 - The page also does direct `createClient` + `getCreatorProfileId` storage calls rather than going through `/api/upload` (the hardened, quota-checked path).
 - **Fix sketch:** repoint to `creator-public` (public assets) and/or `creator-content`, and route uploads through `POST /api/upload`. Verify against the live bucket list before coding. Read `.claude/todo-later/1(half)-2026-06-03-storage-followups.md` first.
 
-## 2. 🟠 react-hooks/rules-of-hooks violation in autodm
-- `app/dashboard/autodm/page.tsx:1142` — `useTemplate` is called inside a callback (`react-hooks/rules-of-hooks` error). There's a related issue around `:1082`.
-- autodm is a **documented non-wired prototype** (commit `554831a` "docs(autodm): mark the page as a non-wired prototype"), so it's not user-reachable — low urgency, but it's a genuine violation and a runtime crash risk if the page is ever wired up. Fix when productionising autodm (or delete the prototype).
+## 2. 🟢 react-hooks/rules-of-hooks violation in autodm — FIXED (2026-07-13)
+- **Fixed** in `feat/instagram-auto-dm` (Instagram Auto DM Phase 1 build). The prototype page was replaced entirely: `useTemplate` (the hook called inside a callback) was renamed to `applyTemplate` (a plain function), and the page was rewired to real data via `useInstaAccount`, `useInstaAutomations`, `useInstaLeads`, `useInstaMessages`, `useInstaAnalytics`. No rules-of-hooks violation remains in autodm.
 
 ## 3. 🟡 ~81 `no-explicit-any` lint errors in the site-edit editors
 - The dashboard never got the storefront's type pass. `@typescript-eslint/no-explicit-any` errors cluster in:
