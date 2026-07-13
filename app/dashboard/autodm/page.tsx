@@ -2,20 +2,23 @@
 
 import React, { useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AutoDmProvider, useAutoDm } from '@/components/dashboard/autodm/AutoDmContext';
 import { useInstaAccount } from '@/hooks/instaauto/useInstaAccount';
 import { useInstaAutomations } from '@/hooks/instaauto/useInstaAutomations';
 import { useInstaAnalytics } from '@/hooks/instaauto/useInstaAnalytics';
+import { useInstaLeads } from '@/hooks/instaauto/useInstaLeads';
+import { useInstaMessages } from '@/hooks/instaauto/useInstaMessages';
 import type { Database } from '@/types/database.types';
 import {
   Instagram, Zap, MessageCircle, Users, BarChart3, Settings,
-  Image, ChevronRight, Plus, Play, Pause, Trash2, Edit3,
-  Hash, Bell, Send, Eye, TrendingUp, ArrowUpRight,
-  CheckCircle2, XCircle, Clock, Sparkles, Bot, Target,
-  Link2, FileText, Radio, Activity, Shield, Crown,
-  ChevronLeft, X, Search, Filter, MoreVertical, Copy,
-  ToggleLeft, ToggleRight, Flame, Heart, MessageSquare,
-  AtSign, Star, RefreshCw, Download, ExternalLink,
+  Image, ChevronRight, Plus, Trash2, Edit3,
+  Hash, Bell, Send,
+  CheckCircle2, XCircle, Clock, Sparkles, Bot,
+  FileText, Radio, Activity, Crown,
+  ChevronLeft, X, Search,
+  Heart, MessageSquare,
+  AtSign, RefreshCw, Download,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -31,6 +34,8 @@ type View =
   | 'settings'
   | 'templates'
   | 'guide';
+
+type SimulateEventType = 'comment' | 'dm' | 'story_reply';
 
 type TriggerType = 'comment' | 'story_mention' | 'dm_keyword' | 'post_like' | 'live_comment' | 'story_reply' | 'story_reaction' | 'story_poll';
 type ListenerType = 'MESSAGE' | 'SMARTAI';
@@ -144,59 +149,12 @@ function uiToDbPayload(ui: Automation): DbUpsertPayload {
   };
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
+// ─── DB row types for leads + messages ───────────────────────────────────────
 
-const MOCK_AUTOMATIONS: Automation[] = [
-  {
-    id: '1',
-    name: 'Free Guide Giveaway',
-    active: true,
-    keywords: [{ id: 'k1', word: 'guide' }, { id: 'k2', word: 'free' }, { id: 'k3', word: 'send' }],
-    triggers: [{ id: 't1', type: 'comment' }, { id: 't2', type: 'story_mention' }],
-    listener: 'MESSAGE',
-    prompt: 'Hi {name}! Here is your free guide: https://yourlink.com 🎉',
-    commentReply: 'Check your DMs! 📩',
-    dmCount: 342,
-    commentCount: 128,
-    createdAt: '2026-04-10',
-    matchMode: 'exact',
-    negativeKeywords: [],
-    multilingual: false,
-    templateType: 'comment_dm',
-  },
-  {
-    id: '2',
-    name: 'Course Launch DM',
-    active: false,
-    keywords: [{ id: 'k4', word: 'course' }, { id: 'k5', word: 'enroll' }],
-    triggers: [{ id: 't3', type: 'dm_keyword' }],
-    listener: 'SMARTAI',
-    prompt: 'Hey {name}! Thanks for your interest in our course. Here are the details...',
-    commentReply: '',
-    dmCount: 89,
-    commentCount: 0,
-    createdAt: '2026-04-14',
-    matchMode: 'fuzzy',
-    negativeKeywords: [],
-    multilingual: true,
-    templateType: 'dm_keyword',
-  },
-];
-
-const MOCK_LEADS = [
-  { id: '1', username: 'john_doe', igUserId: 'ig_001', source: 'comment', createdAt: '2026-04-18T08:23:00Z' },
-  { id: '2', username: 'sarah.creates', igUserId: 'ig_002', source: 'dm', createdAt: '2026-04-18T07:10:00Z' },
-  { id: '3', username: 'techbro99', igUserId: 'ig_003', source: 'story_mention', createdAt: '2026-04-17T22:45:00Z' },
-  { id: '4', username: 'fitness_queen', igUserId: 'ig_004', source: 'comment', createdAt: '2026-04-17T19:30:00Z' },
-  { id: '5', username: 'startup.vibes', igUserId: 'ig_005', source: 'dm', createdAt: '2026-04-17T15:12:00Z' },
-];
-
-const MOCK_DMS = [
-  { id: '1', receiver: '@john_doe', message: 'Hi John! Here is your free guide: https://link.com 🎉', automationName: 'Free Guide Giveaway', createdAt: '2026-04-18T08:23:00Z', status: 'delivered' },
-  { id: '2', receiver: '@sarah.creates', message: 'Hey Sarah! Thanks for your interest in our course...', automationName: 'Course Launch DM', createdAt: '2026-04-18T07:10:00Z', status: 'delivered' },
-  { id: '3', receiver: '@techbro99', message: 'Hi! Here is your free guide: https://link.com 🎉', automationName: 'Free Guide Giveaway', createdAt: '2026-04-17T22:45:00Z', status: 'failed' },
-  { id: '4', receiver: '@fitness_queen', message: 'Hi! Here is your free guide: https://link.com 🎉', automationName: 'Free Guide Giveaway', createdAt: '2026-04-17T19:30:00Z', status: 'delivered' },
-];
+type DbLead = Database['public']['Tables']['instaauto_leads']['Row'];
+type DbMessage = Database['public']['Tables']['instaauto_messages']['Row'] & {
+  instaauto_automations: { name: string } | null;
+};
 
 const TRIGGER_LABELS: Record<TriggerType, string> = {
   comment: 'Post Comment',
@@ -297,13 +255,87 @@ function StatCard({ icon: Icon, label, value, sub, color = 'pink' }: { icon: Rea
   );
 }
 
+// ─── Simulate Panel (demo accounts only) ─────────────────────────────────────
+
+function SimulatePanel() {
+  const queryClient = useQueryClient();
+  const [eventType, setEventType] = useState<SimulateEventType>('comment');
+  const [text, setText] = useState('');
+  const [igUsername, setIgUsername] = useState('');
+
+  const { mutate, isPending, isSuccess, isError } = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/instaauto/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventType, text: text || eventType, igUsername: igUsername || undefined }),
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(body.error ?? 'Simulate failed');
+      }
+    },
+    onSuccess: () => {
+      setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: ['instaauto'] });
+      }, 1200);
+      setText('');
+      setIgUsername('');
+    },
+  });
+
+  return (
+    <div className="bg-[var(--surface)] border border-[var(--brand)]/30 rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <Bot className="w-4 h-4 text-[var(--brand)]" />
+        <p className="text-sm font-bold text-[var(--text-primary)]">Simulate Event <span className="text-xs font-normal text-[var(--text-tertiary)]">(demo mode)</span></p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <select
+          value={eventType}
+          onChange={e => setEventType(e.target.value as SimulateEventType)}
+          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
+        >
+          <option value="comment">Comment</option>
+          <option value="dm">DM</option>
+          <option value="story_reply">Story Reply</option>
+        </select>
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder="Keyword / message text..."
+          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
+        />
+        <input
+          value={igUsername}
+          onChange={e => setIgUsername(e.target.value)}
+          placeholder="Username (optional)"
+          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
+        />
+      </div>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => mutate()}
+          disabled={isPending}
+          className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-4 py-2 rounded-[var(--radius-md)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60"
+        >
+          <Send className="w-3.5 h-3.5" /> {isPending ? 'Sending…' : 'Fire event'}
+        </button>
+        {isSuccess && <span className="text-xs text-[var(--success)] font-semibold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Sent — refreshing in 1s</span>}
+        {isError && <span className="text-xs text-[var(--danger)] font-semibold flex items-center gap-1"><XCircle className="w-3.5 h-3.5" /> Failed</span>}
+      </div>
+    </div>
+  );
+}
+
 // ─── Sub-views ────────────────────────────────────────────────────────────────
 
-function OverviewView({ automations, onNavigate, totalLeads, totalSent }: {
+function OverviewView({ automations, onNavigate, totalLeads, totalSent, isSimulated }: {
   automations: Automation[];
   onNavigate: (v: View) => void;
   totalLeads: number;
   totalSent: number;
+  isSimulated: boolean;
 }) {
   const totalComments = automations.reduce((s, a) => s + a.commentCount, 0);
   const activeCount = automations.filter(a => a.active).length;
@@ -369,6 +401,9 @@ function OverviewView({ automations, onNavigate, totalLeads, totalSent }: {
           </button>
         ))}
       </div>
+
+      {/* Simulate control — demo accounts only */}
+      {isSimulated && <SimulatePanel />}
 
       {/* Recent automations */}
       <div>
@@ -857,13 +892,13 @@ function BuilderView({ automation, onUpdate, onBack, saveError, isSaving }: {
   );
 }
 
-function LeadsView() {
+function LeadsView({ leads, isLoading }: { leads: DbLead[]; isLoading: boolean }) {
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState('all');
 
-  const filtered = MOCK_LEADS.filter(l =>
-    (sourceFilter === 'all' || l.source === sourceFilter) &&
-    l.username.toLowerCase().includes(search.toLowerCase())
+  const filtered = leads.filter(l =>
+    (sourceFilter === 'all' || l.first_source === sourceFilter) &&
+    (l.ig_username ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
   const sourceColors: Record<string, 'pink' | 'blue' | 'yellow'> = { comment: 'pink', dm: 'blue', story_mention: 'yellow' };
@@ -873,7 +908,7 @@ function LeadsView() {
       <div className="flex items-start justify-between pt-1">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Leads</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">{MOCK_LEADS.length} leads captured from Instagram</p>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">{leads.length} leads captured from Instagram</p>
         </div>
         <button className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] px-3 py-2 rounded-[var(--radius-md)] transition-colors hover:border-[var(--brand)]/40 shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
           <Download className="w-4 h-4" /> Export
@@ -895,91 +930,154 @@ function LeadsView() {
         </select>
       </div>
 
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-[var(--border)]">
-              {['Username', 'Source', 'Captured'].map(h => (
-                <th key={h} className="text-left text-xs font-semibold text-[var(--text-secondary)] px-5 py-3.5">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--border)]">
-            {filtered.map(l => (
-              <tr key={l.id} className="hover:bg-[var(--surface-hover)] transition-colors">
-                <td className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
-                      {l.username[0].toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">@{l.username}</p>
-                      <p className="text-xs text-[var(--text-tertiary)]">{l.igUserId}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-4">
-                  <Badge color={sourceColors[l.source] ?? 'default'}>{l.source.replace('_', ' ')}</Badge>
-                </td>
-                <td className="px-5 py-4 text-xs text-[var(--text-tertiary)]">
-                  {new Date(l.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                </td>
+      {isLoading ? (
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => <div key={i} className="h-14 bg-[var(--surface-muted)] rounded-[var(--radius-md)] animate-pulse" />)}
+        </div>
+      ) : (
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[var(--border)]">
+                {['Username', 'Source', 'Follower', 'Interactions', 'Captured'].map(h => (
+                  <th key={h} className="text-left text-xs font-semibold text-[var(--text-secondary)] px-5 py-3.5">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-[var(--text-secondary)]">
-            <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">No leads found</p>
-          </div>
-        )}
-      </div>
+            </thead>
+            <tbody className="divide-y divide-[var(--border)]">
+              {filtered.map(l => {
+                const username = l.ig_username ?? l.ig_user_id;
+                return (
+                  <tr key={l.id} className="hover:bg-[var(--surface-hover)] transition-colors">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
+                          {username[0]?.toUpperCase() ?? 'I'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-[var(--text-primary)]">@{username}</p>
+                          {l.email && <p className="text-xs text-[var(--text-tertiary)]">{l.email}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <Badge color={sourceColors[l.first_source ?? ''] ?? 'default'}>{(l.first_source ?? 'unknown').replace(/_/g, ' ')}</Badge>
+                    </td>
+                    <td className="px-5 py-4">
+                      {l.is_follower ? (
+                        <Badge color="green">Follower</Badge>
+                      ) : (
+                        <span className="text-xs text-[var(--text-tertiary)]">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4 text-xs text-[var(--text-secondary)]">{l.interaction_count}</td>
+                    <td className="px-5 py-4 text-xs text-[var(--text-tertiary)]">
+                      {new Date(l.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {filtered.length === 0 && (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">{leads.length === 0 ? 'No leads yet — fire a simulate event to capture your first lead.' : 'No leads match your search'}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function DMsView() {
+const DM_STATUS_COLORS: Record<string, 'green' | 'yellow' | 'red' | 'default'> = {
+  sent: 'green',
+  queued: 'yellow',
+  processing: 'yellow',
+  failed: 'red',
+};
+
+function DMsView({ messages, isLoading }: { messages: DbMessage[]; isLoading: boolean }) {
   return (
     <div className="space-y-6">
       <div className="pt-1">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">DM Inbox</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Log of all automated DMs sent</p>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">Log of all automated DMs sent — {messages.length} total</p>
       </div>
-      <div className="space-y-3">
-        {MOCK_DMS.map(dm => (
-          <div key={dm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 p-6 hover:border-[var(--brand)]/20">
-            <div className="flex items-start gap-4">
-              <div className="w-9 h-9 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
-                {dm.receiver[1].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <p className="text-sm font-bold text-[var(--text-primary)]">{dm.receiver}</p>
-                  <div className="flex items-center gap-2">
-                    <Badge color={dm.status === 'delivered' ? 'green' : 'red'}>
-                      {dm.status === 'delivered' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                      {dm.status}
-                    </Badge>
-                    <span className="text-xs text-[var(--text-tertiary)]">
-                      {new Date(dm.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-24 bg-[var(--surface-muted)] rounded-[var(--radius-lg)] animate-pulse" />)}
+        </div>
+      ) : messages.length === 0 ? (
+        <div className="text-center py-16 text-[var(--text-secondary)]">
+          <MessageCircle className="w-10 h-10 mx-auto mb-2 opacity-30" />
+          <p className="text-sm">No DMs yet — automations will log here when they fire.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {messages.map(dm => {
+            const recipient = dm.recipient_username ? `@${dm.recipient_username}` : dm.recipient_ig_user_id ?? 'Unknown';
+            const firstChar = (dm.recipient_username ?? dm.recipient_ig_user_id ?? 'U')[0]?.toUpperCase() ?? 'U';
+            const statusColor = DM_STATUS_COLORS[dm.status] ?? 'default';
+            return (
+              <div key={dm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 p-6 hover:border-[var(--brand)]/20">
+                <div className="flex items-start gap-4">
+                  <div className="w-9 h-9 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
+                    {firstChar}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-[var(--text-primary)]">{recipient}</p>
+                        {dm.simulated && <Badge color="yellow">Simulated</Badge>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge color={statusColor}>
+                          {dm.status === 'sent' && <CheckCircle2 className="w-3 h-3" />}
+                          {dm.status === 'failed' && <XCircle className="w-3 h-3" />}
+                          {(dm.status === 'queued' || dm.status === 'processing') && <Clock className="w-3 h-3" />}
+                          {dm.status}
+                        </Badge>
+                        <span className="text-xs text-[var(--text-tertiary)]">
+                          {new Date(dm.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                        </span>
+                      </div>
+                    </div>
+                    {dm.message_text && <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2">{dm.message_text}</p>}
+                    {dm.status === 'failed' && dm.last_error && (
+                      <p className="text-xs text-[var(--danger)] mt-1 flex items-center gap-1"><XCircle className="w-3 h-3 shrink-0" />{dm.last_error}</p>
+                    )}
+                    {dm.instaauto_automations?.name && (
+                      <p className="text-xs text-[var(--brand)] mt-2 flex items-center gap-1"><Zap className="w-3 h-3" />{dm.instaauto_automations.name}</p>
+                    )}
                   </div>
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2">{dm.message}</p>
-                <p className="text-xs text-[var(--brand)] mt-2 flex items-center gap-1"><Zap className="w-3 h-3" />{dm.automationName}</p>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-function AnalyticsView({ automations }: { automations: Automation[] }) {
+function AnalyticsView({
+  automations,
+  totalLeads,
+  totalSent,
+  totalFailed,
+}: {
+  automations: Automation[];
+  totalLeads: number;
+  totalSent: number;
+  totalFailed: number;
+}) {
   const totalDMs = automations.reduce((s, a) => s + a.dmCount, 0);
   const totalComments = automations.reduce((s, a) => s + a.commentCount, 0);
+  const deliveryRate = totalSent + totalFailed > 0
+    ? Math.round((totalSent / (totalSent + totalFailed)) * 100)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -989,52 +1087,73 @@ function AnalyticsView({ automations }: { automations: Automation[] }) {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <StatCard icon={Send} label="Total DMs Sent" value={totalDMs} color="pink" />
+        <StatCard icon={Send} label="Total DMs Sent" value={totalSent} color="pink" />
         <StatCard icon={MessageSquare} label="Comments Replied" value={totalComments} color="violet" />
-        <StatCard icon={Users} label="Leads Captured" value={MOCK_LEADS.length} color="emerald" />
-        <StatCard icon={TrendingUp} label="Conversion Rate" value="12.4%" sub="leads / DMs" color="amber" />
+        <StatCard icon={Users} label="Leads Captured" value={totalLeads} color="emerald" />
+        <StatCard icon={XCircle} label="Failed DMs" value={totalFailed} color="amber" />
       </div>
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
         <h3 className="text-sm font-bold text-[var(--text-primary)] mb-5">Per-Automation Performance</h3>
-        <div className="space-y-4">
-          {automations.map(a => {
-            const dmPct = totalDMs ? Math.round((a.dmCount / totalDMs) * 100) : 0;
-            return (
-              <div key={a.id} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[var(--text-primary)]">{a.name}</span>
-                  <span className="text-[var(--text-tertiary)]">{a.dmCount} DMs · {dmPct}%</span>
+        {automations.length === 0 ? (
+          <div className="text-center py-8 text-[var(--text-secondary)]">
+            <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p className="text-xs">No automations yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {automations.map(a => {
+              const dmPct = totalDMs ? Math.round((a.dmCount / totalDMs) * 100) : 0;
+              return (
+                <div key={a.id} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[var(--text-primary)]">{a.name}</span>
+                    <span className="text-[var(--text-tertiary)]">{a.dmCount} DMs · {a.commentCount} comments · {dmPct}%</span>
+                  </div>
+                  <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-pink-500 to-violet-500 rounded-full transition-all" style={{ width: `${dmPct}%` }} />
+                  </div>
                 </div>
-                <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-pink-500 to-violet-500 rounded-full transition-all" style={{ width: `${dmPct}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
-          <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">Lead Sources</h3>
-          {[{ label: 'Comment', count: 2, color: 'bg-[var(--brand)]' }, { label: 'DM', count: 2, color: 'bg-[var(--brand)]' }, { label: 'Story Mention', count: 1, color: 'bg-[var(--info)]' }].map(s => (
-            <div key={s.label} className="flex items-center gap-3 mb-3">
-              <div className={`w-3 h-3 rounded-full shrink-0 ${s.color}`} />
-              <span className="text-xs text-[var(--text-secondary)] flex-1">{s.label}</span>
-              <span className="text-xs font-bold text-[var(--text-primary)]">{s.count}</span>
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
+        <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">DM Delivery Rate</h3>
+        {totalSent + totalFailed === 0 ? (
+          <p className="text-xs text-[var(--text-tertiary)]">No DMs sent yet.</p>
+        ) : (
+          <>
+            <div className="text-center py-4">
+              <p className="text-4xl font-extrabold text-[var(--text-primary)]">{deliveryRate}<span className="text-xl text-[var(--brand)]">%</span></p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">of DMs delivered successfully ({totalSent} sent, {totalFailed} failed)</p>
             </div>
-          ))}
+            <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[var(--success)] to-teal-500 rounded-full" style={{ width: `${deliveryRate}%` }} />
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PostsView() {
+  return (
+    <div className="space-y-6">
+      <div className="pt-1">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Posts</h1>
+        <p className="text-sm text-[var(--text-secondary)] mt-1">Target specific posts for your automations</p>
+      </div>
+      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+        <div className="w-14 h-14 rounded-[var(--radius-lg)] bg-[var(--surface-muted)] border border-[var(--border)] flex items-center justify-center">
+          <Image className="w-7 h-7 text-[var(--text-tertiary)]" />
         </div>
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
-          <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">DM Delivery Rate</h3>
-          <div className="text-center py-4">
-            <p className="text-4xl font-extrabold text-[var(--text-primary)]">92<span className="text-xl text-[var(--brand)]">%</span></p>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">of DMs delivered successfully</p>
-          </div>
-          <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-[var(--success)] to-teal-500 rounded-full" style={{ width: '92%' }} />
-          </div>
+        <div>
+          <p className="text-sm font-semibold text-[var(--text-primary)]">Specific-post targeting is coming soon</p>
+          <p className="text-xs text-[var(--text-secondary)] mt-1 max-w-xs">Automations currently run across all your posts. In a future update you will be able to scope each automation to specific posts.</p>
         </div>
       </div>
     </div>
@@ -1241,7 +1360,7 @@ const TEMPLATE_CARDS: TemplateCard[] = [
   },
 ];
 
-function TemplatesView({ onEdit, onCreateFromTemplate }: { onEdit: (id: string) => void; onCreateFromTemplate: (card: TemplateCard) => void }) {
+function TemplatesView({ onCreateFromTemplate }: { onCreateFromTemplate: (card: TemplateCard) => void }) {
   function applyTemplate(card: TemplateCard) {
     onCreateFromTemplate(card);
   }
@@ -1302,20 +1421,21 @@ function TemplatesView({ onEdit, onCreateFromTemplate }: { onEdit: (id: string) 
 
 function GuideView() {
   const steps = [
-    { num: 1, title: 'Connect Instagram', desc: 'Link your Instagram Business or Creator account via OAuth in Settings.' },
-    { num: 2, title: 'Create an Automation', desc: 'Go to Automations → New Automation. Give it a name.' },
-    { num: 3, title: 'Add Keywords', desc: 'Add trigger words people comment or DM (e.g. "guide", "free", "link").' },
-    { num: 4, title: 'Choose Triggers', desc: 'Select what fires the automation — post comment, story mention, or DM keyword.' },
-    { num: 5, title: 'Set Response Type', desc: 'Pick Static Message for a fixed reply, or Smart AI for personalised responses.' },
-    { num: 6, title: 'Write your DM', desc: 'Craft your automated DM. Use {name} to personalise. Optionally add a comment reply.' },
-    { num: 7, title: 'Activate', desc: 'Toggle the automation on. It will now fire automatically when conditions are met.' },
+    { num: 1, title: 'Connect or add a demo account', desc: 'Go to Settings → "Add demo account" to test immediately without real Instagram credentials, or click "Connect Instagram" to link your Business/Creator account via OAuth.' },
+    { num: 2, title: 'Create an Automation', desc: 'Go to Automations → New Automation. Give it a descriptive name (e.g. "Free Guide Giveaway").' },
+    { num: 3, title: 'Add Keywords', desc: 'Add trigger words people comment or DM (e.g. "guide", "free", "link"). Use broad words for higher reach.' },
+    { num: 4, title: 'Choose Triggers', desc: 'Select what fires the automation — Post Comment, Story Mention, DM Keyword, or Story Reply. Post Like and Live Comment are coming in Phase 2.' },
+    { num: 5, title: 'Set Response Type', desc: 'Pick Static Message for a fixed DM. Smart AI personalised replies are coming in Phase 2.' },
+    { num: 6, title: 'Write your DM', desc: 'Craft your automated DM. Use {name} to personalise. Optionally add a public Comment Reply so the interaction feels natural.' },
+    { num: 7, title: 'Activate and test', desc: 'Toggle the automation on. On a demo account, use the "Simulate Event" panel in Overview to fire a test comment or DM and watch leads + DMs appear in real time.' },
   ];
 
   const tips = [
     'Use broad keywords like "free", "link", "send" for maximum reach.',
     'Always set a comment reply to make the interaction feel natural.',
-    'Smart AI works best when you give it detailed business context in the prompt.',
+    'On a demo account, fire multiple simulate events with different keywords to test each automation.',
     'Monitor your DM Inbox and Leads regularly to track engagement.',
+    'Coming in Phase 2: Smart AI replies, post-like triggers, live-stream comments, and specific-post targeting.',
   ];
 
   return (
@@ -1354,11 +1474,12 @@ function GuideView() {
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
-const NAV_ITEMS: { view: View; icon: React.ElementType; label: string; badge?: string }[] = [
+const NAV_ITEMS: { view: View; icon: React.ElementType; label: string }[] = [
   { view: 'overview', icon: Activity, label: 'Overview' },
   { view: 'automations', icon: Zap, label: 'Automations' },
-  { view: 'leads', icon: Users, label: 'Leads', badge: String(MOCK_LEADS.length) },
-  { view: 'dms', icon: MessageCircle, label: 'DM Inbox', badge: String(MOCK_DMS.length) },
+  { view: 'leads', icon: Users, label: 'Leads' },
+  { view: 'dms', icon: MessageCircle, label: 'DM Inbox' },
+  { view: 'posts', icon: Image, label: 'Posts' },
   { view: 'analytics', icon: BarChart3, label: 'Analytics' },
   { view: 'settings', icon: Settings, label: 'Settings' },
   { view: 'templates', icon: Sparkles, label: 'Templates' },
@@ -1372,7 +1493,7 @@ const SUB_SIDEBAR_W = 120; // px
 // ─── Page shell ───────────────────────────────────────────────────────────────
 
 function AutoDMInner() {
-  const { accountId } = useAutoDm();
+  const { accountId, isSimulated } = useAutoDm();
   const [view, setView] = useState<View>('overview');
   const [builderAutomationId, setBuilderAutomationId] = useState<string | null>(null);
   const [builderError, setBuilderError] = useState<string | null>(null);
@@ -1381,6 +1502,8 @@ function AutoDMInner() {
   const { automations: dbAutomations, isLoading, createAutomation, updateAutomation, deleteAutomation, isMutating } = useInstaAutomations(accountId);
   const analyticsQuery = useInstaAnalytics(accountId);
   const analytics = analyticsQuery.data ?? { totalLeads: 0, totalSent: 0, totalFailed: 0 };
+  const { leads, isLoading: leadsLoading } = useInstaLeads(accountId);
+  const { messages, isLoading: messagesLoading } = useInstaMessages(accountId);
 
   // Map DB rows to UI shape
   const automations: Automation[] = (dbAutomations as DbAutomation[]).map(dbToUiAutomation);
@@ -1552,6 +1675,7 @@ function AutoDMInner() {
           onNavigate={setView}
           totalLeads={analytics.totalLeads}
           totalSent={analytics.totalSent}
+          isSimulated={isSimulated}
         />
       );
       case 'automations': return (
@@ -1564,11 +1688,19 @@ function AutoDMInner() {
           isMutating={isMutating}
         />
       );
-      case 'leads': return <LeadsView />;
-      case 'dms': return <DMsView />;
-      case 'analytics': return <AnalyticsView automations={automations} />;
+      case 'leads': return <LeadsView leads={leads} isLoading={leadsLoading} />;
+      case 'dms': return <DMsView messages={messages} isLoading={messagesLoading} />;
+      case 'posts': return <PostsView />;
+      case 'analytics': return (
+        <AnalyticsView
+          automations={automations}
+          totalLeads={analytics.totalLeads}
+          totalSent={analytics.totalSent}
+          totalFailed={analytics.totalFailed}
+        />
+      );
       case 'settings': return <SettingsView />;
-      case 'templates': return <TemplatesView onEdit={handleEdit} onCreateFromTemplate={handleCreateFromTemplate} />;
+      case 'templates': return <TemplatesView onCreateFromTemplate={handleCreateFromTemplate} />;
       case 'guide': return <GuideView />;
       default: return null;
     }
@@ -1611,11 +1743,6 @@ function AutoDMInner() {
                     active ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                   }`} />
                   <span className="text-[10px] font-medium leading-tight text-center w-full px-1">{item.label}</span>
-                  {item.badge ? (
-                    <span className="absolute top-1.5 right-1.5 flex items-center justify-center min-w-[14px] h-3.5 px-0.5 rounded-full bg-[var(--danger)] text-[var(--text-on-brand)] text-[8px] font-bold leading-none">
-                      {Number(item.badge) > 9 ? '9+' : item.badge}
-                    </span>
-                  ) : null}
                 </button>
               );
             })}
