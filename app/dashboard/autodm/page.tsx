@@ -7,7 +7,9 @@
 // docs/superpowers/specs/2026-06-14-dashboard-production-audit-design.md.
 
 import React, { useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AutoDmProvider } from '@/components/dashboard/autodm/AutoDmContext';
+import { useInstaAccount } from '@/hooks/instaauto/useInstaAccount';
 import {
   Instagram, Zap, MessageCircle, Users, BarChart3, Settings,
   Image, ChevronRight, Plus, Play, Pause, Trash2, Edit3,
@@ -926,8 +928,14 @@ function AnalyticsView({ automations }: { automations: Automation[] }) {
 }
 
 function SettingsView() {
-  const [connected, setConnected] = useState(false);
-  const [username, setUsername] = useState('');
+  const searchParams = useSearchParams();
+  const connectResult = searchParams.get('connect') as 'success' | 'error' | null;
+  const { account, connectConfigured, isLoading, addDemoAccount, disconnect, isMutating } = useInstaAccount();
+
+  const isConnected = account?.status === 'active';
+  const isRevoked = account?.status === 'revoked' || account?.status === 'expired';
+  const isSimulated = account?.is_simulated ?? false;
+  const displayName = account?.username ?? 'instagram';
 
   return (
     <div className="space-y-6">
@@ -936,7 +944,39 @@ function SettingsView() {
         <p className="text-sm text-[var(--text-secondary)] mt-1">Manage your Instagram connection and account preferences</p>
       </div>
 
-      {/* Connect Instagram */}
+      {/* OAuth callback result banner */}
+      {connectResult === 'success' && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--success-bg)] border border-[var(--success)]/30 rounded-[var(--radius-md)] text-sm text-[var(--success)] font-semibold">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          Instagram account connected successfully.
+        </div>
+      )}
+      {connectResult === 'error' && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--danger-bg)] border border-[var(--danger)]/30 rounded-[var(--radius-md)] text-sm text-[var(--danger)] font-semibold">
+          <XCircle className="w-4 h-4 shrink-0" />
+          Connection failed. Please try again or add a demo account to test the feature.
+        </div>
+      )}
+
+      {/* Revoked / expired reconnect banner */}
+      {isRevoked && (
+        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-[var(--warning-bg)] border border-[var(--warning)]/30 rounded-[var(--radius-md)]">
+          <div className="flex items-center gap-2 text-sm text-[var(--warning)] font-semibold">
+            <RefreshCw className="w-4 h-4 shrink-0" />
+            Your Instagram connection has been {account?.status}. Please reconnect.
+          </div>
+          {connectConfigured && (
+            <button
+              onClick={() => { window.location.href = '/api/instaauto/connect'; }}
+              className="shrink-0 text-xs font-bold bg-[var(--warning)] text-white px-3 py-1.5 rounded-[var(--radius-sm)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            >
+              Reconnect
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Connect Instagram card */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-[var(--radius-md)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center">
@@ -946,43 +986,53 @@ function SettingsView() {
             <h3 className="text-sm font-bold text-[var(--text-primary)]">Instagram Account</h3>
             <p className="text-xs text-[var(--text-secondary)]">Connect your business or creator account</p>
           </div>
-          {connected && <Badge color="green"><CheckCircle2 className="w-3 h-3" /> Connected</Badge>}
+          {isConnected && <Badge color="green"><CheckCircle2 className="w-3 h-3" /> Connected</Badge>}
         </div>
 
-        {!connected ? (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Instagram Username</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] text-sm">@</span>
-                <input
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  placeholder="your_username"
-                  className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] py-2.5 pl-8 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
-                />
-              </div>
-            </div>
-            <button
-              onClick={() => username && setConnected(true)}
-              className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-            >
-              <Instagram className="w-4 h-4" /> Connect via Instagram OAuth
-            </button>
-            <p className="text-xs text-[var(--text-tertiary)] text-center">Requires an Instagram Business or Creator account linked to a Facebook Page.</p>
-          </div>
-        ) : (
+        {isLoading ? (
+          <div className="h-10 bg-[var(--surface-muted)] rounded-[var(--radius-md)] animate-pulse" />
+        ) : isConnected ? (
           <div className="flex items-center justify-between bg-[var(--surface-muted)] rounded-[var(--radius-md)] px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold">
-                {username[0]?.toUpperCase() ?? 'I'}
+                {displayName[0]?.toUpperCase() ?? 'I'}
               </div>
               <div>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">@{username}</p>
-                <p className="text-xs text-[var(--text-secondary)]">Business Account</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">@{displayName}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <p className="text-xs text-[var(--text-secondary)] capitalize">{account?.status}</p>
+                  {isSimulated && <Badge color="yellow">Demo</Badge>}
+                </div>
               </div>
             </div>
-            <button onClick={() => setConnected(false)} className="text-xs text-[var(--danger)] hover:opacity-80 font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded">Disconnect</button>
+            <button
+              onClick={() => disconnect()}
+              disabled={isMutating}
+              className="text-xs text-[var(--danger)] hover:opacity-80 font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded disabled:opacity-40"
+            >
+              Disconnect
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {connectConfigured && (
+              <button
+                onClick={() => { window.location.href = '/api/instaauto/connect'; }}
+                className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Instagram className="w-4 h-4" /> Connect Instagram
+              </button>
+            )}
+            <button
+              onClick={() => addDemoAccount()}
+              disabled={isMutating}
+              className="w-full border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--brand)]/40 font-semibold py-2.5 rounded-[var(--radius-md)] transition-all text-sm flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40"
+            >
+              <Bot className="w-4 h-4" /> Add demo account
+            </button>
+            {connectConfigured && (
+              <p className="text-xs text-[var(--text-tertiary)] text-center">Requires an Instagram Business or Creator account linked to a Facebook Page.</p>
+            )}
           </div>
         )}
       </div>
