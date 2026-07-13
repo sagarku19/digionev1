@@ -1059,6 +1059,483 @@ export type Database = {
           },
         ]
       }
+      instaauto_accounts: {
+        Row: {
+          access_token_enc: string | null
+          avatar_url: string | null
+          connected_at: string
+          creator_id: string
+          id: string
+          ig_user_id: string | null
+          is_simulated: boolean
+          last_refreshed_at: string | null
+          scopes: string[]
+          status: string
+          token_expires_at: string | null
+          username: string | null
+        }
+        Insert: {
+          access_token_enc?: string | null
+          avatar_url?: string | null
+          connected_at?: string
+          creator_id: string
+          id?: string
+          ig_user_id?: string | null
+          is_simulated?: boolean
+          last_refreshed_at?: string | null
+          scopes?: string[]
+          status?: string
+          token_expires_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          access_token_enc?: string | null
+          avatar_url?: string | null
+          connected_at?: string
+          creator_id?: string
+          id?: string
+          ig_user_id?: string | null
+          is_simulated?: boolean
+          last_refreshed_at?: string | null
+          scopes?: string[]
+          status?: string
+          token_expires_at?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_accounts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instaauto_automations: {
+        Row: {
+          account_id: string
+          ai_prompt: string | null
+          comment_count: number
+          comment_reply: string | null
+          created_at: string
+          creator_id: string
+          deleted_at: string | null
+          dm_count: number
+          dm_payload: Json
+          id: string
+          last_fired_at: string | null
+          match_mode: string
+          media_scope: string
+          multilingual: boolean
+          name: string
+          require_follow: boolean
+          response_type: string
+          status: string
+          trigger_types: string[]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          account_id: string
+          ai_prompt?: string | null
+          comment_count?: number
+          comment_reply?: string | null
+          created_at?: string
+          creator_id: string
+          deleted_at?: string | null
+          dm_count?: number
+          dm_payload?: Json
+          id?: string
+          last_fired_at?: string | null
+          match_mode?: string
+          media_scope?: string
+          multilingual?: boolean
+          name?: string
+          require_follow?: boolean
+          response_type?: string
+          status?: string
+          trigger_types?: string[]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          account_id?: string
+          ai_prompt?: string | null
+          comment_count?: number
+          comment_reply?: string | null
+          created_at?: string
+          creator_id?: string
+          deleted_at?: string | null
+          dm_count?: number
+          dm_payload?: Json
+          id?: string
+          last_fired_at?: string | null
+          match_mode?: string
+          media_scope?: string
+          multilingual?: boolean
+          name?: string
+          require_follow?: boolean
+          response_type?: string
+          status?: string
+          trigger_types?: string[]
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_automations_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_automations_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instaauto_events: {
+        Row: {
+          account_id: string
+          automation_id: string | null
+          created_at: string
+          creator_id: string
+          dedup_key: string | null
+          event_type: string
+          id: string
+          ig_user_id: string | null
+          ig_username: string | null
+          matched_keyword: string | null
+          payload: Json
+        }
+        Insert: {
+          account_id: string
+          automation_id?: string | null
+          created_at?: string
+          creator_id: string
+          dedup_key?: string | null
+          event_type: string
+          id?: string
+          ig_user_id?: string | null
+          ig_username?: string | null
+          matched_keyword?: string | null
+          payload?: Json
+        }
+        Update: {
+          account_id?: string
+          automation_id?: string | null
+          created_at?: string
+          creator_id?: string
+          dedup_key?: string | null
+          event_type?: string
+          id?: string
+          ig_user_id?: string | null
+          ig_username?: string | null
+          matched_keyword?: string | null
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_events_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_events_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_automations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_events_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instaauto_keywords: {
+        Row: {
+          automation_id: string
+          id: string
+          is_negative: boolean
+          word: string
+        }
+        Insert: {
+          automation_id: string
+          id?: string
+          is_negative?: boolean
+          word: string
+        }
+        Update: {
+          automation_id?: string
+          id?: string
+          is_negative?: boolean
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_keywords_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instaauto_leads: {
+        Row: {
+          account_id: string
+          created_at: string
+          creator_id: string
+          email: string | null
+          first_automation_id: string | null
+          first_source: string | null
+          follow_checked_at: string | null
+          id: string
+          ig_user_id: string
+          ig_username: string | null
+          interaction_count: number
+          is_follower: boolean | null
+          last_user_message_at: string | null
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          creator_id: string
+          email?: string | null
+          first_automation_id?: string | null
+          first_source?: string | null
+          follow_checked_at?: string | null
+          id?: string
+          ig_user_id: string
+          ig_username?: string | null
+          interaction_count?: number
+          is_follower?: boolean | null
+          last_user_message_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          creator_id?: string
+          email?: string | null
+          first_automation_id?: string | null
+          first_source?: string | null
+          follow_checked_at?: string | null
+          id?: string
+          ig_user_id?: string
+          ig_username?: string | null
+          interaction_count?: number
+          is_follower?: boolean | null
+          last_user_message_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_leads_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_leads_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_leads_first_automation_id_fkey"
+            columns: ["first_automation_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instaauto_media_targets: {
+        Row: {
+          automation_id: string
+          caption_snippet: string | null
+          id: string
+          ig_media_id: string
+          media_type: string | null
+          thumbnail_url: string | null
+        }
+        Insert: {
+          automation_id: string
+          caption_snippet?: string | null
+          id?: string
+          ig_media_id: string
+          media_type?: string | null
+          thumbnail_url?: string | null
+        }
+        Update: {
+          automation_id?: string
+          caption_snippet?: string | null
+          id?: string
+          ig_media_id?: string
+          media_type?: string | null
+          thumbnail_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_media_targets_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instaauto_message_attempts: {
+        Row: {
+          attempt_no: number
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          http_status: number | null
+          id: string
+          message_id: string
+          outcome: string
+          provider: string
+        }
+        Insert: {
+          attempt_no: number
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          message_id: string
+          outcome: string
+          provider: string
+        }
+        Update: {
+          attempt_no?: number
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          message_id?: string
+          outcome?: string
+          provider?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_message_attempts_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instaauto_messages: {
+        Row: {
+          account_id: string
+          attempts: number
+          automation_id: string | null
+          created_at: string
+          creator_id: string
+          event_id: string | null
+          id: string
+          ig_comment_id: string | null
+          ig_message_id: string | null
+          last_attempt_at: string | null
+          last_error: string | null
+          message_text: string | null
+          message_type: string
+          payload_snapshot: Json
+          recipient_ig_user_id: string | null
+          recipient_username: string | null
+          send_after: string
+          simulated: boolean
+          status: string
+        }
+        Insert: {
+          account_id: string
+          attempts?: number
+          automation_id?: string | null
+          created_at?: string
+          creator_id: string
+          event_id?: string | null
+          id?: string
+          ig_comment_id?: string | null
+          ig_message_id?: string | null
+          last_attempt_at?: string | null
+          last_error?: string | null
+          message_text?: string | null
+          message_type: string
+          payload_snapshot?: Json
+          recipient_ig_user_id?: string | null
+          recipient_username?: string | null
+          send_after?: string
+          simulated?: boolean
+          status?: string
+        }
+        Update: {
+          account_id?: string
+          attempts?: number
+          automation_id?: string | null
+          created_at?: string
+          creator_id?: string
+          event_id?: string | null
+          id?: string
+          ig_comment_id?: string | null
+          ig_message_id?: string | null
+          last_attempt_at?: string | null
+          last_error?: string | null
+          message_text?: string | null
+          message_type?: string
+          payload_snapshot?: Json
+          recipient_ig_user_id?: string | null
+          recipient_username?: string | null
+          send_after?: string
+          simulated?: boolean
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instaauto_messages_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_messages_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_automations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_messages_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instaauto_messages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "instaauto_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_counters: {
         Row: {
           fy: string
@@ -3934,6 +4411,59 @@ export type Database = {
       increment_link_click_count: {
         Args: { p_link_id: string }
         Returns: undefined
+      }
+      instaauto_claim_messages: {
+        Args: { p_account_id: string; p_limit: number }
+        Returns: {
+          account_id: string
+          attempts: number
+          automation_id: string | null
+          created_at: string
+          creator_id: string
+          event_id: string | null
+          id: string
+          ig_comment_id: string | null
+          ig_message_id: string | null
+          last_attempt_at: string | null
+          last_error: string | null
+          message_text: string | null
+          message_type: string
+          payload_snapshot: Json
+          recipient_ig_user_id: string | null
+          recipient_username: string | null
+          send_after: string
+          simulated: boolean
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "instaauto_messages"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      instaauto_fail_send: {
+        Args: {
+          p_backoff_seconds: number
+          p_error_code: string
+          p_error_message: string
+          p_http_status: number
+          p_message_id: string
+          p_outcome: string
+          p_revoke_account: boolean
+          p_terminal: boolean
+        }
+        Returns: string
+      }
+      instaauto_finalize_send: {
+        Args: {
+          p_follow_checked_at: string
+          p_ig_message_id: string
+          p_is_follower: boolean
+          p_message_id: string
+          p_provider: string
+        }
+        Returns: boolean
       }
       is_super_admin: { Args: never; Returns: boolean }
       issue_invoice: {
