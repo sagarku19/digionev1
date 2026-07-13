@@ -106,6 +106,18 @@ Transactional email — currently one email: the buyer purchase confirmation, se
 | `RESEND_API_KEY` | **secret** | `src/lib/server/email.ts` | Resend API key. Server-only. |
 | `EMAIL_FROM` | server | `src/lib/server/email.ts` | From header, e.g. `DigiOne <receipts@digione.ai>`. The domain must be verified in the Resend dashboard (SPF/DKIM DNS records). |
 
+## Instagram Auto DM (`instaauto_`)
+
+Instagram automation. All server-only. Read by `src/lib/server/instaauto/*` and the `/api/instaauto/*` + `/api/webhook/instagram` routes. When `INSTAGRAM_APP_ID` is unset, real OAuth connect is disabled but demo (simulated) accounts still work end-to-end.
+
+| Var | Scope | Used in | Notes |
+|---|---|---|---|
+| `INSTAGRAM_APP_ID` | server | `instaauto/connect`, `instaauto/callback`, `src/lib/server/instaauto/graph.ts` | Meta app ID (OAuth). Unset → real connect returns `not_configured`. |
+| `INSTAGRAM_APP_SECRET` | **secret** | `instaauto/callback`, `graph.ts`, `webhook/instagram` | OAuth token exchange **and** the webhook `X-Hub-Signature-256` HMAC key. |
+| `INSTAGRAM_WEBHOOK_VERIFY_TOKEN` | **secret** | `webhook/instagram` (GET) | Echoed against `hub.verify_token` during subscription verification. |
+| `INSTAAUTO_TOKEN_ENCRYPTION_KEY` | **secret** | `src/lib/server/instaauto/token-crypto.ts` | base64-encoded 32 bytes (AES-256). Separate from `KYC_ENCRYPTION_KEY`. Rotating it invalidates stored IG tokens (creators must reconnect). |
+| `CRON_SECRET` | **secret** | `instaauto/drain`, `instaauto/maintenance` | Reused (already defined for payout sync). Bearer token for the cron drainer + token-refresh sweep. |
+
 ## Known cleanup
 
 - **`CASHFREE_ENVIRONMENT` vs `NEXT_PUBLIC_CASHFREE_ENV`** — two sources of truth. If they drift, sandbox-signed orders will fail to redirect to prod (or vice versa). Consider deriving the public one from the server one at build time.

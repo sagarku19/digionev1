@@ -52,6 +52,15 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/links` | cookie session | server + service role | `linksh_links` (create; URL-safety + code validation + per-creator rate limit) |
 | PATCH/DELETE | `/api/links/[id]` | cookie session | server + service role | `linksh_links` (owner-scoped edit / delete) |
 | GET | `/api/links/check-code` | none (public) | service role | — (code availability) |
+| GET | `/api/instaauto/account` | cookie session | server + service role | — (reads `instaauto_accounts`, token-free; returns `connectConfigured` flag) |
+| POST | `/api/instaauto/account/demo` | cookie session | service role | `instaauto_accounts` (one simulated account per creator, idempotent) |
+| POST | `/api/instaauto/account/disconnect` | cookie session | service role | `instaauto_accounts` (status→`revoked`); pauses all creator's active automations |
+| GET | `/api/instaauto/connect` | cookie session | server | Meta OAuth redirect; `501 not_configured` when `INSTAGRAM_APP_ID` is absent |
+| GET | `/api/instaauto/callback` | OAuth code + signed state | service role | `instaauto_accounts` (encrypted token upsert on `ig_user_id`); subscribes Meta webhooks |
+| POST | `/api/instaauto/simulate` | cookie session | service role | injects synthetic event into live pipeline (`processInboundEvent` + `drainFastPath`) via `after()` — simulated accounts only |
+| POST | `/api/instaauto/drain` | `CRON_SECRET` bearer | service role | drains `instaauto_messages` with `status=queued` and due `send_after`; claim→send→settle per account |
+| POST | `/api/instaauto/maintenance` | `CRON_SECRET` bearer | service role | re-queues `instaauto_messages` stuck in `processing` > 15 min; refreshes real tokens expiring within 7 days (marks `expired` on failure) |
+| GET/POST | `/api/webhook/instagram` | GET: `hub.verify_token` check; POST: HMAC `X-Hub-Signature-256` | service role | POST: `instaauto_events`, `instaauto_messages`, `instaauto_leads` via pipeline (`processInboundEvent` + `drainFastPath`) — 200-fast, processing in `after()` |
 
 ---
 
@@ -677,6 +686,168 @@ On-demand invoice PDFs (`@react-pdf/renderer`, Node runtime), decoupled from the
 ### `GET /api/statements/annual/[fy]` (auth required, creator-only)
 
 Informational **Annual Earnings & Tax Statement** PDF (`@react-pdf/renderer`, Node runtime). Aggregates the creator's FY sales/commission/GST from `tax_transactions` (net of refunds, sale-date) and TDS/TCS withheld from `creator_payouts` (successful payouts, payout-date), renders a PDF, caches it (always regenerated) to private R2 (`kind='tax_doc'`), and returns `{ signedUrl, ttlSeconds }`. **Not** the statutory Form 16A (which comes from the TRACES portal after 26Q filing). Errors: `400` (bad fy), `401`, `404` (no profile / no activity), `500`.
+
+---
+
+## Instagram Auto DM
+
+Routes under `app/api/instaauto/` and `app/api/webhook/instagram/` power the comment/DM/story-reply → private-reply automation pipeline. Token encryption uses `src/lib/server/instaauto/token-crypto.ts` (AES-256-GCM, keyed by `INSTAGRAM_TOKEN_ENC_KEY`). Requires `INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`, and `INSTAGRAM_WEBHOOK_VERIFY_TOKEN` env vars for live OAuth; demo mode works without them.
+
+---
+
+### `GET /api/instaauto/account` (auth required)
+
+Returns the creator's linked Instagram account — **never** returns the encrypted token. Used by `useInstaAccount` to populate the Settings view and `AutoDmContext`.
+
+```json
+// Success
+{ "account": { "id": "uuid", "username": "string", "status": "active|expired|revoked", "is_simulated": true, "avatar_url": "string|null", "connected_at": "iso", "token_expires_at": "iso" } | null, "connectConfigured": true }
+```
+
+`account` is `null` when no account exists. `connectConfigured` is `false` when `INSTAGRAM_APP_ID` is unset (demo-only mode).
+
+**Errors:** `401` (no session), `404` (no creator profile).
+
+---
+
+### `POST /api/instaauto/account/demo` (auth required)
+
+Creates a simulated Instagram account for pipeline demo/testing without Meta OAuth. Idempotent — returns the existing account if one already exists.
+
+No request body required.
+
+```json
+// Success (already exists)
+{ "accountId": "uuid", "demo": true }
+
+// Success (created)
+{ "accountId": "uuid", "demo": true }   // 201
+```
+
+**Errors:** `401` (no session), `404` (no creator profile), `500` (insert failure).
+
+---
+
+### `POST /api/instaauto/account/disconnect` (auth required)
+
+Flips the creator's account to `status = 'revoked'` and pauses all `active` automations. Actual Meta token revocation is deferred (Phase 2).
+
+```json
+// Request (optional — omit accountId to disconnect the most recent account)
+{ "accountId": "uuid?" }
+
+// Success
+{ "disconnected": true }
+```
+
+**Errors:** `401` (no session), `404` (no creator profile), `500`.
+
+---
+
+### `GET /api/instaauto/connect` (auth required)
+
+Redirects to the Meta OAuth authorization URL with the required scopes (`REQUIRED_SCOPES` from `src/lib/server/instaauto/constants.ts`). The `state` parameter is `{creatorId}.{HMAC-16}` (signed with `INSTAGRAM_APP_SECRET`) to bind the callback to the right creator.
+
+Returns `501 { error: 'not_configured' }` when `INSTAGRAM_APP_ID` or `INSTAGRAM_APP_SECRET` are absent — the dashboard falls back to demo mode in that case.
+
+**Success:** `302` redirect to `https://www.instagram.com/oauth/authorize?...`
+
+**Errors:** `401` (no session), `404` (no creator profile), `501` (app not configured).
+
+---
+
+### `GET /api/instaauto/callback` (OAuth redirect)
+
+Meta OAuth callback. Verifies the signed state, exchanges the short-lived code for a long-lived token, fetches the Instagram profile, upserts an `instaauto_accounts` row (conflict key: `ig_user_id`), and subscribes Meta webhooks via `subscribeWebhooks`.
+
+All failures redirect to `/dashboard/autodm?connect=error`; success redirects to `/dashboard/autodm?connect=success`.
+
+**Auth:** signed `state` query param (HMAC-verified against `INSTAGRAM_APP_SECRET`) — no cookie session check at this point (the state binds the creator).
+
+**Side effects:** upserts `instaauto_accounts` with the AES-256-GCM encrypted token (`access_token_enc`) and expiry. Webhook subscription failure is non-fatal (logged + swallowed).
+
+**Errors (all via redirect):** missing/invalid `code` or state → `?connect=error`; graph API or DB failure → `?connect=error`.
+
+---
+
+### `POST /api/instaauto/simulate` (auth required)
+
+Injects a synthetic inbound event into the real pipeline for the creator's **simulated** account. The pipeline response (`processInboundEvent` + `drainFastPath`) runs in `after()` so the 200 is returned immediately.
+
+```json
+// Request
+{
+  "eventType": "comment" | "dm" | "story_mention" | "story_reply",
+  "text": "string?",
+  "igUsername": "string?",
+  "mediaId": "string?",
+  "payloadRef": "string?"
+}
+```
+
+`eventType` defaults to `"comment"`. A random simulated `igUserId` is generated per call.
+
+```json
+// Success
+{ "accepted": true }
+```
+
+**Errors:** `401` (no session), `404` (no creator profile or no demo account — call `/account/demo` first), `500` (bad JSON).
+
+---
+
+### `POST /api/instaauto/drain` (`CRON_SECRET` required)
+
+Queue drainer. Finds all `instaauto_messages` with `status = 'queued'` and `send_after ≤ now()`, groups by account, then calls `drainAccount` (claim → send via Graph API → settle) per account up to `CRON_DRAIN_BATCH` messages.
+
+**Auth:** `Authorization: Bearer <CRON_SECRET>`. Returns `401` if the secret is wrong or unset.
+
+```json
+// Success
+{ "accounts": 3, "sent": 12, "failed": 1 }
+```
+
+Only processes accounts with `status = 'active'`. Simulated accounts use a no-op sender (messages are settled without a real API call).
+
+**Errors:** `401` (bad/missing `CRON_SECRET`).
+
+---
+
+### `POST /api/instaauto/maintenance` (`CRON_SECRET` required)
+
+Runs two cleanup tasks:
+
+1. **Stuck sweep** — resets `instaauto_messages` stuck in `status = 'processing'` for more than 15 minutes back to `'queued'` (crash recovery for the drainer).
+2. **Token refresh** — for non-simulated active accounts whose `token_expires_at` is within 7 days: calls `refreshLongLivedToken`, encrypts the new token, and writes it back. Accounts that fail refresh are marked `status = 'expired'`.
+
+**Auth:** `Authorization: Bearer <CRON_SECRET>`.
+
+```json
+// Success
+{ "requeued": 2, "refreshed": 5 }
+```
+
+**Errors:** `401` (bad/missing `CRON_SECRET`).
+
+---
+
+### `GET /api/webhook/instagram` (Meta hub verification)
+
+Responds to Meta's webhook subscription challenge. Verifies `hub.mode === 'subscribe'` and `hub.verify_token === INSTAGRAM_WEBHOOK_VERIFY_TOKEN`, then echoes `hub.challenge` as plain text (`200`). Returns `403` otherwise.
+
+---
+
+### `POST /api/webhook/instagram` (Meta webhook)
+
+Receives inbound Instagram events (comments, DMs, story mentions/replies). **Returns `200 { received: true }` immediately** after HMAC verification; all pipeline work runs in `after()`.
+
+**Auth:** HMAC-SHA256 of the raw body using `INSTAGRAM_APP_SECRET`, compared against `X-Hub-Signature-256` header (format: `sha256=<hex>`). Returns `401` on mismatch.
+
+**Processing (in `after()`):** `parseWebhookEnvelope` extracts events keyed by `accountIgId`; for each active `instaauto_accounts` row matching `ig_user_id`, calls `processInboundEvent` (dedup, rule-match, queue or suppress) then `drainFastPath` (send up to N messages inline without waiting for the cron drainer).
+
+**Side effects (per matching event):** inserts `instaauto_events`; may insert `instaauto_messages` (queued or sent); may insert `instaauto_leads`; updates counters on `instaauto_automations`.
+
+**Errors:** `401` (invalid HMAC). Non-matching `accountIgId` (no active account) is silently skipped — `200` always returned after a valid signature.
 
 ---
 
