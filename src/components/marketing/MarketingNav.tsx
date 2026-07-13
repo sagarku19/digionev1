@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
-import { Menu, X, LayoutDashboard, ChevronDown, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine, Store } from 'lucide-react';
+import { Menu, X, LayoutDashboard, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine, Store } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
@@ -46,7 +46,7 @@ export default function MarketingNav() {
   };
 
   const queryClient = useQueryClient();
-  const { isLoggedIn, userEmail, profile } = useAuthSession();
+  const { isLoggedIn, userEmail, profile, isLoading: isAuthLoading } = useAuthSession();
   const userProfile: UserProfile | null = profile ? { full_name: profile.full_name, avatar_url: profile.avatar_url, email: userEmail } : null;
   const openCartDrawer = useCart((s) => s.openDrawer);
   const cartCount = useHydratedCartCount();
@@ -213,93 +213,90 @@ export default function MarketingNav() {
                   badgeClassName="bg-[#E83A2E] text-white"
                 />
               )}
-              {isLoggedIn ? (
-                <div
-                  ref={dropdownRef}
-                  className="relative"
-                  onMouseEnter={openProfileDropdown}
-                  onMouseLeave={scheduleProfileDropdownClose}
-                >
-                  <button
-                    onClick={() => setProfileDropdownOpen(o => !o)}
-                    className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-lg hover:bg-black/[0.04] transition-colors"
+              {isAuthLoading ? null : isLoggedIn ? (
+                <>
+                  <Link
+                    href={isBuyer ? '/account/library' : '/dashboard'}
+                    className="flex items-center gap-1.5 text-[12.5px] font-semibold bg-[#E83A2E] hover:bg-[#C92F24] text-white px-3 py-1.5 rounded-md transition-colors duration-200"
                   >
-                    <div className="w-7 h-7 rounded-md bg-[#E83A2E] flex items-center justify-center text-white font-bold text-[11px] overflow-hidden shrink-0">
+                    {isBuyer ? <BookOpen className="w-3 h-3" /> : <LayoutDashboard className="w-3 h-3" />}
+                    {isBuyer ? 'Library' : 'Dashboard'}
+                  </Link>
+                  <div
+                    ref={dropdownRef}
+                    className="relative"
+                    onMouseEnter={openProfileDropdown}
+                    onMouseLeave={scheduleProfileDropdownClose}
+                  >
+                    <button
+                      onClick={() => setProfileDropdownOpen(o => !o)}
+                      aria-label="Account menu"
+                      className="w-9 h-9 rounded-full bg-[#E83A2E] flex items-center justify-center text-white font-bold text-[12px] overflow-hidden shrink-0 ring-1 ring-black/[0.06] hover:ring-black/[0.12] transition-all"
+                    >
                       {userProfile?.avatar_url ? (
                         <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                       ) : initials}
-                    </div>
-                    <span className="text-[13.5px] font-semibold text-[#16130F] max-w-[120px] truncate capitalize">
-                      {userProfile?.full_name || 'Creator'}
-                    </span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-black/35 transition-transform duration-300 ${profileDropdownOpen ? 'rotate-180' : ''} shrink-0`} />
-                  </button>
+                    </button>
 
-                  {profileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white border border-black/[0.1] rounded-xl shadow-[0_16px_50px_-20px_rgba(22,19,15,0.25)] py-1 z-50">
-                      <div className="px-4 py-3.5 border-b border-black/[0.06] flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-md bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
-                          {userProfile?.avatar_url ? (
-                            <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                          ) : initials}
+                    {profileDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-64 bg-white border border-black/[0.1] rounded-xl shadow-[0_16px_50px_-20px_rgba(22,19,15,0.25)] py-1 z-50">
+                        <div className="px-4 py-3.5 border-b border-black/[0.06] flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
+                            {userProfile?.avatar_url ? (
+                              <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : initials}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[13px] font-bold text-[#16130F] truncate capitalize">{userProfile?.full_name || 'Creator'}</p>
+                            <p className="font-ledger text-[11px] text-black/40 truncate" title={userProfile?.email || 'Connected Account'}>
+                              {userProfile?.email || 'Connected Account'}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-[13px] font-bold text-[#16130F] truncate capitalize">{userProfile?.full_name || 'Creator'}</p>
-                          <p className="font-ledger text-[11px] text-black/40 truncate" title={userProfile?.email || 'Connected Account'}>
-                            {userProfile?.email || 'Connected Account'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="p-1.5">
-                        <p className="font-ledger px-2.5 mb-1 mt-1 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Account</p>
-                        <Link
-                          href="/account/profile"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
-                        >
-                          <User className="w-4 h-4 text-black/35" />
-                          Profile
-                        </Link>
-                        <Link
-                          href="/account/library"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
-                        >
-                          <BookOpen className="w-4 h-4 text-black/35" />
-                          Library
-                        </Link>
-                        {isBuyer ? (
+                        <div className="p-1.5">
+                          <p className="font-ledger px-2.5 mb-1 mt-1 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Account</p>
                           <Link
-                            href="/account/library"
-                            onClick={() => setProfileDropdownOpen(false)}
-                            className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-semibold text-[#E83A2E] hover:bg-[#E83A2E]/[0.06] transition-colors rounded-lg"
-                          >
-                            <Store className="w-4 h-4" />
-                            Become a creator
-                          </Link>
-                        ) : (
-                          <Link
-                            href="/dashboard"
+                            href="/account/profile"
                             onClick={() => setProfileDropdownOpen(false)}
                             className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
                           >
-                            <LayoutDashboard className="w-4 h-4 text-black/35" />
-                            Dashboard
+                            <User className="w-4 h-4 text-black/35" />
+                            Profile
                           </Link>
-                        )}
+                          {!isBuyer && (
+                            <Link
+                              href="/account/library"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-medium text-black/65 hover:text-[#16130F] hover:bg-black/[0.04] transition-colors rounded-lg"
+                            >
+                              <BookOpen className="w-4 h-4 text-black/35" />
+                              Library
+                            </Link>
+                          )}
+                          {isBuyer && (
+                            <Link
+                              href="/account/library"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-semibold text-[#E83A2E] hover:bg-[#E83A2E]/[0.06] transition-colors rounded-lg"
+                            >
+                              <Store className="w-4 h-4" />
+                              Become a creator
+                            </Link>
+                          )}
+                        </div>
+                        <div className="p-1.5 border-t border-black/[0.06]">
+                          <button
+                            onClick={() => { setProfileDropdownOpen(false); setShowSignOutConfirm(true); }}
+                            className="w-full flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-semibold text-[#E83A2E] hover:bg-[#E83A2E]/[0.06] transition-colors rounded-lg"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Sign out
+                          </button>
+                        </div>
                       </div>
-                      <div className="p-1.5 border-t border-black/[0.06]">
-                        <button
-                          onClick={() => { setProfileDropdownOpen(false); setShowSignOutConfirm(true); }}
-                          className="w-full flex items-center gap-3 px-2.5 py-2 text-[13.5px] font-semibold text-[#E83A2E] hover:bg-[#E83A2E]/[0.06] transition-colors rounded-lg"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          Sign out
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </>
               ) : (
                 <>
                   <Link href="/login" className="text-[13.5px] font-medium text-black/55 hover:text-[#16130F] transition-colors duration-200">
@@ -374,7 +371,7 @@ export default function MarketingNav() {
           <div className="flex flex-col flex-1 overflow-y-auto px-5 pb-8 pt-4">
 
             {/* Logged-in user info */}
-            {isLoggedIn && userProfile && (
+            {!isAuthLoading && isLoggedIn && userProfile && (
               <div className="flex items-center gap-3 p-4 mb-4 bg-[#FAF8F6] rounded-xl border border-black/[0.06]">
                 <div className="w-10 h-10 rounded-md bg-[#E83A2E] flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
                   {userProfile.avatar_url ? <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" /> : initials}
@@ -409,7 +406,7 @@ export default function MarketingNav() {
             </div>
 
             {/* Account links (logged in) */}
-            {isLoggedIn && (
+            {!isAuthLoading && isLoggedIn && (
               <div className="space-y-0.5 mb-4 pt-4 border-t border-black/[0.06]">
                 <p className="font-ledger px-3 mb-1.5 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Account</p>
                 <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold text-black/65 hover:bg-black/[0.03] transition-colors">
@@ -430,7 +427,7 @@ export default function MarketingNav() {
                 transition: `opacity 0.35s ease 400ms, transform 0.35s cubic-bezier(0.16,1,0.3,1) 400ms`,
               }}
             >
-              {isLoggedIn ? (
+              {isAuthLoading ? null : isLoggedIn ? (
                 <>
                   {isBuyer ? (
                     <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#E83A2E] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">

@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Package, Store, BarChart2, DollarSign,
   Megaphone, Settings, Menu, X,
   ChevronRight, ChevronDown, Users, Bell, Ticket, BookOpen,
-  Network, Gift, Plus, Image as ImageIcon, MoreHorizontal, MessageCircle, HelpCircle,
+  Network, Gift, Image as ImageIcon, MoreHorizontal, MessageCircle, HelpCircle,
   Instagram, Zap, Calendar, ShoppingBag, Sparkles, ShieldCheck, Link2,
 } from 'lucide-react';
 import { useCreator } from '@/hooks/creator/useCreator';
@@ -71,6 +71,16 @@ const BOTTOM_NAV = [
   { label: 'Help Center', href: '/dashboard/help', icon: HelpCircle },
 ];
 
+// Quick-create actions launched from the sidebar hamburger (desktop only)
+const QUICK_ACTIONS: { label: string; desc: string; href: string; icon: React.ElementType }[] = [
+  { label: 'Create site', desc: 'Launch a new storefront', href: '/dashboard/sites/new', icon: Store },
+  { label: 'Add product', desc: 'Upload a digital product', href: '/dashboard/products/new', icon: Package },
+  { label: 'Upload media', desc: 'Add images to your library', href: '/dashboard/media', icon: ImageIcon },
+  { label: 'New coupon', desc: 'Create a discount code', href: '/dashboard/marketing/coupons', icon: Ticket },
+  { label: 'Short link', desc: 'Create a trackable link', href: '/dashboard/links', icon: Link2 },
+  { label: 'New service', desc: 'Offer a bookable service', href: '/dashboard/marketing/services', icon: Calendar },
+];
+
 // ─── Sidebar ─────────────────────────────────────────────────
 export default function Sidebar() {
   const pathname = usePathname();
@@ -79,12 +89,20 @@ export default function Sidebar() {
   const [visible, setVisible] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setVisible(true);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!quickActionsOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setQuickActionsOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [quickActionsOpen]);
 
   const handleTransitionEnd = () => {
     if (!isOpen) setVisible(false);
@@ -188,33 +206,23 @@ export default function Sidebar() {
               DigiOne<sup className="text-[9px] text-[var(--text-secondary)] font-medium ml-0.5 -top-1.5 relative">.ai</sup>
             </span>
           </Link>
-          <button onClick={close} className="md:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setQuickActionsOpen(true)}
+              aria-label="Quick actions"
+              className="hidden md:inline-flex p-1.5 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition"
+            >
+              <span className="flex flex-col gap-[4px] w-[18px]">
+                <span className="h-[2px] w-full rounded-full bg-current" />
+                <span className="h-[2px] w-full rounded-full bg-current" />
+                <span className="h-[2px] w-full rounded-full bg-current" />
+              </span>
+            </button>
+            <button onClick={close} className="md:hidden text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-
-        {/* ── CTA Buttons ── */}
-        <div className="px-3 pb-3 pt-1 flex gap-2">
-          <Link
-            href="/dashboard/sites/new"
-            onClick={close}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] rounded-[var(--radius-sm)] text-xs font-semibold transition"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Create site
-          </Link>
-
-          <Link
-            href="/dashboard/products/new"
-            onClick={close}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-[var(--radius-sm)] text-xs font-semibold transition"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add product
-          </Link>
-        </div>
-
-        <div className="mx-3 border-t border-[var(--border)]" />
 
         {/* ── Nav ── */}
         <nav className="flex-1 overflow-y-auto pt-3 pb-2 px-3 flex flex-col gap-5 scrollbar-thin">
@@ -420,6 +428,49 @@ export default function Sidebar() {
           </div>
         </div>
       </aside>
+
+      {/* ── Quick actions (centered) ── */}
+      {quickActionsOpen && (
+        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 60 }}>
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setQuickActionsOpen(false)}
+          />
+          <div className="relative w-full max-w-lg bg-[var(--bg-primary)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] p-5">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="text-[15px] font-bold text-[var(--text-primary)]">Quick actions</h2>
+                <p className="text-[12px] text-[var(--text-secondary)] mt-0.5">Jump straight into creating something.</p>
+              </div>
+              <button
+                onClick={() => setQuickActionsOpen(false)}
+                aria-label="Close"
+                className="p-1.5 rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {QUICK_ACTIONS.map(action => (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  onClick={() => { close(); setQuickActionsOpen(false); }}
+                  className="group flex items-center gap-3 p-3 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] hover:border-[var(--border-strong)] transition"
+                >
+                  <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[var(--bg-primary)] border border-[var(--border)] flex items-center justify-center shrink-0 group-hover:border-[var(--brand)] transition">
+                    <action.icon className="w-[18px] h-[18px] text-[var(--text-secondary)] group-hover:text-[var(--brand)] transition-colors" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-[var(--text-primary)] truncate">{action.label}</p>
+                    <p className="text-[11px] text-[var(--text-secondary)] truncate">{action.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
