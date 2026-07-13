@@ -1,15 +1,12 @@
 'use client';
-// ⚠️ PROTOTYPE — not wired to real data. This entire page renders from
-// MOCK_AUTOMATIONS (no hooks, no API, no persistence) and is linked live in the
-// Sidebar ("Auto DM"). Before this ships as a real feature it needs: data hooks,
-// API routes, and persistence. Deferred from the dashboard production refactor by
-// decision — left as-is intentionally rather than refactored. See
-// docs/superpowers/specs/2026-06-14-dashboard-production-audit-design.md.
 
 import React, { useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AutoDmProvider } from '@/components/dashboard/autodm/AutoDmContext';
+import { AutoDmProvider, useAutoDm } from '@/components/dashboard/autodm/AutoDmContext';
 import { useInstaAccount } from '@/hooks/instaauto/useInstaAccount';
+import { useInstaAutomations } from '@/hooks/instaauto/useInstaAutomations';
+import { useInstaAnalytics } from '@/hooks/instaauto/useInstaAnalytics';
+import type { Database } from '@/types/database.types';
 import {
   Instagram, Zap, MessageCircle, Users, BarChart3, Settings,
   Image, ChevronRight, Plus, Play, Pause, Trash2, Edit3,
@@ -58,6 +55,93 @@ interface Automation {
   negativeKeywords: Keyword[];
   multilingual: boolean;
   templateType: TemplateType;
+  // DB round-trip fields
+  version?: number;
+  requireFollow?: boolean;
+  mediaScope?: string;
+  accountId?: string;
+}
+
+// ─── DM payload shape (narrows the Json column — no bare `any` on the row) ───
+
+interface DmPayload {
+  message?: string;
+  link?: string;
+  not_follower_message?: string;
+  comment_reply?: string;
+  [key: string]: string | undefined;
+}
+
+// ─── DB row + keyword nested shape ───────────────────────────────────────────
+
+type DbAutomation = Database['public']['Tables']['instaauto_automations']['Row'] & {
+  instaauto_keywords: { id: string; word: string; is_negative: boolean }[];
+};
+
+// ─── Adapters ─────────────────────────────────────────────────────────────────
+
+function dbToUiAutomation(row: DbAutomation): Automation {
+  const payload = (row.dm_payload ?? {}) as DmPayload;
+  const positives = row.instaauto_keywords.filter(k => !k.is_negative);
+  const negatives = row.instaauto_keywords.filter(k => k.is_negative);
+  return {
+    id: row.id,
+    name: row.name,
+    active: row.status === 'active',
+    keywords: positives.map(k => ({ id: k.id, word: k.word })),
+    negativeKeywords: negatives.map(k => ({ id: k.id, word: k.word })),
+    triggers: row.trigger_types.map(t => ({ id: t, type: t as TriggerType })),
+    listener: row.response_type === 'smart_ai' ? 'SMARTAI' : 'MESSAGE',
+    prompt: payload.message ?? '',
+    commentReply: row.comment_reply ?? '',
+    dmCount: row.dm_count,
+    commentCount: row.comment_count,
+    createdAt: row.created_at.slice(0, 10),
+    matchMode: (row.match_mode as MatchMode) ?? 'exact',
+    multilingual: row.multilingual,
+    templateType: 'custom',
+    version: row.version,
+    requireFollow: row.require_follow,
+    mediaScope: row.media_scope,
+    accountId: row.account_id,
+  };
+}
+
+type DbInsertKeyword = { word: string; is_negative: boolean };
+interface DbUpsertPayload {
+  name: string;
+  status: string;
+  trigger_types: string[];
+  match_mode: string;
+  response_type: string;
+  require_follow: boolean;
+  media_scope: string;
+  comment_reply: string | null;
+  dm_payload: DmPayload;
+  multilingual: boolean;
+  keywords: DbInsertKeyword[];
+}
+
+function uiToDbPayload(ui: Automation): DbUpsertPayload {
+  return {
+    name: ui.name,
+    status: ui.active ? 'active' : 'draft',
+    trigger_types: ui.triggers.map(t => t.type),
+    match_mode: ui.matchMode,
+    response_type: ui.listener === 'SMARTAI' ? 'smart_ai' : 'message',
+    require_follow: ui.requireFollow ?? false,
+    media_scope: ui.mediaScope ?? 'all',
+    comment_reply: ui.commentReply || null,
+    dm_payload: {
+      message: ui.prompt || undefined,
+      comment_reply: ui.commentReply || undefined,
+    },
+    multilingual: ui.multilingual,
+    keywords: [
+      ...ui.keywords.map(k => ({ word: k.word, is_negative: false })),
+      ...ui.negativeKeywords.map(k => ({ word: k.word, is_negative: true })),
+    ],
+  };
 }
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -215,8 +299,12 @@ function StatCard({ icon: Icon, label, value, sub, color = 'pink' }: { icon: Rea
 
 // ─── Sub-views ────────────────────────────────────────────────────────────────
 
-function OverviewView({ automations, onNavigate }: { automations: Automation[]; onNavigate: (v: View) => void }) {
-  const totalDMs = automations.reduce((s, a) => s + a.dmCount, 0);
+function OverviewView({ automations, onNavigate, totalLeads, totalSent }: {
+  automations: Automation[];
+  onNavigate: (v: View) => void;
+  totalLeads: number;
+  totalSent: number;
+}) {
   const totalComments = automations.reduce((s, a) => s + a.commentCount, 0);
   const activeCount = automations.filter(a => a.active).length;
 
@@ -252,8 +340,8 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
       {/* Stat cards — 4-col on md+, 2×2 on mobile */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={Zap} label="Active Automations" value={activeCount} sub={`of ${automations.length} total`} color="pink" />
-        <StatCard icon={Send} label="DMs Sent" value={totalDMs.toLocaleString()} sub="all time" color="violet" />
-        <StatCard icon={Users} label="Leads Captured" value={MOCK_LEADS.length} sub="from all sources" color="emerald" />
+        <StatCard icon={Send} label="DMs Sent" value={totalSent.toLocaleString()} sub="all time" color="violet" />
+        <StatCard icon={Users} label="Leads Captured" value={totalLeads} sub="from all sources" color="emerald" />
         <StatCard icon={MessageSquare} label="Comments Replied" value={totalComments.toLocaleString()} sub="auto-replies" color="blue" />
       </div>
 
@@ -261,8 +349,8 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[
           { label: 'Create Automation', desc: 'Set up keywords and triggers', icon: Plus, view: 'automations' as View, gradient: 'from-pink-500 to-violet-500' },
-          { label: 'View Leads', desc: `${MOCK_LEADS.length} people captured`, icon: Users, view: 'leads' as View, gradient: 'from-[var(--success)] to-teal-500' },
-          { label: 'DM Inbox', desc: `${MOCK_DMS.length} messages sent`, icon: MessageCircle, view: 'dms' as View, gradient: 'from-[var(--info)] to-indigo-500' },
+          { label: 'View Leads', desc: `${totalLeads} people captured`, icon: Users, view: 'leads' as View, gradient: 'from-[var(--success)] to-teal-500' },
+          { label: 'DM Inbox', desc: `${totalSent} messages sent`, icon: MessageCircle, view: 'dms' as View, gradient: 'from-[var(--info)] to-indigo-500' },
           { label: 'Templates', desc: 'Start from a ready-made setup', icon: Sparkles, view: 'templates' as View, gradient: 'from-violet-500 to-pink-500' },
         ].map(q => (
           <button
@@ -307,39 +395,16 @@ function OverviewView({ automations, onNavigate }: { automations: Automation[]; 
   );
 }
 
-function AutomationsView({ automations, setAutomations, onEdit }: { automations: Automation[]; setAutomations: React.Dispatch<React.SetStateAction<Automation[]>>; onEdit: (id: string) => void }) {
+function AutomationsView({ automations, onEdit, onToggleActive, onDelete, onCreateNew, isMutating }: {
+  automations: Automation[];
+  onEdit: (id: string) => void;
+  onToggleActive: (a: Automation) => void;
+  onDelete: (id: string) => void;
+  onCreateNew: () => void;
+  isMutating: boolean;
+}) {
   const [search, setSearch] = useState('');
   const filtered = automations.filter(a => a.name.toLowerCase().includes(search.toLowerCase()));
-
-  function toggleActive(id: string) {
-    setAutomations(prev => prev.map(a => a.id === id ? { ...a, active: !a.active } : a));
-  }
-
-  function deleteAutomation(id: string) {
-    setAutomations(prev => prev.filter(a => a.id !== id));
-  }
-
-  function createNew() {
-    const newA: Automation = {
-      id: Date.now().toString(),
-      name: 'New Automation',
-      active: false,
-      keywords: [],
-      triggers: [],
-      listener: 'MESSAGE',
-      prompt: '',
-      commentReply: '',
-      dmCount: 0,
-      commentCount: 0,
-      createdAt: new Date().toISOString().slice(0, 10),
-      matchMode: 'exact',
-      negativeKeywords: [],
-      multilingual: false,
-      templateType: 'custom',
-    };
-    setAutomations(prev => [newA, ...prev]);
-    onEdit(newA.id);
-  }
 
   return (
     <div className="space-y-6">
@@ -348,7 +413,7 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Automations</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">{automations.length} automation{automations.length !== 1 ? 's' : ''} configured</p>
         </div>
-        <button onClick={createNew} className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-4 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+        <button onClick={onCreateNew} disabled={isMutating} className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-4 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60">
           <Plus className="w-4 h-4" /> New
         </button>
       </div>
@@ -396,11 +461,11 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <Toggle checked={a.active} onChange={() => toggleActive(a.id)} />
+                <Toggle checked={a.active} onChange={() => onToggleActive(a)} />
                 <button onClick={() => onEdit(a.id)} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
                   <Edit3 className="w-4 h-4" />
                 </button>
-                <button onClick={() => deleteAutomation(a.id)} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--danger-bg)] text-[var(--text-secondary)] hover:text-[var(--danger)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+                <button onClick={() => onDelete(a.id)} disabled={isMutating} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--danger-bg)] text-[var(--text-secondary)] hover:text-[var(--danger)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -412,13 +477,24 @@ function AutomationsView({ automations, setAutomations, onEdit }: { automations:
   );
 }
 
-function BuilderView({ automation, onUpdate, onBack }: { automation: Automation; onUpdate: (a: Automation) => void; onBack: () => void }) {
+// Phase 2 trigger types that are not yet enabled
+const PHASE2_TRIGGERS: TriggerType[] = ['post_like', 'live_comment', 'story_poll'];
+// Phase 1 selectable match modes
+const PHASE1_MATCH_MODES: MatchMode[] = ['exact', 'fuzzy'];
+
+function BuilderView({ automation, onUpdate, onBack, saveError, isSaving }: {
+  automation: Automation;
+  onUpdate: (a: Automation) => Promise<void>;
+  onBack: () => void;
+  saveError?: string | null;
+  isSaving?: boolean;
+}) {
   const [local, setLocal] = useState<Automation>(automation);
   const [newKeyword, setNewKeyword] = useState('');
   const [newNegKeyword, setNewNegKeyword] = useState('');
   const [activeTab, setActiveTab] = useState<'keywords' | 'triggers' | 'listener' | 'message'>('keywords');
 
-  const save = () => { onUpdate(local); onBack(); };
+  const save = () => { void onUpdate(local); };
 
   function addKeyword() {
     const word = newKeyword.trim().toLowerCase();
@@ -485,11 +561,19 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
             <Toggle checked={local.active} onChange={v => setLocal(p => ({ ...p, active: v }))} />
             <span className="text-[var(--text-secondary)]">{local.active ? 'Active' : 'Paused'}</span>
           </div>
-          <button onClick={save} className="bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-5 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-            Save
+          <button onClick={save} disabled={isSaving} className="bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-5 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60">
+            {isSaving ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>
+
+      {/* Inline save-error banner */}
+      {saveError && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--danger-bg)] border border-[var(--danger)]/30 rounded-[var(--radius-md)] text-sm text-[var(--danger)] font-semibold">
+          <XCircle className="w-4 h-4 shrink-0" />
+          {saveError}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-1">
@@ -539,20 +623,27 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
           <div className="border-t border-[var(--border)] pt-4 space-y-3">
             <p className="text-xs font-bold text-[var(--text-primary)]">Match Mode</p>
             <div className="flex flex-wrap gap-2">
-              {matchModes.map(({ mode, desc }) => (
-                <button
-                  key={mode}
-                  title={desc}
-                  onClick={() => setLocal(p => ({ ...p, matchMode: mode }))}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                    local.matchMode === mode
-                      ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-xs)]'
-                      : 'bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--brand)]/40 hover:text-[var(--brand)]'
-                  }`}
-                >
-                  {MATCH_MODE_LABELS[mode]}
-                </button>
-              ))}
+              {matchModes.map(({ mode, desc }) => {
+                const isPhase2 = !PHASE1_MATCH_MODES.includes(mode);
+                return (
+                  <button
+                    key={mode}
+                    title={isPhase2 ? 'Coming soon' : desc}
+                    disabled={isPhase2}
+                    onClick={() => !isPhase2 && setLocal(p => ({ ...p, matchMode: mode }))}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                      isPhase2
+                        ? 'bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-tertiary)] opacity-50 cursor-not-allowed'
+                        : local.matchMode === mode
+                          ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-xs)]'
+                          : 'bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--brand)]/40 hover:text-[var(--brand)]'
+                    }`}
+                  >
+                    {MATCH_MODE_LABELS[mode]}
+                    {isPhase2 && <span className="text-[9px] font-semibold opacity-70">Soon</span>}
+                  </button>
+                );
+              })}
             </div>
             <p className="text-xs text-[var(--text-tertiary)]">
               {matchModes.find(m => m.mode === local.matchMode)?.desc}
@@ -626,21 +717,33 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
             {(Object.keys(TRIGGER_LABELS) as TriggerType[]).map(type => {
               const Icon = TRIGGER_ICONS[type];
               const active = local.triggers.some(t => t.type === type);
+              const isPhase2 = PHASE2_TRIGGERS.includes(type);
               return (
                 <button
                   key={type}
-                  onClick={() => toggleTrigger(type)}
-                  className={`flex items-center gap-3 p-4 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${active ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5' : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'}`}
+                  disabled={isPhase2}
+                  onClick={() => !isPhase2 && toggleTrigger(type)}
+                  title={isPhase2 ? 'Coming soon' : TRIGGER_DESCS[type]}
+                  className={`flex items-center gap-3 p-4 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                    isPhase2
+                      ? 'border-[var(--border)] bg-[var(--surface-muted)] opacity-50 cursor-not-allowed'
+                      : active
+                        ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5'
+                        : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'
+                  }`}
                 >
-                  <div className={`w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${active ? 'bg-[var(--brand)]/15 text-[var(--brand)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
+                  <div className={`w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${active && !isPhase2 ? 'bg-[var(--brand)]/15 text-[var(--brand)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
                     <Icon className="w-4.5 h-4.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-semibold truncate ${active ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{TRIGGER_LABELS[type]}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className={`text-xs font-semibold truncate ${active && !isPhase2 ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{TRIGGER_LABELS[type]}</p>
+                      {isPhase2 && <span className="text-[9px] font-bold text-[var(--text-tertiary)] bg-[var(--surface-hover)] px-1 rounded shrink-0">Soon</span>}
+                    </div>
                     <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5 leading-snug">{TRIGGER_DESCS[type]}</p>
                   </div>
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
-                    {active && <CheckCircle2 className="w-2.5 h-2.5 text-white" />}
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active && !isPhase2 ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
+                    {active && !isPhase2 && <CheckCircle2 className="w-2.5 h-2.5 text-white" />}
                   </div>
                 </button>
               );
@@ -658,20 +761,31 @@ function BuilderView({ automation, onUpdate, onBack }: { automation: Automation;
           </div>
           <div className="grid grid-cols-2 gap-4">
             {([
-              { type: 'MESSAGE', icon: Send, label: 'Static Message', desc: 'Send a fixed message every time.' },
-              { type: 'SMARTAI', icon: Bot, label: 'Smart AI', desc: 'AI crafts personalized replies using your prompt.' },
+              { type: 'MESSAGE', icon: Send, label: 'Static Message', desc: 'Send a fixed message every time.', phase2: false },
+              { type: 'SMARTAI', icon: Bot, label: 'Smart AI', desc: 'AI crafts personalized replies using your prompt.', phase2: true },
             ] as const).map(opt => (
               <button
                 key={opt.type}
-                onClick={() => setLocal(p => ({ ...p, listener: opt.type }))}
-                className={`p-5 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${local.listener === opt.type ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5' : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'}`}
+                disabled={opt.phase2}
+                onClick={() => !opt.phase2 && setLocal(p => ({ ...p, listener: opt.type }))}
+                title={opt.phase2 ? 'Coming soon' : undefined}
+                className={`p-5 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                  opt.phase2
+                    ? 'border-[var(--border)] bg-[var(--surface-muted)] opacity-50 cursor-not-allowed'
+                    : local.listener === opt.type
+                      ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5'
+                      : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'
+                }`}
               >
-                <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center mb-3 ${local.listener === opt.type ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-sm)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
+                <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center mb-3 ${local.listener === opt.type && !opt.phase2 ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-sm)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
                   <opt.icon className="w-5 h-5" />
                 </div>
-                <p className={`text-sm font-bold ${local.listener === opt.type ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{opt.label}</p>
+                <p className={`text-sm font-bold ${local.listener === opt.type && !opt.phase2 ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{opt.label}</p>
                 <p className="text-xs text-[var(--text-secondary)] mt-1">{opt.desc}</p>
-                {opt.type === 'SMARTAI' && <Badge color="pink">PRO</Badge>}
+                {opt.phase2
+                  ? <span className="text-[10px] font-bold text-[var(--text-tertiary)]">Coming soon</span>
+                  : null
+                }
               </button>
             ))}
           </div>
@@ -1127,27 +1241,9 @@ const TEMPLATE_CARDS: TemplateCard[] = [
   },
 ];
 
-function TemplatesView({ onEdit, setAutomations }: { onEdit: (id: string) => void; setAutomations: React.Dispatch<React.SetStateAction<Automation[]>> }) {
-  function useTemplate(card: TemplateCard) {
-    const newA: Automation = {
-      id: Date.now().toString(),
-      name: card.title,
-      active: false,
-      keywords: card.defaultKeywords.map((w, i) => ({ id: `${Date.now()}-${i}`, word: w.toLowerCase() })),
-      triggers: card.defaultTriggers.map((t, i) => ({ id: `${Date.now()}-t${i}`, type: t })),
-      listener: 'MESSAGE',
-      prompt: card.defaultPrompt,
-      commentReply: 'Check your DMs! 📩',
-      dmCount: 0,
-      commentCount: 0,
-      createdAt: new Date().toISOString().slice(0, 10),
-      matchMode: 'exact',
-      negativeKeywords: [],
-      multilingual: false,
-      templateType: card.type,
-    };
-    setAutomations(prev => [newA, ...prev]);
-    onEdit(newA.id);
+function TemplatesView({ onEdit, onCreateFromTemplate }: { onEdit: (id: string) => void; onCreateFromTemplate: (card: TemplateCard) => void }) {
+  function applyTemplate(card: TemplateCard) {
+    onCreateFromTemplate(card);
   }
 
   return (
@@ -1190,7 +1286,7 @@ function TemplatesView({ onEdit, setAutomations }: { onEdit: (id: string) => voi
                 </ul>
 
                 <button
-                  onClick={() => useTemplate(card)}
+                  onClick={() => applyTemplate(card)}
                   className={`mt-auto w-full bg-gradient-to-r ${card.gradient} hover:opacity-90 text-white text-sm font-bold py-2.5 rounded-[var(--radius-md)] transition-all shadow-lg focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]`}
                 >
                   Use Template
@@ -1275,51 +1371,210 @@ const SUB_SIDEBAR_W = 120; // px
 
 // ─── Page shell ───────────────────────────────────────────────────────────────
 
-export default function AutoDMPage() {
+function AutoDMInner() {
+  const { accountId } = useAutoDm();
   const [view, setView] = useState<View>('overview');
   const [builderAutomationId, setBuilderAutomationId] = useState<string | null>(null);
-  const [automations, setAutomations] = useState<Automation[]>(MOCK_AUTOMATIONS);
+  const [builderError, setBuilderError] = useState<string | null>(null);
+  const [isSavingBuilder, setIsSavingBuilder] = useState(false);
+
+  const { automations: dbAutomations, isLoading, createAutomation, updateAutomation, deleteAutomation, isMutating } = useInstaAutomations(accountId);
+  const analyticsQuery = useInstaAnalytics(accountId);
+  const analytics = analyticsQuery.data ?? { totalLeads: 0, totalSent: 0, totalFailed: 0 };
+
+  // Map DB rows to UI shape
+  const automations: Automation[] = (dbAutomations as DbAutomation[]).map(dbToUiAutomation);
 
   const handleEdit = useCallback((id: string) => {
     setBuilderAutomationId(id);
+    setBuilderError(null);
     setView('builder');
-  }, []);
-
-  const handleUpdate = useCallback((updated: Automation) => {
-    setAutomations(prev => prev.map(a => a.id === updated.id ? updated : a));
   }, []);
 
   const handleBack = useCallback(() => {
     setBuilderAutomationId(null);
+    setBuilderError(null);
     setView('automations');
   }, []);
 
-  const builderAutomation = automations.find(a => a.id === builderAutomationId);
+  const handleUpdate = useCallback(async (updated: Automation) => {
+    setBuilderError(null);
+    setIsSavingBuilder(true);
+    try {
+      const payload = uiToDbPayload(updated);
+      const isNew = !dbAutomations.some(r => r.id === updated.id);
+      if (isNew && accountId) {
+        await createAutomation({ ...payload, account_id: accountId });
+      } else {
+        await updateAutomation({
+          id: updated.id,
+          version: updated.version ?? 0,
+          patch: { ...payload },
+          keywords: payload.keywords,
+        });
+      }
+      handleBack();
+    } catch (err) {
+      setBuilderError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setIsSavingBuilder(false);
+    }
+  }, [dbAutomations, accountId, createAutomation, updateAutomation, handleBack]);
+
+  const handleToggleActive = useCallback(async (a: Automation) => {
+    if (a.version === undefined) return;
+    try {
+      await updateAutomation({
+        id: a.id,
+        version: a.version,
+        patch: { status: a.active ? 'paused' : 'active' },
+      });
+    } catch {
+      // error is non-fatal for a toggle — the query will re-fetch current state
+    }
+  }, [updateAutomation]);
+
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      await deleteAutomation(id);
+    } catch {
+      // non-fatal
+    }
+  }, [deleteAutomation]);
+
+  const handleCreateNew = useCallback(() => {
+    // Push a skeleton automation into the builder — it's persisted on Save
+    const skeleton: Automation = {
+      id: `new-${Date.now()}`,
+      name: 'New Automation',
+      active: false,
+      keywords: [],
+      triggers: [],
+      listener: 'MESSAGE',
+      prompt: '',
+      commentReply: '',
+      dmCount: 0,
+      commentCount: 0,
+      createdAt: new Date().toISOString().slice(0, 10),
+      matchMode: 'exact',
+      negativeKeywords: [],
+      multilingual: false,
+      templateType: 'custom',
+      version: 0,
+      requireFollow: false,
+      mediaScope: 'all',
+      accountId,
+    };
+    setBuilderAutomationId(skeleton.id);
+    // Stash skeleton locally so builderAutomation resolves
+    setSkeletonAutomation(skeleton);
+    setBuilderError(null);
+    setView('builder');
+  }, [accountId]);
+
+  const handleCreateFromTemplate = useCallback((card: TemplateCard) => {
+    const skeleton: Automation = {
+      id: `new-${Date.now()}`,
+      name: card.title,
+      active: false,
+      keywords: card.defaultKeywords.map((w, i) => ({ id: `tmp-${i}`, word: w.toLowerCase() })),
+      triggers: card.defaultTriggers.map((t, i) => ({ id: `tmp-t${i}`, type: t })),
+      listener: 'MESSAGE',
+      prompt: card.defaultPrompt,
+      commentReply: 'Check your DMs! 📩',
+      dmCount: 0,
+      commentCount: 0,
+      createdAt: new Date().toISOString().slice(0, 10),
+      matchMode: 'exact',
+      negativeKeywords: [],
+      multilingual: false,
+      templateType: card.type,
+      version: 0,
+      requireFollow: false,
+      mediaScope: 'all',
+      accountId,
+    };
+    setBuilderAutomationId(skeleton.id);
+    setSkeletonAutomation(skeleton);
+    setBuilderError(null);
+    setView('builder');
+  }, [accountId]);
+
+  // Local skeleton for new (not-yet-persisted) automations in the builder
+  const [skeletonAutomation, setSkeletonAutomation] = useState<Automation | null>(null);
+
+  const builderAutomation =
+    automations.find(a => a.id === builderAutomationId) ??
+    (skeletonAutomation?.id === builderAutomationId ? skeletonAutomation : undefined);
 
   function navigate(v: View) {
     if (view === 'builder') handleBack();
     setView(v);
   }
 
+  // Empty state when no account connected
+  if (!accountId && !isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-center px-4">
+        <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
+          <Instagram className="w-8 h-8 text-white" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-[var(--text-primary)]">Connect your Instagram</h2>
+          <p className="text-sm text-[var(--text-secondary)] mt-1 max-w-xs">Go to Settings to connect a real Instagram account or add a demo account to test the feature.</p>
+        </div>
+        <button
+          onClick={() => setView('settings')}
+          className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:opacity-90 text-white text-sm font-bold px-5 py-2.5 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+        >
+          <Settings className="w-4 h-4" /> Go to Settings
+        </button>
+      </div>
+    );
+  }
+
   function renderView() {
     if (view === 'builder' && builderAutomation) {
-      return <BuilderView automation={builderAutomation} onUpdate={handleUpdate} onBack={handleBack} />;
+      return (
+        <BuilderView
+          automation={builderAutomation}
+          onUpdate={handleUpdate}
+          onBack={handleBack}
+          saveError={builderError}
+          isSaving={isSavingBuilder}
+        />
+      );
     }
     switch (view) {
-      case 'overview': return <OverviewView automations={automations} onNavigate={setView} />;
-      case 'automations': return <AutomationsView automations={automations} setAutomations={setAutomations} onEdit={handleEdit} />;
+      case 'overview': return (
+        <OverviewView
+          automations={automations}
+          onNavigate={setView}
+          totalLeads={analytics.totalLeads}
+          totalSent={analytics.totalSent}
+        />
+      );
+      case 'automations': return (
+        <AutomationsView
+          automations={automations}
+          onEdit={handleEdit}
+          onToggleActive={handleToggleActive}
+          onDelete={handleDelete}
+          onCreateNew={handleCreateNew}
+          isMutating={isMutating}
+        />
+      );
       case 'leads': return <LeadsView />;
       case 'dms': return <DMsView />;
       case 'analytics': return <AnalyticsView automations={automations} />;
       case 'settings': return <SettingsView />;
-      case 'templates': return <TemplatesView onEdit={handleEdit} setAutomations={setAutomations} />;
+      case 'templates': return <TemplatesView onEdit={handleEdit} onCreateFromTemplate={handleCreateFromTemplate} />;
       case 'guide': return <GuideView />;
       default: return null;
     }
   }
 
   return (
-    <AutoDmProvider>
     <>
       {/* ── Sub-sidebar: fixed, anchored right after the main 256px sidebar ── */}
       <aside
@@ -1405,6 +1660,13 @@ export default function AutoDMPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function AutoDMPage() {
+  return (
+    <AutoDmProvider>
+      <AutoDMInner />
     </AutoDmProvider>
   );
 }
