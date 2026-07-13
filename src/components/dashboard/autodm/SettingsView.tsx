@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Instagram, CheckCircle2, XCircle, RefreshCw, Bot, Crown } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -10,9 +9,7 @@ import { Badge } from './ui';
 
 const PRO_FEATURES = ['Unlimited automations', 'Smart AI responses', 'Priority delivery', 'Advanced analytics', 'Webhook events', 'Bulk DM campaigns'];
 
-export function SettingsView() {
-  const searchParams = useSearchParams();
-  const connectResult = searchParams.get('connect') as 'success' | 'error' | null;
+export function SettingsView({ connectResult }: { connectResult: 'success' | 'error' | null }) {
   const { account, connectConfigured, isLoading, addDemoAccount, disconnect, isMutating } = useInstaAccount();
 
   const isConnected = account?.status === 'active';

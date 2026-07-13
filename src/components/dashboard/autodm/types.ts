@@ -58,13 +58,13 @@ export interface DmPayload {
   link?: string;
   not_follower_message?: string;
   comment_reply?: string;
-  [key: string]: string | undefined;
 }
 
 // ─── DB row + keyword nested shape ───────────────────────────────────────────
 
 export type DbAutomation = Database['public']['Tables']['instaauto_automations']['Row'] & {
   instaauto_keywords: { id: string; word: string; is_negative: boolean }[];
+  instaauto_media_targets: { id: string; ig_media_id: string; thumbnail_url: string | null }[];
 };
 
 export function dbToUiAutomation(row: DbAutomation): Automation {

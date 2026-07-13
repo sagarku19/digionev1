@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   Instagram, Activity, Zap, Users, MessageCircle, BarChart3, Settings, Sparkles, HelpCircle,
 } from 'lucide-react';
@@ -37,6 +38,8 @@ const TABS: { view: View; icon: React.ElementType; label: string }[] = [
 
 function AutoDMInner() {
   const { accountId, isSimulated, isLoading: accountLoading } = useAutoDm();
+  const searchParams = useSearchParams();
+  const connectResult = searchParams.get('connect') as 'success' | 'error' | null;
   const [view, setView] = useState<View>('overview');
   const [wizardTarget, setWizardTarget] = useState<Automation | null>(null);
   const [builderError, setBuilderError] = useState<string | null>(null);
@@ -75,14 +78,16 @@ function AutoDMInner() {
     setIsSavingBuilder(true);
     try {
       const payload = uiToDbPayload(updated);
+      const dbPayload = { ...payload, dm_payload: payload.dm_payload as unknown as import('@/types/database.types').Json };
       const isNew = !dbAutomations.some(r => r.id === updated.id);
-      if (isNew && accountId) {
-        await createAutomation({ ...payload, account_id: accountId });
+      if (isNew) {
+        if (!accountId) throw new Error('No connected account — cannot save.');
+        await createAutomation({ ...dbPayload, account_id: accountId });
       } else {
         await updateAutomation({
           id: updated.id,
           version: updated.version ?? 0,
-          patch: { ...payload },
+          patch: { ...dbPayload },
           keywords: payload.keywords,
         });
       }
@@ -127,7 +132,7 @@ function AutoDMInner() {
         <AnalyticsView automations={automations} totalLeads={analytics.totalLeads} totalSent={analytics.totalSent} totalFailed={analytics.totalFailed} />
       );
       case 'templates': return <TemplatesView onCreateFromTemplate={handleCreateFromTemplate} />;
-      case 'settings': return <SettingsView />;
+      case 'settings': return <SettingsView connectResult={connectResult} />;
       case 'guide': return <GuideView />;
       default: return null;
     }
