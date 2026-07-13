@@ -4,9 +4,9 @@ const TRANSIENT_META_CODES = new Set([1, 2, 4, 17, 32, 341, 613]); // rate/tempo
 const OAUTH_META_CODES = new Set([190, 102, 10, 200]);             // token/permission
 
 export function computeBackoffSeconds(attempt: number): number {
-  const base = Math.min(60 * 2 ** (attempt - 1), 3600);
+  const base = 60 * 2 ** (attempt - 1);
   const jitter = base * (Math.random() * 0.4 - 0.2); // ±20%
-  return Math.max(1, Math.round(base + jitter));
+  return Math.max(1, Math.min(3600, Math.round(base + jitter)));
 }
 
 export interface ErrorClass { retryable: boolean; isOAuthInvalid: boolean }
