@@ -1,1501 +1,44 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useState } from 'react';
+import {
+  Instagram, Activity, Zap, Users, MessageCircle, BarChart3, Settings, Sparkles, HelpCircle,
+} from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { AutoDmProvider, useAutoDm } from '@/components/dashboard/autodm/AutoDmContext';
-import { useInstaAccount } from '@/hooks/instaauto/useInstaAccount';
 import { useInstaAutomations } from '@/hooks/instaauto/useInstaAutomations';
 import { useInstaAnalytics } from '@/hooks/instaauto/useInstaAnalytics';
 import { useInstaLeads } from '@/hooks/instaauto/useInstaLeads';
 import { useInstaMessages } from '@/hooks/instaauto/useInstaMessages';
-import type { Database } from '@/types/database.types';
+import { OverviewView } from '@/components/dashboard/autodm/OverviewView';
+import { AutomationsWorkspace } from '@/components/dashboard/autodm/AutomationsWorkspace';
+import { AutomationWizard } from '@/components/dashboard/autodm/AutomationWizard';
+import { LeadsWorkspace } from '@/components/dashboard/autodm/LeadsWorkspace';
+import { InboxWorkspace } from '@/components/dashboard/autodm/InboxWorkspace';
+import { AnalyticsView } from '@/components/dashboard/autodm/AnalyticsView';
+import { SettingsView } from '@/components/dashboard/autodm/SettingsView';
+import { TemplatesView } from '@/components/dashboard/autodm/TemplatesView';
+import { GuideView } from '@/components/dashboard/autodm/GuideView';
 import {
-  Instagram, Zap, MessageCircle, Users, BarChart3, Settings,
-  Image, ChevronRight, Plus, Trash2, Edit3,
-  Hash, Bell, Send,
-  CheckCircle2, XCircle, Clock, Sparkles, Bot,
-  FileText, Radio, Activity, Crown,
-  ChevronLeft, X, Search,
-  Heart, MessageSquare,
-  AtSign, RefreshCw, Download,
-} from 'lucide-react';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type View =
-  | 'overview'
-  | 'automations'
-  | 'builder'
-  | 'leads'
-  | 'dms'
-  | 'posts'
-  | 'analytics'
-  | 'settings'
-  | 'templates'
-  | 'guide';
-
-type SimulateEventType = 'comment' | 'dm' | 'story_reply';
-
-type TriggerType = 'comment' | 'story_mention' | 'dm_keyword' | 'post_like' | 'live_comment' | 'story_reply' | 'story_reaction' | 'story_poll';
-type ListenerType = 'MESSAGE' | 'SMARTAI';
-type MatchMode = 'exact' | 'fuzzy' | 'ai_intent' | 'sentiment';
-type TemplateType = 'comment_dm' | 'dm_keyword' | 'story_reply' | 'live_comment' | 'custom';
-
-interface Keyword { id: string; word: string }
-interface Trigger { id: string; type: TriggerType }
-interface Automation {
-  id: string;
-  name: string;
-  active: boolean;
-  keywords: Keyword[];
-  triggers: Trigger[];
-  listener: ListenerType;
-  prompt: string;
-  commentReply: string;
-  dmCount: number;
-  commentCount: number;
-  createdAt: string;
-  matchMode: MatchMode;
-  negativeKeywords: Keyword[];
-  multilingual: boolean;
-  templateType: TemplateType;
-  // DB round-trip fields
-  version?: number;
-  requireFollow?: boolean;
-  mediaScope?: string;
-  accountId?: string;
-}
-
-// ─── DM payload shape (narrows the Json column — no bare `any` on the row) ───
-
-interface DmPayload {
-  message?: string;
-  link?: string;
-  not_follower_message?: string;
-  comment_reply?: string;
-  [key: string]: string | undefined;
-}
-
-// ─── DB row + keyword nested shape ───────────────────────────────────────────
-
-type DbAutomation = Database['public']['Tables']['instaauto_automations']['Row'] & {
-  instaauto_keywords: { id: string; word: string; is_negative: boolean }[];
-};
-
-// ─── Adapters ─────────────────────────────────────────────────────────────────
-
-function dbToUiAutomation(row: DbAutomation): Automation {
-  const payload = (row.dm_payload ?? {}) as DmPayload;
-  const positives = row.instaauto_keywords.filter(k => !k.is_negative);
-  const negatives = row.instaauto_keywords.filter(k => k.is_negative);
-  return {
-    id: row.id,
-    name: row.name,
-    active: row.status === 'active',
-    keywords: positives.map(k => ({ id: k.id, word: k.word })),
-    negativeKeywords: negatives.map(k => ({ id: k.id, word: k.word })),
-    triggers: row.trigger_types.map(t => ({ id: t, type: t as TriggerType })),
-    listener: row.response_type === 'smart_ai' ? 'SMARTAI' : 'MESSAGE',
-    prompt: payload.message ?? '',
-    commentReply: row.comment_reply ?? '',
-    dmCount: row.dm_count,
-    commentCount: row.comment_count,
-    createdAt: row.created_at.slice(0, 10),
-    matchMode: (row.match_mode as MatchMode) ?? 'exact',
-    multilingual: row.multilingual,
-    templateType: 'custom',
-    version: row.version,
-    requireFollow: row.require_follow,
-    mediaScope: row.media_scope,
-    accountId: row.account_id,
-  };
-}
-
-type DbInsertKeyword = { word: string; is_negative: boolean };
-interface DbUpsertPayload {
-  name: string;
-  status: string;
-  trigger_types: string[];
-  match_mode: string;
-  response_type: string;
-  require_follow: boolean;
-  media_scope: string;
-  comment_reply: string | null;
-  dm_payload: DmPayload;
-  multilingual: boolean;
-  keywords: DbInsertKeyword[];
-}
-
-function uiToDbPayload(ui: Automation): DbUpsertPayload {
-  return {
-    name: ui.name,
-    status: ui.active ? 'active' : 'draft',
-    trigger_types: ui.triggers.map(t => t.type),
-    match_mode: ui.matchMode,
-    response_type: ui.listener === 'SMARTAI' ? 'smart_ai' : 'message',
-    require_follow: ui.requireFollow ?? false,
-    media_scope: ui.mediaScope ?? 'all',
-    comment_reply: ui.commentReply || null,
-    dm_payload: {
-      message: ui.prompt || undefined,
-      comment_reply: ui.commentReply || undefined,
-    },
-    multilingual: ui.multilingual,
-    keywords: [
-      ...ui.keywords.map(k => ({ word: k.word, is_negative: false })),
-      ...ui.negativeKeywords.map(k => ({ word: k.word, is_negative: true })),
-    ],
-  };
-}
-
-// ─── DB row types for leads + messages ───────────────────────────────────────
-
-type DbLead = Database['public']['Tables']['instaauto_leads']['Row'];
-type DbMessage = Database['public']['Tables']['instaauto_messages']['Row'] & {
-  instaauto_automations: { name: string } | null;
-};
-
-const TRIGGER_LABELS: Record<TriggerType, string> = {
-  comment: 'Post Comment',
-  story_mention: 'Story Mention',
-  dm_keyword: 'DM Keyword',
-  post_like: 'Post Like',
-  live_comment: 'Live Stream Comment',
-  story_reply: 'Story Reply / Reaction',
-  story_reaction: 'Story Reaction',
-  story_poll: 'Story Poll Response',
-};
-
-const TRIGGER_ICONS: Record<TriggerType, React.ElementType> = {
-  comment: MessageSquare,
-  story_mention: AtSign,
-  dm_keyword: MessageCircle,
-  post_like: Heart,
-  live_comment: Radio,
-  story_reply: Image,
-  story_reaction: Heart,
-  story_poll: BarChart3,
-};
-
-const TRIGGER_DESCS: Record<TriggerType, string> = {
-  comment: 'Fires when someone comments on your post',
-  story_mention: 'Fires when you are tagged in a story',
-  dm_keyword: 'Fires when DM contains keyword',
-  post_like: 'Fires when someone likes your post',
-  live_comment: 'Fires when someone comments a keyword during your live',
-  story_reply: 'Fires when someone replies or reacts to your story',
-  story_reaction: 'Fires on emoji reactions to your story',
-  story_poll: 'Fires when someone votes on your story poll',
-};
-
-const MATCH_MODE_LABELS: Record<MatchMode, string> = {
-  exact: 'Exact Match',
-  fuzzy: 'Fuzzy Match',
-  ai_intent: 'AI Intent',
-  sentiment: 'Sentiment',
-};
-
-// ─── Reusable UI ──────────────────────────────────────────────────────────────
-
-function Badge({ children, color = 'default' }: { children: React.ReactNode; color?: 'green' | 'red' | 'yellow' | 'pink' | 'blue' | 'default' }) {
-  const colors = {
-    green:   'bg-[var(--success-bg)] text-[var(--success)] border-[var(--success)]/20',
-    red:     'bg-[var(--danger-bg)] text-[var(--danger)] border-[var(--danger)]/20',
-    yellow:  'bg-[var(--warning-bg)] text-[var(--warning)] border-[var(--warning)]/20',
-    pink:    'bg-[var(--brand)]/10 text-[var(--brand)] border-[var(--brand)]/20',
-    blue:    'bg-[var(--info-bg)] text-[var(--info)] border-[var(--info)]/20',
-    default: 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border-[var(--border)]',
-  };
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${colors[color]}`}>
-      {children}
-    </span>
-  );
-}
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <button
-      onClick={() => onChange(!checked)}
-      role="switch"
-      aria-checked={checked}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-        checked ? 'bg-[var(--brand)]' : 'bg-[var(--border)]'
-      }`}
-    >
-      <span
-        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform duration-200 ${
-          checked ? 'translate-x-5' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, sub, color = 'pink' }: { icon: React.ElementType; label: string; value: string | number; sub?: string; color?: string }) {
-  const colorMap: Record<string, string> = {
-    pink:    'text-[var(--brand)] bg-[var(--brand)]/10',
-    violet:  'text-[var(--brand)] bg-[var(--brand)]/10',
-    emerald: 'text-[var(--success)] bg-[var(--success-bg)]',
-    blue:    'text-[var(--info)] bg-[var(--info-bg)]',
-    amber:   'text-[var(--warning)] bg-[var(--warning-bg)]',
-  };
-  return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 relative overflow-hidden p-6 flex flex-col gap-3">
-      <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center ${colorMap[color] ?? colorMap.pink}`}>
-        <Icon className="w-5 h-5" />
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-[var(--text-primary)]">{value}</p>
-        <p className="text-sm text-[var(--text-secondary)]">{label}</p>
-        {sub && <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{sub}</p>}
-      </div>
-    </div>
-  );
-}
-
-// ─── Simulate Panel (demo accounts only) ─────────────────────────────────────
-
-function SimulatePanel() {
-  const queryClient = useQueryClient();
-  const [eventType, setEventType] = useState<SimulateEventType>('comment');
-  const [text, setText] = useState('');
-  const [igUsername, setIgUsername] = useState('');
-
-  const { mutate, isPending, isSuccess, isError } = useMutation({
-    mutationFn: async () => {
-      const res = await fetch('/api/instaauto/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventType, text: text || eventType, igUsername: igUsername || undefined }),
-      });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(body.error ?? 'Simulate failed');
-      }
-    },
-    onSuccess: () => {
-      setTimeout(() => {
-        void queryClient.invalidateQueries({ queryKey: ['instaauto'] });
-      }, 1200);
-      setText('');
-      setIgUsername('');
-    },
-  });
-
-  return (
-    <div className="bg-[var(--surface)] border border-[var(--brand)]/30 rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-5 space-y-4">
-      <div className="flex items-center gap-2">
-        <Bot className="w-4 h-4 text-[var(--brand)]" />
-        <p className="text-sm font-bold text-[var(--text-primary)]">Simulate Event <span className="text-xs font-normal text-[var(--text-tertiary)]">(demo mode)</span></p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <select
-          value={eventType}
-          onChange={e => setEventType(e.target.value as SimulateEventType)}
-          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 text-sm text-[var(--text-primary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
-        >
-          <option value="comment">Comment</option>
-          <option value="dm">DM</option>
-          <option value="story_reply">Story Reply</option>
-        </select>
-        <input
-          value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder="Keyword / message text..."
-          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
-        />
-        <input
-          value={igUsername}
-          onChange={e => setIgUsername(e.target.value)}
-          placeholder="Username (optional)"
-          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
-        />
-      </div>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => mutate()}
-          disabled={isPending}
-          className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-4 py-2 rounded-[var(--radius-md)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60"
-        >
-          <Send className="w-3.5 h-3.5" /> {isPending ? 'Sending…' : 'Fire event'}
-        </button>
-        {isSuccess && <span className="text-xs text-[var(--success)] font-semibold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Sent — refreshing in 1s</span>}
-        {isError && <span className="text-xs text-[var(--danger)] font-semibold flex items-center gap-1"><XCircle className="w-3.5 h-3.5" /> Failed</span>}
-      </div>
-    </div>
-  );
-}
-
-// ─── Sub-views ────────────────────────────────────────────────────────────────
-
-function OverviewView({ automations, onNavigate, totalLeads, totalSent, isSimulated }: {
-  automations: Automation[];
-  onNavigate: (v: View) => void;
-  totalLeads: number;
-  totalSent: number;
-  isSimulated: boolean;
-}) {
-  const totalComments = automations.reduce((s, a) => s + a.commentCount, 0);
-  const activeCount = automations.filter(a => a.active).length;
-
-  return (
-    <div className="space-y-6">
-      {/* Hero banner */}
-      <div className="rounded-[var(--radius-lg)] bg-[var(--surface)] border border-[var(--border)] shadow-[var(--shadow-xs)] p-6">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-[var(--radius-lg)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-pink-500/30">
-              <Instagram className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]">Instagram Automation</h1>
-              <p className="text-sm text-[var(--text-secondary)] mt-0.5">Auto DM · Smart Replies · Lead Capture</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--success-bg)] border border-[var(--success)]/20 text-xs font-bold text-[var(--success)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] animate-pulse" />
-              {activeCount} Running
-            </span>
-            <button
-              onClick={() => onNavigate('automations')}
-              className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white text-sm font-bold px-4 py-2 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-            >
-              <Zap className="w-4 h-4" /> Go Live
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stat cards — 4-col on md+, 2×2 on mobile */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Zap} label="Active Automations" value={activeCount} sub={`of ${automations.length} total`} color="pink" />
-        <StatCard icon={Send} label="DMs Sent" value={totalSent.toLocaleString()} sub="all time" color="violet" />
-        <StatCard icon={Users} label="Leads Captured" value={totalLeads} sub="from all sources" color="emerald" />
-        <StatCard icon={MessageSquare} label="Comments Replied" value={totalComments.toLocaleString()} sub="auto-replies" color="blue" />
-      </div>
-
-      {/* Quick actions — 4 cards including Templates */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {[
-          { label: 'Create Automation', desc: 'Set up keywords and triggers', icon: Plus, view: 'automations' as View, gradient: 'from-pink-500 to-violet-500' },
-          { label: 'View Leads', desc: `${totalLeads} people captured`, icon: Users, view: 'leads' as View, gradient: 'from-[var(--success)] to-teal-500' },
-          { label: 'DM Inbox', desc: `${totalSent} messages sent`, icon: MessageCircle, view: 'dms' as View, gradient: 'from-[var(--info)] to-indigo-500' },
-          { label: 'Templates', desc: 'Start from a ready-made setup', icon: Sparkles, view: 'templates' as View, gradient: 'from-violet-500 to-pink-500' },
-        ].map(q => (
-          <button
-            key={q.label}
-            onClick={() => onNavigate(q.view)}
-            className="group bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 relative overflow-hidden p-6 text-left flex items-center gap-4 hover:border-[var(--brand)]/40 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            <div className={`w-12 h-12 rounded-[var(--radius-md)] bg-gradient-to-br ${q.gradient} flex items-center justify-center shrink-0 shadow-lg`}>
-              <q.icon className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--brand)] transition-colors">{q.label}</p>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">{q.desc}</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-[var(--text-tertiary)] ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
-        ))}
-      </div>
-
-      {/* Simulate control — demo accounts only */}
-      {isSimulated && <SimulatePanel />}
-
-      {/* Recent automations */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-[var(--text-primary)]">Recent Automations</h3>
-          <button onClick={() => onNavigate('automations')} className="text-xs text-[var(--brand)] hover:opacity-80 font-semibold flex items-center gap-1 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded">
-            View all <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <div className="space-y-3">
-          {automations.map(a => (
-            <div key={a.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] px-5 hover:border-[var(--brand)]/30 hover:shadow-[var(--shadow-xs)] transition-all duration-200 py-4 flex items-center gap-4">
-              <div className={`w-2 h-2 rounded-full shrink-0 ${a.active ? 'bg-[var(--success)] shadow-[0_0_6px_var(--success)]' : 'bg-[var(--border)]'}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{a.name}</p>
-                <p className="text-xs text-[var(--text-secondary)]">{a.dmCount} DMs · {a.keywords.length} keywords</p>
-              </div>
-              <Badge color={a.active ? 'green' : 'default'}>{a.active ? 'Active' : 'Paused'}</Badge>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AutomationsView({ automations, onEdit, onToggleActive, onDelete, onCreateNew, isMutating }: {
-  automations: Automation[];
-  onEdit: (id: string) => void;
-  onToggleActive: (a: Automation) => void;
-  onDelete: (id: string) => void;
-  onCreateNew: () => void;
-  isMutating: boolean;
-}) {
-  const [search, setSearch] = useState('');
-  const filtered = automations.filter(a => a.name.toLowerCase().includes(search.toLowerCase()));
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between pt-1">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Automations</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">{automations.length} automation{automations.length !== 1 ? 's' : ''} configured</p>
-        </div>
-        <button onClick={onCreateNew} disabled={isMutating} className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-4 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60">
-          <Plus className="w-4 h-4" /> New
-        </button>
-      </div>
-
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search automations..."
-          className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-all"
-        />
-      </div>
-
-      <div className="space-y-3">
-        {filtered.length === 0 && (
-          <div className="text-center py-16 text-[var(--text-secondary)]">
-            <Bot className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No automations found. Create your first one!</p>
-          </div>
-        )}
-        {filtered.map(a => (
-          <div key={a.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 relative overflow-hidden p-6 hover:border-[var(--brand)]/30">
-            <div className="flex items-start gap-4">
-              <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${a.active ? 'bg-[var(--brand)]/10' : 'bg-[var(--surface-muted)]'}`}>
-                <Zap className={`w-5 h-5 ${a.active ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)]'}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm font-bold text-[var(--text-primary)]">{a.name}</h3>
-                  <Badge color={a.active ? 'green' : 'default'}>{a.active ? 'Active' : 'Paused'}</Badge>
-                  <Badge color="default">{a.listener === 'SMARTAI' ? '✦ Smart AI' : '✉ Message'}</Badge>
-                </div>
-                <div className="flex items-center gap-4 mt-2 text-xs text-[var(--text-secondary)]">
-                  <span className="flex items-center gap-1"><Send className="w-3 h-3" /> {a.dmCount} DMs</span>
-                  <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {a.commentCount} comments</span>
-                  <span className="flex items-center gap-1"><Hash className="w-3 h-3" /> {a.keywords.length} keywords</span>
-                  <span className="flex items-center gap-1"><Bell className="w-3 h-3" /> {a.triggers.length} triggers</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {a.keywords.slice(0, 5).map(k => (
-                    <span key={k.id} className="px-2 py-0.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)]">#{k.word}</span>
-                  ))}
-                  {a.keywords.length > 5 && <span className="px-2 py-0.5 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)]">+{a.keywords.length - 5}</span>}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Toggle checked={a.active} onChange={() => onToggleActive(a)} />
-                <button onClick={() => onEdit(a.id)} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                  <Edit3 className="w-4 h-4" />
-                </button>
-                <button onClick={() => onDelete(a.id)} disabled={isMutating} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--danger-bg)] text-[var(--text-secondary)] hover:text-[var(--danger)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Phase 2 trigger types that are not yet enabled
-const PHASE2_TRIGGERS: TriggerType[] = ['post_like', 'live_comment', 'story_poll'];
-// Phase 1 selectable match modes
-const PHASE1_MATCH_MODES: MatchMode[] = ['exact', 'fuzzy'];
-
-function BuilderView({ automation, onUpdate, onBack, saveError, isSaving }: {
-  automation: Automation;
-  onUpdate: (a: Automation) => Promise<void>;
-  onBack: () => void;
-  saveError?: string | null;
-  isSaving?: boolean;
-}) {
-  const [local, setLocal] = useState<Automation>(automation);
-  const [newKeyword, setNewKeyword] = useState('');
-  const [newNegKeyword, setNewNegKeyword] = useState('');
-  const [activeTab, setActiveTab] = useState<'keywords' | 'triggers' | 'listener' | 'message'>('keywords');
-
-  const save = () => { void onUpdate(local); };
-
-  function addKeyword() {
-    const word = newKeyword.trim().toLowerCase();
-    if (!word || local.keywords.some(k => k.word === word)) return;
-    setLocal(p => ({ ...p, keywords: [...p.keywords, { id: Date.now().toString(), word }] }));
-    setNewKeyword('');
-  }
-
-  function removeKeyword(id: string) {
-    setLocal(p => ({ ...p, keywords: p.keywords.filter(k => k.id !== id) }));
-  }
-
-  function addNegKeyword() {
-    const word = newNegKeyword.trim().toLowerCase();
-    if (!word || local.negativeKeywords.some(k => k.word === word)) return;
-    setLocal(p => ({ ...p, negativeKeywords: [...p.negativeKeywords, { id: Date.now().toString(), word }] }));
-    setNewNegKeyword('');
-  }
-
-  function removeNegKeyword(id: string) {
-    setLocal(p => ({ ...p, negativeKeywords: p.negativeKeywords.filter(k => k.id !== id) }));
-  }
-
-  function toggleTrigger(type: TriggerType) {
-    setLocal(p => ({
-      ...p,
-      triggers: p.triggers.some(t => t.type === type)
-        ? p.triggers.filter(t => t.type !== type)
-        : [...p.triggers, { id: Date.now().toString(), type }],
-    }));
-  }
-
-  const tabs = [
-    { id: 'keywords', label: 'Keywords', icon: Hash },
-    { id: 'triggers', label: 'Triggers', icon: Bell },
-    { id: 'listener', label: 'AI / Message', icon: Bot },
-    { id: 'message', label: 'DM Content', icon: Send },
-  ] as const;
-
-  const matchModes: { mode: MatchMode; desc: string }[] = [
-    { mode: 'exact', desc: 'Only exact word matches' },
-    { mode: 'fuzzy', desc: 'Allows typos & variations' },
-    { mode: 'ai_intent', desc: 'AI understands meaning' },
-    { mode: 'sentiment', desc: 'Matches by emotion/tone' },
-  ];
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <button onClick={onBack} className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1">
-          <input
-            value={local.name}
-            onChange={e => setLocal(p => ({ ...p, name: e.target.value }))}
-            className="text-xl font-bold text-[var(--text-primary)] bg-transparent border-0 outline-none w-full focus:ring-0"
-            placeholder="Automation name..."
-          />
-          <p className="text-xs text-[var(--text-secondary)]">Configure triggers, keywords, and response</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm">
-            <Toggle checked={local.active} onChange={v => setLocal(p => ({ ...p, active: v }))} />
-            <span className="text-[var(--text-secondary)]">{local.active ? 'Active' : 'Paused'}</span>
-          </div>
-          <button onClick={save} disabled={isSaving} className="bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-bold px-5 py-2.5 rounded-[var(--radius-md)] transition-colors shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-60">
-            {isSaving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </div>
-
-      {/* Inline save-error banner */}
-      {saveError && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--danger-bg)] border border-[var(--danger)]/30 rounded-[var(--radius-md)] text-sm text-[var(--danger)] font-semibold">
-          <XCircle className="w-4 h-4 shrink-0" />
-          {saveError}
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="flex gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-1">
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[var(--radius-sm)] text-xs font-semibold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${activeTab === t.id ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
-          >
-            <t.icon className="w-3.5 h-3.5" /> {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Keywords tab */}
-      {activeTab === 'keywords' && (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-5">
-          <div>
-            <h3 className="text-sm font-bold text-[var(--text-primary)]">Trigger Keywords</h3>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">When someone comments or DMs these words, the automation fires.</p>
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={newKeyword}
-              onChange={e => setNewKeyword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addKeyword()}
-              placeholder="Add keyword..."
-              className="flex-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
-            />
-            <button onClick={addKeyword} className="bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-md)] font-bold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-              Add
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {local.keywords.length === 0 && <p className="text-xs text-[var(--text-tertiary)]">No keywords yet. Add some above.</p>}
-            {local.keywords.map(k => (
-              <span key={k.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--brand)]/10 border border-[var(--brand)]/20 text-[var(--brand)] rounded-full text-sm font-semibold">
-                #{k.word}
-                <button onClick={() => removeKeyword(k.id)} className="hover:opacity-70 transition-opacity focus-visible:outline-none">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </span>
-            ))}
-          </div>
-
-          {/* Match Mode selector */}
-          <div className="border-t border-[var(--border)] pt-4 space-y-3">
-            <p className="text-xs font-bold text-[var(--text-primary)]">Match Mode</p>
-            <div className="flex flex-wrap gap-2">
-              {matchModes.map(({ mode, desc }) => {
-                const isPhase2 = !PHASE1_MATCH_MODES.includes(mode);
-                return (
-                  <button
-                    key={mode}
-                    title={isPhase2 ? 'Coming soon' : desc}
-                    disabled={isPhase2}
-                    onClick={() => !isPhase2 && setLocal(p => ({ ...p, matchMode: mode }))}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                      isPhase2
-                        ? 'bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-tertiary)] opacity-50 cursor-not-allowed'
-                        : local.matchMode === mode
-                          ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-xs)]'
-                          : 'bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--brand)]/40 hover:text-[var(--brand)]'
-                    }`}
-                  >
-                    {MATCH_MODE_LABELS[mode]}
-                    {isPhase2 && <span className="text-[9px] font-semibold opacity-70">Soon</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-xs text-[var(--text-tertiary)]">
-              {matchModes.find(m => m.mode === local.matchMode)?.desc}
-            </p>
-          </div>
-
-          {/* Negative Keywords */}
-          <div className="border-t border-[var(--border)] pt-4 space-y-3">
-            <div>
-              <p className="text-xs font-bold text-[var(--danger)]">Negative Keywords</p>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">If any of these appear, the automation will NOT fire.</p>
-            </div>
-            <div className="flex gap-2">
-              <input
-                value={newNegKeyword}
-                onChange={e => setNewNegKeyword(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addNegKeyword()}
-                placeholder="Add negative keyword..."
-                className="flex-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
-              />
-              <button onClick={addNegKeyword} className="bg-[var(--danger)] hover:opacity-90 text-white px-4 py-2.5 rounded-[var(--radius-md)] font-bold text-sm transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                Add
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {local.negativeKeywords.length === 0 && <p className="text-xs text-[var(--text-tertiary)]">No negative keywords yet.</p>}
-              {local.negativeKeywords.map(k => (
-                <span key={k.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--danger-bg)] border border-[var(--danger)]/20 text-[var(--danger)] rounded-full text-sm font-semibold">
-                  -{k.word}
-                  <button onClick={() => removeNegKeyword(k.id)} className="hover:opacity-70 transition-opacity focus-visible:outline-none">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Multilingual toggle */}
-          <div className="border-t border-[var(--border)] pt-4 flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="text-xs font-bold text-[var(--text-primary)]">Detect keywords in any language (AI-powered)</p>
-                <Badge color="pink">PRO</Badge>
-              </div>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">Match keywords regardless of script or language</p>
-            </div>
-            <Toggle checked={local.multilingual} onChange={v => setLocal(p => ({ ...p, multilingual: v }))} />
-          </div>
-
-          <div className="border-t border-[var(--border)] pt-4">
-            <p className="text-xs text-[var(--text-secondary)] font-semibold mb-2">Pro tip: Use broader keywords for higher reach</p>
-            <div className="flex flex-wrap gap-2">
-              {['free', 'info', 'link', 'guide', 'send', 'course'].map(w => (
-                <button key={w} onClick={() => { setNewKeyword(w); }} className="px-2.5 py-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-full text-xs text-[var(--text-secondary)] hover:border-[var(--brand)]/40 hover:text-[var(--brand)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-                  #{w}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Triggers tab */}
-      {activeTab === 'triggers' && (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-4">
-          <div>
-            <h3 className="text-sm font-bold text-[var(--text-primary)]">Trigger Events</h3>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">Choose what actions activate this automation.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {(Object.keys(TRIGGER_LABELS) as TriggerType[]).map(type => {
-              const Icon = TRIGGER_ICONS[type];
-              const active = local.triggers.some(t => t.type === type);
-              const isPhase2 = PHASE2_TRIGGERS.includes(type);
-              return (
-                <button
-                  key={type}
-                  disabled={isPhase2}
-                  onClick={() => !isPhase2 && toggleTrigger(type)}
-                  title={isPhase2 ? 'Coming soon' : TRIGGER_DESCS[type]}
-                  className={`flex items-center gap-3 p-4 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                    isPhase2
-                      ? 'border-[var(--border)] bg-[var(--surface-muted)] opacity-50 cursor-not-allowed'
-                      : active
-                        ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5'
-                        : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'
-                  }`}
-                >
-                  <div className={`w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${active && !isPhase2 ? 'bg-[var(--brand)]/15 text-[var(--brand)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
-                    <Icon className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className={`text-xs font-semibold truncate ${active && !isPhase2 ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{TRIGGER_LABELS[type]}</p>
-                      {isPhase2 && <span className="text-[9px] font-bold text-[var(--text-tertiary)] bg-[var(--surface-hover)] px-1 rounded shrink-0">Soon</span>}
-                    </div>
-                    <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5 leading-snug">{TRIGGER_DESCS[type]}</p>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active && !isPhase2 ? 'border-[var(--brand)] bg-[var(--brand)]' : 'border-[var(--border)]'}`}>
-                    {active && !isPhase2 && <CheckCircle2 className="w-2.5 h-2.5 text-white" />}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Listener tab */}
-      {activeTab === 'listener' && (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-5">
-          <div>
-            <h3 className="text-sm font-bold text-[var(--text-primary)]">Response Type</h3>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">Choose how your automation responds to triggers.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {([
-              { type: 'MESSAGE', icon: Send, label: 'Static Message', desc: 'Send a fixed message every time.', phase2: false },
-              { type: 'SMARTAI', icon: Bot, label: 'Smart AI', desc: 'AI crafts personalized replies using your prompt.', phase2: true },
-            ] as const).map(opt => (
-              <button
-                key={opt.type}
-                disabled={opt.phase2}
-                onClick={() => !opt.phase2 && setLocal(p => ({ ...p, listener: opt.type }))}
-                title={opt.phase2 ? 'Coming soon' : undefined}
-                className={`p-5 rounded-[var(--radius-md)] border text-left transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                  opt.phase2
-                    ? 'border-[var(--border)] bg-[var(--surface-muted)] opacity-50 cursor-not-allowed'
-                    : local.listener === opt.type
-                      ? 'border-[var(--brand)]/50 bg-[var(--brand)]/5'
-                      : 'border-[var(--border)] bg-[var(--surface-muted)] hover:border-[var(--brand)]/30'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center mb-3 ${local.listener === opt.type && !opt.phase2 ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-sm)]' : 'bg-[var(--surface-hover)] text-[var(--text-tertiary)]'}`}>
-                  <opt.icon className="w-5 h-5" />
-                </div>
-                <p className={`text-sm font-bold ${local.listener === opt.type && !opt.phase2 ? 'text-[var(--brand)]' : 'text-[var(--text-primary)]'}`}>{opt.label}</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">{opt.desc}</p>
-                {opt.phase2
-                  ? <span className="text-[10px] font-bold text-[var(--text-tertiary)]">Coming soon</span>
-                  : null
-                }
-              </button>
-            ))}
-          </div>
-          {local.listener === 'SMARTAI' && (
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">AI Prompt / Context</label>
-              <textarea
-                value={local.prompt}
-                onChange={e => setLocal(p => ({ ...p, prompt: e.target.value }))}
-                placeholder="Tell the AI about your business, offer, and what to share in the DM..."
-                rows={4}
-                className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] resize-none transition"
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Message tab */}
-      {activeTab === 'message' && (
-        <div className="space-y-4">
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-[var(--text-primary)]">DM Message</h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-1">The message sent to users who trigger this automation.</p>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-semibold text-[var(--text-secondary)]">Message text</label>
-                <span className="text-xs text-[var(--text-tertiary)]">{local.prompt.length}/1000</span>
-              </div>
-              <textarea
-                value={local.prompt}
-                onChange={e => setLocal(p => ({ ...p, prompt: e.target.value }))}
-                placeholder={`Hi {name}! Thanks for reaching out. Here's your link: ...`}
-                rows={5}
-                className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] resize-none transition"
-              />
-              <p className="text-xs text-[var(--text-tertiary)] mt-2">Use <code className="bg-[var(--surface-muted)] px-1 rounded">{'{name}'}</code> to personalise.</p>
-            </div>
-          </div>
-
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-[var(--text-primary)]">Comment Reply <span className="text-[var(--text-tertiary)] font-normal text-xs ml-1">optional</span></h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-1">Public reply on the post comment before sending the DM.</p>
-            </div>
-            <input
-              value={local.commentReply}
-              onChange={e => setLocal(p => ({ ...p, commentReply: e.target.value }))}
-              placeholder="Check your DMs! 📩"
-              className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition"
-            />
-          </div>
-
-          {/* Preview */}
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
-            <p className="text-xs font-semibold text-[var(--text-secondary)] mb-3">Preview</p>
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 shrink-0" />
-              <div className="bg-[var(--surface-muted)] rounded-[var(--radius-lg)] rounded-tl-sm px-4 py-3 max-w-xs">
-                <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap">{local.prompt.replace('{name}', 'Alex') || 'Your message will appear here...'}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LeadsView({ leads, isLoading }: { leads: DbLead[]; isLoading: boolean }) {
-  const [search, setSearch] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('all');
-
-  const filtered = leads.filter(l =>
-    (sourceFilter === 'all' || l.first_source === sourceFilter) &&
-    (l.ig_username ?? '').toLowerCase().includes(search.toLowerCase())
-  );
-
-  const sourceColors: Record<string, 'pink' | 'blue' | 'yellow'> = { comment: 'pink', dm: 'blue', story_mention: 'yellow' };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between pt-1">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">Leads</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">{leads.length} leads captured from Instagram</p>
-        </div>
-        <button className="flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] px-3 py-2 rounded-[var(--radius-md)] transition-colors hover:border-[var(--brand)]/40 shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-          <Download className="w-4 h-4" /> Export
-        </button>
-      </div>
-
-      <div className="flex gap-3 flex-wrap">
-        <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by username..."
-            className="w-full bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition" />
-        </div>
-        <select value={sourceFilter} onChange={e => setSourceFilter(e.target.value)}
-          className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] px-3 py-2.5 text-sm text-[var(--text-primary)] focus:border-[var(--border-strong)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition">
-          <option value="all">All Sources</option>
-          <option value="comment">Comment</option>
-          <option value="dm">DM</option>
-          <option value="story_mention">Story Mention</option>
-        </select>
-      </div>
-
-      {isLoading ? (
-        <div className="space-y-2">
-          {[1, 2, 3].map(i => <div key={i} className="h-14 bg-[var(--surface-muted)] rounded-[var(--radius-md)] animate-pulse" />)}
-        </div>
-      ) : (
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[var(--border)]">
-                {['Username', 'Source', 'Follower', 'Interactions', 'Captured'].map(h => (
-                  <th key={h} className="text-left text-xs font-semibold text-[var(--text-secondary)] px-5 py-3.5">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {filtered.map(l => {
-                const username = l.ig_username ?? l.ig_user_id;
-                return (
-                  <tr key={l.id} className="hover:bg-[var(--surface-hover)] transition-colors">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
-                          {username[0]?.toUpperCase() ?? 'I'}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-[var(--text-primary)]">@{username}</p>
-                          {l.email && <p className="text-xs text-[var(--text-tertiary)]">{l.email}</p>}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Badge color={sourceColors[l.first_source ?? ''] ?? 'default'}>{(l.first_source ?? 'unknown').replace(/_/g, ' ')}</Badge>
-                    </td>
-                    <td className="px-5 py-4">
-                      {l.is_follower ? (
-                        <Badge color="green">Follower</Badge>
-                      ) : (
-                        <span className="text-xs text-[var(--text-tertiary)]">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-xs text-[var(--text-secondary)]">{l.interaction_count}</td>
-                    <td className="px-5 py-4 text-xs text-[var(--text-tertiary)]">
-                      {new Date(l.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {filtered.length === 0 && (
-            <div className="text-center py-12 text-[var(--text-secondary)]">
-              <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">{leads.length === 0 ? 'No leads yet — fire a simulate event to capture your first lead.' : 'No leads match your search'}</p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const DM_STATUS_COLORS: Record<string, 'green' | 'yellow' | 'red' | 'default'> = {
-  sent: 'green',
-  queued: 'yellow',
-  processing: 'yellow',
-  failed: 'red',
-};
-
-function DMsView({ messages, isLoading }: { messages: DbMessage[]; isLoading: boolean }) {
-  return (
-    <div className="space-y-6">
-      <div className="pt-1">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">DM Inbox</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Log of all automated DMs sent — {messages.length} total</p>
-      </div>
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-24 bg-[var(--surface-muted)] rounded-[var(--radius-lg)] animate-pulse" />)}
-        </div>
-      ) : messages.length === 0 ? (
-        <div className="text-center py-16 text-[var(--text-secondary)]">
-          <MessageCircle className="w-10 h-10 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">No DMs yet — automations will log here when they fire.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {messages.map(dm => {
-            const recipient = dm.recipient_username ? `@${dm.recipient_username}` : dm.recipient_ig_user_id ?? 'Unknown';
-            const firstChar = (dm.recipient_username ?? dm.recipient_ig_user_id ?? 'U')[0]?.toUpperCase() ?? 'U';
-            const statusColor = DM_STATUS_COLORS[dm.status] ?? 'default';
-            return (
-              <div key={dm.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 p-6 hover:border-[var(--brand)]/20">
-                <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold shrink-0">
-                    {firstChar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-[var(--text-primary)]">{recipient}</p>
-                        {dm.simulated && <Badge color="yellow">Simulated</Badge>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge color={statusColor}>
-                          {dm.status === 'sent' && <CheckCircle2 className="w-3 h-3" />}
-                          {dm.status === 'failed' && <XCircle className="w-3 h-3" />}
-                          {(dm.status === 'queued' || dm.status === 'processing') && <Clock className="w-3 h-3" />}
-                          {dm.status}
-                        </Badge>
-                        <span className="text-xs text-[var(--text-tertiary)]">
-                          {new Date(dm.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
-                        </span>
-                      </div>
-                    </div>
-                    {dm.message_text && <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2">{dm.message_text}</p>}
-                    {dm.status === 'failed' && dm.last_error && (
-                      <p className="text-xs text-[var(--danger)] mt-1 flex items-center gap-1"><XCircle className="w-3 h-3 shrink-0" />{dm.last_error}</p>
-                    )}
-                    {dm.instaauto_automations?.name && (
-                      <p className="text-xs text-[var(--brand)] mt-2 flex items-center gap-1"><Zap className="w-3 h-3" />{dm.instaauto_automations.name}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AnalyticsView({
-  automations,
-  totalLeads,
-  totalSent,
-  totalFailed,
-}: {
-  automations: Automation[];
-  totalLeads: number;
-  totalSent: number;
-  totalFailed: number;
-}) {
-  const totalDMs = automations.reduce((s, a) => s + a.dmCount, 0);
-  const totalComments = automations.reduce((s, a) => s + a.commentCount, 0);
-  const deliveryRate = totalSent + totalFailed > 0
-    ? Math.round((totalSent / (totalSent + totalFailed)) * 100)
-    : 0;
-
-  return (
-    <div className="space-y-6">
-      <div className="pt-1">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Analytics</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Performance metrics for all your automations</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <StatCard icon={Send} label="Total DMs Sent" value={totalSent} color="pink" />
-        <StatCard icon={MessageSquare} label="Comments Replied" value={totalComments} color="violet" />
-        <StatCard icon={Users} label="Leads Captured" value={totalLeads} color="emerald" />
-        <StatCard icon={XCircle} label="Failed DMs" value={totalFailed} color="amber" />
-      </div>
-
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
-        <h3 className="text-sm font-bold text-[var(--text-primary)] mb-5">Per-Automation Performance</h3>
-        {automations.length === 0 ? (
-          <div className="text-center py-8 text-[var(--text-secondary)]">
-            <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-xs">No automations yet.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {automations.map(a => {
-              const dmPct = totalDMs ? Math.round((a.dmCount / totalDMs) * 100) : 0;
-              return (
-                <div key={a.id} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[var(--text-primary)]">{a.name}</span>
-                    <span className="text-[var(--text-tertiary)]">{a.dmCount} DMs · {a.commentCount} comments · {dmPct}%</span>
-                  </div>
-                  <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-pink-500 to-violet-500 rounded-full transition-all" style={{ width: `${dmPct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6">
-        <h3 className="text-sm font-bold text-[var(--text-primary)] mb-4">DM Delivery Rate</h3>
-        {totalSent + totalFailed === 0 ? (
-          <p className="text-xs text-[var(--text-tertiary)]">No DMs sent yet.</p>
-        ) : (
-          <>
-            <div className="text-center py-4">
-              <p className="text-4xl font-extrabold text-[var(--text-primary)]">{deliveryRate}<span className="text-xl text-[var(--brand)]">%</span></p>
-              <p className="text-xs text-[var(--text-secondary)] mt-1">of DMs delivered successfully ({totalSent} sent, {totalFailed} failed)</p>
-            </div>
-            <div className="h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-[var(--success)] to-teal-500 rounded-full" style={{ width: `${deliveryRate}%` }} />
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function PostsView() {
-  return (
-    <div className="space-y-6">
-      <div className="pt-1">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Posts</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Target specific posts for your automations</p>
-      </div>
-      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-        <div className="w-14 h-14 rounded-[var(--radius-lg)] bg-[var(--surface-muted)] border border-[var(--border)] flex items-center justify-center">
-          <Image className="w-7 h-7 text-[var(--text-tertiary)]" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-[var(--text-primary)]">Specific-post targeting is coming soon</p>
-          <p className="text-xs text-[var(--text-secondary)] mt-1 max-w-xs">Automations currently run across all your posts. In a future update you will be able to scope each automation to specific posts.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SettingsView() {
-  const searchParams = useSearchParams();
-  const connectResult = searchParams.get('connect') as 'success' | 'error' | null;
-  const { account, connectConfigured, isLoading, addDemoAccount, disconnect, isMutating } = useInstaAccount();
-
-  const isConnected = account?.status === 'active';
-  const isRevoked = account?.status === 'revoked' || account?.status === 'expired';
-  const isSimulated = account?.is_simulated ?? false;
-  const displayName = account?.username ?? 'instagram';
-
-  return (
-    <div className="space-y-6">
-      <div className="pt-1">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Settings</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Manage your Instagram connection and account preferences</p>
-      </div>
-
-      {/* OAuth callback result banner */}
-      {connectResult === 'success' && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--success-bg)] border border-[var(--success)]/30 rounded-[var(--radius-md)] text-sm text-[var(--success)] font-semibold">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          Instagram account connected successfully.
-        </div>
-      )}
-      {connectResult === 'error' && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-[var(--danger-bg)] border border-[var(--danger)]/30 rounded-[var(--radius-md)] text-sm text-[var(--danger)] font-semibold">
-          <XCircle className="w-4 h-4 shrink-0" />
-          Connection failed. Please try again or add a demo account to test the feature.
-        </div>
-      )}
-
-      {/* Revoked / expired reconnect banner */}
-      {isRevoked && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-[var(--warning-bg)] border border-[var(--warning)]/30 rounded-[var(--radius-md)]">
-          <div className="flex items-center gap-2 text-sm text-[var(--warning)] font-semibold">
-            <RefreshCw className="w-4 h-4 shrink-0" />
-            Your Instagram connection has been {account?.status}. Please reconnect.
-          </div>
-          {connectConfigured && (
-            <button
-              onClick={() => { window.location.href = '/api/instaauto/connect'; }}
-              className="shrink-0 text-xs font-bold bg-[var(--warning)] text-white px-3 py-1.5 rounded-[var(--radius-sm)] hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-            >
-              Reconnect
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Connect Instagram card */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] p-6 space-y-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[var(--radius-md)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center">
-            <Instagram className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-[var(--text-primary)]">Instagram Account</h3>
-            <p className="text-xs text-[var(--text-secondary)]">Connect your business or creator account</p>
-          </div>
-          {isConnected && <Badge color="green"><CheckCircle2 className="w-3 h-3" /> Connected</Badge>}
-        </div>
-
-        {isLoading ? (
-          <div className="h-10 bg-[var(--surface-muted)] rounded-[var(--radius-md)] animate-pulse" />
-        ) : isConnected ? (
-          <div className="flex items-center justify-between bg-[var(--surface-muted)] rounded-[var(--radius-md)] px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[var(--brand)] flex items-center justify-center text-[var(--text-on-brand)] text-xs font-bold">
-                {displayName[0]?.toUpperCase() ?? 'I'}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">@{displayName}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <p className="text-xs text-[var(--text-secondary)] capitalize">{account?.status}</p>
-                  {isSimulated && <Badge color="yellow">Demo</Badge>}
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => disconnect()}
-              disabled={isMutating}
-              className="text-xs text-[var(--danger)] hover:opacity-80 font-semibold focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded disabled:opacity-40"
-            >
-              Disconnect
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {connectConfigured && (
-              <button
-                onClick={() => { window.location.href = '/api/instaauto/connect'; }}
-                className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-              >
-                <Instagram className="w-4 h-4" /> Connect Instagram
-              </button>
-            )}
-            <button
-              onClick={() => addDemoAccount()}
-              disabled={isMutating}
-              className="w-full border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--brand)]/40 font-semibold py-2.5 rounded-[var(--radius-md)] transition-all text-sm flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] disabled:opacity-40"
-            >
-              <Bot className="w-4 h-4" /> Add demo account
-            </button>
-            {connectConfigured && (
-              <p className="text-xs text-[var(--text-tertiary)] text-center">Requires an Instagram Business or Creator account linked to a Facebook Page.</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Subscription — decorative gradient kept */}
-      <div className="bg-gradient-to-br from-violet-500/10 to-pink-500/10 border border-[var(--brand)]/20 rounded-[var(--radius-lg)] p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <Crown className="w-5 h-5 text-[var(--warning)]" />
-          <h3 className="text-sm font-bold text-[var(--text-primary)]">Upgrade to Pro</h3>
-          <Badge color="yellow">FREE</Badge>
-        </div>
-        <div className="grid grid-cols-2 gap-3 text-xs text-[var(--text-secondary)]">
-          {['Unlimited automations', 'Smart AI responses', 'Priority delivery', 'Advanced analytics', 'Webhook events', 'Bulk DM campaigns'].map(f => (
-            <div key={f} className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-[var(--brand)] shrink-0" />{f}</div>
-          ))}
-        </div>
-        <button className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-          Upgrade to Pro — ₹999/mo
-        </button>
-      </div>
-
-      {/* Danger zone */}
-      <div className="bg-[var(--surface-muted)] border border-[var(--danger)]/20 rounded-[var(--radius-lg)] p-6 space-y-3">
-        <h3 className="text-sm font-bold text-[var(--danger)]">Danger Zone</h3>
-        <p className="text-xs text-[var(--text-secondary)]">These actions are irreversible. Proceed with caution.</p>
-        <button className="text-sm font-semibold text-[var(--danger)] border border-[var(--danger)]/30 px-4 py-2 rounded-[var(--radius-md)] hover:bg-[var(--danger-bg)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-          Delete All Automations
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Templates View ───────────────────────────────────────────────────────────
-
-interface TemplateCard {
-  type: Exclude<TemplateType, 'custom'>;
-  title: string;
-  desc: string;
-  gradient: string;
-  icon: React.ElementType;
-  features: string[];
-  defaultKeywords: string[];
-  defaultPrompt: string;
-  defaultTriggers: TriggerType[];
-}
-
-const TEMPLATE_CARDS: TemplateCard[] = [
-  {
-    type: 'comment_dm',
-    title: 'Comment to DM',
-    desc: 'Auto-DM anyone who comments your trigger word on a post.',
-    gradient: 'from-pink-500 to-violet-500',
-    icon: MessageSquare,
-    features: ['Post comment trigger', 'Instant DM delivery', 'Public comment reply'],
-    defaultKeywords: ['PRICE', 'LINK', 'PDF', 'COURSE'],
-    defaultPrompt: 'Hi {name}! Thanks for your comment. Here is the link you requested: 👇',
-    defaultTriggers: ['comment'],
-  },
-  {
-    type: 'dm_keyword',
-    title: 'DM Keyword Reply',
-    desc: 'Auto-respond when someone DMs you a specific keyword.',
-    gradient: 'from-violet-500 to-blue-500',
-    icon: MessageCircle,
-    features: ['DM keyword trigger', 'Smart AI option', 'Conversation starter'],
-    defaultKeywords: ['pricing', 'catalog', 'faq'],
-    defaultPrompt: 'Hey {name}! Great question. Here is everything you need to know: 📋',
-    defaultTriggers: ['dm_keyword'],
-  },
-  {
-    type: 'story_reply',
-    title: 'Story Reply Flow',
-    desc: 'Engage with everyone who replies or reacts to your stories.',
-    gradient: 'from-pink-500 to-rose-500',
-    icon: Image,
-    features: ['Story reply trigger', 'Story reaction trigger', 'Warm lead follow-up'],
-    defaultKeywords: ['yes', 'interested', 'more'],
-    defaultPrompt: 'Hey {name}! Glad you liked the story! Here is what I wanted to share with you: 🎁',
-    defaultTriggers: ['story_reply', 'story_reaction'],
-  },
-  {
-    type: 'live_comment',
-    title: 'Live Stream DM',
-    desc: 'Capture leads in real time while you go live on Instagram.',
-    gradient: 'from-orange-500 to-amber-500',
-    icon: Radio,
-    features: ['Live comment trigger', 'Real-time delivery', 'High-intent audience'],
-    defaultKeywords: ['link', 'send', 'want', 'yes'],
-    defaultPrompt: 'Hi {name}! You asked during the live — here is the resource I mentioned: 🔗',
-    defaultTriggers: ['live_comment'],
-  },
-];
-
-function TemplatesView({ onCreateFromTemplate }: { onCreateFromTemplate: (card: TemplateCard) => void }) {
-  function applyTemplate(card: TemplateCard) {
-    onCreateFromTemplate(card);
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="pt-1">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Templates</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">Start with a pre-built automation and customise it to your needs.</p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {TEMPLATE_CARDS.map(card => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.type}
-              className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] shadow-[var(--shadow-xs)] hover:shadow-[var(--shadow-sm)] transition-all duration-300 overflow-hidden hover:border-[var(--brand)]/30 flex flex-col"
-            >
-              {/* Gradient icon area — decorative, kept as-is */}
-              <div className={`h-28 bg-gradient-to-br ${card.gradient} flex items-center justify-center relative overflow-hidden`}>
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_50%,white,transparent_60%)]" />
-                <div className="w-14 h-14 rounded-[var(--radius-lg)] bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                  <Icon className="w-7 h-7 text-white" />
-                </div>
-              </div>
-
-              {/* Card body */}
-              <div className="p-5 flex flex-col gap-3 flex-1">
-                <div>
-                  <h3 className="text-base font-bold text-[var(--text-primary)]">{card.title}</h3>
-                  <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">{card.desc}</p>
-                </div>
-
-                <ul className="space-y-1.5">
-                  {card.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[var(--success)] shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  onClick={() => applyTemplate(card)}
-                  className={`mt-auto w-full bg-gradient-to-r ${card.gradient} hover:opacity-90 text-white text-sm font-bold py-2.5 rounded-[var(--radius-md)] transition-all shadow-lg focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]`}
-                >
-                  Use Template
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function GuideView() {
-  const steps = [
-    { num: 1, title: 'Connect or add a demo account', desc: 'Go to Settings → "Add demo account" to test immediately without real Instagram credentials, or click "Connect Instagram" to link your Business/Creator account via OAuth.' },
-    { num: 2, title: 'Create an Automation', desc: 'Go to Automations → New Automation. Give it a descriptive name (e.g. "Free Guide Giveaway").' },
-    { num: 3, title: 'Add Keywords', desc: 'Add trigger words people comment or DM (e.g. "guide", "free", "link"). Use broad words for higher reach.' },
-    { num: 4, title: 'Choose Triggers', desc: 'Select what fires the automation — Post Comment, Story Mention, DM Keyword, or Story Reply. Post Like and Live Comment are coming in Phase 2.' },
-    { num: 5, title: 'Set Response Type', desc: 'Pick Static Message for a fixed DM. Smart AI personalised replies are coming in Phase 2.' },
-    { num: 6, title: 'Write your DM', desc: 'Craft your automated DM. Use {name} to personalise. Optionally add a public Comment Reply so the interaction feels natural.' },
-    { num: 7, title: 'Activate and test', desc: 'Toggle the automation on. On a demo account, use the "Simulate Event" panel in Overview to fire a test comment or DM and watch leads + DMs appear in real time.' },
-  ];
-
-  const tips = [
-    'Use broad keywords like "free", "link", "send" for maximum reach.',
-    'Always set a comment reply to make the interaction feel natural.',
-    'On a demo account, fire multiple simulate events with different keywords to test each automation.',
-    'Monitor your DM Inbox and Leads regularly to track engagement.',
-    'Coming in Phase 2: Smart AI replies, post-like triggers, live-stream comments, and specific-post targeting.',
-  ];
-
-  return (
-    <div className="space-y-6">
-      <div className="pt-1">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Guide</h1>
-        <p className="text-sm text-[var(--text-secondary)] mt-1">How to set up and use Instagram Auto DM effectively.</p>
-      </div>
-
-      <div className="space-y-3">
-        {steps.map(s => (
-          <div key={s.num} className="flex gap-4 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-md)] px-5 hover:border-[var(--brand)]/30 hover:shadow-[var(--shadow-xs)] transition-all duration-200 py-4">
-            <div className="w-6 h-6 rounded-full bg-[var(--brand)]/10 text-[var(--brand)] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-              {s.num}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[var(--text-primary)]">{s.title}</p>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">{s.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-secondary)]">Pro Tips</p>
-        {tips.map((t, i) => (
-          <div key={i} className="flex gap-2.5 text-xs text-[var(--text-secondary)]">
-            <Sparkles className="w-3.5 h-3.5 text-[var(--brand)] shrink-0 mt-0.5" />
-            {t}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Nav items ────────────────────────────────────────────────────────────────
-
-const NAV_ITEMS: { view: View; icon: React.ElementType; label: string }[] = [
+  dbToUiAutomation, uiToDbPayload, emptyAutomation, automationFromTemplate,
+} from '@/components/dashboard/autodm/types';
+import type {
+  View, Automation, DbAutomation, TemplateCard,
+} from '@/components/dashboard/autodm/types';
+
+const TABS: { view: View; icon: React.ElementType; label: string }[] = [
   { view: 'overview', icon: Activity, label: 'Overview' },
   { view: 'automations', icon: Zap, label: 'Automations' },
   { view: 'leads', icon: Users, label: 'Leads' },
-  { view: 'dms', icon: MessageCircle, label: 'DM Inbox' },
-  { view: 'posts', icon: Image, label: 'Posts' },
+  { view: 'inbox', icon: MessageCircle, label: 'Inbox' },
   { view: 'analytics', icon: BarChart3, label: 'Analytics' },
-  { view: 'settings', icon: Settings, label: 'Settings' },
   { view: 'templates', icon: Sparkles, label: 'Templates' },
-  { view: 'guide', icon: FileText, label: 'Guide' },
 ];
 
-// The main sidebar is fixed at left-0, w-[256px].
-// This sub-sidebar sits fixed right beside it at left-[256px].
-const SUB_SIDEBAR_W = 120; // px
-
-// ─── Page shell ───────────────────────────────────────────────────────────────
-
 function AutoDMInner() {
-  const { accountId, isSimulated } = useAutoDm();
+  const { accountId, isSimulated, isLoading: accountLoading } = useAutoDm();
   const [view, setView] = useState<View>('overview');
-  const [builderAutomationId, setBuilderAutomationId] = useState<string | null>(null);
+  const [wizardTarget, setWizardTarget] = useState<Automation | null>(null);
   const [builderError, setBuilderError] = useState<string | null>(null);
   const [isSavingBuilder, setIsSavingBuilder] = useState(false);
 
@@ -1505,22 +48,29 @@ function AutoDMInner() {
   const { leads, isLoading: leadsLoading } = useInstaLeads(accountId);
   const { messages, isLoading: messagesLoading } = useInstaMessages(accountId);
 
-  // Map DB rows to UI shape
   const automations: Automation[] = (dbAutomations as DbAutomation[]).map(dbToUiAutomation);
 
+  const closeWizard = useCallback(() => {
+    setWizardTarget(null);
+    setBuilderError(null);
+  }, []);
+
   const handleEdit = useCallback((id: string) => {
-    setBuilderAutomationId(id);
-    setBuilderError(null);
-    setView('builder');
-  }, []);
+    const found = automations.find(a => a.id === id);
+    if (found) { setBuilderError(null); setWizardTarget(found); }
+  }, [automations]);
 
-  const handleBack = useCallback(() => {
-    setBuilderAutomationId(null);
+  const handleCreateNew = useCallback(() => {
     setBuilderError(null);
-    setView('automations');
-  }, []);
+    setWizardTarget(emptyAutomation(accountId));
+  }, [accountId]);
 
-  const handleUpdate = useCallback(async (updated: Automation) => {
+  const handleCreateFromTemplate = useCallback((card: TemplateCard) => {
+    setBuilderError(null);
+    setWizardTarget(automationFromTemplate(card, accountId));
+  }, [accountId]);
+
+  const handleSave = useCallback(async (updated: Automation) => {
     setBuilderError(null);
     setIsSavingBuilder(true);
     try {
@@ -1536,24 +86,20 @@ function AutoDMInner() {
           keywords: payload.keywords,
         });
       }
-      handleBack();
+      closeWizard();
     } catch (err) {
       setBuilderError(err instanceof Error ? err.message : 'Save failed');
     } finally {
       setIsSavingBuilder(false);
     }
-  }, [dbAutomations, accountId, createAutomation, updateAutomation, handleBack]);
+  }, [dbAutomations, accountId, createAutomation, updateAutomation, closeWizard]);
 
   const handleToggleActive = useCallback(async (a: Automation) => {
     if (a.version === undefined) return;
     try {
-      await updateAutomation({
-        id: a.id,
-        version: a.version,
-        patch: { status: a.active ? 'paused' : 'active' },
-      });
+      await updateAutomation({ id: a.id, version: a.version, patch: { status: a.active ? 'paused' : 'active' } });
     } catch {
-      // error is non-fatal for a toggle — the query will re-fetch current state
+      // non-fatal — the query re-fetches current state
     }
   }, [updateAutomation]);
 
@@ -1565,228 +111,107 @@ function AutoDMInner() {
     }
   }, [deleteAutomation]);
 
-  const handleCreateNew = useCallback(() => {
-    // Push a skeleton automation into the builder — it's persisted on Save
-    const skeleton: Automation = {
-      id: `new-${Date.now()}`,
-      name: 'New Automation',
-      active: false,
-      keywords: [],
-      triggers: [],
-      listener: 'MESSAGE',
-      prompt: '',
-      commentReply: '',
-      dmCount: 0,
-      commentCount: 0,
-      createdAt: new Date().toISOString().slice(0, 10),
-      matchMode: 'exact',
-      negativeKeywords: [],
-      multilingual: false,
-      templateType: 'custom',
-      version: 0,
-      requireFollow: false,
-      mediaScope: 'all',
-      accountId,
-    };
-    setBuilderAutomationId(skeleton.id);
-    // Stash skeleton locally so builderAutomation resolves
-    setSkeletonAutomation(skeleton);
-    setBuilderError(null);
-    setView('builder');
-  }, [accountId]);
+  const noAccount = !accountId && !accountLoading;
 
-  const handleCreateFromTemplate = useCallback((card: TemplateCard) => {
-    const skeleton: Automation = {
-      id: `new-${Date.now()}`,
-      name: card.title,
-      active: false,
-      keywords: card.defaultKeywords.map((w, i) => ({ id: `tmp-${i}`, word: w.toLowerCase() })),
-      triggers: card.defaultTriggers.map((t, i) => ({ id: `tmp-t${i}`, type: t })),
-      listener: 'MESSAGE',
-      prompt: card.defaultPrompt,
-      commentReply: 'Check your DMs! 📩',
-      dmCount: 0,
-      commentCount: 0,
-      createdAt: new Date().toISOString().slice(0, 10),
-      matchMode: 'exact',
-      negativeKeywords: [],
-      multilingual: false,
-      templateType: card.type,
-      version: 0,
-      requireFollow: false,
-      mediaScope: 'all',
-      accountId,
-    };
-    setBuilderAutomationId(skeleton.id);
-    setSkeletonAutomation(skeleton);
-    setBuilderError(null);
-    setView('builder');
-  }, [accountId]);
-
-  // Local skeleton for new (not-yet-persisted) automations in the builder
-  const [skeletonAutomation, setSkeletonAutomation] = useState<Automation | null>(null);
-
-  const builderAutomation =
-    automations.find(a => a.id === builderAutomationId) ??
-    (skeletonAutomation?.id === builderAutomationId ? skeletonAutomation : undefined);
-
-  function navigate(v: View) {
-    if (view === 'builder') handleBack();
-    setView(v);
-  }
-
-  // Empty state when no account connected
-  if (!accountId && !isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4 text-center px-4">
-        <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
-          <Instagram className="w-8 h-8 text-white" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-[var(--text-primary)]">Connect your Instagram</h2>
-          <p className="text-sm text-[var(--text-secondary)] mt-1 max-w-xs">Go to Settings to connect a real Instagram account or add a demo account to test the feature.</p>
-        </div>
-        <button
-          onClick={() => setView('settings')}
-          className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-violet-500 hover:opacity-90 text-white text-sm font-bold px-5 py-2.5 rounded-[var(--radius-md)] transition-all shadow-lg shadow-pink-500/20 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-        >
-          <Settings className="w-4 h-4" /> Go to Settings
-        </button>
-      </div>
-    );
-  }
-
-  function renderView() {
-    if (view === 'builder' && builderAutomation) {
-      return (
-        <BuilderView
-          automation={builderAutomation}
-          onUpdate={handleUpdate}
-          onBack={handleBack}
-          saveError={builderError}
-          isSaving={isSavingBuilder}
-        />
-      );
-    }
+  function renderTabContent() {
     switch (view) {
       case 'overview': return (
-        <OverviewView
-          automations={automations}
-          onNavigate={setView}
-          totalLeads={analytics.totalLeads}
-          totalSent={analytics.totalSent}
-          isSimulated={isSimulated}
-        />
+        <OverviewView automations={automations} onNavigate={setView} totalLeads={analytics.totalLeads} totalSent={analytics.totalSent} isSimulated={isSimulated} />
       );
       case 'automations': return (
-        <AutomationsView
-          automations={automations}
-          onEdit={handleEdit}
-          onToggleActive={handleToggleActive}
-          onDelete={handleDelete}
-          onCreateNew={handleCreateNew}
-          isMutating={isMutating}
-        />
+        <AutomationsWorkspace automations={automations} onEdit={handleEdit} onToggleActive={handleToggleActive} onDelete={handleDelete} onCreateNew={handleCreateNew} isMutating={isMutating} />
       );
-      case 'leads': return <LeadsView leads={leads} isLoading={leadsLoading} />;
-      case 'dms': return <DMsView messages={messages} isLoading={messagesLoading} />;
-      case 'posts': return <PostsView />;
+      case 'leads': return <LeadsWorkspace leads={leads} isLoading={leadsLoading} automations={automations} />;
+      case 'inbox': return <InboxWorkspace messages={messages} isLoading={messagesLoading} />;
       case 'analytics': return (
-        <AnalyticsView
-          automations={automations}
-          totalLeads={analytics.totalLeads}
-          totalSent={analytics.totalSent}
-          totalFailed={analytics.totalFailed}
-        />
+        <AnalyticsView automations={automations} totalLeads={analytics.totalLeads} totalSent={analytics.totalSent} totalFailed={analytics.totalFailed} />
       );
-      case 'settings': return <SettingsView />;
       case 'templates': return <TemplatesView onCreateFromTemplate={handleCreateFromTemplate} />;
+      case 'settings': return <SettingsView />;
       case 'guide': return <GuideView />;
       default: return null;
     }
   }
 
   return (
-    <>
-      {/* ── Sub-sidebar: fixed, anchored right after the main 256px sidebar ── */}
-      <aside
-        className="fixed top-14 bottom-0 flex-col bg-[var(--bg-primary)] border-r border-[var(--border)] hidden md:flex"
-        style={{ left: 256, width: SUB_SIDEBAR_W, zIndex: 99998 }}
-      >
-        <nav className="pt-4 flex flex-col gap-2">
-          {/* Section header */}
-          <div className="px-3 pb-2 flex flex-col items-center gap-1.5">
-            {/* <Instagram className="w-4 h-4 text-[var(--text-secondary)]" /> */}
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-60 text-center leading-tight">
-              Automation
-            </p>
+    <div className="space-y-5 pb-12">
+      <PageHeader
+        title="Instagram Automation"
+        description="Auto DM · Follow-gated delivery · Lead capture"
+        action={
+          <div className="flex items-center gap-2">
+            {!isLoading && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--success-bg)] border border-[var(--success)]/20 text-xs font-semibold text-[var(--success)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--success)] animate-pulse" />
+                {automations.filter(a => a.active).length} Running
+              </span>
+            )}
+            <button
+              onClick={() => setView('guide')}
+              title="Guide"
+              className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setView('settings')}
+              title="Settings"
+              className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
           </div>
+        }
+      />
 
-          <div className="flex flex-col gap-0.5 px-1">
-            {NAV_ITEMS.map((item) => {
-              const active = view === item.view || (view === 'builder' && item.view === 'automations');
-              return (
-                <button
-                  key={item.view}
-                  onClick={() => navigate(item.view)}
-                  title={item.label}
-                  className={`group relative flex flex-col items-center justify-center gap-1 w-full py-3 px-1 rounded-[var(--radius-sm)] transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                    active
-                      ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  {active && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[60%] rounded-r-full bg-[var(--brand)]" />
-                  )}
-                  <item.icon className={`w-4 h-4 shrink-0 transition-colors ${
-                    active ? 'text-[var(--brand)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
-                  }`} />
-                  <span className="text-[10px] font-medium leading-tight text-center w-full px-1">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </nav>
-      </aside>
-
-      {/* ── Main content: offset by sub-sidebar width on md+ ── */}
-      <div
-        className="min-h-screen hidden md:block"
-        style={{ marginLeft: SUB_SIDEBAR_W }}
-      >
-        <div className="px-8 py-8 w-full">
-          {renderView()}
+      {wizardTarget ? (
+        <AutomationWizard automation={wizardTarget} onSave={handleSave} onBack={closeWizard} saveError={builderError} isSaving={isSavingBuilder} />
+      ) : view === 'settings' || view === 'guide' ? (
+        <div className="max-w-2xl mx-auto space-y-4">
+          <button
+            onClick={() => setView('overview')}
+            className="text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded"
+          >
+            ← Back to workspace
+          </button>
+          {renderTabContent()}
         </div>
-      </div>
-
-      {/* ── Mobile fallback: no fixed sub-sidebar, just stacked ── */}
-      <div className="md:hidden">
-        {/* Mobile nav pills */}
-        <div className="flex overflow-x-auto gap-2 px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-primary)] no-scrollbar">
-          {NAV_ITEMS.map(item => {
-            const active = view === item.view || (view === 'builder' && item.view === 'automations');
-            return (
+      ) : noAccount ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-center px-4">
+          <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-[var(--brand)]/10 flex items-center justify-center">
+            <Instagram className="w-8 h-8 text-[var(--brand)]" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">Connect your Instagram</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-1 max-w-xs">Go to Settings to connect a real Instagram account or add a demo account to test the feature.</p>
+          </div>
+          <button
+            onClick={() => setView('settings')}
+            className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-semibold px-5 py-2.5 rounded-[var(--radius-md)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          >
+            <Settings className="w-4 h-4" /> Go to Settings
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] p-1 w-fit overflow-x-auto no-scrollbar max-w-full">
+            {TABS.map(t => (
               <button
-                key={item.view}
-                onClick={() => navigate(item.view)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
-                  active
-                    ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
+                key={t.view}
+                onClick={() => setView(t.view)}
+                className={`flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-semibold whitespace-nowrap transition-all focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
+                  view === t.view ? 'bg-[var(--brand)] text-[var(--text-on-brand)] shadow-[var(--shadow-xs)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                <item.icon className="w-3.5 h-3.5" />
-                {item.label}
+                <t.icon className="w-3.5 h-3.5" /> {t.label}
               </button>
-            );
-          })}
-        </div>
-        <div className="px-4 py-6">
-          {renderView()}
-        </div>
-      </div>
-    </>
+            ))}
+          </div>
+
+          {renderTabContent()}
+        </>
+      )}
+    </div>
   );
 }
 
