@@ -14,10 +14,11 @@ export interface AuthSessionData {
   userRole: string | null;
 }
 
-// getUser() serializes on the per-tab Supabase auth lock; a slow or stalled
-// holder would pin every consumer in a loading state. The fetch layer aborts
-// at 12s (lib/supabase/client.ts), but degrade to logged-out at 10s so the UI
-// never waits that long; the next auth-state invalidation corrects it.
+// getUser() serializes on the origin-wide Supabase auth lock and its fetch has
+// no timeout — a stalled holder (multi-tab dev steal thrash, see the note on
+// useLoginMutation) would otherwise pin every consumer in a loading state
+// forever. Degrade to logged-out after 10s; the next auth-state invalidation
+// corrects the UI once the lock clears.
 const AUTH_CHECK_TIMEOUT_MS = 10_000;
 
 export function useAuthSession() {
@@ -37,11 +38,7 @@ export function useAuthSession() {
           .eq('auth_provider_id', user.id)
           .maybeSingle();
 
-        const joined: unknown = data?.profiles;
-        const raw = (Array.isArray(joined) ? joined[0] : joined) as
-          | { full_name: string | null; avatar_url: string | null }
-          | null
-          | undefined;
+        const raw = Array.isArray(data?.profiles) ? data?.profiles[0] : (data?.profiles as any);
         return {
           isLoggedIn: true,
           userEmail: user.email ?? null,
@@ -76,11 +73,9 @@ export interface LoginVariables {
   password: string;
 }
 
-// The browser client aborts any request still pending after 12s (see
-// lib/supabase/client.ts), so signInWithPassword always settles — a stalled
-// connection surfaces here as an AuthRetryableFetchError instead of hanging.
-// The 15s race is only a last-resort net in case something outside the fetch
-// layer wedges.
+// Wraps signInWithPassword in a 15s race-timeout: Supabase's auth client uses
+// navigator.locks, and competing useAuthSession() callers can deadlock the lock
+// in dev — the timeout ensures the form recovers rather than spinning forever.
 export function useLoginMutation() {
   const queryClient = useQueryClient();
 
@@ -92,12 +87,7 @@ export function useLoginMutation() {
       );
 
       const { data, error } = await Promise.race([signInPromise, timeoutPromise]);
-      if (error) {
-        if (error.name === 'AuthRetryableFetchError') {
-          throw new Error('Could not reach the sign-in server — the request stalled or your connection dropped. Try again.');
-        }
-        throw new Error(error.message || 'Invalid email or password.');
-      }
+      if (error) throw new Error(error.message || 'Invalid email or password.');
       if (!data.user) throw new Error('Sign-in returned no user. Please try again.');
       return data.user;
     },
