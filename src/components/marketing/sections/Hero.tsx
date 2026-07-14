@@ -5,17 +5,26 @@ import { ArrowRight } from 'lucide-react';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { Rails } from '@/src/components/marketing/Ledger';
 
+const FEATURES = [
+  'Digital products',
+  'No-code storefronts',
+  'Instagram Auto DM',
+  'Short links',
+  'Coupons & affiliates',
+  'Instant UPI payouts',
+];
+
 const METRICS = [
   { value: "₹4.2 Cr+", label: "earned by creators" },
   { value: "12,400+", label: "products sold securely" },
   { value: "99.9%", label: "checkout uptime" },
-  { value: "10%", label: "flat fee — you keep 90%" },
+  { value: "10%", label: "flat fee, you keep 90%" },
 ];
 
-const PAYMENTS = [
-  { initial: 'D', name: 'Design Masterclass', amt: '+₹4,200', amtClass: 'text-emerald-600', sub: '2m ago · UPI', subClass: 'text-black/30' },
-  { initial: 'N', name: 'Notion Templates Pack', amt: '+₹11,500', amtClass: 'text-emerald-600', sub: '1h ago · Card', subClass: 'text-black/30' },
-  { initial: 'F', name: 'Freelance Toolkit', amt: '+₹3,800', amtClass: 'text-amber-600', sub: 'Processing', subClass: 'text-amber-500' },
+const RECENT_SALES = [
+  { initial: 'A', name: 'Ananya Sharma', amt: '+₹4,200', amtClass: 'text-emerald-600', sub: '2m ago · completed', subClass: 'text-black/30' },
+  { initial: 'R', name: 'Rohan Mehta', amt: '+₹11,500', amtClass: 'text-emerald-600', sub: '1h ago · completed', subClass: 'text-black/30' },
+  { initial: 'K', name: 'Kavya Iyer', amt: '+₹3,800', amtClass: 'text-amber-600', sub: 'Processing', subClass: 'text-amber-500' },
 ];
 
 const WEEK_BARS = [
@@ -35,9 +44,9 @@ const TOP_PRODUCTS = [
 ];
 
 const KPIS = [
-  { label: 'Visitors', value: '12.4K', delta: '+8.2%' },
-  { label: 'Conversion', value: '4.8%', delta: '+0.4%' },
-  { label: 'Customers', value: '1,824', delta: '+126' },
+  { label: 'Total sales', value: '212', delta: '+18' },
+  { label: 'Active products', value: '8', delta: '+2' },
+  { label: 'Lifetime orders', value: '1,824', delta: '+126' },
   { label: 'Avg order', value: '₹740', delta: '+₹38' },
 ];
 
@@ -100,7 +109,7 @@ export default function Hero() {
 
             {/* Registration crosses */}
             <g stroke="rgba(22,19,15,0.22)" strokeWidth="1">
-              <path d="M8 12 v8 M4 16 h8" />
+              <path d="M4 2 v8 M0 6 h8" />
               <path d="M372 232 v8 M368 236 h8" />
             </g>
 
@@ -192,18 +201,30 @@ export default function Hero() {
             className="mt-6 sm:mt-8 text-[40px] sm:text-[56px] lg:text-[68px] font-bold tracking-[-0.04em] leading-[1.02] text-[#16130F] max-w-3xl"
             style={{ animation: 'heroFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.08s both' }}
           >
-            Setup in minutes.
+            Launch in minutes.
             <br />
-            <span className="text-[#E83A2E]">Sell on autopilot.</span>
+            <span className="text-[#E83A2E]">Earn on autopilot.</span>
           </h1>
 
-          <p
-            className="mt-6 sm:mt-7 text-[15px] sm:text-[17px] font-medium text-black/50 max-w-xl leading-relaxed"
+          <div
+            className="mt-6 sm:mt-7 grid max-w-2xl grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-2.5"
             style={{ animation: 'heroFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.14s both' }}
           >
-            DigiOne is the storefront, checkout, and automation stack for Indian
-            creators. Upload your product, share your link — the system handles
-            delivery, payments, and payouts.
+            {FEATURES.map((f) => (
+              <span key={f} className="font-ledger text-[10px] sm:text-[11px] uppercase tracking-[0.12em] text-black/40">
+                <span aria-hidden="true" className="mr-1.5 text-[#E83A2E]">✳</span>
+                {f}
+              </span>
+            ))}
+          </div>
+
+          <p
+            className="mt-5 text-[15px] sm:text-[17px] font-medium text-black/50 max-w-xl leading-relaxed"
+            style={{ animation: 'heroFadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.18s both' }}
+          >
+            Upload your product, share one link. DigiOne handles the rest.
+            <br />
+            Your store, money, and marketing, everything in one dashboard.
           </p>
 
           {/* CTAs */}
@@ -284,6 +305,7 @@ export default function Hero() {
                   />
                   <div className="relative flex items-start justify-between gap-3">
                     <div>
+                      <p className="text-[11px] font-semibold text-white/70 mb-2">Good morning, Aarav</p>
                       <p className="font-ledger text-[9px] sm:text-[10px] tracking-[0.18em] text-white/40 uppercase mb-2">Available balance</p>
                       <p className="font-ledger text-[24px] sm:text-[30px] font-semibold tracking-tight leading-none">
                         ₹1,24,850<span className="text-[14px] text-white/35">.00</span>
@@ -293,8 +315,8 @@ export default function Hero() {
                         <span className="font-ledger text-[9px] sm:text-[10px] text-white/30">Instant UPI · Direct to bank</span>
                       </div>
                     </div>
-                    <span className="shrink-0 bg-[#E83A2E] text-white font-semibold text-[11px] rounded-lg px-3.5 py-2">
-                      Withdraw →
+                    <span className="shrink-0 bg-[#E83A2E] text-white font-semibold text-[11px] rounded-sm px-3.5 py-2">
+                      Withdraw
                     </span>
                   </div>
                 </div>
@@ -303,14 +325,14 @@ export default function Hero() {
                   {/* Incoming payments */}
                   <div className="bg-white border border-black/[0.07] rounded-xl p-3.5">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="font-ledger text-[9px] tracking-[0.18em] text-black/35 uppercase">Incoming payments</p>
+                      <p className="font-ledger text-[9px] tracking-[0.18em] text-black/35 uppercase">Recent sales</p>
                       <span className="flex items-center gap-1 font-ledger text-[9px] font-medium text-emerald-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         LIVE
                       </span>
                     </div>
                     <div className="space-y-2">
-                      {PAYMENTS.map((row, i) => (
+                      {RECENT_SALES.map((row, i) => (
                         <div key={i} className="flex items-center gap-3 border border-black/[0.05] rounded-lg px-3 py-2">
                           <div className="w-7 h-7 rounded-md bg-[#16130F] text-white shrink-0 flex items-center justify-center">
                             <span className="font-ledger text-[10px] font-medium">{row.initial}</span>
@@ -352,7 +374,7 @@ export default function Hero() {
                 {/* Bottom row — top products + KPIs */}
                 <div className="mt-3 hidden sm:grid grid-cols-1 md:grid-cols-[1.25fr_1fr] gap-3">
                   <div className="bg-white border border-black/[0.07] rounded-xl p-3.5">
-                    <p className="font-ledger text-[9px] tracking-[0.18em] text-black/35 uppercase mb-3">Top products</p>
+                    <p className="font-ledger text-[9px] tracking-[0.18em] text-black/35 uppercase mb-3">Top performing products</p>
                     <div className="space-y-2.5">
                       {TOP_PRODUCTS.map((p, i) => (
                         <div key={i} className="flex items-center gap-3">
