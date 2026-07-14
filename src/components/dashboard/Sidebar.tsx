@@ -196,7 +196,7 @@ export default function Sidebar() {
       >
 
         {/* ── Logo ── */}
-        <div className="h-[52px] flex items-center justify-between px-6 shrink-0 border-b border-[var(--border)] mb-1">
+        <div className="h-[52px] flex items-center justify-between px-6 shrink-0 border-b border-[var(--border-strong)] mb-1">
           <Link href="/dashboard" onClick={close} className="flex items-center gap-2 shrink-0 group">
             {/* Light mode logo */}
             <DigiOneLogo width={26} height={26} className="block dark:hidden group-hover:scale-105 transition-transform" />
@@ -334,7 +334,7 @@ export default function Sidebar() {
         </nav>
 
         {/* ── Bottom ── */}
-        <div className="shrink-0 border-t border-[var(--border)]">
+        <div className="shrink-0 border-t border-[var(--border-strong)]">
 
           {/* Upgrade to Pro */}
           {/* <div className="p-3 pb-0">
