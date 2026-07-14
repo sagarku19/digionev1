@@ -3,6 +3,7 @@
 // DB: referral_codes, order_referrals (direct Supabase)
 
 import React, { useState } from 'react';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useReferrals, type ReferralCode } from '@/hooks/marketing/useReferrals';
 import {
   Gift, Plus, X, Copy, Check, Trash2, ToggleLeft, ToggleRight,
@@ -78,10 +79,13 @@ export default function ReferralsPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">Referral Program</h1>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Create codes that buyers share to earn rewards</p>
           </div>
-          <button onClick={() => { setShowModal(true); setNewCode(genCode()); }}
-            className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-[var(--radius-lg)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-            <Plus className="w-4 h-4" /> New Code
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <GuideButton guideKey="referrals" />
+            <button onClick={() => { setShowModal(true); setNewCode(genCode()); }}
+              className="flex items-center gap-2 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-fg)] px-4 py-2.5 rounded-[var(--radius-lg)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+              <Plus className="w-4 h-4" /> New Code
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

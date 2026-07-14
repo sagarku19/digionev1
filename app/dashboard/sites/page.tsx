@@ -11,6 +11,7 @@ import {
   Trash2, EyeOff, Eye, Clock, Pencil, type LucideIcon
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { TrashDrawer, TrashItem } from '@/components/dashboard/TrashDrawer';
 
@@ -260,6 +261,7 @@ export default function SitesPage() {
           }
           action={
             <div className="flex items-center gap-2">
+              <GuideButton guideKey="sites" />
               <button
                 onClick={() => setTrashOpen(true)}
                 className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"

@@ -3,6 +3,7 @@
 // DB: services, service_bookings (tables from migration)
 
 import React, { useState, useEffect } from 'react';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useServices, type Service, type Booking } from '@/hooks/marketing/useServices';
 import {
   Video, Briefcase, FileSearch, Plus, X, Trash2, ToggleLeft, ToggleRight,
@@ -111,10 +112,13 @@ export default function ServicesPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">Services</h1>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Monetize your time with 1:1 calls, retainers, and audits</p>
           </div>
-          <button onClick={openCreate}
-            className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-md)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-            <Plus className="w-4 h-4" /> New Service
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <GuideButton guideKey="services" />
+            <button onClick={openCreate}
+              className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-md)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+              <Plus className="w-4 h-4" /> New Service
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

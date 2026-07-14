@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/dashboard/Sidebar';
 import TopBar from '@/components/dashboard/TopBar';
 import { DashboardThemeProvider } from '@/contexts/DashboardThemeContext';
+import { GuideProvider } from '@/components/dashboard/guides/GuideProvider';
+import { GuideOutlet } from '@/components/dashboard/guides/GuideOutlet';
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -19,17 +21,19 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--editor-bg)]">
-      <Sidebar />
-      <div className="flex-1 flex flex-col md:pl-[256px] min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
-        <TopBar />
-        <main className="flex-1 px-4 md:px-6 pb-20 overflow-x-hidden bg-[var(--editor-bg)]">
-          <div className="w-full">
-            {children}
-          </div>
-        </main>
+    <GuideProvider>
+      <div className="min-h-screen bg-[var(--editor-bg)]">
+        <Sidebar />
+        <div className="flex-1 flex flex-col md:pl-[256px] min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+          <TopBar />
+          <main className="flex-1 px-4 md:px-6 pb-20 overflow-x-hidden bg-[var(--editor-bg)]">
+            <div className="w-full">
+              <GuideOutlet>{children}</GuideOutlet>
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </GuideProvider>
   );
 }
 

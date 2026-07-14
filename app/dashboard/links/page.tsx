@@ -11,6 +11,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useShortLinks, type ShortLink } from '@/hooks/marketing/useShortLinks';
 import { LinkCard } from '@/components/dashboard/links/LinkCard';
 import { LinkFormModal } from '@/components/dashboard/links/LinkFormModal';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 
 export default function ShortLinksPage() {
   const { links, isLoading, createLink, isCreating, updateLink, isUpdating, deleteLink } = useShortLinks();
@@ -48,12 +49,15 @@ export default function ShortLinksPage() {
         title="Short Links"
         description="Create branded short links, track clicks, and share anywhere."
         action={
-          <button
-            onClick={openCreate}
-            className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2 rounded-[var(--radius-sm)] text-sm font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            <Plus className="w-4 h-4" /> Create link
-          </button>
+          <>
+            <GuideButton guideKey="links" />
+            <button
+              onClick={openCreate}
+              className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2 rounded-[var(--radius-sm)] text-sm font-semibold transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+            >
+              <Plus className="w-4 h-4" /> Create link
+            </button>
+          </>
         }
       />
 

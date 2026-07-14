@@ -1,6 +1,6 @@
 # Dashboard Reference Map
 
-> Last synced: 2026-07-13
+> Last synced: 2026-07-14
 > Generated from: `app/dashboard/**/page.tsx` + `src/components/dashboard/site-edit/tabs/**`
 > Regenerate / audit: `/sync-docs`
 > Read this FIRST for any `app/dashboard/**` task instead of globbing pages.
@@ -50,6 +50,12 @@
 | `/dashboard/sites/new/payment` | Payment link creation wizard — title, amount, review steps | — | `Card` | `POST /api/sites/create` | — |
 | `/dashboard/sites/new/singlepage` | Single-page site creation wizard — product picker, slug, review | `useProducts` | `Card` | `GET /api/sites/check-slug`, `POST /api/sites/create` | — |
 | `/dashboard/sites/new/store` | Main store creation wizard — slug, details, review steps | — | `Card` | `GET /api/sites/check-slug`, `POST /api/sites/create` | — |
+
+## Guides
+
+Ten workflow pages carry a header **Guide** button that swaps the content region for a full-screen guide (see `docs/reference/dashboard-guides.md`). Components in `src/components/dashboard/guides/`; copy in `guides/content.ts`.
+
+Guided routes: `/dashboard/products`, `/dashboard/sites`, `/dashboard/links`, `/dashboard/marketing`, and `/dashboard/marketing/{coupons,leads,affiliates,referrals,services,community}`.
 
 ## Site-edit editors (`src/components/dashboard/site-edit/tabs/`)
 

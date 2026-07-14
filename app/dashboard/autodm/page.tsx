@@ -3,7 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  Instagram, Activity, Zap, Users, MessageCircle, BarChart3, Settings, Sparkles, HelpCircle,
+  Instagram, Activity, Zap, Users, MessageCircle, BarChart3, Settings, Sparkles, BookOpen,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { AutoDmProvider, useAutoDm } from '@/components/dashboard/autodm/AutoDmContext';
@@ -154,9 +154,9 @@ function AutoDMInner() {
             <button
               onClick={() => setView('guide')}
               title="Guide"
-              className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface-muted)] text-sm font-semibold hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
-              <HelpCircle className="w-4 h-4" />
+              <BookOpen className="w-4 h-4" /> Guide
             </button>
             <button
               onClick={() => setView('settings')}

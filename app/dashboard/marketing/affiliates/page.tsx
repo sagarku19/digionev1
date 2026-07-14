@@ -3,6 +3,7 @@
 // DB: affiliates (via useAffiliates hook)
 
 import React, { useState } from 'react';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useAffiliates } from '@/hooks/marketing/useAffiliates';
 import { StatusPill } from '@/components/ui/StatusPill';
 import {
@@ -100,10 +101,13 @@ export default function AffiliatesPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">Affiliates</h1>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Invite partners to promote your products on commission</p>
           </div>
-          <button onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-            <Plus className="w-4 h-4" /> Add Affiliate
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <GuideButton guideKey="affiliates" />
+            <button onClick={() => setShowModal(true)}
+              className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+              <Plus className="w-4 h-4" /> Add Affiliate
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

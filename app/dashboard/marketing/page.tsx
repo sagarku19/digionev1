@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useMarketingStats } from '@/hooks/marketing/useMarketingStats';
 import {
   Ticket, Users, Share2, Calendar, Megaphone,
@@ -95,6 +96,7 @@ export default function MarketingPage() {
           </div>
           {/* Live summary pills */}
           <div className="flex flex-wrap gap-2 shrink-0">
+            <GuideButton guideKey="marketing" />
             {!loading && [
               { label: 'Leads', value: stats.leads },
               { label: 'Active Coupons', value: stats.activeCoupons },

@@ -4,6 +4,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useCreator } from '@/hooks/creator/useCreator';
 import { useCommunity, type CommunityPost } from '@/hooks/marketing/useCommunity';
 import {
@@ -130,10 +131,13 @@ export default function CommunityPage() {
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Community</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-0.5">Connect, share, and grow with fellow creators</p>
         </div>
-        <Link href="/community" target="_blank"
-          className="flex items-center gap-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] px-4 py-2.5 rounded-[var(--radius-lg)] text-sm font-semibold hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-          <ExternalLink className="w-4 h-4" /> Public page
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <GuideButton guideKey="community" />
+          <Link href="/community" target="_blank"
+            className="flex items-center gap-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] px-4 py-2.5 rounded-[var(--radius-lg)] text-sm font-semibold hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+            <ExternalLink className="w-4 h-4" /> Public page
+          </Link>
+        </div>
       </div>
 
       {error && (

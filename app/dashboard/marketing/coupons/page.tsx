@@ -3,6 +3,7 @@
 // DB: coupons (via useCoupons hook + direct supabase for toggle/delete)
 
 import React, { useState } from 'react';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useCoupons } from '@/hooks/marketing/useCoupons';
 import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -157,10 +158,13 @@ export default function CouponsPage() {
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">Coupons</h1>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Create and manage discount codes for your products</p>
           </div>
-          <button onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
-            <Plus className="w-4 h-4" /> New Coupon
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <GuideButton guideKey="coupons" />
+            <button onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] px-4 py-2.5 rounded-[var(--radius-sm)] font-semibold text-sm shadow-[var(--shadow-xs)] transition shrink-0 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">
+              <Plus className="w-4 h-4" /> New Coupon
+            </button>
+          </div>
         </div>
 
         {/* Stats */}

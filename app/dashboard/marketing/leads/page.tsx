@@ -3,6 +3,7 @@
 // DB: lead_form joined with forms, sites via useGuestLeads hook
 
 import React, { useState, useMemo } from 'react';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useGuestLeads } from '@/hooks/marketing/useGuestLeads';
 import {
   Users, Mail, ArrowDownToLine, Send, X, Filter,
@@ -99,6 +100,7 @@ export default function LeadsPage() {
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">Captured leads from your link-in-bio forms</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <GuideButton guideKey="leads" />
             {leads.length > 0 && (
               <>
                 <button onClick={() => exportCSV(filtered)}

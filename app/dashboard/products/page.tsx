@@ -15,6 +15,7 @@ import { TrashDrawer, TrashItem } from '@/components/dashboard/TrashDrawer';
 import {
   Plus, Package, FileText, Tag, BookOpen, Search, Edit3, Eye, ImageIcon, Filter, Trash2,
 } from 'lucide-react';
+import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 
 type StatusTab = 'all' | 'published' | 'draft';
 type CategoryFilter = 'all' | 'digital' | 'course' | 'template' | 'other';
@@ -125,7 +126,7 @@ function ProductsPageInner() {
               ? `${products.length} product${products.length !== 1 ? 's' : ''} in your catalog`
               : 'No products yet — create your first one.'
         }
-        action={headerActions}
+        action={<><GuideButton guideKey="products" />{headerActions}</>}
       />
 
       {/* Status tabs */}
