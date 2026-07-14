@@ -40,7 +40,7 @@ const plans = [
 
 const faqs = [
   { q: 'Can I upgrade or downgrade anytime?', a: 'Yes. You can switch plans at any time. Upgrades take effect immediately, downgrades at the next billing cycle.' },
-  { q: 'What payment methods do you support?', a: 'We support all UPI apps, credit/debit cards, net banking, and wallets via Cashfree — fully India-first.' },
+  { q: 'What payment methods do you support?', a: 'We support all UPI apps, credit/debit cards, net banking, and wallets — fully India-first.' },
   { q: 'Is there a free trial?', a: 'Creator and Pro plans come with a 14-day free trial. No credit card required to start.' },
   { q: 'Do you take a cut of my sales?', a: 'Starter plan has an 8% fee, Creator has 3%, and Pro has 0%. The more you grow, the less you pay.' },
   { q: 'Can I use my own domain?', a: 'Yes, custom domains are available on the Creator and Pro plans. Connect any domain in one click.' },

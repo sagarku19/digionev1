@@ -4,7 +4,7 @@ import { Rails, Kicker } from '@/src/components/marketing/Ledger';
 const RAIL_STEPS = [
   {
     title: 'Buyer pays',
-    desc: 'UPI, cards, and netbanking through Cashfree-hosted checkout.',
+    desc: 'UPI, cards, and netbanking through a secure hosted checkout.',
   },
   {
     title: 'Payment verified',
@@ -27,7 +27,7 @@ const RAIL_STEPS = [
 const FACTS = [
   'FLAT 10% FEE — YOU KEEP 90%',
   'KYC-SECURED WITHDRAWALS',
-  'POWERED BY CASHFREE',
+  'RBI-REGULATED PAYMENT RAILS',
 ];
 
 export default function MoneyRail() {
@@ -79,7 +79,7 @@ export default function MoneyRail() {
               {/* Connector — desktop */}
               <svg
                 aria-hidden="true"
-                className="hidden lg:block absolute top-[5px] left-[5%] right-[5%] w-[90%] h-[2px] overflow-visible"
+                className="hidden lg:block absolute top-[5px] left-[5.5px] w-[calc(80%+1.6rem)] h-[2px] overflow-visible"
                 preserveAspectRatio="none"
                 viewBox="0 0 100 2"
                 fill="none"

@@ -22,7 +22,7 @@ const sections = [
   },
   {
     heading: 'Step 3 — Accept UPI payments (India-first)',
-    body: `This is where Indian creators get a massive advantage over international platforms like Gumroad or Lemon Squeezy.\n\nDigiOne is built on Cashfree — which means:\n- **UPI payments** accepted from any app (PhonePe, GPay, Paytm, BHIM)\n- **Same-day settlements** directly to your bank account\n- **No conversion fees** — everything in INR\n- **GST invoice generation** built-in\n\nInternational platforms charge you in USD, convert to INR at bad rates, and take 5–10 days to settle. DigiOne pays you today.`,
+    body: `This is where Indian creators get a massive advantage over international platforms like Gumroad or Lemon Squeezy.\n\nDigiOne is built on India-first payment rails — which means:\n- **UPI payments** accepted from any app (PhonePe, GPay, Paytm, BHIM)\n- **Same-day settlements** directly to your bank account\n- **No conversion fees** — everything in INR\n- **GST invoice generation** built-in\n\nInternational platforms charge you in USD, convert to INR at bad rates, and take 5–10 days to settle. DigiOne pays you today.`,
   },
   {
     heading: 'Step 4 — Promote with Instagram Auto DMs',

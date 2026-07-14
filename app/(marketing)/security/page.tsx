@@ -16,7 +16,7 @@ const SECTIONS = [
   },
   {
     title: 'Payment Security',
-    content: `• All payments are processed by **Cashfree**, an RBI-regulated Indian payment gateway. Card and UPI details go directly to the gateway — **DigiOne never stores your card numbers, CVV, or UPI PIN**.\n• Payment confirmations are verified server-side with cryptographic signatures before any order is marked paid.\n• Creator payouts go through verified bank accounts after KYC verification.`,
+    content: `• All payments are processed by an **RBI-regulated Indian payment gateway**. Card and UPI details go directly to the gateway — **DigiOne never stores your card numbers, CVV, or UPI PIN**.\n• Payment confirmations are verified server-side with cryptographic signatures before any order is marked paid.\n• Creator payouts go through verified bank accounts after KYC verification.`,
   },
   {
     title: 'Account Security',

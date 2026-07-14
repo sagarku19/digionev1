@@ -8,7 +8,7 @@ export const metadata = {
 const SECTIONS = [
   {
     title: 'Information We Collect',
-    content: `When you use DigiOne.ai, we collect:\n\n• **Account data** — name, email address, and password when you register.\n• **Profile data** — avatar, bio, and storefront details you choose to add.\n• **Transaction data** — purchase history, payout records, and payment method details (processed securely via Razorpay/Cashfree).\n• **Usage data** — pages visited, clicks, device type, browser, and IP address.\n• **Communications** — emails or messages you send to our support team.`,
+    content: `When you use DigiOne.ai, we collect:\n\n• **Account data** — name, email address, and password when you register.\n• **Profile data** — avatar, bio, and storefront details you choose to add.\n• **Transaction data** — purchase history, payout records, and payment method details (processed securely by our payment gateway partner).\n• **Usage data** — pages visited, clicks, device type, browser, and IP address.\n• **Communications** — emails or messages you send to our support team.`,
   },
   {
     title: 'How We Use Your Information',
@@ -16,7 +16,7 @@ const SECTIONS = [
   },
   {
     title: 'Sharing Your Information',
-    content: `We do not sell your personal data. We share data only with:\n\n• **Payment processors** (Razorpay, Cashfree) to complete transactions.\n• **Infrastructure providers** (Supabase, Vercel) who host our platform.\n• **Analytics tools** to understand how the product is used.\n• **Law enforcement** when required by applicable law.`,
+    content: `We do not sell your personal data. We share data only with:\n\n• **Payment processors** to complete transactions.\n• **Infrastructure providers** (Supabase, Vercel) who host our platform.\n• **Analytics tools** to understand how the product is used.\n• **Law enforcement** when required by applicable law.`,
   },
   {
     title: 'Cookies & Tracking',

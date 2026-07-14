@@ -290,7 +290,7 @@ export default function Hero() {
                       </p>
                       <div className="mt-3 flex items-center gap-2.5">
                         <span className="font-ledger text-[9px] sm:text-[10px] text-emerald-400">↑ ₹18,400 this week</span>
-                        <span className="font-ledger text-[9px] sm:text-[10px] text-white/30">Cashfree · Instant UPI</span>
+                        <span className="font-ledger text-[9px] sm:text-[10px] text-white/30">Instant UPI · Direct to bank</span>
                       </div>
                     </div>
                     <span className="shrink-0 bg-[#E83A2E] text-white font-semibold text-[11px] rounded-lg px-3.5 py-2">

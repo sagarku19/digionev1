@@ -120,7 +120,7 @@ export default function PaymentLinkPage({ siteId, siteMain, fixedAmount, isFlexi
 
         <div className="flex items-center justify-center gap-2 mt-6 text-xs text-gray-400">
           <Shield className="w-3.5 h-3.5 text-emerald-500" />
-          Secured by DigiOne · Powered by Cashfree
+          Secured by DigiOne · Encrypted payments
         </div>
       </div>
     </div>

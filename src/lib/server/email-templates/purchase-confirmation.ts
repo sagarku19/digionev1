@@ -95,7 +95,7 @@ export function buildPurchaseConfirmation(input: PurchaseEmailInput): { subject:
             </p>
           </td></tr>
         </table>
-        <p style="font-size:11px;color:rgba(22,19,15,0.35);margin:16px 0 0;">Secured by DigiOne · Payments via Cashfree</p>
+        <p style="font-size:11px;color:rgba(22,19,15,0.35);margin:16px 0 0;">Secured by DigiOne · Encrypted payments</p>
       </td></tr>
     </table>
   </body>

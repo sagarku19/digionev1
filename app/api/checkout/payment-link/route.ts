@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
     if (!cfRes.ok || !cfData.payment_session_id) {
       console.error('[payment-link] Cashfree error:', cfData);
       return NextResponse.json(
-        { error: cfData.message ?? 'Cashfree order creation failed' },
+        { error: cfData.message ?? 'Payment gateway unavailable' },
         { status: 502 }
       );
     }

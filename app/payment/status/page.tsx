@@ -432,7 +432,7 @@ function Shell({ children, status }: { children: React.ReactNode; status: 'compl
           {children}
         </div>
         <p className="mt-4 text-center font-ledger text-[10px] uppercase tracking-[0.16em] text-black/35">
-          Secured by DigiOne · Payments via Cashfree
+          Secured by DigiOne · Encrypted payments
         </p>
       </div>
     </div>

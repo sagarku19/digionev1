@@ -176,7 +176,7 @@ export default async function ReceiptPage({
           {/* Footer */}
           <div className="mt-12 border-t border-black/[0.07] pt-6 text-center">
             <p className="text-[12.5px] text-black/45">Questions about this receipt? Contact support.</p>
-            <p className="mt-1 font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">Secured by DigiOne · Payments via Cashfree</p>
+            <p className="mt-1 font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">Secured by DigiOne · Encrypted payments</p>
           </div>
         </div>
 

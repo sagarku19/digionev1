@@ -108,7 +108,7 @@ export default function CartPage() {
           </Link>
           <div className="mt-5 flex flex-col items-center gap-3">
             <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-black/50">
-              <ShieldCheck className="h-4 w-4 text-emerald-600" strokeWidth={1.8} /> Secure checkout via Cashfree
+              <ShieldCheck className="h-4 w-4 text-emerald-600" strokeWidth={1.8} /> Secure encrypted checkout
             </div>
             <div className="flex items-center gap-1.5">
               {['UPI', 'Cards', 'NetBanking'].map((m) => (

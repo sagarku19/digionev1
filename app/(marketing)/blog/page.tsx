@@ -24,7 +24,7 @@ const posts = [
   {
     slug: 'upi-vs-international-payments-creators',
     title: 'UPI vs International Payment Gateways: What Indian Creators Should Use',
-    excerpt: 'Comparing Razorpay, Cashfree, Stripe, and Gumroad for Indian digital product sellers. Fees, settlement times, and which one wins.',
+    excerpt: 'Comparing popular Indian payment gateways with Stripe and Gumroad for digital product sellers. Fees, settlement times, and which one wins.',
     category: 'Payments',
     readTime: '6 min read',
     date: 'Apr 5, 2025',

@@ -288,7 +288,7 @@ export default function CheckoutPage() {
         </button>
 
         <p className="mt-3 text-center font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">
-          Secured by Cashfree · UPI · Cards · NetBanking
+          Secure payments · UPI · Cards · NetBanking
         </p>
       </form>
     </div>

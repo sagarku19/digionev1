@@ -259,7 +259,7 @@ export default function CreatePaymentLinkPage() {
 
                 {/* Footer */}
                 <p className="text-[10px] text-[var(--text-tertiary)] text-center">
-                  Secured by Cashfree
+                  Secured by DigiOne
                 </p>
               </div>
             </Card>

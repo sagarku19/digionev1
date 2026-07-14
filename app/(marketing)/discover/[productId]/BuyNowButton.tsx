@@ -9,7 +9,7 @@ type Props = { productId: string; price: number; label: string };
 const FIELD =
   'w-full rounded-lg border border-black/[0.1] bg-white py-3 pl-11 pr-4 text-[14px] font-medium text-[#16130F] placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-[#E83A2E]/15 focus:border-[#E83A2E] transition-all';
 
-export function BuyNowButton({ productId, price, label }: Props) {
+export function BuyNowButton({ productId, label }: Props) {
   const [contact, setContact] = useState({ name: '', email: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -78,7 +78,7 @@ export function BuyNowButton({ productId, price, label }: Props) {
         {!loading && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />}
       </button>
 
-      <p className="font-ledger text-center text-[10px] uppercase tracking-[0.16em] text-black/35">🔒 Secured by Cashfree{price > 0 ? '' : ''}</p>
+      <p className="font-ledger text-center text-[10px] uppercase tracking-[0.16em] text-black/35">🔒 Secure encrypted payment</p>
     </form>
   );
 }

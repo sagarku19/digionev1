@@ -67,7 +67,7 @@ export default function CheckoutChrome() {
           <div className="flex items-center gap-1.5 font-ledger text-[10px] uppercase tracking-[0.16em] text-black/45">
             <Lock className="h-3.5 w-3.5 text-[#16130F]/60" strokeWidth={2} />
             <span>Secure</span>
-            <span className="hidden sm:inline">·&nbsp;Cashfree</span>
+            <span className="hidden sm:inline">·&nbsp;256-bit SSL</span>
           </div>
         </div>
       </div>
