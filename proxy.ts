@@ -28,11 +28,19 @@ export default async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
 
-  // 0. Dedicated short-link domain — bare-root {shortdomain}/{code}
+  // 0. Dedicated short-link domain — bare-root {shortdomain}/{code}.
+  //    Match BOTH the apex and the `www.` host, so it works no matter which one
+  //    Vercel makes primary (an apex↔www redirect lands real traffic on either).
   const bareHost = hostname.toLowerCase().split(':')[0];
-  if (SHORTLINK_DOMAIN && bareHost === SHORTLINK_DOMAIN) {
+  const isShortlinkHost =
+    !!SHORTLINK_DOMAIN &&
+    (bareHost === SHORTLINK_DOMAIN || bareHost === `www.${SHORTLINK_DOMAIN}`);
+  if (isShortlinkHost) {
     if (url.pathname === '/') {
-      return NextResponse.redirect(process.env.NEXT_PUBLIC_APP_URL || 'https://digione.ai');
+      // Branded short-domain landing page (CTA → the DigiOne app). Rewrite (not
+      // redirect) so the page renders on the short domain itself.
+      url.pathname = '/link-home';
+      return NextResponse.rewrite(url);
     }
     const code = url.pathname.slice(1);
     if (SHORTLINK_RESERVED.has(code) || code.includes('/')) {
