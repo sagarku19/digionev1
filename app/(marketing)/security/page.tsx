@@ -12,7 +12,7 @@ const SECTIONS = [
   },
   {
     title: 'Infrastructure & Encryption',
-    content: `• All traffic is encrypted in transit with **TLS 1.2+** — there is no unencrypted access to the platform.\n• Data is encrypted at rest with **AES-256** on our database and storage infrastructure.\n• The platform runs on hardened, SOC 2-compliant cloud providers (Supabase, Vercel) with isolated environments for production.\n• Access to production systems is restricted to authorized personnel with multi-factor authentication.`,
+    content: `• All traffic is encrypted in transit with **TLS 1.2+** — there is no unencrypted access to the platform.\n• Data is encrypted at rest with **AES-256** on our database and storage infrastructure.\n• The platform runs on hardened, SOC 2-compliant cloud infrastructure with isolated environments for production.\n• Access to production systems is restricted to authorized personnel with multi-factor authentication.`,
   },
   {
     title: 'Payment Security',
@@ -47,7 +47,7 @@ export default function SecurityPage() {
       title="Security"
       accent="policy."
       sub="How we protect your data, payments, and content — and how to report a vulnerability."
-      updated="June 2026"
+      updated="July 2026"
       sections={SECTIONS}
       toc
       footer={

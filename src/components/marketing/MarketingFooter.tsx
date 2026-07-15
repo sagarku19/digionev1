@@ -24,9 +24,10 @@ const COLUMNS = [
   {
     label: 'Legal',
     links: [
-      { href: '/refunds', label: 'Refund policy' },
-      { href: '/privacy', label: 'Privacy' },
-      { href: '/terms', label: 'Terms' },
+      { href: '/terms', label: 'Terms of service' },
+      { href: '/privacy', label: 'Privacy policy' },
+      { href: '/refunds', label: 'Refunds & cancellation' },
+      { href: '/shipping', label: 'Shipping & delivery' },
       { href: '/security', label: 'Security' },
     ],
   },

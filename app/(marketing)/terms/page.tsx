@@ -20,11 +20,23 @@ const SECTIONS = [
   },
   {
     title: 'Buyer Accounts',
-    content: `Buyers may purchase digital products listed on the Platform. All sales are final unless the creator's policy or DigiOne's refund policy provides otherwise. By completing a purchase, you agree to the creator's stated terms and DigiOne's Refund Policy.`,
+    content: `Buyers may purchase digital products listed on the Platform. All sales are final unless the creator's policy or DigiOne's Refunds & Cancellation Policy provides otherwise. By completing a purchase, you agree to the creator's stated terms and DigiOne's Refunds & Cancellation Policy.`,
+  },
+  {
+    title: 'Payments & Pricing',
+    content: `All prices on the Platform are listed and charged in Indian Rupees (₹).\n\n• Payments are processed by **RBI-regulated third-party payment gateways** — DigiOne never stores your card number, CVV, or UPI PIN.\n• An order is confirmed only after the payment gateway confirms the transaction to us server-side.\n• The price shown at checkout is the complete amount you pay — there are no delivery or hidden charges.`,
   },
   {
     title: 'Platform Fees',
     content: `DigiOne charges a platform fee on each transaction:\n\n• **Free plan:** 10% platform fee per sale.\n• **Pro plan:** 5% platform fee per sale.\n\nFees are deducted automatically before payouts. Payout schedules and minimums are described in your dashboard settings.`,
+  },
+  {
+    title: 'Delivery of Digital Products',
+    content: `Products sold on the Platform are digital and delivered electronically — nothing is physically shipped. Access is granted immediately after payment confirmation, via the purchase confirmation email and, for logged-in buyers, the account library.\n\nSee our Shipping & Delivery Policy for delivery timelines and what to do if a delivery fails.`,
+  },
+  {
+    title: 'Refunds & Cancellation',
+    content: `Refunds and cancellations are governed by our Refunds & Cancellation Policy. In short: genuine delivery failures, materially misdescribed products, and duplicate charges are refundable within 7 days of purchase; digital products that have been delivered and accessed cannot be cancelled.`,
   },
   {
     title: 'Prohibited Content',
@@ -43,8 +55,8 @@ const SECTIONS = [
     content: `These Terms are governed by the laws of India. Any disputes shall be resolved through arbitration in Bangalore, Karnataka, India, under the Arbitration and Conciliation Act, 1996.`,
   },
   {
-    title: 'Contact',
-    content: `For questions about these Terms, contact us at legal@digione.ai.`,
+    title: 'Grievances & Contact',
+    content: `For questions about these Terms, contact us at legal@digione.ai.\n\nFor complaints and grievances, our Grievance Officer can be reached at grievance@digione.ai — grievances are acknowledged within 48 hours and resolved within 15 days. Full details are on our Contact page.`,
   },
 ];
 
@@ -55,7 +67,7 @@ export default function TermsPage() {
       title="Terms of"
       accent="service."
       sub="Please read these terms carefully. They govern your use of DigiOne.ai."
-      updated="April 2025"
+      updated="July 2026"
       sections={SECTIONS}
       toc
       footer={

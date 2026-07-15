@@ -31,7 +31,7 @@ const CHANNELS = [
   {
     icon: MapPin,
     title: 'Registered office',
-    desc: 'DigiOne AI Pvt. Ltd.',
+    desc: 'DigiOne AI Tech Pvt. Ltd.',
     value: 'Bangalore, Karnataka, India',
     href: null,
   },
@@ -109,6 +109,61 @@ export default function ContactPage() {
         </Rails>
       </section>
 
+      {/* Grievance redressal */}
+      <section id="grievance" className="relative bg-white">
+        <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
+        <Rails>
+          <div className="px-5 sm:px-10 lg:px-14 py-12 sm:py-16">
+            <Kicker index="01" route="/contact#grievance" />
+            <div className="mt-7 max-w-2xl">
+              <h2 className="text-[24px] sm:text-[30px] font-bold tracking-[-0.03em] text-[#16130F] mb-2">
+                Grievance redressal
+              </h2>
+              <p className="text-[14px] font-medium text-black/50 leading-relaxed mb-8">
+                In accordance with the Information Technology Rules, 2021 and the Digital Personal
+                Data Protection Act, 2023, DigiOne has a designated Grievance Officer for complaints
+                about the platform, its content, or your personal data.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6 p-6 rounded-xl bg-[#FAF8F6] border border-black/[0.07]">
+                <div>
+                  <p className="font-ledger text-[9px] font-medium text-black/35 uppercase tracking-[0.18em] mb-1.5">
+                    Grievance Officer
+                  </p>
+                  <p className="text-[13.5px] font-semibold text-[#16130F]">[Grievance Officer Name]</p>
+                </div>
+                <div>
+                  <p className="font-ledger text-[9px] font-medium text-black/35 uppercase tracking-[0.18em] mb-1.5">
+                    Email
+                  </p>
+                  <a
+                    href="mailto:grievance@digione.ai"
+                    className="text-[13.5px] font-semibold text-[#E83A2E] hover:underline"
+                  >
+                    grievance@digione.ai
+                  </a>
+                </div>
+                <div>
+                  <p className="font-ledger text-[9px] font-medium text-black/35 uppercase tracking-[0.18em] mb-1.5">
+                    Response time
+                  </p>
+                  <p className="text-[13.5px] font-semibold text-[#16130F]">
+                    Acknowledged in 48 hours · resolved in 15 days
+                  </p>
+                </div>
+                <div>
+                  <p className="font-ledger text-[9px] font-medium text-black/35 uppercase tracking-[0.18em] mb-1.5">
+                    Entity
+                  </p>
+                  <p className="text-[13.5px] font-semibold text-[#16130F]">
+                    DigiOne AI Tech Pvt. Ltd., Bangalore, Karnataka, India
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Rails>
+      </section>
+
       {/* Contact form */}
       <section className="relative bg-[#FAF8F6]">
         <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
@@ -116,7 +171,7 @@ export default function ContactPage() {
           <Cross className="-bottom-[5px] -left-[5px]" />
           <Cross className="-bottom-[5px] -right-[5px]" />
           <div className="px-5 sm:px-10 lg:px-14 py-12 sm:py-16">
-            <Kicker index="01" route="/contact#message" />
+            <Kicker index="02" route="/contact#message" />
             <div className="mt-7 max-w-2xl">
               <h2 className="text-[24px] sm:text-[30px] font-bold tracking-[-0.03em] text-[#16130F] mb-2">
                 Send us a message
