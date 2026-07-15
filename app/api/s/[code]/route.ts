@@ -12,7 +12,7 @@ import { dedupHash, hashIp } from '@/lib/server/shortlinks/dedup';
 import { TtlCache } from '@/lib/server/shortlinks/cache';
 import { pickDestination } from '@/lib/server/shortlinks/targeting';
 import { isSocialCrawler } from '@/lib/server/shortlinks/crawler';
-import { renderOgHtml, renderUnlockHtml } from '@/lib/server/shortlinks/html';
+import { renderOgHtml, renderUnlockHtml, renderNotFoundHtml } from '@/lib/server/shortlinks/html';
 import { verifyPassword, unlockToken } from '@/lib/server/shortlinks/password';
 import type { Database } from '@/types/database.types';
 
@@ -20,6 +20,11 @@ type LinkRow = Database['public']['Tables']['linksh_links']['Row'];
 
 const resolveCache = new TtlCache<LinkRow | null>(30_000);
 const appUrl = () => process.env.NEXT_PUBLIC_APP_URL || 'https://digione.ai';
+const shortDomain = () => process.env.NEXT_PUBLIC_SHORTLINK_DOMAIN || 'linkln.me';
+
+function notFound(unavailable = false) {
+  return html(renderNotFoundHtml({ appUrl: appUrl(), shortDomain: shortDomain(), unavailable }), unavailable ? 410 : 404);
+}
 
 function redirect(to: string) {
   return NextResponse.redirect(to, { status: 302, headers: { 'Cache-Control': 'no-store' } });
@@ -90,10 +95,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ code: st
   const { code: rawCode } = await params;
   const code = normalizeCode(rawCode);
   const link = await resolve(code);
-  if (!link) return redirect(appUrl());
+  if (!link) return notFound();
 
   const now = Date.now();
-  if (isDisabled(link, now)) return redirect(link.expired_redirect_url || appUrl());
+  if (isDisabled(link, now)) {
+    return link.expired_redirect_url ? redirect(link.expired_redirect_url) : notFound(true);
+  }
 
   const ctx = ctxFromReq(req);
   const { os } = parseUserAgent(ctx.ua);
@@ -122,10 +129,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ code: s
   const { code: rawCode } = await params;
   const code = normalizeCode(rawCode);
   const link = await resolve(code);
-  if (!link) return redirect(appUrl());
+  if (!link) return notFound();
 
   const now = Date.now();
-  if (isDisabled(link, now)) return redirect(link.expired_redirect_url || appUrl());
+  if (isDisabled(link, now)) {
+    return link.expired_redirect_url ? redirect(link.expired_redirect_url) : notFound(true);
+  }
   if (!link.password_hash) return redirect(appUrl());
 
   const action = `/api/s/${encodeURIComponent(code)}`;
