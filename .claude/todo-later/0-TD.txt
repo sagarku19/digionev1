@@ -55,7 +55,7 @@ Also gmail
 
 Ai Integration
 
-Link shortener under- linkme.you(I will buy this or similar domain for this project it will be using same db or a pipelin that will connect)
+Link shortener under- linkln.me (DONE — domain purchased 2026-07-15, set as NEXT_PUBLIC_SHORTLINK_DOMAIN; same deployment/db, routed via proxy.ts → /api/s/[code])
 
 Security audit using cloudflare github docs
 

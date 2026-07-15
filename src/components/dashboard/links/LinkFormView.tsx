@@ -135,7 +135,7 @@ export function LinkFormView({
     return () => clearTimeout(t);
   }, [code, editing]);
 
-  const domain = getShortlinkDomain() || 'linkme.you';
+  const domain = getShortlinkDomain() || 'linkln.me';
   const codeForPreview = code.trim() || editing?.code || '';
   const previewUrl = codeForPreview ? shortUrl(codeForPreview) : '';
   const fav = faviconUrl(destination);

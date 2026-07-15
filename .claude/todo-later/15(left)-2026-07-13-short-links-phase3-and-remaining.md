@@ -37,7 +37,7 @@ The reason a DigiOne shortener beats a generic Bitly: tie a click to an actual `
 
 3. **Click → checkout carrier:**
    - When the redirect resolves a `product`/`site` link, stamp a first-party attribution cookie (e.g. `du_attr=<code>`, short TTL, on the storefront/app domain — NOT the short domain, since checkout happens on the main app) OR pass `?ref=<code>` through to the destination and have the storefront capture it.
-   - Note the cross-domain wrinkle: the short link lives on `linkme.you` but checkout is on `digione.ai`. A cookie set on `linkme.you` is NOT readable on `digione.ai`. So the carrier must be a **query param** appended to the destination (which is a digione.ai storefront URL), captured client-side into a `digione.ai` cookie/localStorage, then read at checkout.
+   - Note the cross-domain wrinkle: the short link lives on `linkln.me` but checkout is on `digione.ai`. A cookie set on `linkln.me` is NOT readable on `digione.ai`. So the carrier must be a **query param** appended to the destination (which is a digione.ai storefront URL), captured client-side into a `digione.ai` cookie/localStorage, then read at checkout.
 
 4. **Stamp `orders.metadata` at checkout** (`app/api/checkout/create/route.ts`):
    - Read the attribution code from the request (client sends it from the captured cookie/localStorage) and store `orders.metadata.shortlink_code`.
