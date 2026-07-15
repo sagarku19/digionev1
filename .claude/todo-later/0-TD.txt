@@ -111,3 +111,13 @@ other automation tools
 dashboard profile updates and also libray of daahbaord
 
 done - create some tests and check complete payment flow from buying a product and till the payout and everything around it. and also security around it.
+
+
+update ui of both product and all site , new site creation
+add option to create new more variant of site using template options(in later Phase)
+
+integrate ai features(it will be of two types 1- build in ai and other real ai)
+
+launch in minutes
+earn on autopilot
+

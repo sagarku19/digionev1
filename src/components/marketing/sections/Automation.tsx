@@ -1,6 +1,6 @@
 import InView from '@/src/components/marketing/InView';
 import { SectionShell } from '@/src/components/marketing/Ledger';
-import { Instagram, Mail, MessageCircle, FileSpreadsheet, Send, type LucideIcon } from 'lucide-react';
+import { Instagram, Mail, MessageCircle, FileSpreadsheet, Send, Heart, Check, type LucideIcon } from 'lucide-react';
 
 type Channel = { icon: LucideIcon; name: string; desc: string };
 
@@ -35,8 +35,11 @@ const CHANNELS: Channel[] = [
 const DMmock = () => (
   <div className="rounded-xl border border-black/[0.08] bg-white overflow-hidden shadow-[0_8px_40px_-16px_rgba(22,19,15,0.15)]">
     <div className="flex items-center gap-2.5 px-4 py-3 border-b border-black/[0.06] bg-[#FAF8F6]">
-      <div className="w-7 h-7 rounded-full bg-[#16130F] flex items-center justify-center text-white shrink-0">
+      <div className="relative w-7 h-7 rounded-full bg-[#16130F] flex items-center justify-center text-white shrink-0">
         <span className="font-ledger text-[10px] font-medium">P</span>
+        <span className="absolute -bottom-0.5 -right-1 w-3.5 h-3.5 rounded-full bg-white border border-black/[0.1] flex items-center justify-center">
+          <Instagram className="w-2 h-2 text-[#16130F]" strokeWidth={2.4} />
+        </span>
       </div>
       <div className="min-w-0">
         <p className="text-[12px] font-bold text-[#16130F] truncate">@priya.designs</p>
@@ -48,30 +51,73 @@ const DMmock = () => (
       </span>
     </div>
 
-    <div className="px-4 pt-3 pb-2">
-      <p className="font-ledger text-[9px] tracking-[0.18em] text-black/35 uppercase mb-2">Trigger keywords</p>
+    <div className="px-4 pt-3 flex items-center gap-2.5">
+      <p className="font-ledger text-[9px] tracking-[0.18em] text-black/35 uppercase shrink-0">Triggers</p>
       <div className="flex gap-1.5 flex-wrap">
         {['COURSE', 'LINK', 'PDF'].map((k) => (
-          <span key={k} className="font-ledger px-2 py-0.5 border border-black/[0.1] rounded text-[10px] font-medium text-[#16130F]">
+          <span
+            key={k}
+            className={`font-ledger px-2 py-0.5 border rounded text-[10px] font-medium ${
+              k === 'COURSE' ? 'border-[#E83A2E]/50 text-[#E83A2E] bg-[#E83A2E]/[0.04]' : 'border-black/[0.1] text-[#16130F]'
+            }`}
+          >
             {k}
           </span>
         ))}
       </div>
     </div>
 
-    <div className="px-4 pt-2 pb-4 space-y-2">
-      <div className="flex justify-end">
-        <span className="bg-[#FAF8F6] border border-black/[0.06] text-[#16130F] text-[12px] font-semibold px-3.5 py-2 rounded-xl rounded-br-sm">
-          COURSE
+    <div className="px-4 pt-3.5">
+      <p className="font-ledger text-[8px] tracking-[0.16em] text-black/30 mb-1.5">01 / COMMENT ON YOUR REEL</p>
+      <div className="flex items-start gap-2.5 rounded-lg border border-black/[0.06] bg-[#FAF8F6] px-3 py-2.5">
+        <span className="w-6 h-6 rounded-full bg-white border border-black/[0.1] flex items-center justify-center font-ledger text-[9px] text-[#16130F] shrink-0">
+          R
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11.5px] leading-snug text-[#16130F]">
+            <span className="font-bold">rahul.creates</span>{' '}
+            <span className="font-semibold text-[#E83A2E]">COURSE</span>
+          </p>
+          <p className="font-ledger text-[8.5px] text-black/30 mt-0.5">2s · Reply</p>
+        </div>
+        <Heart className="w-3 h-3 text-black/25 mt-0.5 shrink-0" strokeWidth={1.8} />
+      </div>
+      <div className="flex items-center gap-3 mt-1.5 pl-1">
+        <span className="inline-flex items-center gap-1 font-ledger text-[8.5px] text-emerald-700">
+          <Check className="w-2.5 h-2.5" strokeWidth={2.4} /> keyword match
+        </span>
+        <span className="inline-flex items-center gap-1 font-ledger text-[8.5px] text-emerald-700">
+          <Check className="w-2.5 h-2.5" strokeWidth={2.4} /> follows you
         </span>
       </div>
+    </div>
+
+    <div className="flex items-center gap-2 px-4 my-2.5">
+      <span aria-hidden="true" className="flex-1 border-t border-dashed border-black/[0.12]" />
+      <span className="font-ledger text-[8px] tracking-[0.14em] text-black/30 whitespace-nowrap">→ MOVED TO DMs</span>
+      <span aria-hidden="true" className="flex-1 border-t border-dashed border-black/[0.12]" />
+    </div>
+
+    <div className="px-4 pb-3.5">
+      <p className="font-ledger text-[8px] tracking-[0.16em] text-black/30 mb-1.5">02 / PRIVATE REPLY · AUTO</p>
       <div className="flex justify-start">
-        <div className="bg-[#16130F] text-white text-[12px] font-medium px-3.5 py-2.5 rounded-xl rounded-bl-sm max-w-[230px] leading-snug">
-          Hey Priya! Here&apos;s your link →{' '}
-          <span className="font-ledger text-[11px] text-[#FF6B5C]">digione.ai/priya/course</span>
+        <div className="bg-[#16130F] text-white text-[12px] font-medium px-3.5 py-2.5 rounded-xl rounded-bl-sm max-w-[240px] leading-snug">
+          Hey Rahul! Here&apos;s the course
+          <span className="mt-1.5 flex items-center gap-1.5 bg-white/[0.08] border border-white/[0.12] rounded-md px-2 py-1 font-ledger text-[10.5px] text-[#FF6B5C] w-fit">
+            linklin.me/ef5rth
+          </span>
         </div>
       </div>
-      <p className="font-ledger text-[9px] text-black/30 text-center pt-1">replied in 0.3s · auto</p>
+      <p className="font-ledger text-[8.5px] text-black/30 mt-1.5">
+        delivered · 0.3s <span className="text-emerald-700">· +1 lead saved</span>
+      </p>
+    </div>
+
+    <div className="px-4 py-2.5 border-t border-black/[0.06] bg-[#FAF8F6] flex items-center justify-between gap-3">
+      <span className="font-ledger text-[8.5px] tracking-[0.16em] text-black/35">TODAY</span>
+      <span className="font-ledger text-[9.5px] text-[#16130F]">
+        142 replies · 38 leads · <span className="text-emerald-700">9 sales</span>
+      </span>
     </div>
   </div>
 );
