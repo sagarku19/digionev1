@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Send, ArrowLeft, Check, Loader2, Bell, Hash } from 'lucide-react';
-import Link from 'next/link';
+import { Send, Check, Loader2, Bell, Hash } from 'lucide-react';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { Card } from '@/components/ui/Card';
 
 const ACCENT = {
@@ -51,14 +51,8 @@ export default function TelegramPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      <Link
-        href="/dashboard/integrations"
-        className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] pt-6 transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back to Integrations
-      </Link>
-
-      <header className="flex items-center gap-3">
+      <header className="flex items-center gap-3 pt-6">
+        <BackButton href="/dashboard/integrations" label="Back to Integrations" />
         <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${ACCENT.softBg} ${ACCENT.text}`}>
           <Send className="w-5 h-5" />
         </div>

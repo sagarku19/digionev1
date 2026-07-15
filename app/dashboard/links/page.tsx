@@ -10,13 +10,12 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useShortLinks, type ShortLink } from '@/hooks/marketing/useShortLinks';
 import { LinkCard } from '@/components/dashboard/links/LinkCard';
-import { LinkFormModal } from '@/components/dashboard/links/LinkFormModal';
+import { LinkFormView } from '@/components/dashboard/links/LinkFormView';
 import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 
 export default function ShortLinksPage() {
   const { links, isLoading, createLink, isCreating, updateLink, isUpdating, deleteLink } = useShortLinks();
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<ShortLink | null>(null);
+  const [editorTarget, setEditorTarget] = useState<'new' | ShortLink | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ShortLink | null>(null);
   const [search, setSearch] = useState('');
 
@@ -37,11 +36,27 @@ export default function ShortLinksPage() {
     );
   }, [links, search]);
 
-  const openCreate = () => { setEditing(null); setModalOpen(true); };
-  const openEdit = (l: ShortLink) => { setEditing(l); setModalOpen(true); };
+  const openCreate = () => setEditorTarget('new');
+  const openEdit = (l: ShortLink) => setEditorTarget(l);
+  const closeEditor = () => setEditorTarget(null);
   const toggle = (l: ShortLink) => updateLink({ id: l.id, is_active: !l.is_active });
   const archive = (l: ShortLink) => updateLink({ id: l.id, archived_at: l.archived_at ? null : new Date().toISOString() });
   const remove = (l: ShortLink) => setDeleteTarget(l);
+
+  if (editorTarget) {
+    return (
+      <div className="pt-6">
+        <LinkFormView
+          editing={editorTarget === 'new' ? null : editorTarget}
+          onCreate={createLink}
+          onUpdate={updateLink}
+          onCreated={(link) => setEditorTarget(link)}
+          onBack={closeEditor}
+          busy={isCreating || isUpdating}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-12">
@@ -115,15 +130,6 @@ export default function ShortLinksPage() {
           </div>
         )}
       </div>
-
-      <LinkFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        editing={editing}
-        onCreate={createLink}
-        onUpdate={updateLink}
-        busy={isCreating || isUpdating}
-      />
 
       <ConfirmDialog
         isOpen={!!deleteTarget}

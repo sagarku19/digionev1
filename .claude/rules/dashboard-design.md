@@ -197,6 +197,7 @@ All primitives live in `src/components/ui/`. Always reach for these before writi
 | `KpiGrid` | Stat grid at top of a page. Wraps `StatCard`s in responsive 1/2/4-column grid. |
 | `Toolbar` | Filter row above a list: search + filters + view-toggle + actions. |
 | `PageHeader` | Title + subtitle + actions slot above almost every page. Don't use on creation hubs or wizards — see "Page archetypes" below. |
+| `BackButton` | **Standard back control** — a square `<` (`ChevronLeft`) icon button placed **inline before** a page/section title (`h-9 w-9`, `--surface-muted` + `--border` + `--radius-md`). Use for parent navigation ("Back to links", "Back to Integrations", "Back to products"), not for previous-step controls inside a multi-step wizard (those keep a labelled "Back"/"Go Back" button). Pass `href` for link nav or `onClick` for in-page back, and `label` for the accessible name + tooltip. On `PageHeader` pages, pass it to the `back` slot (`<PageHeader back={<BackButton … />} … />`) so it sits inline before the title. Exception: centered creation hubs keep the back button on its own row (archetype 3). Lives in `src/components/dashboard/BackButton.tsx` (dashboard domain, not `ui/`). |
 
 ### Data display
 

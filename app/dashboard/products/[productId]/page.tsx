@@ -16,10 +16,11 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useConfirm } from '@/hooks/useConfirm';
 import {
   FileText, IndianRupee, HardDrive, Megaphone, Settings,
-  ArrowLeft, Save, ImagePlus, Image as ImageIcon,
+  Save, ImagePlus, Image as ImageIcon,
   CheckCircle2, AlertCircle, Eye, ExternalLink, Globe, Lock, Zap,
   Plus, X, Package, Tag, Trash2, ShieldCheck, Boxes,
 } from 'lucide-react';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { formatINR } from '@/lib/format';
 import { normalizeAccessLinks, type AccessLink } from '@/lib/shared/access-links';
 import type { Database, Json } from '@/types/database.types';
@@ -408,13 +409,7 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
       {/* ── Inline Page Header ── */}
       <div className="mb-6 flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <button
-            onClick={() => guardedNavigate('/dashboard/products')}
-            aria-label="Back to products"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
+          <BackButton onClick={() => guardedNavigate('/dashboard/products')} label="Back to products" />
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-tertiary)]">Product Editor</p>
             <h1 className="truncate text-base font-semibold text-[var(--text-primary)]">{formData.name || 'Untitled product'}</h1>

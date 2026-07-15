@@ -1,8 +1,8 @@
 'use client';
 
 import { use, useMemo } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, MousePointerClick, Users, Globe, Link2 } from 'lucide-react';
+import { MousePointerClick, Users, Globe, Link2 } from 'lucide-react';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { KpiGrid } from '@/components/ui/KpiGrid';
 import { StatCard } from '@/components/ui/StatCard';
@@ -52,13 +52,8 @@ export default function LinkAnalyticsPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="pt-6">
-        <Link href="/dashboard/links" className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded">
-          <ArrowLeft className="w-4 h-4" /> Back to links
-        </Link>
-      </div>
-
       <PageHeader
+        back={<BackButton href="/dashboard/links" label="Back to links" />}
         title={link?.title || link?.code || 'Link analytics'}
         description={url}
         action={link ? <QRButton url={url} label={link.code} /> : undefined}

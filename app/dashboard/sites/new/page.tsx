@@ -4,8 +4,9 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSites } from '@/hooks/sites/useSites';
 import {
-  Store, Layers, CreditCard, Link2, ArrowLeft, ArrowRight,
+  Store, Layers, CreditCard, Link2, ArrowRight,
 } from 'lucide-react';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 
@@ -159,23 +160,17 @@ export default function NewSiteHub() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="max-w-3xl mx-auto w-full pt-6">
-        <button
-          onClick={() => router.push('/dashboard/sites')}
-          className="group -ml-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2 py-1.5 rounded-[var(--radius-sm)] hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-          Back to Sites
-        </button>
-      </div>
-
-      <div className="text-center max-w-xl mx-auto">
-        <h1 className="text-2xl font-semibold font-display text-[var(--text-primary)] tracking-tight">
-          What are you building?
-        </h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
-          Pick a site type to start with. You can always add more later.
-        </p>
+      <div className="max-w-3xl mx-auto w-full pt-6 flex items-start gap-3">
+        <BackButton onClick={() => router.push('/dashboard/sites')} label="Back to Sites" />
+        <div className="flex-1 text-center max-w-xl mx-auto">
+          <h1 className="text-2xl font-semibold font-display text-[var(--text-primary)] tracking-tight">
+            What are you building?
+          </h1>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            Pick a site type to start with. You can always add more later.
+          </p>
+        </div>
+        <div className="w-9 shrink-0" aria-hidden />
       </div>
 
       <div className="max-w-3xl mx-auto w-full">
