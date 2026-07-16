@@ -35,6 +35,8 @@ DigiOne is a creator monetization platform. Creators sign up, build a storefront
 | Storage | Cloudflare R2 (S3-compatible) via @aws-sdk/client-s3 + @aws-sdk/s3-request-presigner |
 | Image Processing | sharp (image → WebP on upload) |
 | PDF generation | @react-pdf/renderer (server-side invoices + tax statements) |
+| Email | Resend (transactional — buyer purchase confirmations) |
+| QR codes | qrcode.react (site-editor share/QR modal) |
 
 ---
 
@@ -111,7 +113,7 @@ digionev1/
 │   │   ├── webhook/cashfree/     # Payment confirmation (source of truth)
 │   │   ├── upload/               # Cloudflare R2 presigned uploads
 │   │   └── …                     # auth, sites, leads, coupons, payouts, products, linkinbio, media, deliverables
-│   └── …                         # account, actions, payment, user-login (buyer login)
+│   └── …                         # account, actions, link-home (linkln.me landing), payment, user-login (buyer login)
 ├── src/
 │   ├── components/
 │   │   ├── dashboard/            # Dashboard UI (Sidebar, TopBar, editors)
@@ -252,5 +254,7 @@ Never short-circuit this. Never confirm payments client-side.
 npm run dev          # Dev server → http://localhost:3000
 npm run build        # Production build
 npm run lint         # ESLint
+npm run test         # Vitest unit tests
+npm run test:integration # DB-backed money-path integration suite
 npm run update-types # Regenerate Supabase types from schema
 ```

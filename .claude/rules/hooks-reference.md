@@ -23,6 +23,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices`, `useShortLinks` |
 | `analytics/` | `useAnalytics` |
 | `notifications/` | `useNotifications` |
+| `instaauto/` | `useInstaAccount`, `useInstaAutomations`, `useInstaLeads`, `useInstaMessages`, `useInstaAnalytics` (Instagram Auto DM — see `/dashboard/autodm`) |
 | `sites/` | `useSites`, `useSiteEdit`, `useLinkInBioSite`, `useSinglePageSite` |
 | `site-editor/` | `useEditorHistory`, `useUnsavedChanges`, `useSlugCheck`, `saveDesignTokens` (editor-internal logic) |
 | `storefront/` | `useStorefront` |
@@ -49,7 +50,7 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useSites()` | `{ sites }` — creator's storefront sites |
 | `useStorefront(slug)` | `{ profile }` — public creator profile for the given slug |
 | `useCart()` | Cart state for buyer checkout — items + drawer state (`isDrawerOpen`, `openDrawer`, `closeDrawer`); `addItem` returns `'added' \| 'exists' \| 'conflict'` (single-creator rule); `replaceCartWith` for the replace-cart confirm. Also exports `useCartTotal`, `useHydratedCartCount` |
-| `useAnalytics()` | Analytics data |
+| `useAnalytics(dateRange)` | Analytics data for a `{ start, end }` date range |
 | `useCoupons()` | Coupon management |
 | `useAffiliates()` | Affiliate program data |
 | `useProductPage(creatorId, slug)` | Single published product by slug — used on product pages |
@@ -69,6 +70,11 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useLinkInBioSiteQuery(siteId)` | `{ site, tokens, page, blocks, items, products }` |
 | `useSinglePageSiteQuery(siteId)` | `{ site, tokens, page }` |
 | `useAuthSession()` | `{ isLoggedIn, userEmail, profile, isLoading }` — invalidate via `['auth','session']` |
+| `useInstaAccount()` | `{ account, connectConfigured, isLoading, addDemoAccount, disconnect, isMutating }` — linked IG account (token-free) via `GET /api/instaauto/account` |
+| `useInstaAutomations(accountId?)` | `{ automations, isLoading, createAutomation, updateAutomation, deleteAutomation, isMutating }` — owner-CRUD on `instaauto_automations` (+ keywords); update guards on `version` (optimistic concurrency), delete is a soft-delete |
+| `useInstaLeads(accountId?)` | `{ leads, isLoading }` — latest 500 `instaauto_leads` rows |
+| `useInstaMessages(accountId?)` | `{ messages, isLoading }` — latest 200 `instaauto_messages` (+ automation name) |
+| `useInstaAnalytics(accountId?)` | query with `{ totalLeads, totalSent, totalFailed }` counts |
 
 ## Normalized query keys (2026-06-13)
 
@@ -78,7 +84,7 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 |---|---|
 | `useAbTests()` | `['ab-tests','list']` |
 | `useAffiliates()` | `['affiliates','list']` |
-| `useAnalytics()` | `['analytics','range', startDate, endDate]` |
+| `useAnalytics(dateRange)` | `['analytics','range', startDate, endDate]` |
 | `useCoupons()` | `['coupons','list']` |
 | `useCreator()` | `['creator','profile']` |
 | `useCustomers()` | `['customers','list']` |
@@ -99,3 +105,8 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useStatementYears()` | `['statements','years']` |
 | `useShortLinks()` | `['short-links','list']` |
 | `useShortLinkAnalytics(id)` | `['short-links','analytics', id]` |
+| `useInstaAccount()` | `['instaauto','account']` |
+| `useInstaAutomations(accountId?)` | `['instaauto','automations', accountId]` |
+| `useInstaLeads(accountId?)` | `['instaauto','leads', accountId]` |
+| `useInstaMessages(accountId?)` | `['instaauto','messages', accountId]` |
+| `useInstaAnalytics(accountId?)` | `['instaauto','analytics', accountId]` (instaauto mutations invalidate the whole `['instaauto']` domain) |

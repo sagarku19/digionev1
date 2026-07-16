@@ -1,6 +1,6 @@
 # Storefront Reference Map
 
-> Last synced: 2026-07-08
+> Last synced: 2026-07-16
 > Generated from: `app/(storefront)/**/page.tsx`, `src/components/storefront/**`, the block/section registries
 > Regenerate / audit: `/sync-docs`
 > Read this FIRST for any storefront task. Styling uses creator vars (`var(--creator-primary)`, `var(--creator-text)`, `var(--creator-bg)`, …) — NOT dashboard `--bg-*`/`--text-*` tokens.
@@ -28,7 +28,7 @@ Renderer keys (`registry.tsx` → dispatched by `BlockRenderer`): `header`, `tex
 
 Editor registry keys (`blockEditors/registry.tsx`): `header`, `text`, `heading`, `space`, `url`, `product`, `video_embed`, `lead_form`, `image`, `html_embed`, `spotify`, `social_icons`, `banner`
 
-Parity: Two gaps found.
+Parity: two gaps found (item 3 is a confirmed pairing, not a gap).
 1. **`divider`** — renderer handles it; editor registry has no `DividerBlock` and cannot create this block type.
 2. **`email_capture`** — renderer accepts it as an alias of `lead_form` (same `LeadFormBlock`, same branch); editor registry lists only `lead_form`, so `email_capture` rows can exist in the DB (legacy data) but the editor will not create new ones.
 3. **`product`** — editor registry has it; renderer dispatches it via `blockRenderers/ProductBlock.tsx`. Full parity ✓.

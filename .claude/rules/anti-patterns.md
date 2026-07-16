@@ -8,7 +8,7 @@ tags: []
 
 | Never | Why |
 |---|---|
-| `createClient()` in client components | Use pre-configured imports from `@/lib/supabase/*` |
+| Instantiating Supabase from `@supabase/supabase-js` in client components | Import from `@/lib/supabase/client` — the `supabase` singleton or its `createClient()` (returns the cached browser singleton) |
 | Write to `orders`/`creator_balances` client-side | Revenue integrity — server only |
 | Use `any` type | Strict TypeScript is non-negotiable |
 | Import from icon libraries other than lucide-react | Consistency |
