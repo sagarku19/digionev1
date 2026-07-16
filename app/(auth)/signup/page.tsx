@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, ArrowRight, MailCheck } from 'lucide-react';
+import { Eye, EyeOff, MailCheck } from 'lucide-react';
 
 function GoogleIcon() {
   return (
@@ -102,7 +102,7 @@ export default function SignupPage() {
           Verification link sent to <strong className="text-[#16130F]">{email}</strong>.
         </p>
         <Link href="/login" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[13px] transition-colors duration-200">
-          Back to login <ArrowRight className="w-3.5 h-3.5" />
+          Back to login
         </Link>
       </div>
     );
@@ -180,7 +180,7 @@ export default function SignupPage() {
           disabled={loading || googleLoading}
           className="w-full py-2.5 px-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[13px] rounded-lg transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-1"
         >
-          {loading ? 'Creating…' : <><span>Create account</span><ArrowRight className="w-3.5 h-3.5" /></>}
+          {loading ? 'Creating…' : 'Create account'}
         </button>
       </form>
 
@@ -205,13 +205,13 @@ export default function SignupPage() {
       <div className="mt-4 text-center">
         <p className="text-[12px] text-black/50 mb-3">
           Already have an account?{' '}
-          <Link href="/login" className="text-[#E83A2E] font-semibold hover:underline">Log in →</Link>
+          <Link href="/login" className="text-[#E83A2E] font-semibold hover:underline">Log in</Link>
         </p>
         <p className="font-ledger text-[11px] text-black/35 mb-3">
           Just want to buy?{' '}
           <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
         </p>
-        <p className="font-ledger text-[9px] text-black/35">
+        <p className="font-ledger text-[8px] tracking-[-0.03em] whitespace-nowrap text-black/35">
           By continuing you agree to our{' '}
           <Link href="/terms" className="hover:underline hover:text-[#16130F] transition-colors">Terms of Service</Link>
           {' & '}

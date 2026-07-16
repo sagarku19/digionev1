@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import { ArrowRight, MailCheck, ArrowLeft } from 'lucide-react';
+import { MailCheck, ArrowLeft } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const supabase = createClient();
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
             href="/login"
             className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[14px] transition-colors duration-200"
           >
-            Back to login <ArrowRight className="w-4 h-4" />
+            Back to login
           </Link>
         </div>
       </div>
@@ -106,12 +106,7 @@ export default function ForgotPasswordPage() {
           disabled={loading}
           className="w-full py-3 px-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[14px] rounded-lg transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
         >
-          {loading ? 'Sending…' : (
-            <>
-              Send reset link
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
+          {loading ? 'Sending…' : 'Send reset link'}
         </button>
       </form>
 

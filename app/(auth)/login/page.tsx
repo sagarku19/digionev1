@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase/client';
 import { useAuthSession, useLoginMutation } from '@/hooks/auth/useAuthSession';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { isSafeInternalPath } from '@/lib/safe-redirect';
 
 /* ── Google icon SVG ── */
@@ -212,12 +212,7 @@ function LoginContent() {
           disabled={loading || googleLoading}
           className="w-full py-3 px-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[14px] rounded-lg transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
         >
-          {loading ? 'Logging in…' : (
-            <>
-              Log in
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
+          {loading ? 'Logging in…' : 'Log in'}
         </button>
       </form>
 
@@ -242,13 +237,13 @@ function LoginContent() {
       <div className="mt-4 text-center">
         <p className="text-[12px] text-black/50 mb-3">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-[#E83A2E] font-semibold hover:underline">Sign up free →</Link>
+          <Link href="/signup" className="text-[#E83A2E] font-semibold hover:underline">Sign up free</Link>
         </p>
         <p className="font-ledger text-[11px] text-black/35 mb-3">
           Just want to buy?{' '}
           <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
         </p>
-        <p className="font-ledger text-[8px] text-black/35">
+        <p className="font-ledger text-[8px] tracking-[-0.03em] whitespace-nowrap text-black/35">
           By continuing you agree to our{' '}
           <Link href="/terms" className="hover:underline hover:text-[#16130F] transition-colors">Terms of Service</Link>
           {' & '}
