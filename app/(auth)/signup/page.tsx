@@ -163,11 +163,11 @@ export default function SignupPage() {
           )}
         </div>
 
-        {/* Referral */}
-        <div>
+        {/* Referral — commented out; referral code will be attached to the signup link, not entered manually */}
+        {/* <div>
           <label className="block text-[11.5px] font-semibold text-[#16130F] mb-1">Referral <span className="text-black/35 font-normal">(opt.)</span></label>
           <input type="text" placeholder="FRIEND123" className={`${inputCls} uppercase tracking-widest`} value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase())} />
-        </div>
+        </div> */}
 
         {error && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#E83A2E]/[0.06] border border-[#E83A2E]/15 text-[12px] text-[#E83A2E] font-medium">
@@ -211,7 +211,7 @@ export default function SignupPage() {
           Just want to buy?{' '}
           <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
         </p>
-        <p className="font-ledger text-[10px] text-black/35">
+        <p className="font-ledger text-[9px] text-black/35">
           By continuing you agree to our{' '}
           <Link href="/terms" className="hover:underline hover:text-[#16130F] transition-colors">Terms of Service</Link>
           {' & '}

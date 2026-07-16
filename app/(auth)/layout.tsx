@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 
 const FEATURES = [
@@ -112,10 +112,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <Link
           href="/"
           aria-label="Back to home"
-          className="group absolute top-4 left-4 sm:top-6 sm:left-6 z-10 inline-flex items-center gap-1.5 text-[13px] font-semibold text-black/50 hover:text-[#16130F] transition-colors duration-200 focus-visible:outline-none"
+          title="Back to home"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-black/[0.1] bg-black/[0.04] text-black/50 transition hover:text-[#16130F] hover:bg-black/[0.08] focus-visible:outline-none"
         >
-          <ArrowLeft className="w-4 h-4 shrink-0 group-hover:-translate-x-0.5 transition-transform duration-200" />
-          <span className="hidden sm:inline">Back to home</span>
+          <ChevronLeft className="w-5 h-5" />
         </Link>
 
         {/* Mobile logo */}

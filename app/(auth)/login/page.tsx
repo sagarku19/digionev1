@@ -248,7 +248,7 @@ function LoginContent() {
           Just want to buy?{' '}
           <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
         </p>
-        <p className="font-ledger text-[10px] text-black/35">
+        <p className="font-ledger text-[8px] text-black/35">
           By continuing you agree to our{' '}
           <Link href="/terms" className="hover:underline hover:text-[#16130F] transition-colors">Terms of Service</Link>
           {' & '}
