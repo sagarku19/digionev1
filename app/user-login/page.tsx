@@ -34,9 +34,15 @@ function UserLoginContent() {
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
       open('signup', '/account/library');
-      opened.current = true;
     }
   }, [isLoading, isLoggedIn, open]);
+
+  // Flag only after isOpen is observed true — setting it at open() time let the
+  // dismissal effect below fire router.back() in the same mount commit, where
+  // its closure still saw the pre-open isOpen=false.
+  useEffect(() => {
+    if (isOpen) opened.current = true;
+  }, [isOpen]);
 
   // Dismissed without logging in → go back to where the buyer came from.
   useEffect(() => {

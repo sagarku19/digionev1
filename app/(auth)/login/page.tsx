@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { isSafeInternalPath } from '@/lib/safe-redirect';
+import { useBuyerAuth } from '@/stores/buyerAuth';
 
 /* ── Google icon SVG ── */
 function GoogleIcon() {
@@ -32,11 +33,12 @@ function LoginContent() {
 
   const loginMutation = useLoginMutation();
   const loading = loginMutation.isPending || redirecting;
+  const openBuyerAuth = useBuyerAuth((s) => s.open);
 
   // If a returning user hits /login while already authenticated (e.g., browser
   // back from /dashboard), bounce them to their landing page and use
   // location.replace so /login is dropped from history.
-  const { isLoggedIn, isLoading: sessionLoading } = useAuthSession();
+  const { isLoggedIn, userEmail, isLoading: sessionLoading } = useAuthSession();
   const autoRedirectFired = useRef(false);
 
   useEffect(() => {
@@ -134,16 +136,27 @@ function LoginContent() {
     }
   };
 
-  if (sessionLoading || isLoggedIn) {
+  if (isLoggedIn) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-3">
-        <span className="w-7 h-7 rounded-full border-2 border-black/[0.08] border-t-[#E83A2E] animate-spin" />
-        <span className="font-ledger text-[12px] text-black/40">
-          {isLoggedIn ? 'Taking you to your account…' : 'Checking your session…'}
-        </span>
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="relative w-12 h-12 mb-5">
+          <span className="absolute inset-0 rounded-full border-2 border-black/[0.06]" />
+          <span className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#E83A2E] animate-spin" />
+          <span className="absolute inset-0 flex items-center justify-center text-[15px] font-bold text-[#16130F]">
+            {(userEmail?.[0] ?? 'D').toUpperCase()}
+          </span>
+        </div>
+        <h2 className="text-[17px] font-bold tracking-[-0.02em] text-[#16130F] mb-1">
+          Taking you to your account
+        </h2>
+        {userEmail && (
+          <p className="font-ledger text-[12px] text-black/45">{userEmail}</p>
+        )}
       </div>
     );
   }
+
+  if (sessionLoading) return <LoginSkeleton />;
 
   return (
     <>
@@ -241,7 +254,7 @@ function LoginContent() {
         </p>
         <p className="font-ledger text-[11px] text-black/35 mb-3">
           Just want to buy?{' '}
-          <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
+          <button type="button" onClick={() => openBuyerAuth('signup', '/account/library')} className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</button>
         </p>
         <p className="font-ledger text-[8px] tracking-[-0.03em] whitespace-nowrap text-black/35">
           By continuing you agree to our{' '}
@@ -251,6 +264,50 @@ function LoginContent() {
         </p>
       </div>
     </>
+  );
+}
+
+// Mirrors the form layout block-for-block so resolving the session swaps
+// content in place with zero layout shift.
+function LoginSkeleton() {
+  return (
+    <div>
+      <div className="animate-pulse" aria-hidden="true">
+        <div className="mb-8">
+          <div className="h-2.5 w-16 rounded bg-black/[0.06] mb-4" />
+          <div className="h-7 w-44 rounded-lg bg-black/[0.07] mb-2.5" />
+          <div className="h-3.5 w-56 rounded bg-black/[0.05]" />
+        </div>
+        <div className="space-y-4">
+          <div>
+            <div className="h-3 w-12 rounded bg-black/[0.06] mb-2" />
+            <div className="h-[46px] w-full rounded-lg bg-black/[0.04] border border-black/[0.06]" />
+          </div>
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <div className="h-3 w-20 rounded bg-black/[0.06]" />
+              <div className="h-3 w-24 rounded bg-black/[0.05]" />
+            </div>
+            <div className="h-[46px] w-full rounded-lg bg-black/[0.04] border border-black/[0.06]" />
+          </div>
+          <div className="h-[46px] w-full rounded-lg bg-black/[0.08] mt-2" />
+        </div>
+        <div className="flex items-center gap-3 mt-3 mb-3">
+          <div className="flex-1 h-px bg-black/[0.07]" />
+          <div className="h-2.5 w-6 rounded bg-black/[0.05]" />
+          <div className="flex-1 h-px bg-black/[0.07]" />
+        </div>
+        <div className="h-[42px] w-full rounded-lg bg-black/[0.04] border border-black/[0.06]" />
+        <div className="mt-4 flex flex-col items-center gap-2.5">
+          <div className="h-3 w-48 rounded bg-black/[0.05]" />
+          <div className="h-2.5 w-36 rounded bg-black/[0.04]" />
+        </div>
+      </div>
+      <p role="status" className="mt-8 flex items-center justify-center gap-2 font-ledger text-[11px] text-black/40">
+        <span aria-hidden="true" className="w-3 h-3 rounded-full border-[1.5px] border-black/[0.12] border-t-[#E83A2E] animate-spin" />
+        Checking your session…
+      </p>
+    </div>
   );
 }
 

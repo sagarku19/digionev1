@@ -59,6 +59,12 @@ export default function BuyerAuthModal() {
     }
   }, [isOpen]);
 
+  // Focus the card, not an input — an autofocused input pops the mobile
+  // keyboard before the buyer has even read the modal.
+  useEffect(() => {
+    if (isOpen) cardRef.current?.focus();
+  }, [isOpen]);
+
   // Esc to close + body scroll-lock while open.
   useEffect(() => {
     if (!isOpen) return;
@@ -78,6 +84,12 @@ export default function BuyerAuthModal() {
   if (!isOpen) return null;
 
   const meta = VIEW_META[view];
+
+  const switchView = (next: BuyerAuthView) => {
+    setError(null);
+    setSentTo(null);
+    setView(next);
+  };
 
   const afterAuth = async () => {
     rememberBuyerEmail(email);
@@ -173,7 +185,8 @@ export default function BuyerAuthModal() {
         role="dialog"
         aria-modal="true"
         aria-label={meta.title}
-        className="relative w-full max-w-[420px] max-h-[92dvh] overflow-y-auto bg-white rounded-xl border border-black/[0.1] shadow-[0_24px_70px_-30px_rgba(22,19,15,0.4)] px-6 py-7 sm:px-7 animate-[buyerAuthIn_0.2s_cubic-bezier(0.16,1,0.3,1)_both]"
+        tabIndex={-1}
+        className="relative w-full max-w-[420px] max-h-[92dvh] overflow-y-auto bg-white rounded-xl border border-black/[0.1] shadow-[0_24px_70px_-30px_rgba(22,19,15,0.4)] px-6 py-7 sm:px-7 animate-[buyerAuthIn_0.2s_cubic-bezier(0.16,1,0.3,1)_both] outline-none"
       >
         <button
           type="button"
@@ -199,7 +212,7 @@ export default function BuyerAuthModal() {
             <p className="text-[13.5px] text-black/55 font-medium mb-6">
               Reset link sent to <strong className="text-[#16130F]">{sentTo}</strong>.
             </p>
-            <button onClick={() => setView('login')} className="text-[13px] font-semibold text-[#E83A2E] hover:underline">
+            <button onClick={() => switchView('login')} className="text-[13px] font-semibold text-[#E83A2E] hover:underline">
               Back to login
             </button>
           </div>
@@ -209,12 +222,12 @@ export default function BuyerAuthModal() {
             {view === 'login' && (
               <form onSubmit={handleLogin} className="space-y-4">
                 <Field label="Email" id="ba-email">
-                  <input id="ba-email" type="email" required autoFocus placeholder="you@example.com" className={INPUT} value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <input id="ba-email" type="email" required placeholder="you@example.com" className={INPUT} value={email} onChange={(e) => setEmail(e.target.value)} />
                 </Field>
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label htmlFor="ba-password" className="block text-[13px] font-semibold text-[#16130F]">Password <span className="text-[#E83A2E]">*</span></label>
-                    <button type="button" onClick={() => setView('forgot')} className="text-[12px] font-semibold text-[#E83A2E] hover:underline">Forgot?</button>
+                    <button type="button" onClick={() => switchView('forgot')} className="text-[12px] font-semibold text-[#E83A2E] hover:underline">Forgot?</button>
                   </div>
                   <PasswordInput id="ba-password" value={password} onChange={setPassword} show={showPassword} toggle={() => setShowPassword((s) => !s)} />
                 </div>
@@ -228,7 +241,7 @@ export default function BuyerAuthModal() {
             {view === 'signup' && (
               <form onSubmit={handleSignup} className="space-y-4">
                 <Field label="Full name" id="ba-name">
-                  <input id="ba-name" type="text" required autoFocus placeholder="Rahul Sharma" className={INPUT} value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                  <input id="ba-name" type="text" required placeholder="Rahul Sharma" className={INPUT} value={fullName} onChange={(e) => setFullName(e.target.value)} />
                 </Field>
                 <Field label="Email" id="ba-email-s">
                   <input id="ba-email-s" type="email" required placeholder="you@example.com" className={INPUT} value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -245,11 +258,11 @@ export default function BuyerAuthModal() {
 
             {view === 'forgot' && (
               <form onSubmit={handleForgot} className="space-y-4">
-                <button type="button" onClick={() => setView('login')} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-black/55 hover:text-[#16130F] transition-colors">
+                <button type="button" onClick={() => switchView('login')} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-black/55 hover:text-[#16130F] transition-colors">
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to login
                 </button>
                 <Field label="Email address" id="ba-email-f">
-                  <input id="ba-email-f" type="email" required autoFocus placeholder="you@example.com" className={INPUT} value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <input id="ba-email-f" type="email" required placeholder="you@example.com" className={INPUT} value={email} onChange={(e) => setEmail(e.target.value)} />
                 </Field>
                 {error && <ErrorNote message={error} />}
                 <button type="submit" disabled={busy} className={PRIMARY_BTN}>
@@ -279,9 +292,9 @@ export default function BuyerAuthModal() {
 
                 <p className="mt-5 text-center text-[12.5px] text-black/50">
                   {view === 'login' ? (
-                    <>New here? <button onClick={() => { setError(null); setView('signup'); }} className="text-[#E83A2E] font-semibold hover:underline">Create an account →</button></>
+                    <>New here? <button onClick={() => switchView('signup')} className="text-[#E83A2E] font-semibold hover:underline">Create an account →</button></>
                   ) : (
-                    <>Already have an account? <button onClick={() => { setError(null); setView('login'); }} className="text-[#E83A2E] font-semibold hover:underline">Log in →</button></>
+                    <>Already have an account? <button onClick={() => switchView('login')} className="text-[#E83A2E] font-semibold hover:underline">Log in →</button></>
                   )}
                 </p>
               </>

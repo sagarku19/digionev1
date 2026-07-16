@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, MailCheck } from 'lucide-react';
+import { useBuyerAuth } from '@/stores/buyerAuth';
 
 function GoogleIcon() {
   return (
@@ -34,13 +35,14 @@ export default function SignupPage() {
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [referralCode, setReferralCode] = useState('');
+  const [referralCode] = useState('');
   const role = 'creator';
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const openBuyerAuth = useBuyerAuth((s) => s.open);
 
   const getStr = () => {
     if (password.length === 0) return { label: '', color: 'bg-black/[0.08]' };
@@ -81,7 +83,7 @@ export default function SignupPage() {
       try {
         await supabase.from('profiles').update({ mobile: mobileDigits }).eq('user_id', data.user.id);
         const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', data.user.id).maybeSingle();
-        if (profile?.id) await supabase.from('notifications').insert({ recipient_creator_id: profile.id, title: '👋 Welcome to DigiOne!', message: "You're all set! Start by creating your first product.", type: 'welcome', action_url: '/dashboard/products' } as any);
+        if (profile?.id) await supabase.from('notifications').insert({ recipient_creator_id: profile.id, title: '👋 Welcome to DigiOne!', message: "You're all set! Start by creating your first product.", type: 'welcome', action_url: '/dashboard/products' });
       } catch { /* non-critical */ }
       router.push('/dashboard');
     } else {
@@ -209,7 +211,7 @@ export default function SignupPage() {
         </p>
         <p className="font-ledger text-[11px] text-black/35 mb-3">
           Just want to buy?{' '}
-          <Link href="/user-login" className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</Link>
+          <button type="button" onClick={() => openBuyerAuth('signup', '/account/library')} className="text-[#16130F] font-semibold hover:underline transition-colors">Buyer login</button>
         </p>
         <p className="font-ledger text-[8px] tracking-[-0.03em] whitespace-nowrap text-black/35">
           By continuing you agree to our{' '}
