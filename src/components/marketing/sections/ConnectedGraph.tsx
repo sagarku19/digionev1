@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import InView from '@/src/components/marketing/InView';
 import { SectionShell } from '@/src/components/marketing/Ledger';
 import { DigiOneLogoDark } from '@/src/components/assets/DigiOneLogo';
@@ -301,7 +301,19 @@ const MetricCard = ({
 );
 
 const VWire = () => (
-  <span aria-hidden="true" className="block mx-auto h-7 w-0 border-l border-dashed border-[color:var(--cg-vwire)]" />
+  <svg aria-hidden="true" viewBox="0 0 2 28" fill="none" className="block mx-auto h-7 w-[2px]">
+    <path
+      d="M1 0 V28"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeDasharray="0.5 7.5"
+      style={{ stroke: 'var(--cg-wire)', animation: 'cgDash 1.4s linear infinite' }}
+    />
+  </svg>
+);
+
+const MLabel = ({ children, className = '' }: { children: ReactNode; className?: string }) => (
+  <p className={`text-center font-ledger text-[8px] text-[color:var(--cg-mut)] ${className}`}>{children}</p>
 );
 
 export default function ConnectedGraph() {
@@ -519,9 +531,11 @@ export default function ConnectedGraph() {
             </p>
 
             <VWire />
+            <MLabel className="mb-1.5 tracking-[0.1em]">01 /</MLabel>
             <div className="flex justify-center">
               <ShortLinkChip />
             </div>
+            <MLabel className="mt-1.5">/dashboard/links</MLabel>
 
             <VWire />
             <div className="max-w-[240px] mx-auto">
@@ -535,24 +549,36 @@ export default function ConnectedGraph() {
                 <SurfaceTile key={s.label} {...s} />
               ))}
             </div>
+            <MLabel className="mt-2 tracking-[0.16em]">YOUR CATALOG</MLabel>
+            <MLabel className="mt-0.5">/dashboard/products · /sites</MLabel>
 
             <VWire />
+            <MLabel className="mb-1.5 tracking-[0.1em]">02 /</MLabel>
             <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="inline-flex items-center bg-[#16130F] border border-[color:var(--cg-chip-brd)] text-white rounded-md px-3 py-1.5 font-ledger text-[9.5px] font-medium tracking-[0.14em]">
+                CHECKOUT
+              </span>
               <CouponTag />
               <LeadFormChip />
             </div>
+            <MLabel className="mt-1.5">/checkout · /dashboard/marketing</MLabel>
 
             <VWire />
+            <MLabel className="mb-1.5 tracking-[0.1em]">03 / DELIVERY</MLabel>
             <LibraryCard className="mx-auto" />
+            <MLabel className="mt-1.5">/account/library</MLabel>
 
             <VWire />
+            <MLabel className="mb-1.5 tracking-[0.1em]">04 / TRACKING</MLabel>
             <div className="grid grid-cols-2 gap-2">
               {METRICS.map((m) => (
                 <MetricCard key={m.label} {...m} compact />
               ))}
             </div>
+            <MLabel className="mt-1.5">/dashboard/analytics</MLabel>
 
             <VWire />
+            <MLabel className="mb-1.5 tracking-[0.1em]">05 /</MLabel>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <span className="inline-flex items-center bg-[#16130F] border border-[color:var(--cg-chip-brd)] text-white rounded-md px-3 py-1.5 font-ledger text-[9.5px] font-medium tracking-[0.14em]">
                 AUTO DM
@@ -562,6 +588,7 @@ export default function ConnectedGraph() {
             <p className="mt-2 text-center font-ledger text-[9px] tracking-[0.1em] text-[color:var(--cg-mut)]">
               comment &ldquo;LINK&rdquo; → follow-gate → reply · 0.3s
             </p>
+            <MLabel className="mt-1">/dashboard/autodm</MLabel>
           </div>
         </InView>
 

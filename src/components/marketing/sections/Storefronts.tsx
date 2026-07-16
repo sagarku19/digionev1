@@ -115,7 +115,7 @@ export default function Storefronts() {
             const Mock = s.mock;
             return (
               <div key={i} className="group bg-[#FAF8F6] hover:bg-white transition-colors duration-300 flex flex-col">
-                <div className="h-44 flex items-center justify-center p-5 border-b border-black/[0.06]">
+                <div className="h-40 sm:h-44 flex items-center justify-center p-5 border-b border-black/[0.06]">
                   <div className="group-hover:-translate-y-1 transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] w-full flex justify-center">
                     <Mock />
                   </div>

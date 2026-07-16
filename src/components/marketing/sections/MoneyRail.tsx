@@ -100,6 +100,13 @@ export default function MoneyRail() {
                   <li key={i} className="relative lg:pt-9 flex lg:block items-start gap-4">
                     {/* Node */}
                     <span className="lg:absolute lg:top-0 lg:left-0 mt-1 lg:mt-0 w-[11px] h-[11px] rounded-full bg-[#E83A2E] shadow-[0_0_0_4px_rgba(232,58,46,0.18)] shrink-0" />
+                    {/* Mobile timeline connector to the next node */}
+                    {i < RAIL_STEPS.length - 1 && (
+                      <span
+                        aria-hidden="true"
+                        className="lg:hidden absolute left-[5px] top-[21px] -bottom-8 border-l border-dashed border-[#E83A2E]/30"
+                      />
+                    )}
                     <div>
                       <p className="font-ledger text-[10px] text-black/30 mb-1.5 tracking-[0.1em]">
                         {String(i + 1).padStart(2, '0')} /

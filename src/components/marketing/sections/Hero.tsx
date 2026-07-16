@@ -90,7 +90,7 @@ export default function Hero() {
         }
       `}</style>
 
-      <Rails className="pt-28 sm:pt-36">
+      <Rails className="pt-24 sm:pt-36">
         <div className="px-5 sm:px-10 lg:px-14">
 
           {/* Animated revenue plot — engineered-ledger ornament */}
@@ -266,7 +266,7 @@ export default function Hero() {
                 </Link>
               </>
             )}
-            <span className="font-ledger text-[11px] text-black/35 sm:ml-3">
+            <span className="font-ledger text-[11px] text-black/35 text-center sm:text-left sm:ml-3">
               Free forever plan · No credit card
             </span>
           </div>
@@ -274,7 +274,7 @@ export default function Hero() {
           {/* ============ Dashboard frame ============ */}
           <div
             aria-hidden="true"
-            className="relative mt-14 sm:mt-20"
+            className="relative mt-12 sm:mt-20"
             style={{ animation: 'heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.3s both' }}
           >
             <div className="relative rounded-t-xl border border-b-0 border-black/[0.1] bg-white overflow-hidden shadow-[0_-12px_60px_-30px_rgba(22,19,15,0.18)]">
@@ -311,7 +311,7 @@ export default function Hero() {
                       <p className="font-ledger text-[24px] sm:text-[30px] font-semibold tracking-tight leading-none">
                         ₹1,24,850<span className="text-[14px] text-white/35">.00</span>
                       </p>
-                      <div className="mt-3 flex items-center gap-2.5">
+                      <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1">
                         <span className="font-ledger text-[9px] sm:text-[10px] text-emerald-400">↑ ₹18,400 this week</span>
                         <span className="font-ledger text-[9px] sm:text-[10px] text-white/30">Instant UPI · Direct to bank</span>
                       </div>

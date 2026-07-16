@@ -157,7 +157,7 @@ function IphoneMock() {
       </div>
 
       {/* Floating sale toast */}
-      <div className="absolute -right-6 sm:-right-10 top-20 bg-white border border-black/[0.08] rounded-lg shadow-[0_16px_40px_-20px_rgba(22,19,15,0.3)] px-3 py-2 flex items-center gap-2">
+      <div className="absolute -right-2 sm:-right-10 top-20 bg-white border border-black/[0.08] rounded-lg shadow-[0_16px_40px_-20px_rgba(22,19,15,0.3)] px-3 py-2 flex items-center gap-2">
         <span className="w-5 h-5 rounded-md bg-emerald-50 border border-emerald-100 flex items-center justify-center font-ledger text-[9px] font-semibold text-emerald-700">
           ₹
         </span>
@@ -181,7 +181,7 @@ export default function ProductShowcase() {
               <Kicker index="01" route="/discover" />
             </div>
 
-            <div className="mt-10 sm:mt-14 grid grid-cols-1 lg:grid-cols-[minmax(0,400px)_1fr] gap-14 lg:gap-12 items-center">
+            <div className="mt-10 sm:mt-14 grid grid-cols-1 lg:grid-cols-[minmax(0,400px)_1fr] gap-12 sm:gap-14 lg:gap-12 items-center">
 
               {/* iPhone — left */}
               <div className="iv order-2 lg:order-1">
@@ -204,18 +204,18 @@ export default function ProductShowcase() {
                 </div>
 
                 {/* Category grid — 3 columns × 5 rows, rectangle tiles */}
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
                   {CATEGORIES.map(({ label, icon: Icon, featured }, i) => (
                     <div
                       key={label}
-                      className={`iv group flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 transition-colors duration-200 ${
+                      className={`iv group flex items-center justify-between gap-2 sm:gap-3 rounded-xl border px-3.5 py-3 sm:px-4 sm:py-3.5 transition-colors duration-200 ${
                         featured
                           ? 'bg-[#16130F] border-[#16130F]'
                           : 'bg-white border-black/[0.08] hover:border-black/[0.22]'
                       }`}
                       style={{ transitionDelay: `${i * 35}ms` }}
                     >
-                      <span className={`min-w-0 truncate text-[12.5px] font-semibold leading-snug ${featured ? 'text-white' : 'text-[#16130F]'}`}>
+                      <span className={`min-w-0 truncate text-[12px] sm:text-[12.5px] font-semibold leading-snug ${featured ? 'text-white' : 'text-[#16130F]'}`}>
                         {label}
                       </span>
                       <Icon

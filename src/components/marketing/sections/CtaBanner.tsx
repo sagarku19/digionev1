@@ -111,7 +111,7 @@ export default function CtaBanner() {
                   style={{ background: 'radial-gradient(ellipse 60% 90% at 85% 10%, rgba(255,255,255,0.14) 0%, transparent 60%)' }}
                 />
 
-                <div className="relative p-8 sm:p-14 lg:p-16 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-14 items-center">
+                <div className="relative p-6 sm:p-14 lg:p-16 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 sm:gap-10 lg:gap-14 items-center">
                   <div>
                   <h2 className="text-[32px] sm:text-[44px] lg:text-[52px] font-bold tracking-[-0.035em] leading-[1.05] text-white max-w-xl">
                     Start selling in few minutes.
