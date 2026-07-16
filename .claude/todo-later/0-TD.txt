@@ -15,7 +15,7 @@ To Do -- - - -- - - - - -- - - - -
 
   8. All Marketing Working fine, if need to update db do and Upadte like a saas.
 
-  9. Insta Automation.
+when user click on add to cart a cart model with product will float on the bottom of page in small size, after clicking on it , it will be redirected to cart page(i want on discover page checkout directly through cart do not redirect to checkout page)
 
   10. All Other Automation
 
@@ -46,7 +46,6 @@ create all site skeleton with rich content in it, for use to preview., these typ
 
 ### To do later Updates Audit 25-06-2026
 
-Insta w db
 
 Db table name fix
 
@@ -54,8 +53,6 @@ Automation 1 Telegram research and do
 Also gmail
 
 Ai Integration
-
-Link shortener under- linkln.me (DONE — domain purchased 2026-07-15, set as NEXT_PUBLIC_SHORTLINK_DOMAIN; same deployment/db, routed via proxy.ts → /api/s/[code])
 
 Security audit using cloudflare github docs
 
@@ -69,8 +66,6 @@ and also subscription payment and its table (table + fee tiering done Phase 3; r
 
 
 
-
-Audit 25-06-2026- Do this after Coplete auth setup
 Now the claim Entitlement(From user to creator) have no securtiyy like otp or verifiacttion open a model to verify all required like mobile or Gmail and then convert.
 also if a user signup on creator account using google auth c=verify mobile if asking..
 
@@ -89,12 +84,11 @@ also add different type of site like upcomimg site and more option
 
 
 if i will add some marketing ad automation tool then, all the table related to it will have prefix start with adtools_
-for instagram  it will start from - insta_
+
 for marketing update it with marketing_
 
 
-testing- check complete Auth
-check complete payments
+
 check complete subscription
 kyc and payment.
 
@@ -103,8 +97,7 @@ for updating kyc or bank details user neeeds to first verify mobile numbers.
 1 payment page update
 2 all the slug page
 update dashboard
-linkshortener
-insatautomation
+
 other automation tools
 
 
@@ -118,8 +111,6 @@ add option to create new more variant of site using template options(in later Ph
 
 integrate ai features(it will be of two types 1- build in ai and other real ai)
 
-launch in minutes
-earn on autopilot
 
 ai female bot name will be AVA
 
