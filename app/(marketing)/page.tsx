@@ -23,7 +23,6 @@ export default function MarketingPage() {
       {/* <ProductIndex /> */}
       <ConnectedGraph />
       {/* <Playground />  will later add this compenent alraedy created and available */}
-
       <MoneyRail />
       <Automation />
       <Steps />

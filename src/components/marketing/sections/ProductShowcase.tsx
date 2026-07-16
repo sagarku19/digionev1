@@ -172,9 +172,9 @@ function IphoneMock() {
 
 export default function ProductShowcase() {
   return (
-    <section className="relative bg-white">
+    <section className="relative bg-[#FAF8F6]">
       <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
-      <Rails>
+      <Rails tone="paper">
         <div className="px-5 sm:px-10 lg:px-14 py-14 sm:py-20 lg:py-24">
           <InView>
             <div className="iv">
@@ -211,7 +211,7 @@ export default function ProductShowcase() {
                       className={`iv group flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 transition-colors duration-200 ${
                         featured
                           ? 'bg-[#16130F] border-[#16130F]'
-                          : 'bg-white border-black/[0.08] hover:border-black/[0.22] hover:bg-[#FAF8F6]'
+                          : 'bg-white border-black/[0.08] hover:border-black/[0.22]'
                       }`}
                       style={{ transitionDelay: `${i * 35}ms` }}
                     >

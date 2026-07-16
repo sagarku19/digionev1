@@ -107,7 +107,7 @@ export default function Storefronts() {
       route="/dashboard/sites"
       title="Four storefronts. One dashboard."
       sub="Pick the surface that matches how you sell — or run all four. Every site pulls from the same products, orders, and balance."
-      tone="paper"
+      tone="white"
     >
       <InView className="mt-10 sm:mt-14">
         <div className="iv grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-black/[0.08] border border-black/[0.08] rounded-xl overflow-hidden">

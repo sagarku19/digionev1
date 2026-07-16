@@ -72,7 +72,7 @@ export default function CtaBanner() {
         <div className="px-5 sm:px-10 lg:px-14 py-14 sm:py-20 lg:py-24">
           <InView>
             <div className="iv">
-              <Kicker index="06" route="/signup" />
+              <Kicker index="06" route="/login" />
 
               {/* Platform highlights — ledger strip, four equal rectangles */}
               <div className="mt-7 sm:mt-9 border border-black/[0.08] grid grid-cols-2 lg:grid-cols-4">

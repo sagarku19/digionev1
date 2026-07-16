@@ -32,7 +32,8 @@ const FACTS = [
 
 export default function MoneyRail() {
   return (
-    <section className="relative bg-[#16130F] overflow-hidden">
+    <section className="relative bg-white overflow-hidden">
+      <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
       {/* Atmosphere */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
         <div
@@ -40,11 +41,11 @@ export default function MoneyRail() {
           style={{
             top: '-30%', left: '50%', transform: 'translateX(-50%)',
             width: '900px', height: '500px',
-            background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.14) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse at center, rgba(232,58,46,0.06) 0%, transparent 70%)',
             filter: 'blur(60px)',
           }}
         />
-        <svg className="absolute inset-0 w-full h-full opacity-[0.05]" xmlns="http://www.w3.org/2000/svg">
+        <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
           <filter id="money-grain">
             <feTurbulence type="fractalNoise" baseFrequency="0.70" numOctaves="4" stitchTiles="stitch" />
             <feColorMatrix type="saturate" values="0" />
@@ -57,16 +58,16 @@ export default function MoneyRail() {
         @keyframes railDash { to { stroke-dashoffset: -14; } }
       `}</style>
 
-      <Rails tone="ink">
+      <Rails>
         <div className="px-5 sm:px-10 lg:px-14 py-14 sm:py-20 lg:py-24">
           <InView>
             <div className="iv">
-              <Kicker index="03" route="/dashboard/earnings" dark />
+              <Kicker index="03" route="/dashboard/earnings" />
               <div className="mt-7 sm:mt-9 max-w-2xl">
-                <h2 className="text-[28px] sm:text-[38px] lg:text-[44px] font-bold tracking-[-0.03em] leading-[1.08] text-white">
+                <h2 className="text-[28px] sm:text-[38px] lg:text-[44px] font-bold tracking-[-0.03em] leading-[1.08] text-[#16130F]">
                   Money moves like clockwork.
                 </h2>
-                <p className="mt-4 text-[15px] sm:text-[16px] leading-relaxed font-medium text-white/55">
+                <p className="mt-4 text-[15px] sm:text-[16px] leading-relaxed font-medium text-black/50">
                   Every rupee follows one verified path — no manual confirmation, no
                   payment limbo, no spreadsheets at midnight.
                 </p>
@@ -100,11 +101,11 @@ export default function MoneyRail() {
                     {/* Node */}
                     <span className="lg:absolute lg:top-0 lg:left-0 mt-1 lg:mt-0 w-[11px] h-[11px] rounded-full bg-[#E83A2E] shadow-[0_0_0_4px_rgba(232,58,46,0.18)] shrink-0" />
                     <div>
-                      <p className="font-ledger text-[10px] text-white/30 mb-1.5 tracking-[0.1em]">
+                      <p className="font-ledger text-[10px] text-black/30 mb-1.5 tracking-[0.1em]">
                         {String(i + 1).padStart(2, '0')} /
                       </p>
-                      <h3 className="text-[15px] font-bold text-white tracking-tight mb-1.5">{step.title}</h3>
-                      <p className="text-[13px] text-white/45 font-medium leading-relaxed max-w-[36ch] lg:max-w-none">
+                      <h3 className="text-[15px] font-bold text-[#16130F] tracking-tight mb-1.5">{step.title}</h3>
+                      <p className="text-[13px] text-black/45 font-medium leading-relaxed max-w-[36ch] lg:max-w-none">
                         {step.desc}
                       </p>
                     </div>
@@ -115,10 +116,10 @@ export default function MoneyRail() {
           </InView>
 
           <InView className="mt-12 sm:mt-16">
-            <div className="iv border-t border-white/[0.09] pt-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between">
+            <div className="iv border-t border-black/[0.07] pt-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:justify-between">
               {FACTS.map((f, i) => (
-                <span key={i} className="font-ledger text-[10px] sm:text-[11px] tracking-[0.12em] text-white/40">
-                  <span aria-hidden="true" className="text-[#FF6B5C] mr-2">✳</span>
+                <span key={i} className="font-ledger text-[10px] sm:text-[11px] tracking-[0.12em] text-black/40">
+                  <span aria-hidden="true" className="text-[#E83A2E] mr-2">✳</span>
                   {f}
                 </span>
               ))}
