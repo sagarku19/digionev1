@@ -76,6 +76,7 @@ export function SectionShell({
   route,
   title,
   sub,
+  aside,
   tone = 'white',
   children,
 }: {
@@ -84,6 +85,8 @@ export function SectionShell({
   route: string;
   title: React.ReactNode;
   sub?: string;
+  /** Optional control rendered on the title row, flush with the content's right edge. */
+  aside?: React.ReactNode;
   tone?: Tone;
   children: React.ReactNode;
 }) {
@@ -96,19 +99,22 @@ export function SectionShell({
           <InView>
             <div className="iv">
               <Kicker index={index} route={route} dark={dark} />
-              <div className="mt-7 sm:mt-9 max-w-2xl">
-                <h2
-                  className={`text-[28px] sm:text-[38px] lg:text-[44px] font-bold tracking-[-0.03em] leading-[1.08] ${
-                    dark ? 'text-white' : 'text-[#16130F]'
-                  }`}
-                >
-                  {title}
-                </h2>
-                {sub && (
-                  <p className={`mt-4 text-[15px] sm:text-[16px] leading-relaxed font-medium ${dark ? 'text-white/55' : 'text-black/50'}`}>
-                    {sub}
-                  </p>
-                )}
+              <div className="mt-7 sm:mt-9 flex items-start justify-between gap-6">
+                <div className="max-w-2xl">
+                  <h2
+                    className={`text-[28px] sm:text-[38px] lg:text-[44px] font-bold tracking-[-0.03em] leading-[1.08] ${
+                      dark ? 'text-white' : 'text-[#16130F]'
+                    }`}
+                  >
+                    {title}
+                  </h2>
+                  {sub && (
+                    <p className={`mt-4 text-[15px] sm:text-[16px] leading-relaxed font-medium ${dark ? 'text-white/55' : 'text-black/50'}`}>
+                      {sub}
+                    </p>
+                  )}
+                </div>
+                {aside && <div className="shrink-0">{aside}</div>}
               </div>
             </div>
           </InView>

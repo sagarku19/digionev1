@@ -14,12 +14,13 @@ const FEATURES = [
   'Instant UPI payouts',
 ];
 
-const METRICS = [
-  { value: "₹4.2 Cr+", label: "earned by creators" },
-  { value: "12,400+", label: "products sold securely" },
-  { value: "99.9%", label: "checkout uptime" },
-  { value: "10%", label: "flat fee, you keep 90%" },
-];
+// Metrics ledger strip — commented out for now (re-enable with the strip below)
+// const METRICS = [
+//   { value: "₹4.2 Cr+", label: "earned by creators" },
+//   { value: "12,400+", label: "products sold securely" },
+//   { value: "99.9%", label: "checkout uptime" },
+//   { value: "10%", label: "flat fee, you keep 90%" },
+// ];
 
 const RECENT_SALES = [
   { initial: 'A', name: 'Ananya Sharma', amt: '+₹4,200', amtClass: 'text-emerald-600', sub: '2m ago · completed', subClass: 'text-black/30' },
@@ -415,8 +416,8 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* ============ Metrics ledger strip ============ */}
-        <div
+        {/* ============ Metrics ledger strip — commented out for now ============ */}
+        {/* <div
           className="border-t border-black/[0.08] grid grid-cols-2 lg:grid-cols-4"
           style={{ animation: 'heroFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.4s both' }}
         >
@@ -433,7 +434,7 @@ export default function Hero() {
               <p className="mt-2 text-[12px] sm:text-[13px] font-medium text-black/40">{m.label}</p>
             </div>
           ))}
-        </div>
+        </div> */}
       </Rails>
     </section>
   );

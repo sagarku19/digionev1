@@ -342,7 +342,7 @@ export default function ConnectedGraph() {
     <SectionShell
       id="cg-graph"
       index="03"
-      route=""
+      route="/dashboard"
       title={
         <span className="lg:whitespace-nowrap">
           Every tool on one wire.{' '}
@@ -350,13 +350,11 @@ export default function ConnectedGraph() {
         </span>
       }
       sub="Sell, grow, track, get paid — one dashboard. Every block feeds the next, no glue code."
+      aside={<div className="hidden lg:block lg:mt-1.5">{themeToggle}</div>}
       tone={dark ? 'ink' : 'paper'}
     >
       <style>{`
         @keyframes cgDash { to { stroke-dashoffset: -16; } }
-        #cg-graph > div:nth-of-type(2) > div { padding-top: 1.25rem; }
-        #cg-graph div:has(> .h-px.flex-1) { display: none; }
-        #cg-graph div:has(> .h-px.flex-1) + div { margin-top: 0; }
         #cg-graph { transition: background-color 0.5s ease; }
         #cg-graph h2, #cg-graph p, #cg-graph span, #cg-graph div {
           transition: color 0.4s ease, background-color 0.4s ease, border-color 0.4s ease;
@@ -365,13 +363,13 @@ export default function ConnectedGraph() {
       `}</style>
 
       <div style={THEME_VARS[dark ? 'dark' : 'light'] as CSSProperties}>
-        {/* Theme toggle — right side, level with the title line */}
-        <div className="absolute right-5 sm:right-10 lg:right-14 top-[20px] sm:top-[24px] lg:top-[27px] z-20">
+        {/* Theme toggle on small screens — control row below the header (on lg it lives in the header aside) */}
+        <div className="mt-6 sm:mt-8 flex justify-end lg:hidden">
           {themeToggle}
         </div>
 
         {/* ---------- Desktop diagram ---------- */}
-        <InView className="mt-6 sm:mt-8">
+        <InView className="mt-4 sm:mt-5 lg:mt-8">
           <div className="iv hidden lg:block relative w-full aspect-[1000/585] select-none">
             <div
               aria-hidden="true"
@@ -509,7 +507,7 @@ export default function ConnectedGraph() {
         </InView>
 
         {/* ---------- Mobile flow ---------- */}
-        <InView className="mt-10 lg:hidden">
+        <InView className="mt-8 lg:hidden">
           <div className="iv">
             <div className="rounded-xl border border-[color:var(--cg-tray-brd)] bg-[color:var(--cg-tray-bg)] px-3 py-2.5 flex flex-wrap items-center justify-center gap-2">
               {PLATFORMS.map((p) => (

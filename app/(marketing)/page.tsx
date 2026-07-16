@@ -17,15 +17,16 @@ export const metadata = {
 export default function MarketingPage() {
   return (
     <div className="flex flex-col w-full overflow-hidden bg-white">
-      <Hero />
+      <Hero /> 
       <ProductShowcase />
       <Storefronts />
-      <ProductIndex />
+      {/* <ProductIndex /> */}
       <ConnectedGraph />
       {/* <Playground />  will later add this compenent alraedy created and available */}
-      <Steps />
+
       <MoneyRail />
       <Automation />
+      <Steps />
       <CtaBanner />
     </div>
   );
