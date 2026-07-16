@@ -122,3 +122,25 @@ launch in minutes
 earn on autopilot
 
 ai female bot name will be AVA
+
+All Dashboard Url fix, for internal tracking
+complete database table name overhaul
+product page setup add more product category
+all 4 page
+discover page and add multiple option
+all integration channel setup if possible otehrwise remove
+
+
+
+
+
+
+Hosting of api or read about it.
+
+
+
+Admin Page Builder
+mobile apps
+Insta page setup
+Ai Model page and Integration
+---

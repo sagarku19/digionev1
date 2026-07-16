@@ -30,13 +30,14 @@ Canonical inventory of every `process.env.*` read by the codebase. If you add or
 | `CASHFREE_ENVIRONMENT` | server | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx`, `src/lib/server/cashfree-refunds.ts` | `'PRODUCTION'` → api.cashfree.com. Anything else → sandbox.cashfree.com. |
 | `CASHFREE_CLIENT_ID` | **secret** | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx`, `src/lib/server/cashfree-refunds.ts` | Cashfree merchant ID. |
 | `CASHFREE_CLIENT_SECRET` | **secret** | `/api/checkout/create`, `/api/checkout/payment-link`, `app/payment/status/page.tsx`, `/api/webhook/cashfree`, `src/lib/server/cashfree-refunds.ts` | Cashfree secret. Also used as the HMAC key for webhook signature verification. |
-| `NEXT_PUBLIC_CASHFREE_ENV` | public | `app/(buyer)/checkout/page.tsx` | UI mirror — client uses this to pick sandbox/prod Cashfree JS SDK. Must match `CASHFREE_ENVIRONMENT`. |
+
+> `NEXT_PUBLIC_CASHFREE_ENV` was **removed** (2026-07-16) — the browser SDK mode comes from the `/api/checkout/create` response's `environment` field (`app/(buyer)/checkout/page.tsx`), so there is no client-side env mirror to drift.
 
 ## App
 
 | Var | Scope | Used in | Notes |
 |---|---|---|---|
-| `NEXT_PUBLIC_APP_URL` | public | `app/layout.tsx` (OG metadata), `/api/checkout/create`, `/api/checkout/payment-link` | Absolute URL of this app. No trailing slash. Used as Cashfree `return_url` / `notify_url` base. |
+| `NEXT_PUBLIC_APP_URL` | public | `app/layout.tsx` (OG metadata), `/api/checkout/create`, `/api/checkout/payment-link`, `src/lib/server/fulfillment.ts` (purchase-email links), `/api/instaauto/connect` + `/callback` (OAuth redirect URI), `/api/links` + `/api/s/[code]` (short-link host), `app/link-home/page.tsx` | Absolute URL of this app. No trailing slash. Used as Cashfree `return_url` / `notify_url` base and for every server-built absolute link. |
 | `NEXT_PUBLIC_ROOT_DOMAIN` | public | `proxy.ts` | Root domain for custom-domain detection. Storefront hosts that don't match this fall into the `/_custom/[domain]/*` rewrite. Defaults to `localhost:3000` if unset. |
 | `NEXT_PUBLIC_SHORTLINK_DOMAIN` | public | `proxy.ts`, `src/lib/shared/shortlink.ts` | Dedicated short-link domain — currently **`linkln.me`**. proxy.ts step 0 matches **both the apex and `www.`** host: `/` rewrites to the branded landing page `app/link-home/page.tsx` (CTA → the app), and `/{code}` rewrites → `/api/s/[code]`. No scheme/trailing slash/path. Must point at the same Vercel deployment as the main app. `NEXT_PUBLIC_*` is build-time inlined → redeploy after changing. Unset → short-link routing disabled. |
 
@@ -120,5 +121,6 @@ Instagram automation. All server-only. Read by `src/lib/server/instaauto/*` and 
 
 ## Known cleanup
 
-- **`CASHFREE_ENVIRONMENT` vs `NEXT_PUBLIC_CASHFREE_ENV`** — two sources of truth. If they drift, sandbox-signed orders will fail to redirect to prod (or vice versa). Consider deriving the public one from the server one at build time.
 - **No env-var validation at boot.** Missing values throw lazily on first request. A `lib/env.ts` with a Zod parse at startup would surface misconfig earlier.
+
+> Resolved: the old `NEXT_PUBLIC_CASHFREE_ENV` two-sources-of-truth risk is gone — the var was removed; the client now receives `environment` from `/api/checkout/create`.
