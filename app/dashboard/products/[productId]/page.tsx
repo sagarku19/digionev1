@@ -7,7 +7,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProducts } from '@/hooks/products/useProducts';
 import { useProductFiles } from '@/hooks/products/useProductFiles';
-import { useCreator } from '@/hooks/creator/useCreator';
 import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
 import UnsavedChangesDialog from '@/components/dashboard/site-edit/editor/UnsavedChangesDialog';
 import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
@@ -23,6 +22,7 @@ import {
 import { BackButton } from '@/components/dashboard/BackButton';
 import { formatINR } from '@/lib/format';
 import { normalizeAccessLinks, type AccessLink } from '@/lib/shared/access-links';
+import { PRODUCT_CATEGORIES, productCategoryLabel } from '@/lib/shared/product-categories';
 import type { Database, Json } from '@/types/database.types';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -206,7 +206,6 @@ function WhatsIncludedEditor({ items, onChange }: { items: string[]; onChange: (
 // ─── Live storefront preview ──────────────────────────────────
 
 function ProductPreview({ data }: { data: ProductRow }) {
-  const { profile } = useCreator();
   const meta = (data.metadata as ProductMeta | null) ?? {};
   const isFree = meta.is_free ?? data.price === 0;
   const compareAt = meta.compare_at_price ?? null;
@@ -227,28 +226,24 @@ function ProductPreview({ data }: { data: ProductRow }) {
           Auto-updating
         </span>
       </div>
+      {/* Mirrors the discover card: 4:3 cover with no overlay badges, then title + price chip */}
       <div className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
-        <div className="relative flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-[var(--brand)]/10 to-[var(--brand)]/[0.03]">
+        <div className="flex aspect-[4/3] items-center justify-center border-b border-[var(--border-subtle)] bg-gradient-to-br from-[var(--brand)]/10 to-[var(--brand)]/[0.03]">
           {data.thumbnail_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={data.thumbnail_url} alt={data.name || 'Product'} className="h-full w-full object-cover" />
           ) : (
             <ImageIcon className="h-9 w-9 text-[var(--brand)]/40" />
           )}
-          {/* Category badge — same as the discover card (top-left over the image) */}
-          <div className="absolute left-3 top-3">
-            <span className="font-ledger rounded-md bg-[#16130F]/85 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.14em] text-white backdrop-blur-md">
-              {data.category || 'digital'}
-            </span>
-          </div>
         </div>
         <div className="p-5">
-          <h2 className="text-xl font-bold leading-tight tracking-tight text-[var(--text-primary)]">{data.name || 'Untitled product'}</h2>
-          {data.description && <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-[var(--text-secondary)]">{data.description}</p>}
+          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--text-tertiary)]">{productCategoryLabel(data.category)}</p>
+          <h2 className="mt-1 text-lg font-bold leading-tight tracking-tight text-[var(--text-primary)]">{data.name || 'Untitled product'}</h2>
+          {data.description && <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-[var(--text-secondary)]">{data.description}</p>}
 
-          <div className="mt-4 flex items-baseline gap-2.5">
-            <span className="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">{priceLabel}</span>
-            {!isFree && compareAt ? <span className="text-base text-[var(--text-tertiary)] line-through">{formatINR(compareAt)}</span> : null}
+          <div className="mt-4 flex items-baseline gap-2 border-t border-[var(--border-subtle)] pt-4">
+            <span className="inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface-muted)] px-2 py-0.5 text-[13px] font-semibold text-[var(--text-primary)]">{priceLabel}</span>
+            {!isFree && compareAt ? <span className="text-[12px] text-[var(--text-tertiary)] line-through">{formatINR(compareAt)}</span> : null}
           </div>
 
           {includes.length > 0 && (
@@ -261,19 +256,6 @@ function ProductPreview({ data }: { data: ProductRow }) {
               ))}
             </ul>
           )}
-
-          {/* Creator — same as the discover card (bottom) */}
-          <div className="mt-4 flex items-center gap-2 border-t border-[var(--border-subtle)] pt-4">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--brand)]">
-              {profile?.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-[9px] font-bold text-white">{(profile?.full_name || 'C').charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            <span className="truncate text-[12px] font-medium text-[var(--text-secondary)]">{profile?.full_name || 'Creator'}</span>
-          </div>
         </div>
       </div>
     </div>
@@ -494,12 +476,11 @@ export default function ProductEditor({ params }: { params: Promise<{ productId:
                   <Field label="Description" hint="Explain what buyers get. Be specific.">
                     <textarea rows={5} value={formData.description || ''} onChange={(e) => patch({ description: e.target.value })} placeholder="Tell your buyers exactly what this product includes and who it's for…" className={`${INPUT} resize-none`} />
                   </Field>
-                  <Field label="Category">
+                  <Field label="Category" hint="Decides which Discover tab this product appears under.">
                     <select value={formData.category || 'digital'} onChange={(e) => patch({ category: e.target.value })} className={INPUT}>
-                      <option value="digital">Digital File</option>
-                      <option value="course">Course</option>
-                      <option value="template">Template</option>
-                      <option value="other">Other</option>
+                      {PRODUCT_CATEGORIES.map((c) => (
+                        <option key={c.value} value={c.value}>{c.label}</option>
+                      ))}
                     </select>
                   </Field>
                 </EditorCard>

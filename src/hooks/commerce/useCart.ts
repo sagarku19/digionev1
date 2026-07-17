@@ -9,20 +9,16 @@ export type { AddItemResult, CartItem };
 
 interface CartStore {
   items: CartItem[];
-  isDrawerOpen: boolean;
   addItem: (item: CartItem) => AddItemResult;
   replaceCartWith: (item: CartItem) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
-  openDrawer: () => void;
-  closeDrawer: () => void;
 }
 
 export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
-      isDrawerOpen: false,
       addItem: (item) => {
         const result = classifyAdd(get().items, item);
         if (result === 'added') set({ items: [...get().items, item] });
@@ -33,8 +29,6 @@ export const useCart = create<CartStore>()(
         set({ items: get().items.filter(i => i.id !== id) });
       },
       clearCart: () => set({ items: [] }),
-      openDrawer: () => set({ isDrawerOpen: true }),
-      closeDrawer: () => set({ isDrawerOpen: false }),
     }),
     {
       name: 'digione-cart',

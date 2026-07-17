@@ -2,10 +2,11 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useBuyerAuth } from '@/stores/buyerAuth';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { CartButton } from '@/components/store/CartButton';
-import { useCart, useHydratedCartCount } from '@/hooks/commerce/useCart';
+import { useHydratedCartCount } from '@/hooks/commerce/useCart';
 
 type HeaderNav = {
   header_logo_url?: string | null;
@@ -25,9 +26,9 @@ export default function StorefrontHeader({ navConfig, siteMain }: { navConfig: R
   const showSearch = nav?.show_search ?? false;
   const showCart = nav?.show_cart_icon ?? true;
 
+  const router = useRouter();
   const openBuyerAuth = useBuyerAuth((s) => s.open);
   const { isLoggedIn } = useAuthSession();
-  const openDrawer = useCart((s) => s.openDrawer);
   const cartCount = useHydratedCartCount();
 
   // Render minimal standard storefront header using tailwind utilities
@@ -64,7 +65,7 @@ export default function StorefrontHeader({ navConfig, siteMain }: { navConfig: R
             {showCart && (
               <CartButton
                 itemCount={cartCount}
-                onClick={openDrawer}
+                onClick={() => router.push('/cart')}
                 className="text-[--creator-text] hover:bg-[--creator-surface]"
                 badgeClassName="bg-[var(--creator-primary,#E83A2E)] text-white"
               />

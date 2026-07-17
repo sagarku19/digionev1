@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 import { Menu, X, LayoutDashboard, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine, Store } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { CartButton } from '@/components/store/CartButton';
-import { useCart, useHydratedCartCount } from '@/hooks/commerce/useCart';
+import { useHydratedCartCount } from '@/hooks/commerce/useCart';
 
 interface UserProfile {
   full_name: string | null;
@@ -32,6 +32,9 @@ export default function MarketingNav() {
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  // Discover is a marketplace surface: the center nav rail is dropped and the
+  // cart is always reachable (even when empty).
+  const isDiscover = pathname === '/discover' || !!pathname?.startsWith('/discover/');
 
   // Sliding hover highlight for desktop links
   const linksRef = useRef<HTMLDivElement>(null);
@@ -45,10 +48,11 @@ export default function MarketingNav() {
     setHoverPill({ left: link.left - parent.left, width: link.width, opacity: 1 });
   };
 
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { isLoggedIn, userEmail, profile, isLoading: isAuthLoading } = useAuthSession();
   const userProfile: UserProfile | null = profile ? { full_name: profile.full_name, avatar_url: profile.avatar_url, email: userEmail } : null;
-  const openCartDrawer = useCart((s) => s.openDrawer);
+  const openCartDrawer = () => router.push('/cart');
   const cartCount = useHydratedCartCount();
 
   // Resolve role so logged-in buyers (not creators) are offered the upgrade.
@@ -167,7 +171,8 @@ export default function MarketingNav() {
               </span>
             </Link>
 
-            {/* Desktop Links */}
+            {/* Desktop Links — hidden on the discover marketplace surface */}
+            {!isDiscover && (
             <div
               ref={linksRef}
               onMouseLeave={() => setHoverPill(p => ({ ...p, opacity: 0 }))}
@@ -202,10 +207,11 @@ export default function MarketingNav() {
                 );
               })}
             </div>
+            )}
 
             {/* Desktop Auth */}
             <div className="hidden lg:flex items-center gap-4">
-              {cartCount > 0 && (
+              {(isDiscover || cartCount > 0) && (
                 <CartButton
                   itemCount={cartCount}
                   onClick={openCartDrawer}
@@ -314,7 +320,7 @@ export default function MarketingNav() {
 
             {/* Mobile hamburger */}
             <div className="lg:hidden flex items-center">
-              {cartCount > 0 && (
+              {(isDiscover || cartCount > 0) && (
                 <CartButton
                   itemCount={cartCount}
                   onClick={openCartDrawer}

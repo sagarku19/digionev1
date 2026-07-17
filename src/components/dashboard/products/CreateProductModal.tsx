@@ -1,13 +1,25 @@
 import React from 'react';
-import { X, ArrowRight, FileText, BookOpen, Tag, Package, Loader2, Gift } from 'lucide-react';
+import { X, ArrowRight, FileText, BookOpen, Tag, Package, Loader2, Gift, Music, Code2, Briefcase, Camera, type LucideIcon } from 'lucide-react';
 import { INPUT } from './_shared';
+import { PRODUCT_CATEGORIES } from '@/lib/shared/product-categories';
 
-const CATEGORIES = [
-  { value: 'digital', label: 'Digital File', icon: FileText, desc: 'PDF, ZIP, video, audio' },
-  { value: 'course', label: 'Course', icon: BookOpen, desc: 'Structured learning' },
-  { value: 'template', label: 'Template', icon: Tag, desc: 'Design or code templates' },
-  { value: 'other', label: 'Other', icon: Package, desc: 'Custom digital product' },
-];
+const CATEGORY_META: Record<string, { icon: LucideIcon; desc: string }> = {
+  digital: { icon: FileText, desc: 'PDF, ZIP, video, audio' },
+  course: { icon: BookOpen, desc: 'Structured learning' },
+  template: { icon: Tag, desc: 'Design or code templates' },
+  music: { icon: Music, desc: 'Tracks, beats, sample packs' },
+  software: { icon: Code2, desc: 'Scripts, plugins, tools' },
+  business: { icon: Briefcase, desc: 'Guides, kits, spreadsheets' },
+  photography: { icon: Camera, desc: 'Presets, LUTs, photo packs' },
+  other: { icon: Package, desc: 'Custom digital product' },
+};
+
+const CATEGORIES = PRODUCT_CATEGORIES.map((c) => ({
+  value: c.value,
+  label: c.label,
+  icon: CATEGORY_META[c.value]?.icon ?? Package,
+  desc: CATEGORY_META[c.value]?.desc ?? 'Digital product',
+}));
 
 type Props = {
   name: string;

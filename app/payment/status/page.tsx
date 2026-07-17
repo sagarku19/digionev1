@@ -12,10 +12,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { buildAccessLinks, type AccessLink } from '@/lib/shared/access-links';
+import { orderRef } from '@/lib/shared/order-ref';
+import { storage, resolveBucket } from '@/lib/storage';
 import { CartClearer } from './CartClearer';
 import { LibraryCta } from './LibraryCta';
 import { DeliveryLinks } from '@/components/store/DeliveryLinks';
-import { StatusFiles } from './StatusFiles';
+import { StatusFiles, type DeliverableFile } from './StatusFiles';
+
+const SIGNED_URL_TTL_SECONDS = 600;
+const MAX_FILES_PER_PRODUCT = 50;
 
 const CASHFREE_ENV = process.env.CASHFREE_ENVIRONMENT === 'PRODUCTION'
   ? 'https://api.cashfree.com/pg'
@@ -85,7 +90,41 @@ type ProductAccess = {
   post_purchase_instructions: string | null;
   price: number;
   links: AccessLink[];
+  files: DeliverableFile[];
 };
+
+// Mint short-TTL signed download URLs for a product's deliverable files, scoped
+// to a completed order (the order link is the capability — shown to guests and
+// logged-in buyers alike). Archive-aware: keeps files that were live at purchase
+// time. Signing is a local crypto op (no network), so this stays cheap.
+async function mintFilesForOrder(
+  supabase: ReturnType<typeof createServiceClient>,
+  creatorId: string,
+  productId: string,
+  purchasedAt: string,
+): Promise<DeliverableFile[]> {
+  try {
+    const cfg = resolveBucket('creator-content');
+    const { data: rows } = await supabase
+      .from('storage_files')
+      .select('object_key, file_name, size')
+      .eq('owner_id', creatorId)
+      .eq('bucket', cfg.name)
+      .eq('product_id', productId)
+      .or(`deleted_at.is.null,deleted_at.gt.${purchasedAt}`)
+      .order('created_at', { ascending: false })
+      .limit(MAX_FILES_PER_PRODUCT);
+    return Promise.all(
+      (rows ?? []).map(async (r) => ({
+        name: r.file_name || 'File',
+        bytes: Number(r.size ?? 0),
+        signedUrl: await storage.createDownloadUrl({ bucket: cfg.name, objectKey: r.object_key, ttlSeconds: SIGNED_URL_TTL_SECONDS }),
+      })),
+    );
+  } catch {
+    return [];
+  }
+}
 
 // ── Page ─────────────────────────────────────────────────────
 
@@ -120,6 +159,7 @@ export default async function PaymentStatusPage({
   let itemName = 'Digital Product';
   let receiptUrl = '';
   let internalOrderId = order_id;
+  let orderFound = false;
   let products: ProductAccess[] = [];
 
   if (sub) {
@@ -131,6 +171,7 @@ export default async function PaymentStatusPage({
       .single();
 
     if (submission) {
+      orderFound = true;
       if (submission.payment_status === 'completed') {
         status = 'completed';
       } else if (submission.payment_status === 'failed' || submission.payment_status === 'refunded') {
@@ -174,6 +215,7 @@ export default async function PaymentStatusPage({
 
     if (order) {
       internalOrderId = order.id;
+      orderFound = true;
 
       if (order.status === 'completed') {
         status = 'completed';
@@ -209,10 +251,22 @@ export default async function PaymentStatusPage({
                 post_purchase_instructions: p.post_purchase_instructions,
                 price: Number(item.price_at_purchase) || 0,
                 links: buildAccessLinks({ postPurchaseUrl: p.post_purchase_url, accessLinks: p.access_links }),
+                files: [] as DeliverableFile[],
               }
             : null;
         })
         .filter((p): p is ProductAccess => p !== null);
+
+      // Files are minted server-side for a COMPLETED order only, so they show to
+      // everyone with the link (guests included) exactly like the access links.
+      if (status === 'completed' && order.creator_id) {
+        const purchasedAt = order.created_at ?? new Date(0).toISOString();
+        await Promise.all(
+          products.map(async (p) => {
+            p.files = await mintFilesForOrder(supabase, order.creator_id!, p.id, purchasedAt);
+          }),
+        );
+      }
 
       const names = products.map((p) => p.name);
       itemName = names.length ? names.join(', ') : 'Digital Products';
@@ -220,6 +274,11 @@ export default async function PaymentStatusPage({
   }
 
   // ── Render ──
+
+  // Friendly buyer-facing order code (same DO- convention as the dashboard).
+  // Payment-link flow keys off the submission UUID (sub); product flow off the
+  // order UUID. Shown in every status state so the buyer always has a reference.
+  const displayRef = orderFound ? orderRef(sub || internalOrderId) : '';
 
   return (
     <Shell status={status}>
@@ -283,9 +342,9 @@ export default async function PaymentStatusPage({
                       </div>
                     )}
 
-                    {/* Files (logged-in + access gated) + labelled links */}
+                    {/* Files + labelled links — both shown to anyone with the order link */}
                     <div className="space-y-2.5 px-4 pb-4">
-                      <StatusFiles productId={p.id} />
+                      <StatusFiles files={p.files} />
                       {p.links.length > 0 && <DeliveryLinks links={p.links} />}
                     </div>
                   </div>
@@ -325,13 +384,6 @@ export default async function PaymentStatusPage({
               <Home className="h-4 w-4" />
               Return home
             </Link>
-          </div>
-
-          {/* Order id */}
-          <div className="border-t border-black/[0.06] px-6 py-4 text-center">
-            <p className="font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">
-              Order {internalOrderId.slice(0, 8)}
-            </p>
           </div>
         </div>
       )}
@@ -398,6 +450,15 @@ export default async function PaymentStatusPage({
           </Link>
           <p className="mt-3 font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">
             Access is granted automatically once confirmed
+          </p>
+        </div>
+      )}
+
+      {/* Order reference — shown in every state so the buyer always has a code */}
+      {displayRef && (
+        <div className="border-t border-black/[0.06] px-6 py-4 text-center">
+          <p className="font-ledger text-[10px] uppercase tracking-[0.14em] text-black/35">
+            Order {displayRef}
           </p>
         </div>
       )}

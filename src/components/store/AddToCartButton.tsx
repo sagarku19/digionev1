@@ -7,6 +7,7 @@
 // sales site keeps direct Buy Now only.
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ShoppingCart } from 'lucide-react';
 import { useCart, type CartItem } from '@/hooks/commerce/useCart';
 
@@ -19,7 +20,8 @@ export function AddToCartButton({
   className?: string;
   variant?: 'primary' | 'secondary';
 }) {
-  const { addItem, replaceCartWith, openDrawer } = useCart();
+  const router = useRouter();
+  const { addItem, replaceCartWith } = useCart();
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleAdd = (e: React.MouseEvent) => {
@@ -30,7 +32,7 @@ export function AddToCartButton({
       setShowConfirm(true);
       return;
     }
-    openDrawer();
+    router.push('/cart');
   };
 
   const handleReplace = (e: React.MouseEvent) => {
@@ -38,7 +40,7 @@ export function AddToCartButton({
     e.stopPropagation();
     replaceCartWith(item);
     setShowConfirm(false);
-    openDrawer();
+    router.push('/cart');
   };
 
   const handleCancel = (e: React.MouseEvent) => {

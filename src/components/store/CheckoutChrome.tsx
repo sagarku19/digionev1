@@ -3,23 +3,20 @@
 // Minimal commerce chrome for the buyer cart/checkout flow — deliberately NOT
 // the marketing nav (fewer exits on a conversion surface). Engineered-ledger
 // language: ink/vermilion/paper, font-ledger step indicator + secure badge.
-// Self-determines the active step from the pathname; mounted once in the
-// (buyer) layout so /cart and /checkout share it.
+// /cart and /checkout are both one-page checkouts (products + pay together), so
+// the flow is just Checkout → Access. Mounted once in the (buyer) layout.
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Lock, Check } from 'lucide-react';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 
 const STEPS = [
-  { key: 'cart', label: 'Cart' },
-  { key: 'checkout', label: 'Payment' },
+  { key: 'checkout', label: 'Checkout' },
   { key: 'done', label: 'Access' },
 ] as const;
 
 export default function CheckoutChrome() {
-  const pathname = usePathname();
-  const activeIdx = pathname?.startsWith('/checkout') ? 1 : 0;
+  const activeIdx = 0;
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/[0.07] bg-[#FAF8F6]/85 backdrop-blur-xl">

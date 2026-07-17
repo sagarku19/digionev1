@@ -7,8 +7,16 @@ const base: PurchaseEmailInput = {
   orderId: 'abc12345-0000-0000-0000-000000000000',
   totalAmount: 1499,
   items: [
-    { name: 'Notion Template', price: 999, accessUrl: 'https://example.com/access' },
-    { name: 'Preset <Pack>', price: 500, accessUrl: null },
+    {
+      name: 'Notion Template',
+      price: 999,
+      links: [
+        { label: 'Access', url: 'https://example.com/access' },
+        { label: 'Bonus pack', url: 'https://example.com/bonus' },
+      ],
+      hasFiles: true,
+    },
+    { name: 'Preset <Pack>', price: 500, links: [], hasFiles: false },
   ],
   isGuest: false,
   appUrl: 'https://digione.ai',
@@ -29,10 +37,21 @@ describe('buildPurchaseConfirmation', () => {
     expect(html).not.toContain('Preset <Pack>');
   });
 
-  it('includes per-product access links only when present', () => {
+  it('renders every access link for a product (multiple, each labelled)', () => {
     const { html } = buildPurchaseConfirmation(base);
     expect(html).toContain('https://example.com/access');
-    expect(html.match(/Access your product/g)?.length).toBe(1);
+    expect(html).toContain('https://example.com/bonus');
+    expect(html).toContain('Bonus pack →');
+  });
+
+  it('flags products that include downloadable files, pointing to the library', () => {
+    const { html } = buildPurchaseConfirmation(base);
+    expect(html).toContain('Downloadable files included');
+  });
+
+  it('falls back to a library note when a product has no links or files', () => {
+    const { html } = buildPurchaseConfirmation(base);
+    expect(html).toContain('Access details are in your library.');
   });
 
   it('logged-in variant links to the library', () => {

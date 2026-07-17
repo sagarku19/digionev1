@@ -229,9 +229,10 @@ Installed at `^1.0.6` (`package.json`). `types/cashfree.d.ts` is a one-liner `de
 
 | File | Trigger | Returns to | Free-order short-circuit? |
 |---|---|---|---|
-| `app/(buyer)/checkout/page.tsx` | Cart checkout (`Pay ₹X` button) | `/payment/status?order_id=...` | Yes |
-| `app/(marketing)/discover/[productId]/BuyNowButton.tsx` | Product-page Buy Now (ledger checkout) | `/payment/status?order_id=...` | Yes |
+| `src/components/store/CheckoutExperience.tsx` | One-page buyer checkout (`Pay ₹X` button) — rendered by `/cart` (discover flow) **and** `/checkout` (creator single-page/store flow) | `/payment/status?order_id=...` | Yes |
 | `src/components/storefront/PaymentLinkPage.tsx` | Payment-link sites (custom amount) | `/payment/status?order_id=...&sub=...` | N/A (no free path on payment links) |
+
+> 2026-07-17: the discover `BuyNowButton.tsx` was removed and the cart/checkout was **unified** into one self-contained page. `CheckoutExperience` (products + coupon + total on the left, buyer contact + pay on the right — no hop between pages) is the single place that collects buyer contact + drives the Cashfree SDK. `/cart` (thin wrapper, discover flow) and `/checkout` (thin wrapper, creator single-page/store flow) both render it; the single-page sales site's "Buy Now" still adds to the cart and routes to `/checkout`.
 
 ### The reference call pattern (use this shape)
 
@@ -270,7 +271,7 @@ Three things to copy exactly:
 | `mode` | `load({ mode })` | `'sandbox'` or `'production'`. Picked per the table above. |
 | `paymentSessionId` | `cashfree.checkout({ paymentSessionId })` | Comes from the server response. |
 | `returnUrl` | `cashfree.checkout({ returnUrl })` | Always `${window.location.origin}/payment/status?order_id=${orderId}` (payment-link adds `&sub=${submission_id}`). |
-| `redirectTarget` | Not passed | SDK default is `_self`. Don't use `_blank` — it breaks the post-payment return because Cashfree relies on the same-tab referrer. (discover BuyNowButton.tsx, PaymentLinkPage.tsx) |
+| `redirectTarget` | Not passed | SDK default is `_self`. Don't use `_blank` — it breaks the post-payment return because Cashfree relies on the same-tab referrer. (checkout/page.tsx, PaymentLinkPage.tsx) |
 
 ### Server `order_meta.return_url` vs browser `returnUrl`
 

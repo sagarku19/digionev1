@@ -4,44 +4,24 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
-  Package, BookOpen, Layout, Sparkles,
-  ShoppingCart, Share2, Heart, Star,
+  Package, Share2, Heart, Star,
   Clock, Shield, ArrowRight, Check,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { Rails } from '@/src/components/marketing/Ledger';
-import { BuyNowButton } from './BuyNowButton';
+import { productCategoryLabel } from '@/lib/shared/product-categories';
+import { DiscoverCard } from '@/components/marketing/DiscoverCard';
 import { AddToCartButton } from '@/components/store/AddToCartButton';
-
-interface Creator {
-  id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  email?: string | null;
-}
 
 interface RelatedProduct {
   id: string;
   name: string;
+  description: string | null;
   price: number;
   category: string | null;
   thumbnail_url: string | null;
   creator_id: string;
-  profiles?: Creator | Creator[] | null;
-}
-
-const CATEGORIES: Record<string, { label: string; icon: React.ElementType }> = {
-  digital: { label: 'Digital Download', icon: Package },
-  course: { label: 'Course', icon: BookOpen },
-  template: { label: 'Template', icon: Layout },
-  other: { label: 'Digital Product', icon: Sparkles },
-};
-
-function getCreator(product: { profiles?: Creator | Creator[] | null }): Creator | null {
-  if (!product.profiles) return null;
-  if (Array.isArray(product.profiles)) return product.profiles[0] ?? null;
-  return product.profiles;
 }
 
 function formatPrice(price: number) {
@@ -76,8 +56,7 @@ export default function DiscoverProductPage() {
         .select(`
           id, name, description, price, category, thumbnail_url, images,
           content, creator_id, is_published, is_on_discover_page,
-          post_purchase_instructions, product_link, created_at,
-          profiles!fk_products_creator ( id, full_name, avatar_url, email )
+          post_purchase_instructions, product_link, created_at
         `)
         .eq('id', productId!)
         .eq('is_published', true)
@@ -89,10 +68,7 @@ export default function DiscoverProductPage() {
 
       const { data: related } = await supabase
         .from('products')
-        .select(`
-          id, name, price, category, thumbnail_url, creator_id,
-          profiles!fk_products_creator ( id, full_name, avatar_url )
-        `)
+        .select('id, name, description, price, category, thumbnail_url, creator_id')
         .eq('is_published', true)
         .eq('is_on_discover_page', true)
         .is('deleted_at', null)
@@ -102,7 +78,7 @@ export default function DiscoverProductPage() {
 
       const { data: creatorProducts } = await supabase
         .from('products')
-        .select('id, name, price, category, thumbnail_url, creator_id')
+        .select('id, name, description, price, category, thumbnail_url, creator_id')
         .eq('creator_id', product.creator_id)
         .eq('is_published', true)
         .eq('is_on_discover_page', true)
@@ -112,8 +88,8 @@ export default function DiscoverProductPage() {
 
       return {
         product,
-        related: related ?? [],
-        creatorProducts: creatorProducts ?? [],
+        related: (related ?? []) as RelatedProduct[],
+        creatorProducts: (creatorProducts ?? []) as RelatedProduct[],
       };
     },
   });
@@ -140,7 +116,6 @@ export default function DiscoverProductPage() {
                   </div>
                   <div className="lg:col-span-2 space-y-5">
                     <div className="h-7 bg-black/[0.05] rounded w-3/4" />
-                    <div className="h-16 bg-black/[0.04] rounded-xl" />
                     <div className="h-10 bg-black/[0.05] rounded w-32" />
                     <div className="h-12 bg-black/[0.05] rounded-lg" />
                   </div>
@@ -174,8 +149,7 @@ export default function DiscoverProductPage() {
     );
   }
 
-  const creator = getCreator(product);
-  const catInfo = CATEGORIES[product.category || 'other'] || CATEGORIES.other;
+  const catLabel = productCategoryLabel(product.category);
   const allImages: string[] = [];
   if (product.thumbnail_url) allImages.push(product.thumbnail_url);
   if (Array.isArray(product.images)) {
@@ -184,8 +158,6 @@ export default function DiscoverProductPage() {
       if (url && !allImages.includes(url)) allImages.push(url);
     });
   }
-
-  const buyLabel = product.price === 0 ? 'Get for Free' : `Buy Now — ${formatPrice(product.price)}`;
 
   const handleShare = async () => {
     try {
@@ -212,7 +184,7 @@ export default function DiscoverProductPage() {
             <div className="font-ledger text-[11px] flex items-center gap-2 text-black/35 mb-6">
               <Link href="/discover" className="hover:text-[#16130F] transition-colors">/discover</Link>
               <span className="text-black/20">/</span>
-              <span className="text-black/45">{catInfo.label.toLowerCase()}</span>
+              <span className="text-black/45">{catLabel.toLowerCase()}</span>
               <span className="text-black/20">/</span>
               <span className="text-[#16130F] truncate max-w-[220px]">{product.name}</span>
             </div>
@@ -220,19 +192,13 @@ export default function DiscoverProductPage() {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14">
               {/* Left: gallery + copy */}
               <div className="lg:col-span-3 space-y-5">
-                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-black/[0.07] bg-[#FAF8F6]">
+                <div className="aspect-[16/10] overflow-hidden rounded-xl border border-black/[0.07] bg-[#FAF8F6]">
                   {allImages.length > 0 ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={allImages[activeImage] || allImages[0]} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center"><Package className="w-16 h-16 text-black/20" /></div>
                   )}
-                  {/* category badge — same language as the discover card */}
-                  <div className="absolute top-3 left-3">
-                    <span className="font-ledger px-2.5 py-1 bg-[#16130F]/85 backdrop-blur-md text-white text-[9px] font-medium uppercase tracking-[0.14em] rounded-md">
-                      {catInfo.label}
-                    </span>
-                  </div>
                 </div>
 
                 {allImages.length > 1 && (
@@ -275,27 +241,13 @@ export default function DiscoverProductPage() {
               {/* Right: sticky buy panel */}
               <div className="lg:col-span-2">
                 <div className="lg:sticky lg:top-24 space-y-5">
-                  <h1 className="text-[28px] sm:text-[32px] font-bold tracking-[-0.03em] leading-[1.1] text-[#16130F]">{product.name}</h1>
-
-                  {creator && (
-                    <div className="flex items-center gap-3 p-3 bg-white border border-black/[0.08] rounded-xl">
-                      <div className="w-9 h-9 rounded-md bg-[#E83A2E] flex items-center justify-center shrink-0 overflow-hidden">
-                        {creator.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white text-[13px] font-bold">{(creator.full_name || 'C').charAt(0).toUpperCase()}</span>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[14px] font-semibold text-[#16130F] truncate">{creator.full_name || 'Creator'}</p>
-                        <p className="font-ledger text-[10px] text-black/35 uppercase tracking-[0.14em]">DigiOne creator</p>
-                      </div>
-                    </div>
-                  )}
+                  <div>
+                    <p className="font-ledger text-[10px] font-medium text-black/35 uppercase tracking-[0.18em]">{catLabel}</p>
+                    <h1 className="mt-2 text-[28px] sm:text-[32px] font-bold tracking-[-0.03em] leading-[1.1] text-[#16130F]">{product.name}</h1>
+                  </div>
 
                   <div className="flex items-baseline gap-3 pt-1">
-                    <span className={`font-ledger text-[40px] font-semibold tracking-tight leading-none ${product.price === 0 ? 'text-emerald-600' : 'text-[#16130F]'}`}>
+                    <span className={`font-ledger text-[40px] font-semibold tracking-tight leading-none ${product.price === 0 ? 'text-[#E83A2E]' : 'text-[#16130F]'}`}>
                       {formatPrice(product.price)}
                     </span>
                     {product.price > 0 && <span className="text-[13px] font-medium text-black/40">one-time</span>}
@@ -310,21 +262,18 @@ export default function DiscoverProductPage() {
                       coverImage: product.thumbnail_url,
                       slug: product.id,
                     }}
-                    variant="secondary"
-                    className="w-full py-3.5"
+                    variant="primary"
+                    className="w-full py-4 !text-[15px]"
                   />
 
-                  {product.product_link ? (
+                  {product.product_link && (
                     <a
                       href={product.product_link} target="_blank" rel="noopener noreferrer"
-                      className="group flex items-center justify-center gap-2 w-full py-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white rounded-lg text-[15px] font-semibold transition-colors"
+                      className="group flex items-center justify-center gap-2 w-full py-3 bg-white border border-black/[0.1] text-[#16130F] hover:border-black/[0.25] rounded-lg text-[14px] font-semibold transition-colors"
                     >
-                      <ShoppingCart className="w-5 h-5" />
-                      {buyLabel}
+                      Open external link
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                     </a>
-                  ) : (
-                    <BuyNowButton productId={product.id} price={product.price} label={buyLabel} />
                   )}
 
                   <div className="flex gap-3">
@@ -363,24 +312,24 @@ export default function DiscoverProductPage() {
       </section>
 
       {/* ── More from creator + related ── */}
-      {((creator && creatorProducts.length > 0) || related.length > 0) && (
+      {(creatorProducts.length > 0 || related.length > 0) && (
         <section className="relative bg-white">
           <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
           <Rails>
             <div className="px-5 sm:px-10 lg:px-14 py-12 sm:py-16 space-y-14">
-              {creator && creatorProducts.length > 0 && (
+              {creatorProducts.length > 0 && (
                 <div>
-                  <SectionKicker label={`More from ${creator.full_name || 'this creator'}`} />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {creatorProducts.map((p) => <MiniProductCard key={p.id} product={p} />)}
+                  <SectionKicker label="More from this creator" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                    {creatorProducts.slice(0, 3).map((p) => <DiscoverCard key={p.id} product={p} />)}
                   </div>
                 </div>
               )}
               {related.length > 0 && (
                 <div>
                   <SectionKicker label="You might also like" href="/discover" />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {related.slice(0, 4).map((p) => <MiniProductCard key={p.id} product={p} />)}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+                    {related.slice(0, 3).map((p) => <DiscoverCard key={p.id} product={p} />)}
                   </div>
                 </div>
               )}
@@ -389,51 +338,5 @@ export default function DiscoverProductPage() {
         </section>
       )}
     </div>
-  );
-}
-
-/* ── Mini Product Card — matches the discover list card ───────────── */
-function MiniProductCard({ product }: { product: RelatedProduct }) {
-  const creator = product.profiles ? getCreator(product) : null;
-  const catLabel = CATEGORIES[product.category || 'other']?.label || 'Digital';
-
-  return (
-    <Link
-      href={`/discover/${product.id}`}
-      className="group flex flex-col bg-white border border-black/[0.07] rounded-xl overflow-hidden hover:border-black/[0.2] transition-colors duration-200"
-    >
-      <div className="aspect-[4/3] relative overflow-hidden bg-[#FAF8F6] border-b border-black/[0.05]">
-        {product.thumbnail_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center"><Package className="w-10 h-10 text-black/20" /></div>
-        )}
-        <div className="absolute top-3 left-3">
-          <span className="font-ledger px-2.5 py-1 bg-[#16130F]/85 backdrop-blur-md text-white text-[9px] font-medium uppercase tracking-[0.14em] rounded-md">{catLabel}</span>
-        </div>
-        <div className="absolute bottom-3 right-3">
-          <span className={`font-ledger px-2.5 py-1 backdrop-blur-md text-[13px] font-semibold rounded-md ${product.price === 0 ? 'bg-emerald-600/85 text-white' : 'bg-[#16130F]/85 text-white'}`}>
-            {formatPrice(product.price)}
-          </span>
-        </div>
-      </div>
-      <div className="p-4 flex flex-col flex-1">
-        <h4 className="text-[14.5px] font-bold text-[#16130F] line-clamp-2 mb-1 group-hover:text-[#E83A2E] transition-colors">{product.name}</h4>
-        {creator && (
-          <div className="mt-auto pt-3 border-t border-black/[0.05] flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-[#E83A2E] flex items-center justify-center shrink-0 overflow-hidden">
-              {creator.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white text-[9px] font-bold">{(creator.full_name || 'C').charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            <span className="text-[12px] font-medium text-black/45 truncate">{creator.full_name || 'Creator'}</span>
-          </div>
-        )}
-      </div>
-    </Link>
   );
 }

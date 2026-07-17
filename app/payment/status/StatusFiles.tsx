@@ -1,40 +1,14 @@
-'use client';
+// Post-purchase file downloads on the status page. Presentational: the parent
+// (server component) mints the signed URLs for the COMPLETED order and passes
+// them in, so files show to anyone with the order link — guests included — just
+// like the access links. Each file is its own download link (no multi-popup).
 
-// Post-purchase file downloads on the status page. Calls GET /api/deliverables/
-// [productId], which is gated by user_product_access (auth + ownership): a
-// logged-in buyer who just purchased sees their files; guests (401/403) and
-// products without files render nothing — the page's LibraryCta covers guests.
-// Each file is its own download link (no multi-popup).
-
-import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { formatBytes } from '@/lib/format-bytes';
 
-type DeliverableFile = { name: string; signedUrl: string; bytes: number };
+export type DeliverableFile = { name: string; signedUrl: string; bytes: number };
 
-export function StatusFiles({ productId }: { productId: string }) {
-  const [files, setFiles] = useState<DeliverableFile[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/deliverables/${productId}`);
-        if (!res.ok) { if (!cancelled) setFiles([]); return; }
-        const data = await res.json().catch(() => ({}));
-        const raw = (data.files ?? []) as Array<{ name?: string; signedUrl?: string; bytes?: number }>;
-        const next = raw
-          .filter((f) => typeof f.signedUrl === 'string')
-          .map((f) => ({ name: f.name || 'File', signedUrl: f.signedUrl as string, bytes: Number(f.bytes) || 0 }));
-        if (!cancelled) setFiles(next);
-      } catch {
-        if (!cancelled) setFiles([]);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [productId]);
-
-  // Quiet until known, and nothing to show for guests / no-file products.
+export function StatusFiles({ files }: { files: DeliverableFile[] }) {
   if (!files || files.length === 0) return null;
 
   return (

@@ -3,10 +3,25 @@
 // Palette mirrors the engineered-ledger language: ink #16130F, vermilion
 // #E83A2E, paper #FAF8F6. Table layout + inline styles for email clients.
 
+// Friendly order code — same DO- convention as src/lib/shared/order-ref.ts and
+// the dashboard/status page. Inlined to keep this builder dependency-free.
+function orderRef(id: string): string {
+  if (!id) return '';
+  return `DO-${id.replace(/-/g, '').slice(0, 12).toUpperCase()}`;
+}
+
+export interface PurchaseEmailAccessLink {
+  label: string;
+  url: string;
+}
+
 export interface PurchaseEmailItem {
   name: string;
   price: number;
-  accessUrl: string | null;
+  /** All post-purchase access links (primary + labelled), each shown separately. */
+  links: PurchaseEmailAccessLink[];
+  /** Product ships downloadable files (fetched from the buyer's library). */
+  hasFiles?: boolean;
 }
 
 export interface PurchaseEmailInput {
@@ -45,16 +60,28 @@ export function buildPurchaseConfirmation(input: PurchaseEmailInput): { subject:
     : `Your purchase is confirmed — ${input.items.length} products`;
 
   const itemRows = input.items
-    .map(
-      (item) => `
+    .map((item) => {
+      const linkLines = item.links
+        .map(
+          (l) =>
+            `<div style="margin-top:5px;"><a href="${escapeHtml(l.url)}" style="font-size:12px;color:#E83A2E;text-decoration:none;font-weight:600;">${escapeHtml(l.label || 'Access link')} →</a></div>`
+        )
+        .join('');
+      const filesLine = item.hasFiles
+        ? `<div style="margin-top:5px;font-size:12px;color:rgba(22,19,15,0.55);">Downloadable files included — <a href="${escapeHtml(libraryUrl)}" style="color:#E83A2E;text-decoration:none;font-weight:600;">get them in your library →</a></div>`
+        : '';
+      const emptyLine = item.links.length === 0 && !item.hasFiles
+        ? `<div style="margin-top:5px;font-size:12px;color:rgba(22,19,15,0.45);">Access details are in your library.</div>`
+        : '';
+      return `
             <tr>
               <td style="padding:12px 0;border-bottom:1px solid #eeeae6;">
                 <div style="font-size:14px;font-weight:600;color:#16130F;">${escapeHtml(item.name)}</div>
-                ${item.accessUrl ? `<a href="${escapeHtml(item.accessUrl)}" style="font-size:12px;color:#E83A2E;text-decoration:none;">Access your product →</a>` : ''}
+                ${linkLines}${filesLine}${emptyLine}
               </td>
-              <td align="right" style="padding:12px 0;border-bottom:1px solid #eeeae6;font-size:14px;font-weight:600;color:#16130F;white-space:nowrap;">${formatINR(item.price)}</td>
-            </tr>`
-    )
+              <td align="right" style="padding:12px 0;border-bottom:1px solid #eeeae6;font-size:14px;font-weight:600;color:#16130F;white-space:nowrap;vertical-align:top;">${formatINR(item.price)}</td>
+            </tr>`;
+    })
     .join('');
 
   const guestNote = input.isGuest
@@ -91,7 +118,7 @@ export function buildPurchaseConfirmation(input: PurchaseEmailInput): { subject:
             <a href="${escapeHtml(libraryUrl)}" style="display:block;text-align:center;background:#E83A2E;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 20px;border-radius:8px;">${ctaLabel}</a>
             ${guestNote}
             <p style="font-size:12px;color:rgba(22,19,15,0.4);margin:16px 0 0;">
-              <a href="${escapeHtml(receiptUrl)}" style="color:rgba(22,19,15,0.55);">Download your receipt</a> · Order ${escapeHtml(input.orderId.slice(0, 8))}
+              <a href="${escapeHtml(receiptUrl)}" style="color:rgba(22,19,15,0.55);">Download your receipt</a> · Order ${escapeHtml(orderRef(input.orderId))}
             </p>
           </td></tr>
         </table>

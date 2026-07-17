@@ -5,12 +5,25 @@ import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 async function openInvoice(url: string) {
-  const res = await fetch(url);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Could not generate invoice.');
-  const { signedUrl } = data as { signedUrl: string };
-  window.open(signedUrl, '_blank', 'noopener');
-  return signedUrl;
+  // Open the tab NOW — react-query runs this mutationFn synchronously inside the
+  // click gesture, so opening before any await dodges popup blockers. We point it
+  // at the signed URL once minted. No 'noopener' (it would null the handle); the
+  // destination is our own signed R2 URL, and we clear opener defensively.
+  const win = typeof window !== 'undefined' ? window.open('', '_blank') : null;
+  if (win) win.opener = null;
+  try {
+    const res = await fetch(url);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Could not generate invoice.');
+    const { signedUrl } = data as { signedUrl?: string };
+    if (!signedUrl) throw new Error('Invoice link missing from response.');
+    if (win && !win.closed) win.location.href = signedUrl;
+    else if (typeof window !== 'undefined') window.location.assign(signedUrl); // popup blocked → same-tab fallback
+    return signedUrl;
+  } catch (e) {
+    win?.close();
+    throw e;
+  }
 }
 
 export function useDownloadSaleInvoice() {

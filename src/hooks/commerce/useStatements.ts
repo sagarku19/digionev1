@@ -5,12 +5,23 @@ import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
 
 async function openStatement(url: string) {
-  const res = await fetch(url);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Could not generate statement.');
-  const { signedUrl } = data as { signedUrl: string };
-  window.open(signedUrl, '_blank', 'noopener');
-  return signedUrl;
+  // Open the tab synchronously within the click gesture (react-query calls this
+  // mutationFn in-gesture) so popup blockers don't kill it; navigate once ready.
+  const win = typeof window !== 'undefined' ? window.open('', '_blank') : null;
+  if (win) win.opener = null;
+  try {
+    const res = await fetch(url);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Could not generate statement.');
+    const { signedUrl } = data as { signedUrl?: string };
+    if (!signedUrl) throw new Error('Statement link missing from response.');
+    if (win && !win.closed) win.location.href = signedUrl;
+    else if (typeof window !== 'undefined') window.location.assign(signedUrl);
+    return signedUrl;
+  } catch (e) {
+    win?.close();
+    throw e;
+  }
 }
 
 export function useDownloadAnnualStatement() {

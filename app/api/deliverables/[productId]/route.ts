@@ -50,12 +50,17 @@ export async function GET(
 
     // Access check: does the calling user actually own this product?
     // user_product_access keys off auth.users.id (the user column), not profiles.id.
-    const { data: access } = await serviceDb
+    // A buyer gets ONE row per order, so the same product bought across multiple
+    // orders yields multiple rows — never .maybeSingle() here (it errors on >1).
+    // Take the EARLIEST purchase for the most generous archive cutoff.
+    const { data: accessRows } = await serviceDb
       .from('user_product_access')
       .select('id, created_at')
       .eq('user_id', user.id)
       .eq('product_id', productId)
-      .maybeSingle();
+      .order('created_at', { ascending: true })
+      .limit(1);
+    const access = accessRows?.[0];
     if (!access) {
       log('warn', reqId, 'access_denied', { userId: user.id, productId });
       return json(reqId, { error: 'You do not have access to this product' }, 403);

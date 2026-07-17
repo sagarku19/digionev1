@@ -1,7 +1,6 @@
 import React from 'react';
 import MarketingNav from '@/components/marketing/MarketingNav';
 import MarketingFooter from '@/components/marketing/MarketingFooter';
-import CartDrawer from '@/components/store/CartDrawer';
 
 export default function MarketingLayout({
   children,
@@ -15,7 +14,6 @@ export default function MarketingLayout({
         {children}
       </main>
       <MarketingFooter />
-      <CartDrawer palette="ledger" />
     </div>
   );
 }

@@ -49,7 +49,7 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useCustomers()` | `{ customers }` |
 | `useSites()` | `{ sites }` — creator's storefront sites |
 | `useStorefront(slug)` | `{ profile }` — public creator profile for the given slug |
-| `useCart()` | Cart state for buyer checkout — items + drawer state (`isDrawerOpen`, `openDrawer`, `closeDrawer`); `addItem` returns `'added' \| 'exists' \| 'conflict'` (single-creator rule); `replaceCartWith` for the replace-cart confirm. Also exports `useCartTotal`, `useHydratedCartCount` |
+| `useCart()` | Cart state for buyer checkout — `items` + `addItem`/`removeItem`/`replaceCartWith`/`clearCart`. `addItem` returns `'added' \| 'exists' \| 'conflict'` (single-creator rule); `replaceCartWith` for the replace-cart confirm. No drawer state — the mini-cart drawer was removed 2026-07-17; adds + cart icons navigate to `/cart`. Also exports `useCartTotal`, `useHydratedCartCount` |
 | `useAnalytics(dateRange)` | Analytics data for a `{ start, end }` date range |
 | `useCoupons()` | Coupon management |
 | `useAffiliates()` | Affiliate program data |
