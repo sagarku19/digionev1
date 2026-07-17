@@ -1,12 +1,13 @@
 "use client";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 
 export function useGuestLeads(filterSiteId?: string) {
   const { data: leads = [], isLoading, error } = useQuery({
     queryKey: ['leads', 'list', filterSiteId],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) throw new Error("Not logged in");
 
       // Resolve profile.id from auth user_id (sites.creator_id = profiles.id)

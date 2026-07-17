@@ -6,6 +6,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 
 export interface AuthSessionData {
   isLoggedIn: boolean;
@@ -26,7 +27,7 @@ export function useAuthSession() {
     queryFn: async (): Promise<AuthSessionData> => {
       try {
         const user = await Promise.race([
-          supabase.auth.getUser().then(({ data }) => data.user),
+          getCurrentUser(),
           new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_CHECK_TIMEOUT_MS)),
         ]);
         if (!user) return { isLoggedIn: false, userEmail: null, profile: null, userRole: null };

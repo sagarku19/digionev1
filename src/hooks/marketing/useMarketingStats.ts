@@ -6,6 +6,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 
 export type MarketingStats = {
   coupons: number;
@@ -26,7 +27,7 @@ export function useMarketingStats() {
     queryFn: async (): Promise<MarketingStats> => {
       try {
         const creatorId = await getCreatorProfileId();
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = await getCurrentUser();
         const uid = user?.id ?? '';
 
         const sitesRes = await supabase.from('sites').select('id').eq('creator_id', creatorId);

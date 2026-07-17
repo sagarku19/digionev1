@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 import { useProfileQuery, useProfileMutations } from '@/hooks/creator/useProfile';
 import {
   User as UserIcon,
@@ -65,7 +66,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const supabase = createClient();
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) { window.location.href = '/login'; return; }
       setEmail(user.email || '');
       setRole((user.app_metadata?.role as string) ?? null);

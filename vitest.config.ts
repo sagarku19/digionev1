@@ -15,6 +15,9 @@ export default defineConfig({
     env: {
       // Dummy 32-byte key for tests only (NOT a secret). Real key lives in .env.local / Vercel.
       KYC_ENCRYPTION_KEY: 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=',
+      // Dummy Supabase credentials for tests — createBrowserClient throws on empty strings.
+      NEXT_PUBLIC_SUPABASE_URL: 'https://fake.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'fake-anon-key-for-tests-only',
     },
   },
 });

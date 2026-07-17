@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { getCreatorProfileId } from '@/lib/getCreatorProfileId';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 
 export type SiteWithMain = {
   id: string;
@@ -44,7 +45,7 @@ export function useSites() {
   const { data: sites = [], isLoading, error } = useQuery<SiteWithMain[]>({
     queryKey: ['sites', 'list'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) throw new Error('Not authenticated');
 
       // Resolve creator's internal users.id from auth uid

@@ -4,12 +4,13 @@
 "use client";
 
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 
 export async function getCreatorProfileId(): Promise<string> {
-  // getUser() verifies the JWT with Supabase Auth before we trust user.id.
+  // getCurrentUser() verifies the JWT with Supabase Auth before we trust user.id.
   // getSession() alone is insecure for reads of user fields.
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('Not logged in');
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not logged in');
 
   // users.auth_provider_id stores the Supabase auth UID
   // profiles.user_id → users.id  (not the auth UID)

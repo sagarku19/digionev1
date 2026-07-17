@@ -4,6 +4,7 @@
 // (falls back to the authenticated user — fixes the payment editor which used
 // to omit creator_id on insert).
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 
 export async function saveDesignTokens(
   siteId: string,
@@ -25,8 +26,8 @@ export async function saveDesignTokens(
 
   let cid = creatorId ?? null;
   if (!cid) {
-    const { data: user } = await supabase.auth.getUser();
-    cid = user.user?.id ?? null;
+    const user = await getCurrentUser();
+    cid = user?.id ?? null;
   }
   if (!cid) throw new Error('Cannot resolve creator for design tokens');
 

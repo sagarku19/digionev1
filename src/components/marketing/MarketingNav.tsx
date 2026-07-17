@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
 import { Menu, X, LayoutDashboard, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine, Store } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
 import { CartButton } from '@/components/store/CartButton';
@@ -61,7 +62,7 @@ export default function MarketingNav() {
     let cancelled = false;
     (async () => {
       if (!isLoggedIn) { if (!cancelled) setIsBuyer(false); return; }
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user || cancelled) return;
       const { data } = await supabase.from('users').select('role').eq('auth_provider_id', user.id).maybeSingle();
       if (!cancelled) setIsBuyer(!(data?.role === 'creator' || data?.role === 'super_admin'));

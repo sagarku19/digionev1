@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 import { Database } from '@/types/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -13,7 +14,7 @@ export function useCreator() {
   const { data: profile, isLoading, error } = useQuery({
     queryKey: ['creator', 'profile'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) throw new Error("Not logged in");
 
       // auth UID → users.auth_provider_id → users.id → profiles.user_id

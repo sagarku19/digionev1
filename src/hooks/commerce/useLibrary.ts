@@ -9,6 +9,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 import { buildAccessLinks, mergeAccessLinks, type AccessLink } from '@/lib/shared/access-links';
 
 export interface PurchasedProduct {
@@ -48,7 +49,7 @@ export function useLibrary() {
   return useQuery({
     queryKey: ['library', 'list'] as const,
     queryFn: async (): Promise<PurchasedProduct[]> => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) return [];
 
       const { data, error } = await supabase

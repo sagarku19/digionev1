@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { Store, ArrowRight, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { getCurrentUser } from '@/lib/supabase/current-user';
 import { useAuthSession } from '@/hooks/auth/useAuthSession';
 
 export default function LibraryAccountActions() {
@@ -44,7 +45,7 @@ export default function LibraryAccountActions() {
   useEffect(() => {
     if (isLoading || !isLoggedIn) return;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentUser();
       if (!user) return;
       const { data } = await supabase
         .from('users')
