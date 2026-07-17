@@ -5,6 +5,8 @@
 // (AUTO_REFRESH_TICK_DURATION_MS = 30s) so a dead-socket fetch aborts and frees the
 // per-tab auth lock instead of hanging the whole retry window.
 
+import { isAuthDebugEnabled, logAuthRequest } from './auth-debug';
+
 // auth-js caps a stalled refresh's retry loop at this. Exported so a regression test
 // can assert our fetch timeouts never drift above it. Mirror of
 // @supabase/auth-js AUTO_REFRESH_TICK_DURATION_MS.
@@ -46,8 +48,15 @@ export function makeFetchWithTimeout(baseFetch: typeof fetch = fetch): typeof fe
     const signal = init?.signal
       ? AbortSignal.any([init.signal, controller.signal])
       : controller.signal;
+    const debug = isAuthDebugEnabled() && isAuthEndpoint(url);
+    const startedAt = Date.now();
     try {
-      return await baseFetch(input, { ...init, signal });
+      const res = await baseFetch(input, { ...init, signal });
+      if (debug) logAuthRequest(url, Date.now() - startedAt, `status ${res.status}`);
+      return res;
+    } catch (err) {
+      if (debug) logAuthRequest(url, Date.now() - startedAt, err instanceof Error ? err.name || 'error' : 'error');
+      throw err;
     } finally {
       clearTimeout(timer);
     }

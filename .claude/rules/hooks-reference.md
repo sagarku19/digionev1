@@ -69,7 +69,7 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useSiteEditMutations(siteId)` | `{ savePaymentConfig, isSavingPayment }` |
 | `useLinkInBioSiteQuery(siteId)` | `{ site, tokens, page, blocks, items, products }` |
 | `useSinglePageSiteQuery(siteId)` | `{ site, tokens, page }` |
-| `useAuthSession()` | `{ isLoggedIn, userEmail, profile, isLoading }` — invalidate via `['auth','session']` |
+| `useAuthSession()` | `{ isLoggedIn, userEmail, profile, userRole, authStatus, isLoading }` — invalidate via `['auth','session']`. `authStatus: 'authenticated' \| 'unauthenticated' \| 'degraded'` — `degraded` = auth temporarily unreachable (network stall), never treated as logout; only `unauthenticated` is definitive (dashboard `AuthGuard` redirects on it). The file also exports `signInWithRetry` (one auto-retry on a stalled sign-in), used by `useLoginMutation` |
 | `useInstaAccount()` | `{ account, connectConfigured, isLoading, addDemoAccount, disconnect, isMutating }` — linked IG account (token-free) via `GET /api/instaauto/account` |
 | `useInstaAutomations(accountId?)` | `{ automations, isLoading, createAutomation, updateAutomation, deleteAutomation, isMutating }` — owner-CRUD on `instaauto_automations` (+ keywords); update guards on `version` (optimistic concurrency), delete is a soft-delete |
 | `useInstaLeads(accountId?)` | `{ leads, isLoading }` — latest 500 `instaauto_leads` rows |

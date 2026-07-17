@@ -4,8 +4,14 @@ import path from 'path';
 export default defineConfig({
   resolve: {
     // Mirror the tsconfig "@/*" paths so tests can resolve "@/lib/...", "@/types/...", etc.
-    // tsconfig lists "./*" first (project root), then "./src/*" — root covers lib/, types/.
+    // tsconfig lists "./*" first (project root), then "./src/*". Vite aliases don't
+    // fall through on a missing file, so the src-only subtrees (hooks, components,
+    // contexts, stores) get explicit entries before the root catch-all.
     alias: [
+      { find: /^@\/hooks\/(.*)/, replacement: path.resolve(__dirname, 'src/hooks/$1') },
+      { find: /^@\/components\/(.*)/, replacement: path.resolve(__dirname, 'src/components/$1') },
+      { find: /^@\/contexts\/(.*)/, replacement: path.resolve(__dirname, 'src/contexts/$1') },
+      { find: /^@\/stores\/(.*)/, replacement: path.resolve(__dirname, 'src/stores/$1') },
       { find: /^@\/(.*)/, replacement: path.resolve(__dirname, '$1') },
     ],
   },

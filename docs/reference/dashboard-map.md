@@ -5,6 +5,8 @@
 > Regenerate / audit: `/sync-docs`
 > Read this FIRST for any `app/dashboard/**` task instead of globbing pages.
 
+**Shell:** `app/dashboard/layout.tsx` wraps every route in `DashboardThemeProvider` + `AuthGuard` (`src/components/dashboard/AuthGuard.tsx` — client redirect to `/login?returnUrl=…` only on a **definitive** logout via the tri-state `authStatus`; degraded/stall states render normally and self-heal). Editor pages get a chrome-less shell; all others get `Sidebar` + `TopBar` + `GuideProvider`.
+
 ## Pages
 
 | Route | Purpose | Hooks | Key components | API routes | RLS / Notes |

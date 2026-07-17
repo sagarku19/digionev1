@@ -2,25 +2,23 @@
 // Uses: users (auth_provider_id → id) → profiles (user_id → id)
 // DB tables: users, profiles (read only)
 //
-// The resolution is memoized per authenticated user.id (with concurrent-call
-// dedup) so the ~23 dashboard hooks that call this don't each re-run the
-// getUser + users→profiles round-trip on every mount/navigation. The auth
-// user.id is re-verified via getCurrentUser() on every call (JWT check, not
-// getSession()); the cache is only a filter value, never a credential, and RLS
-// still gates every downstream query. See
+// Memoized per verified auth user.id with concurrent dedup. Status-aware
+// (tri-state snapshot): degraded auth serves the cached id when present, throws
+// retryable AuthUnavailableError when not (TanStack backoff self-heals);
+// unauthenticated throws NotLoggedInError (AuthGuard owns the redirect). See
+// docs/superpowers/specs/2026-07-18-auth-reliability-design.md and
 // .claude/todo-later/18(half)-2026-07-17-identity-profile-resolution-caching.md
 "use client";
 
 import { supabase } from '@/lib/supabase/client';
-import { getCurrentUser } from '@/lib/supabase/current-user';
+import { getAuthSnapshot, type AuthSnapshot } from '@/lib/supabase/current-user';
+import { AuthUnavailableError, NotLoggedInError } from '@/lib/supabase/auth-errors';
 
 interface ProfileIdDeps {
-  getUser: () => Promise<{ id: string } | null>;
+  getSnapshot: () => Promise<AuthSnapshot>;
   fetchProfileId: (authUserId: string) => Promise<string>;
 }
 
-// Factory holds the per-user cache + in-flight promise in a closure so it can be
-// unit-tested with injected deps (mirrors createSingleFlight in current-user.ts).
 export function createProfileIdResolver(deps: ProfileIdDeps): () => Promise<string> {
   let cachedUserId: string | null = null;
   let cachedProfileId: string | null = null;
@@ -28,15 +26,19 @@ export function createProfileIdResolver(deps: ProfileIdDeps): () => Promise<stri
   let inFlight: Promise<string> | null = null;
 
   return async () => {
-    // getCurrentUser() verifies the JWT with Supabase Auth before we trust user.id.
-    // getSession() alone is insecure for reads of user fields.
-    const user = await deps.getUser();
-    if (!user) throw new Error('Not logged in');
+    const snapshot = await deps.getSnapshot();
+    if (!snapshot.user) {
+      // degraded-with-no-known-user is a stall, not a logout — stay retryable.
+      throw snapshot.status === 'degraded' ? new AuthUnavailableError() : new NotLoggedInError();
+    }
+    const authUserId = snapshot.user.id;
+    if (cachedUserId === authUserId && cachedProfileId) return cachedProfileId;
+    if (snapshot.status === 'degraded') {
+      // No cache to serve and the identity may be stale — don't query on it.
+      throw new AuthUnavailableError();
+    }
+    if (inFlight && inFlightUserId === authUserId) return inFlight;
 
-    if (cachedUserId === user.id && cachedProfileId) return cachedProfileId;
-    if (inFlight && inFlightUserId === user.id) return inFlight;
-
-    const authUserId = user.id;
     inFlightUserId = authUserId;
     inFlight = deps
       .fetchProfileId(authUserId)
@@ -78,6 +80,6 @@ async function fetchProfileIdFromDb(authUserId: string): Promise<string> {
 }
 
 export const getCreatorProfileId = createProfileIdResolver({
-  getUser: getCurrentUser,
+  getSnapshot: getAuthSnapshot,
   fetchProfileId: fetchProfileIdFromDb,
 });

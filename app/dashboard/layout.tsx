@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/dashboard/Sidebar';
 import TopBar from '@/components/dashboard/TopBar';
+import AuthGuard from '@/components/dashboard/AuthGuard';
 import { DashboardThemeProvider } from '@/contexts/DashboardThemeContext';
 import { GuideProvider } from '@/components/dashboard/guides/GuideProvider';
 import { GuideOutlet } from '@/components/dashboard/guides/GuideOutlet';
@@ -44,7 +45,9 @@ export default function DashboardLayout({
 }) {
   return (
     <DashboardThemeProvider>
-      <DashboardShell>{children}</DashboardShell>
+      <AuthGuard>
+        <DashboardShell>{children}</DashboardShell>
+      </AuthGuard>
     </DashboardThemeProvider>
   );
 }
