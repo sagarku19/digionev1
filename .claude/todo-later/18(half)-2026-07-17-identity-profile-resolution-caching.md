@@ -63,7 +63,7 @@ design and unaffected by any client cache.
   a cache miss and re-resolves. A `SIGNED_OUT` listener is OPTIONAL memory cleanup (the
   helper throws on a null user before reading the cache anyway) — not load-bearing.
 - **Do NOT clear on `TOKEN_REFRESHED`** — `user.id` is unchanged across refresh and
-  refreshes are frequent (see todo `17`); clearing re-runs the `users→profiles` query
+  refreshes are frequent (see todo `19` — cadence resolved as healthy); clearing re-runs the `users→profiles` query
   every refresh and defeats the optimization. **Do NOT clear on `USER_UPDATED`** —
   `profiles.id`/`user.id` don't change there. **No time-based TTL** — the `user.id` key is
   the invalidation; a TTL only re-adds churn.

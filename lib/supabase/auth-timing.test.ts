@@ -50,9 +50,51 @@ describe('auth-timing: makeFetchWithTimeout', () => {
     );
   }
 
-  it('aborts an AUTH request at 12s (still pending at 11.999s)', async () => {
-    const wrapped = makeFetchWithTimeout(hangingFetch());
+  it('DEAD-SOCKET SELF-HEAL: a stalled GET aborts at 12s and is retried once on a fresh connection — no error escapes', async () => {
+    const baseFetch = vi
+      .fn((_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_res, rej) => {
+          init?.signal?.addEventListener('abort', () =>
+            rej((init.signal as AbortSignal).reason ?? new Error('aborted')),
+          );
+        }),
+      )
+      .mockImplementationOnce((_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_res, rej) => {
+          init?.signal?.addEventListener('abort', () =>
+            rej((init.signal as AbortSignal).reason ?? new Error('aborted')),
+          );
+        }),
+      )
+      .mockImplementation(() => Promise.resolve(new Response('ok')));
+    const wrapped = makeFetchWithTimeout(baseFetch as unknown as typeof fetch);
     const p = wrapped('https://x/auth/v1/user');
+
+    await vi.advanceTimersByTimeAsync(AUTH_FETCH_TIMEOUT_MS);
+    const res = await p;
+    expect(res.ok).toBe(true);
+    expect(baseFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('a GET that stalls on BOTH attempts rejects only after 2× the budget', async () => {
+    const baseFetch = hangingFetch();
+    const wrapped = makeFetchWithTimeout(baseFetch);
+    const p = wrapped('https://x/auth/v1/user');
+    const rejected = vi.fn();
+    p.catch(rejected);
+
+    await vi.advanceTimersByTimeAsync(AUTH_FETCH_TIMEOUT_MS - 1);
+    expect(rejected).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(AUTH_FETCH_TIMEOUT_MS + 1);
+    await expect(p).rejects.toBeTruthy();
+    expect(baseFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('a POST (non-idempotent) is NEVER retried — single abort at the budget', async () => {
+    const baseFetch = hangingFetch();
+    const wrapped = makeFetchWithTimeout(baseFetch);
+    const p = wrapped('https://x/auth/v1/token?grant_type=password', { method: 'POST' });
     const rejected = vi.fn();
     p.catch(rejected);
 
@@ -61,11 +103,13 @@ describe('auth-timing: makeFetchWithTimeout', () => {
 
     await vi.advanceTimersByTimeAsync(1);
     await expect(p).rejects.toBeTruthy();
+    expect(baseFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('gives DATA requests the longer 20s budget (still pending at 12.001s)', async () => {
-    const wrapped = makeFetchWithTimeout(hangingFetch());
-    const p = wrapped('https://x/rest/v1/orders');
+  it('DATA requests keep the longer 20s budget (still pending at 12.001s)', async () => {
+    const baseFetch = hangingFetch();
+    const wrapped = makeFetchWithTimeout(baseFetch);
+    const p = wrapped('https://x/rest/v1/orders', { method: 'POST' });
     const rejected = vi.fn();
     p.catch(rejected);
 
@@ -77,7 +121,7 @@ describe('auth-timing: makeFetchWithTimeout', () => {
   });
 
   it('SLOW-BUT-VALID: an auth request that resolves at 3s is NOT aborted', async () => {
-    const slowFetch = vi.fn((_i: RequestInfo | URL, _init?: RequestInit) =>
+    const slowFetch = vi.fn(() =>
       new Promise<Response>((res) => setTimeout(() => res(new Response('ok')), 3_000)),
     );
     const wrapped = makeFetchWithTimeout(slowFetch);
@@ -88,11 +132,13 @@ describe('auth-timing: makeFetchWithTimeout', () => {
     expect(res.ok).toBe(true);
   });
 
-  it('honours a caller-supplied abort signal', async () => {
-    const wrapped = makeFetchWithTimeout(hangingFetch());
+  it('honours a caller-supplied abort signal and does NOT retry a caller abort', async () => {
+    const baseFetch = hangingFetch();
+    const wrapped = makeFetchWithTimeout(baseFetch);
     const caller = new AbortController();
     const p = wrapped('https://x/auth/v1/user', { signal: caller.signal });
     caller.abort(new Error('caller cancelled'));
     await expect(p).rejects.toBeTruthy();
+    expect(baseFetch).toHaveBeenCalledTimes(1);
   });
 });

@@ -34,31 +34,62 @@ export function timeoutForUrl(url: string): number {
   return isAuthEndpoint(url) ? AUTH_FETCH_TIMEOUT_MS : DATA_FETCH_TIMEOUT_MS;
 }
 
+function resolveRequestMethod(input: RequestInfo | URL, init?: RequestInit): string {
+  if (init?.method) return init.method.toUpperCase();
+  if (typeof Request !== 'undefined' && input instanceof Request) return input.method.toUpperCase();
+  return 'GET';
+}
+
 // Uses an explicit AbortController + setTimeout (not AbortSignal.timeout) so the timer
 // is deterministic under Vitest fake timers and is always cleared on settle.
+//
+// Dead-socket self-heal: when OUR timer aborts an idempotent (GET/HEAD) request,
+// it is retried once immediately — the retry opens a fresh connection, which is
+// exactly what a stalled pooled socket needs, so the common post-sleep/redirect
+// stall resolves invisibly instead of surfacing a TimeoutError. Non-idempotent
+// requests and caller-initiated aborts are never retried (refresh/sign-in have
+// their own safe retry paths; checkout POSTs go to our API, not Supabase).
 export function makeFetchWithTimeout(baseFetch: typeof fetch = fetch): typeof fetch {
   return async (input, init) => {
     const url = resolveRequestUrl(input as RequestInfo | URL);
     const ms = timeoutForUrl(url);
-    const controller = new AbortController();
-    const timer = setTimeout(
-      () => controller.abort(new DOMException('Supabase request timed out', 'TimeoutError')),
-      ms,
-    );
-    const signal = init?.signal
-      ? AbortSignal.any([init.signal, controller.signal])
-      : controller.signal;
+    const idempotent = ['GET', 'HEAD'].includes(resolveRequestMethod(input as RequestInfo | URL, init));
     const debug = isAuthDebugEnabled() && isAuthEndpoint(url);
-    const startedAt = Date.now();
-    try {
-      const res = await baseFetch(input, { ...init, signal });
-      if (debug) logAuthRequest(url, Date.now() - startedAt, `status ${res.status}`);
-      return res;
-    } catch (err) {
-      if (debug) logAuthRequest(url, Date.now() - startedAt, err instanceof Error ? err.name || 'error' : 'error');
-      throw err;
-    } finally {
-      clearTimeout(timer);
+
+    type AttemptResult =
+      | { ok: true; res: Response }
+      | { ok: false; err: unknown; timedOut: boolean };
+
+    const runAttempt = async (): Promise<AttemptResult> => {
+      const controller = new AbortController();
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        controller.abort(new DOMException('Supabase request timed out', 'TimeoutError'));
+      }, ms);
+      const signal = init?.signal
+        ? AbortSignal.any([init.signal, controller.signal])
+        : controller.signal;
+      const startedAt = Date.now();
+      try {
+        const res = await baseFetch(input, { ...init, signal });
+        if (debug) logAuthRequest(url, Date.now() - startedAt, `status ${res.status}`);
+        return { ok: true, res };
+      } catch (err) {
+        if (debug) logAuthRequest(url, Date.now() - startedAt, err instanceof Error ? err.name || 'error' : 'error');
+        return { ok: false, err, timedOut };
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
+    const first = await runAttempt();
+    if (first.ok) return first.res;
+    if (first.timedOut && idempotent && !init?.signal?.aborted) {
+      const second = await runAttempt();
+      if (second.ok) return second.res;
+      throw second.err;
     }
+    throw first.err;
   };
 }

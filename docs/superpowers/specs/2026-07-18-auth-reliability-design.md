@@ -15,7 +15,7 @@ The browser auth layer treats auth as binary (logged-in / logged-out). The third
 1. ~~`processLock` acquire-timeout crash~~ (fixed, `63d3d1a`).
 2. **Open bug:** `getUser()` never throws on network failure — it *resolves* `{ data: { user: null }, error: AuthRetryableFetchError }` (`auth-js GoTrueClient.js:1461-1472`, `fetch.js:93-96`). `getCurrentUser()` reads only `data.user`, so a 12s-aborted request ≡ "signed out" → hooks throw `Not logged in` on a healthy session. It also overwrites `lastKnownUser` with the transient null, so the degraded fallback never fires for network errors.
 3. "Could not reach the sign-in server" surfaces on every sign-in stall with no automatic retry.
-4. ~13s browser refresh cadence (todo 17) multiplies auth traffic ~275×, multiplying every stall window. Undiagnosed.
+4. ~13s browser refresh cadence (todo 19) multiplies auth traffic ~275×, multiplying every stall window. Undiagnosed.
 5. New requirement: a **genuinely** signed-out user on `/dashboard/**` must be redirected to `/login`. Unsafe to build until (2) is fixed — today a stall is indistinguishable from logout and would eject live users.
 
 `proxy.ts:65-102` already gates initial navigations server-side. The client gap is only session-death-while-open and cross-tab sign-out.
@@ -76,14 +76,14 @@ New `src/components/dashboard/AuthGuard.tsx`, mounted in `app/dashboard/layout.t
 
 On `AuthRetryableFetchError`: wait ~1s, retry once automatically (fresh connection), only then surface the friendly error. Most stall sightings become invisible recoveries. Attempt logic extracted with an injectable sign-in function for testing.
 
-### 5. Refresh-cadence diagnosis kit (todo 17)
+### 5. Refresh-cadence diagnosis kit (todo 19)
 
 Dev-only `lib/supabase/auth-debug.ts`, enabled by `localStorage['digione.auth.debug'] = '1'`:
 - `auth-timing.ts` logs every `/auth/v1/*` request (path, grant_type, duration, status/aborted) when enabled.
 - The snapshot module logs auth events with `expires_at` / `expires_in`.
 - Ring buffer (200 entries) + `window.__authDebug()` dump. Gated `console.info` — the sanctioned exception to the no-console rule.
 
-Diagnosis procedure (recorded in todo 17): read `expires_in` + the Supabase dashboard JWT-TTL setting. Short TTL → raise it (config, no code). TTL fine but `expires_at` not advancing → cookie-persistence bug. Neither → hunt the extra refresh loop (multi-tab is expected; leaked clients are not).
+Diagnosis procedure (recorded in todo 19): read `expires_in` + the Supabase dashboard JWT-TTL setting. Short TTL → raise it (config, no code). TTL fine but `expires_at` not advancing → cookie-persistence bug. Neither → hunt the extra refresh loop (multi-tab is expected; leaked clients are not).
 
 ### 6. Phase 2 — server-side scale (separate spec, not in this build)
 

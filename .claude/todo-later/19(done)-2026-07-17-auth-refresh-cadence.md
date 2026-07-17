@@ -4,6 +4,31 @@ tags: []
 
 ---
 
+# Auth refresh cadence anomaly — RESOLVED 2026-07-18: not a bug (misread burst)
+
+**Resolution (2026-07-18, via `auth.refresh_tokens` SQL, 48h window):** per-session
+refresh gaps are **min 58 minutes, median 1.5–4.6 h** across 7 sessions — the standard
+1-hour JWT TTL working as designed. No short-TTL misconfig, no cookie-persistence bug.
+The "~13s continuous storm" was an observation artifact: multiple live sessions (each
+login mints one; re-logins during the crash episodes accumulated 7 in 48h) × multiple
+tabs, each refreshing independently inside the same ~90s pre-expiry margin → refreshes
+**burst** around the hourly expiry, and the observed log window caught a burst.
+No config change needed. The earlier "~275× multiplier" claim in docs/commits is wrong.
+
+**Remaining watch-item (only if "randomly logged out" complaints appear):** per-tab
+`processLock` means zero cross-tab refresh serialization; concurrent tab refreshes
+outside GoTrue's 10s reuse-grace can trip rotation reuse-detection and revoke the
+session family. Candidate fix: revisit `navigatorLock` (auth-js ≥2.99 self-heals via
+steal) vs. keeping processLock. Do NOT act without evidence.
+
+**Companion fix shipped 2026-07-18:** `auth-timing.ts` now retries an idempotent
+(GET/HEAD) request once when OUR timeout aborts it — the dead-socket stall self-heals
+on a fresh connection and no TimeoutError reaches the console for single-stall cases.
+
+---
+
+Original note (kept for history):
+
 # Auth refresh cadence anomaly (browser refreshes ~every 13s)
 
 Observed 2026-07-17 in Supabase auth logs on /payment/status: browser (Chrome UA)

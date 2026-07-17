@@ -43,7 +43,7 @@ tags: []
 | `lib/supabase/current-user.test.ts` | Unit tests for dedup + recovery + cached fallback. | Create |
 | `lib/supabase/client.ts` | Wire `makeFetchWithTimeout()` into `global.fetch`; keep `processLock`; update comment. | Modify |
 | ~12 browser call sites | Swap `supabase.auth.getUser()` → `getCurrentUser()`. | Modify |
-| `.claude/todo-later/17(left)-2026-07-17-auth-refresh-cadence.md` | Capture the ~13s refresh-cadence follow-up (diagnostic, not code). | Create |
+| `.claude/todo-later/19(done)-2026-07-17-auth-refresh-cadence.md` | Capture the ~13s refresh-cadence follow-up (diagnostic, not code). | Create |
 
 ---
 
@@ -572,7 +572,7 @@ git commit -m "docs(auth): verification notes for lock-timeout resilience"
 The server logs showed browser `POST /auth/v1/token?grant_type=refresh_token` roughly **every ~13s**. With `EXPIRY_MARGIN_MS = 90s` a healthy single client should refresh ~hourly, so this is anomalous and increases lock-contention frequency. It is **not** required for the crash fix but should be chased next.
 
 **Files:**
-- Create: `.claude/todo-later/17(left)-2026-07-17-auth-refresh-cadence.md`
+- Create: `.claude/todo-later/19(done)-2026-07-17-auth-refresh-cadence.md`
 
 - [ ] **Step 1: Write the follow-up note**
 
