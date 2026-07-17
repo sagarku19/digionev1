@@ -959,7 +959,7 @@ import { NotLoggedInError } from '@/lib/supabase/auth-errors';
 
 - [ ] **Step 1:** `.claude/rules/hooks-reference.md` — update the `useAuthSession()` row to `{ isLoggedIn, userEmail, profile, userRole, authStatus, isLoading }` and note: `authStatus: 'authenticated' | 'unauthenticated' | 'degraded'` — `degraded` = auth temporarily unreachable, never treated as logout.
 - [ ] **Step 2:** `docs/reference/dashboard-map.md` — add a shell note under the header: layout mounts `AuthGuard` (client redirect to `/login?returnUrl=…` only on definitive logout).
-- [ ] **Step 3:** `.claude/todo-later/19(done)-2026-07-17-auth-refresh-cadence.md` — record: diagnosis kit shipped (`lib/supabase/auth-debug.ts`, enable `localStorage['digione.auth.debug']='1'`, dump `window.__authDebug()`), and the decision tree from the spec §5.
+- [ ] **Step 3:** `.claude/todo-later/19(half)-2026-07-17-auth-refresh-cadence.md` — record: diagnosis kit shipped (`lib/supabase/auth-debug.ts`, enable `localStorage['digione.auth.debug']='1'`, dump `window.__authDebug()`), and the decision tree from the spec §5.
 
 ---
 
