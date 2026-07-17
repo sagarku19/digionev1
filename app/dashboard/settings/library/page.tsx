@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Download, Library, ExternalLink, Package, ChevronDown, Search, Loader2, AlertCircle } from 'lucide-react';
 import { useLibrary } from '@/hooks/commerce/useLibrary';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -57,6 +58,7 @@ export default function LibraryPage() {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
+        back={<BackButton href="/dashboard/settings" label="Back to settings" />}
         title="My Library"
         description="Products you've purchased across DigiOne."
       />

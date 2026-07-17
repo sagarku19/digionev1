@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { formatINR } from '@/lib/format';
 import { computeRefundSplit } from '@/lib/shared/refund-math';
+import { computeOrderEarnings, formatFeePercent } from '@/lib/shared/order-earnings';
 import { orderRef, matchesOrderRef } from '@/lib/shared/order-ref';
 import { useDownloadSaleInvoice } from '@/hooks/commerce/useInvoices';
 
@@ -73,6 +74,14 @@ function timeAgo(iso: string) {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// Local-timezone YYYY-MM-DD (the date inputs + "today" card are local; created_at is UTC).
+function localDay(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; cls: string }> = {
@@ -217,6 +226,13 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
   const [showRefund, setShowRefund] = useState(false);
   const downloadInvoice = useDownloadSaleInvoice();
 
+  // Per-order earnings breakdown — reads the sale ledger row (meta.platform_fee).
+  // The effective platform cut is derived from the actual recorded fee, so
+  // higher-fee (discover) or premium-plan orders report their own real percent.
+  const hasSale = order.status === 'completed' || order.status === 'refunded';
+  const { data: saleInfo } = useOrderRefundInfo(hasSale ? order.id : null);
+  const earnings = saleInfo?.hasLedger ? computeOrderEarnings(order.total_amount, saleInfo.fee) : null;
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -285,6 +301,30 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Your earnings — gross, platform cut (%), and net for this order */}
+          {earnings && (
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Your earnings</p>
+              <div className="bg-[var(--surface-muted)] rounded-[var(--radius-lg)] p-4 divide-y divide-[var(--border-subtle)]">
+                <div className="grid grid-cols-[150px_1fr] items-baseline gap-2 py-2 text-sm">
+                  <span className="text-[var(--text-secondary)] whitespace-nowrap">Sale amount</span>
+                  <span className="font-semibold tabular-nums text-[var(--text-primary)]">{formatINR(earnings.gross)}</span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-baseline gap-2 py-2 text-sm">
+                  <span className="text-[var(--text-secondary)] whitespace-nowrap">Platform fee ({formatFeePercent(earnings.feePercent)})</span>
+                  <span className="font-semibold tabular-nums text-[var(--danger)]">− {formatINR(earnings.fee)}</span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-baseline gap-2 py-2">
+                  <span className="text-sm font-semibold text-[var(--text-primary)] whitespace-nowrap">You earned</span>
+                  <span className="text-base font-bold tabular-nums text-[var(--success)]">{formatINR(earnings.net)}</span>
+                </div>
+              </div>
+              {order.status === 'refunded' && (
+                <p className="text-[11px] text-[var(--text-tertiary)]">Original sale economics — this order was refunded; see your balance for the reversal.</p>
+              )}
             </div>
           )}
 
@@ -368,8 +408,9 @@ export default function OrdersPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selected, setSelected] = useState<Order | null>(null);
+  const [visibleCount, setVisibleCount] = useState(20);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = localDay(new Date());
 
   const filtered = useMemo(() => orders.filter(o => {
     const matchStatus = statusFilter === 'all' || o.status === statusFilter;
@@ -379,7 +420,7 @@ export default function OrdersPage() {
       || o.customer_name?.toLowerCase().includes(q)
       || o.id.includes(q)
       || matchesOrderRef(o.id, search);
-    const orderDate = o.created_at.split('T')[0];
+    const orderDate = localDay(new Date(o.created_at));
     const matchFrom = !dateFrom || orderDate >= dateFrom;
     const matchTo = !dateTo || orderDate <= dateTo;
     return matchStatus && matchSearch && matchFrom && matchTo;
@@ -390,10 +431,10 @@ export default function OrdersPage() {
   const pendingCount = orders.filter(o => o.status === 'pending').length;
 
   const todayRevenue = useMemo(() => orders
-    .filter(o => o.status === 'completed' && o.created_at.startsWith(todayStr))
+    .filter(o => o.status === 'completed' && localDay(new Date(o.created_at)) === todayStr)
     .reduce((s, o) => s + Number(o.total_amount), 0), [orders, todayStr]);
 
-  const todayCount = useMemo(() => orders.filter(o => o.created_at.startsWith(todayStr)).length, [orders, todayStr]);
+  const todayCount = useMemo(() => orders.filter(o => localDay(new Date(o.created_at)) === todayStr).length, [orders, todayStr]);
 
   const hasDateFilter = dateFrom || dateTo;
 
@@ -469,7 +510,7 @@ export default function OrdersPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setVisibleCount(20); }}
             placeholder="Search by name, email, or order ID…"
             className="w-full pl-10 pr-4 py-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)]"
           />
@@ -480,7 +521,7 @@ export default function OrdersPage() {
           <input
             type="date"
             value={dateFrom}
-            onChange={e => setDateFrom(e.target.value)}
+            onChange={e => { setDateFrom(e.target.value); setVisibleCount(20); }}
             max={dateTo || todayStr}
             className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] cursor-pointer"
           />
@@ -488,14 +529,14 @@ export default function OrdersPage() {
           <input
             type="date"
             value={dateTo}
-            onChange={e => setDateTo(e.target.value)}
+            onChange={e => { setDateTo(e.target.value); setVisibleCount(20); }}
             min={dateFrom}
             max={todayStr}
             className="px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-sm)] text-sm text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] focus:border-[var(--border-strong)] cursor-pointer"
           />
           {hasDateFilter && (
             <button
-              onClick={() => { setDateFrom(''); setDateTo(''); }}
+              onClick={() => { setDateFrom(''); setDateTo(''); setVisibleCount(20); }}
               className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
               title="Clear date filter"
             >
@@ -507,7 +548,7 @@ export default function OrdersPage() {
           {['all', 'completed', 'pending', 'failed', 'refunded'].map(s => (
             <button
               key={s}
-              onClick={() => setStatusFilter(s)}
+              onClick={() => { setStatusFilter(s); setVisibleCount(20); }}
               className={`px-3 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition capitalize focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] ${
                 statusFilter === s
                   ? 'bg-[var(--accent)] text-[var(--accent-fg)]'
@@ -542,7 +583,7 @@ export default function OrdersPage() {
       {!isLoading && filtered.length > 0 && (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-xs)]">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">
+          <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_7rem] gap-4 px-5 py-3 border-b border-[var(--border)] text-xs font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">
             <span>Customer</span>
             <span>Products</span>
             <span>Amount</span>
@@ -551,7 +592,7 @@ export default function OrdersPage() {
           </div>
 
           <div className="divide-y divide-[var(--border-subtle)]">
-            {filtered.map(order => {
+            {filtered.slice(0, visibleCount).map(order => {
               const products = order.order_items ?? [];
               const productNames = products.map((i) => i.products?.name).filter(Boolean);
 
@@ -559,7 +600,7 @@ export default function OrdersPage() {
                 <button
                   key={order.id}
                   onClick={() => setSelected(order)}
-                  className="w-full grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-2 md:gap-4 items-center px-5 py-4 text-left hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                  className="w-full grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_7rem] gap-2 md:gap-4 items-center px-5 py-4 text-left hover:bg-[var(--surface-hover)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
                   {/* Customer */}
                   <div className="flex items-center gap-3 min-w-0">
@@ -589,7 +630,7 @@ export default function OrdersPage() {
                   <StatusBadge status={order.status} />
 
                   {/* Chevron + time */}
-                  <div className="flex items-center gap-3 text-[var(--text-tertiary)] shrink-0">
+                  <div className="flex items-center justify-start md:justify-end gap-3 text-[var(--text-tertiary)] shrink-0">
                     <span className="text-xs hidden xl:block">{timeAgo(order.created_at)}</span>
                     <ChevronRight className="w-4 h-4" />
                   </div>
@@ -600,10 +641,22 @@ export default function OrdersPage() {
         </div>
       )}
 
+      {/* Load more */}
+      {!isLoading && filtered.length > visibleCount && (
+        <div className="flex justify-center">
+          <button
+            onClick={() => setVisibleCount(n => n + 20)}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] transition shadow-[var(--shadow-xs)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+          >
+            Load more <span className="text-[var(--text-tertiary)]">({filtered.length - visibleCount} more)</span>
+          </button>
+        </div>
+      )}
+
       {!isLoading && orders.length > 0 && filtered.length === 0 && (
         <div className="text-center py-12 text-[var(--text-secondary)]">
           No orders match your search.
-          <button onClick={() => { setSearch(''); setStatusFilter('all'); }} className="ml-2 text-[var(--brand)] hover:underline focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Clear filters</button>
+          <button onClick={() => { setSearch(''); setStatusFilter('all'); setVisibleCount(20); }} className="ml-2 text-[var(--brand)] hover:underline focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]">Clear filters</button>
         </div>
       )}
 

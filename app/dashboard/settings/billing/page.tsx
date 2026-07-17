@@ -11,6 +11,7 @@ import {
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { useKycDocuments, type KycDocType } from '@/hooks/creator/useKycDocuments';
 
 const inputCls = 'w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow disabled:opacity-60 disabled:cursor-not-allowed';
@@ -380,6 +381,7 @@ export default function KYCAndBillingPage() {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
+        back={<BackButton href="/dashboard/settings" label="Back to settings" />}
         title="Billing & KYC"
         description="Verify your identity and bank account to receive payouts from your store."
       />
@@ -446,48 +448,67 @@ export default function KYCAndBillingPage() {
         </div>
       ) : locked ? (
         /* ───────── Read-only summary (pending / verified) ───────── */
-        <div className="max-w-3xl mx-auto">
-          <Card>
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <div className="flex items-center gap-2">
-                <Lock size={14} className="text-[var(--text-tertiary)]" />
-                <p className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wide">Submitted Details</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={openPayoutEdit}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--brand)] border border-[var(--brand)]/30 bg-[var(--brand)]/[0.06] hover:bg-[var(--brand)]/[0.12] hover:border-[var(--brand)]/50 px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                >
-                  <Building2 size={12} /> Update payout method
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setEditing(true); setEditingPayout(false); setStep(1); setSuccessMsg(''); setErrorMsg(''); }}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--info)] border border-[var(--info)]/30 bg-[var(--info)]/[0.06] hover:bg-[var(--info)]/[0.12] hover:border-[var(--info)]/50 px-2.5 py-1.5 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                >
-                  <Pencil size={12} /> Update details
-                </button>
-              </div>
+        <div className="max-w-3xl mx-auto space-y-4">
+          <Card padded={false}>
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-[var(--border)] flex items-center gap-2">
+              <Lock size={14} className="text-[var(--text-tertiary)]" />
+              <p className="text-sm font-semibold text-[var(--text-primary)]">Submitted details</p>
+              <span className="ml-auto text-[11px] font-medium text-[var(--text-tertiary)]">Encrypted at rest</span>
             </div>
-            <SummaryRow label="Legal name" value={kyc?.legal_name || '—'} />
-            <SummaryRow label="PAN" value={kyc?.pan_last4 ? `•••••${kyc.pan_last4}` : '—'} mono verified={kyc?.pan_verified} at={kyc?.pan_verified_at} />
-            {kyc?.dob && <SummaryRow label="Date of birth" value={kyc.dob} />}
-            {kyc?.gender && <SummaryRow label="Gender" value={kyc.gender} />}
-            {kyc?.aadhaar_last4 && <SummaryRow label="Aadhaar" value={`••••••••${kyc.aadhaar_last4}`} mono />}
-            {lockedAddress && <SummaryRow label="Address" value={lockedAddress} />}
-            <SummaryRow label="Account holder" value={kyc?.bank_account_name || '—'} />
-            <SummaryRow label="Account number" value={kyc?.bank_last4 ? `••••${kyc.bank_last4}` : '—'} mono verified={kyc?.bank_verified} at={kyc?.bank_verified_at} />
-            <SummaryRow label="IFSC" value={kyc?.ifsc_code || '—'} mono />
-            <SummaryRow
-              label="UPI"
-              value={(kyc as Record<string, unknown>)?.upi_id_enc ? 'Added' : '—'}
-              verified={kyc?.upi_verified}
-              at={kyc?.upi_verified_at}
-            />
-            <SummaryRow label="Primary method" value={kyc?.preferred_payout_method === 'upi' ? 'UPI' : 'Bank account'} />
+
+            {/* Identity */}
+            <div className="px-6 py-4">
+              <div className="flex items-center gap-2 mb-1">
+                <User size={13} className="text-[var(--text-tertiary)]" />
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">Identity</p>
+              </div>
+              <SummaryRow label="Legal name" value={kyc?.legal_name || '—'} />
+              <SummaryRow label="PAN" value={kyc?.pan_last4 ? `•••••${kyc.pan_last4}` : '—'} mono verified={kyc?.pan_verified} at={kyc?.pan_verified_at} />
+              {kyc?.dob && <SummaryRow label="Date of birth" value={kyc.dob} />}
+              {kyc?.gender && <SummaryRow label="Gender" value={kyc.gender} />}
+              {kyc?.aadhaar_last4 && <SummaryRow label="Aadhaar" value={`••••••••${kyc.aadhaar_last4}`} mono />}
+              {lockedAddress && <SummaryRow label="Address" value={lockedAddress} />}
+            </div>
+
+            {/* Bank & payout */}
+            <div className="px-6 py-4 border-t border-[var(--border-subtle)]">
+              <div className="flex items-center gap-2 mb-1">
+                <Building2 size={13} className="text-[var(--text-tertiary)]" />
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">Bank &amp; payout</p>
+              </div>
+              <SummaryRow label="Account holder" value={kyc?.bank_account_name || '—'} />
+              <SummaryRow label="Account number" value={kyc?.bank_last4 ? `••••${kyc.bank_last4}` : '—'} mono verified={kyc?.bank_verified} at={kyc?.bank_verified_at} />
+              <SummaryRow label="IFSC" value={kyc?.ifsc_code || '—'} mono />
+              <SummaryRow
+                label="UPI"
+                value={(kyc as Record<string, unknown>)?.upi_id_enc ? 'Added' : '—'}
+                verified={kyc?.upi_verified}
+                at={kyc?.upi_verified_at}
+              />
+              <SummaryRow label="Primary method" value={kyc?.preferred_payout_method === 'upi' ? 'UPI' : 'Bank account'} />
+            </div>
+
+            {/* Actions */}
+            <div className="px-6 py-4 border-t border-[var(--border)] flex flex-col sm:flex-row gap-2 sm:justify-end bg-[var(--surface-muted)]">
+              <button
+                type="button"
+                onClick={openPayoutEdit}
+                className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[var(--text-primary)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] px-3.5 py-2 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Building2 size={14} /> Update payout method
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEditing(true); setEditingPayout(false); setStep(1); setSuccessMsg(''); setErrorMsg(''); }}
+                className="inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[var(--text-on-brand)] bg-[var(--brand)] hover:bg-[var(--brand-hover)] px-3.5 py-2 rounded-[var(--radius-sm)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Pencil size={14} /> Update details
+              </button>
+            </div>
           </Card>
-          <div className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
+
+          <div className="flex items-start gap-2 text-xs leading-relaxed text-[var(--text-tertiary)]">
             <Lock size={12} className="shrink-0 mt-0.5" />
             <p>
               Your PAN, account number, and UPI are <span className="font-medium text-[var(--text-secondary)]">encrypted at rest</span> — only the last 4 digits are ever shown.

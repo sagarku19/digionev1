@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { Card } from '@/components/ui/Card';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -57,6 +58,7 @@ export default function SubscriptionPage() {
   return (
     <div className="space-y-6 pb-12">
       <PageHeader
+        back={<BackButton href="/dashboard/settings" label="Back to settings" />}
         title="Subscription"
         description="Your DigiOne plan — a lower platform fee on higher tiers."
       />

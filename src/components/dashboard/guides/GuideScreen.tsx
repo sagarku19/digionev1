@@ -1,8 +1,9 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { useGuide } from './GuideProvider';
 import { GUIDES, type GuideKey } from './content';
+import { BackButton } from '@/components/dashboard/BackButton';
 
 export function GuideScreen({ guideKey }: { guideKey: GuideKey }) {
   const { closeGuide } = useGuide();
@@ -10,16 +11,13 @@ export function GuideScreen({ guideKey }: { guideKey: GuideKey }) {
 
   return (
     <div className="pt-4 pb-20 max-w-3xl mx-auto">
-      <button
-        type="button"
-        onClick={closeGuide}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-4"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back
-      </button>
-
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand)] mb-1">Guide</p>
-      <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">{guide.title}</h1>
+      <div className="flex items-center gap-3 mb-1">
+        <BackButton onClick={closeGuide} label="Back" />
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--brand)] mb-1">Guide</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">{guide.title}</h1>
+        </div>
+      </div>
       <p className="text-sm text-[var(--text-secondary)] mt-1 mb-6">{guide.intro}</p>
 
       <div className="relative space-y-3 before:content-[''] before:absolute before:left-3 before:top-4 before:bottom-4 before:w-px before:bg-[var(--border)]">

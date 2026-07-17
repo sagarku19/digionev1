@@ -5,9 +5,14 @@ import Link from 'next/link';
 import {
   ArrowUpRight, CheckCircle2, AlertCircle, Clock, TrendingUp,
   Building2, Wallet, CreditCard, History, ChevronRight,
-  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert, Snowflake, FileText, Download,
+  IndianRupee, ArrowDownLeft, Banknote, ShieldCheck, ShieldAlert, Snowflake, FileText,
+  Receipt, Package,
 } from 'lucide-react';
 import { useEarnings } from '@/hooks/commerce/useEarnings';
+import { useOrders } from '@/hooks/commerce/useOrders';
+import { useOrderEarnings } from '@/hooks/commerce/useOrderEarnings';
+import { computeOrderEarnings, formatFeePercent } from '@/lib/shared/order-earnings';
+import { orderRef } from '@/lib/shared/order-ref';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
@@ -18,9 +23,7 @@ import { SideDrawer } from '@/components/ui/SideDrawer';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { formatINR, formatINRCompact } from '@/lib/format';
-import { usePayoutTaxPreview, useTaxSummary, useAddGstin } from '@/hooks/commerce/useTax';
-import { useCommissionMonths, useDownloadCommissionInvoice } from '@/hooks/commerce/useInvoices';
-import { useStatementYears, useDownloadAnnualStatement } from '@/hooks/commerce/useStatements';
+import { usePayoutTaxPreview, useAddGstin } from '@/hooks/commerce/useTax';
 import { isValidGstin } from '@/lib/shared/gstin';
 import { MIN_PAYOUT_INR } from '@/lib/server/payout-policy';
 
@@ -33,6 +36,7 @@ export default function EarningsPage() {
   const [drawerError, setDrawerError] = useState('');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [visibleOrderEarnings, setVisibleOrderEarnings] = useState(10);
 
   const isKycVerified = kyc?.status === 'verified';
   const available = creatorBalances?.available_balance ?? 0;
@@ -48,11 +52,6 @@ export default function EarningsPage() {
 
   const { data: taxPreview } = usePayoutTaxPreview();
   const addGstin = useAddGstin();
-  const { data: taxSummary } = useTaxSummary();
-  const { data: commissionMonths } = useCommissionMonths();
-  const { data: statementYears } = useStatementYears();
-  const downloadStatement = useDownloadAnnualStatement();
-  const downloadCommission = useDownloadCommissionInvoice();
   const [gstinOpen, setGstinOpen] = useState(false);
   const [gstinValue, setGstinValue] = useState('');
   const [gstinError, setGstinError] = useState('');
@@ -60,6 +59,28 @@ export default function EarningsPage() {
   const registrationRequired = taxPreview?.registration_required ?? false;
   const previewTds = Number(taxPreview?.tds ?? 0);
   const previewTcs = Number(taxPreview?.tcs ?? 0);
+
+  const { orders } = useOrders();
+  const { feeByOrder } = useOrderEarnings();
+
+  // Each row's platform cut is derived from that order's actual recorded fee, so a
+  // discover-page (higher-fee) or premium-plan order reports its own real percent.
+  const orderEarnings = useMemo(
+    () =>
+      orders
+        .filter((o) => feeByOrder[o.id])
+        .map((o) => ({ order: o, ...computeOrderEarnings(feeByOrder[o.id].gross, feeByOrder[o.id].fee) })),
+    [orders, feeByOrder],
+  );
+
+  const earningsTotals = useMemo(
+    () =>
+      orderEarnings.reduce(
+        (acc, r) => ({ gross: acc.gross + r.gross, fee: acc.fee + r.fee, net: acc.net + r.net }),
+        { gross: 0, fee: 0, net: 0 },
+      ),
+    [orderEarnings],
+  );
 
   const amountError =
     drawerAmount > 0
@@ -318,76 +339,135 @@ export default function EarningsPage() {
           </Card>
         )}
 
-        {!isLoading && (taxSummary?.length ?? 0) > 0 && (
-          <Card>
-            <div className="flex items-center gap-2 mb-4">
-              <FileText size={14} className="text-[var(--text-tertiary)]" />
-              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Tax withheld</h3>
+        {/* Earnings by order — per-order gross, platform cut (%), and net earned */}
+        {!isLoading && orderEarnings.length > 0 && (
+          <Card padded={false}>
+            <div className="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Receipt size={16} className="text-[var(--text-secondary)]" />
+                <h2 className="text-base font-semibold text-[var(--text-primary)]">Earnings by order</h2>
+                <span className="text-xs bg-[var(--surface-muted)] text-[var(--text-secondary)] px-2 py-0.5 rounded-full">
+                  {orderEarnings.length}
+                </span>
+              </div>
+              <Link
+                href="/dashboard/orders"
+                className="text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline whitespace-nowrap flex items-center gap-1 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                All orders <ChevronRight size={12} />
+              </Link>
             </div>
-            <p className="text-xs text-[var(--text-tertiary)] mb-3">Platform fee is GST-inclusive. TDS/TCS are withheld at withdrawal.</p>
-            <div className="space-y-3">
-              {taxSummary?.map((t) => (
-                <div key={t.fy} className="rounded-[var(--radius-md)] border border-[var(--border)] p-3">
-                  <p className="text-xs font-semibold text-[var(--text-primary)] mb-2">FY {t.fy}</p>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div><p className="text-[11px] text-[var(--text-tertiary)]">TDS 194-O</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.tds, 0))}</p></div>
-                    <div><p className="text-[11px] text-[var(--text-tertiary)]">TCS §52</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.tcs, 0))}</p></div>
-                    <div><p className="text-[11px] text-[var(--text-tertiary)]">GST on fee</p><p className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">{formatINR(Math.max(t.gstOnCommission, 0))}</p></div>
+
+            {/* Column header (desktop) */}
+            <div className="hidden md:grid grid-cols-[2fr_1fr_1.3fr_1fr] gap-4 px-6 py-2.5 border-b border-[var(--border-subtle)] text-[11px] font-semibold uppercase tracking-wide text-[var(--text-tertiary)]">
+              <span>Order</span>
+              <span>Gross</span>
+              <span>Platform fee</span>
+              <span>You earned</span>
+            </div>
+
+            <div className="divide-y divide-[var(--border-subtle)]">
+              {orderEarnings.slice(0, visibleOrderEarnings).map(({ order, gross, fee, net, feePercent }) => {
+                const productNames = (order.order_items ?? []).map((i) => i.products?.name).filter(Boolean);
+                return (
+                  <div
+                    key={order.id}
+                    className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1.3fr_1fr] gap-x-4 gap-y-1.5 px-6 py-3.5 md:items-baseline hover:bg-[var(--surface-hover)] transition-colors"
+                  >
+                    {/* Order + product + date */}
+                    <div className="min-w-0 mb-1 md:mb-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-mono text-xs font-semibold text-[var(--text-primary)] shrink-0">{orderRef(order.id)}</span>
+                        {order.status === 'refunded' && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[var(--surface-muted)] text-[var(--text-tertiary)] shrink-0">Refunded</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1 min-w-0">
+                        <Package className="w-3 h-3 text-[var(--text-tertiary)] shrink-0" />
+                        <span className="text-xs text-[var(--text-secondary)] truncate">
+                          {productNames.length > 0 ? productNames.join(', ') : (order.customer_name || order.customer_email || '—')}
+                        </span>
+                        <span className="text-[11px] text-[var(--text-tertiary)] shrink-0 whitespace-nowrap">
+                          · {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Gross */}
+                    <div className="flex items-baseline gap-2 min-w-0">
+                      <span className="md:hidden w-28 shrink-0 text-xs text-[var(--text-secondary)]">Gross</span>
+                      <span className="text-sm font-semibold tabular-nums text-[var(--text-primary)]">{formatINR(gross)}</span>
+                    </div>
+
+                    {/* Platform fee + effective % */}
+                    <div className="flex items-baseline gap-2 min-w-0">
+                      <span className="md:hidden w-28 shrink-0 text-xs text-[var(--text-secondary)]">Platform fee</span>
+                      <span className="text-sm font-semibold tabular-nums text-[var(--danger)] whitespace-nowrap">
+                        − {formatINR(fee)} <span className="text-[11px] font-medium text-[var(--text-tertiary)]">({formatFeePercent(feePercent)})</span>
+                      </span>
+                    </div>
+
+                    {/* Net */}
+                    <div className="flex items-baseline gap-2 min-w-0">
+                      <span className="md:hidden w-28 shrink-0 text-xs text-[var(--text-secondary)]">You earned</span>
+                      <span className="text-sm font-bold tabular-nums text-[var(--success)]">{formatINR(net)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Load more */}
+            {visibleOrderEarnings < orderEarnings.length && (
+              <div className="px-6 py-3 border-t border-[var(--border-subtle)] flex justify-center">
+                <button
+                  onClick={() => setVisibleOrderEarnings((n) => n + 10)}
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] transition focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+                >
+                  Load more <span className="text-[var(--text-tertiary)]">({orderEarnings.length - visibleOrderEarnings} left)</span>
+                </button>
+              </div>
+            )}
+
+            {/* Totals footer */}
+            <div className="px-6 py-3 border-t border-[var(--border)] bg-[var(--surface-muted)] grid grid-cols-1 md:grid-cols-[2fr_1fr_1.3fr_1fr] gap-x-4 gap-y-1.5 md:items-baseline">
+              <span className="text-xs font-semibold text-[var(--text-secondary)] mb-1 md:mb-0">
+                {orderEarnings.length} order{orderEarnings.length !== 1 ? 's' : ''} total
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="md:hidden w-28 shrink-0 text-xs text-[var(--text-secondary)]">Gross</span>
+                <span className="text-xs font-bold tabular-nums text-[var(--text-primary)]">{formatINR(earningsTotals.gross)}</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="md:hidden w-28 shrink-0 text-xs text-[var(--text-secondary)]">Platform fee</span>
+                <span className="text-xs font-bold tabular-nums text-[var(--danger)] whitespace-nowrap">− {formatINR(earningsTotals.fee)}</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="md:hidden w-28 shrink-0 text-xs text-[var(--text-secondary)]">You earned</span>
+                <span className="text-xs font-bold tabular-nums text-[var(--success)]">{formatINR(earningsTotals.net)}</span>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Taxes & statements — full breakdown + downloads live on their own page */}
+        {!isLoading && (
+          <Link href="/dashboard/earnings/taxes-statement" className="block focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded-[var(--radius-lg)]">
+            <Card hoverable>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 bg-[var(--surface-muted)] border border-[var(--border)] rounded-[var(--radius-md)] shrink-0">
+                    <FileText size={18} className="text-[var(--text-secondary)]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">Taxes &amp; statements</p>
+                    <p className="text-xs text-[var(--text-tertiary)] mt-0.5">TDS/TCS/GST withheld, commission tax invoices, and annual earnings statements — with what each is for.</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        {!isLoading && (commissionMonths?.length ?? 0) > 0 && (
-          <Card>
-            <div className="flex items-center gap-2 mb-4">
-              <FileText size={14} className="text-[var(--text-tertiary)]" />
-              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Tax invoices</h3>
-            </div>
-            <p className="text-xs text-[var(--text-tertiary)] mb-3">Monthly DigiOne commission tax invoices (18% GST on platform fees).</p>
-            <div className="divide-y divide-[var(--border-subtle)]">
-              {commissionMonths!.map((m) => (
-                <div key={m.month} className="flex items-center justify-between py-2.5">
-                  <span className="text-sm text-[var(--text-primary)]">{m.label}</span>
-                  <button
-                    onClick={() => downloadCommission.mutate(m.month)}
-                    disabled={downloadCommission.isPending}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] transition disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                  >
-                    <Download size={13} />
-                    Invoice
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        {!isLoading && (statementYears?.length ?? 0) > 0 && (
-          <Card>
-            <div className="flex items-center gap-2 mb-4">
-              <FileText size={14} className="text-[var(--text-tertiary)]" />
-              <h3 className="text-sm font-semibold text-[var(--text-secondary)]">Annual statements</h3>
-            </div>
-            <p className="text-xs text-[var(--text-tertiary)] mb-3">Your earnings &amp; tax summary per financial year (informational; the statutory Form 16A comes from TRACES).</p>
-            <div className="divide-y divide-[var(--border-subtle)]">
-              {statementYears!.map((fy) => (
-                <div key={fy} className="flex items-center justify-between py-2.5">
-                  <span className="text-sm text-[var(--text-primary)]">FY {fy}</span>
-                  <button
-                    onClick={() => downloadStatement.mutate(fy)}
-                    disabled={downloadStatement.isPending}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] rounded-[var(--radius-sm)] transition disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
-                  >
-                    <Download size={13} />
-                    Statement
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
+                <ChevronRight size={18} className="text-[var(--text-tertiary)] shrink-0" />
+              </div>
+            </Card>
+          </Link>
         )}
 
         {/* KYC Status Card */}

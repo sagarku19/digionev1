@@ -3,7 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  Instagram, Activity, Zap, Users, MessageCircle, BarChart3, Settings, Sparkles, BookOpen,
+  Instagram, Activity, Zap, Users, MessageCircle, BarChart3, Settings, Sparkles, BookOpen, Plus,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { AutoDmProvider, useAutoDm } from '@/components/dashboard/autodm/AutoDmContext';
@@ -20,6 +20,7 @@ import { AnalyticsView } from '@/components/dashboard/autodm/AnalyticsView';
 import { SettingsView } from '@/components/dashboard/autodm/SettingsView';
 import { TemplatesView } from '@/components/dashboard/autodm/TemplatesView';
 import { GuideView } from '@/components/dashboard/autodm/GuideView';
+import { BackButton } from '@/components/dashboard/BackButton';
 import {
   dbToUiAutomation, uiToDbPayload, emptyAutomation, automationFromTemplate,
 } from '@/components/dashboard/autodm/types';
@@ -151,6 +152,15 @@ function AutoDMInner() {
                 {automations.filter(a => a.active).length} Running
               </span>
             )}
+            {accountId && (
+              <button
+                onClick={handleCreateNew}
+                title="New Automation"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-[var(--text-on-brand)] text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              >
+                <Plus className="w-4 h-4" /> New Automation
+              </button>
+            )}
             <button
               onClick={() => setView('guide')}
               title="Guide"
@@ -173,12 +183,16 @@ function AutoDMInner() {
         <AutomationWizard automation={wizardTarget} onSave={handleSave} onBack={closeWizard} saveError={builderError} isSaving={isSavingBuilder} />
       ) : view === 'settings' || view === 'guide' ? (
         <div className="max-w-2xl mx-auto space-y-4">
-          <button
-            onClick={() => setView('overview')}
-            className="text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded"
-          >
-            ← Back to workspace
-          </button>
+          <div className="flex items-center gap-2">
+            <BackButton onClick={() => setView('overview')} label="Back to workspace" />
+            <button
+              type="button"
+              onClick={() => setView('overview')}
+              className="text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded"
+            >
+              Back to Workspace
+            </button>
+          </div>
           {renderTabContent()}
         </div>
       ) : noAccount ? (

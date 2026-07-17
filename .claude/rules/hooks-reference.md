@@ -18,7 +18,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `auth/` | `useAuthSession`, `useLoginMutation` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`), `useSubscription` + `useSubscriptionPlans` (`useSubscription.ts`), `useKycDocuments` |
 | `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
-| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
+| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useOrderEarnings` (`['orders','earnings']` — per-order gross+fee map from `transaction_ledger` sale rows), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices`, `useShortLinks` |
 | `analytics/` | `useAnalytics` |

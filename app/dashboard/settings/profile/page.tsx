@@ -12,6 +12,7 @@ import {
   ImagePlus, Trash2,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import ImagePickerModal from '@/components/dashboard/image-picker/ImagePickerModal';
@@ -332,7 +333,7 @@ export default function ProfileSettingsPage() {
   if (loading) {
     return (
       <div className="space-y-6 pb-12">
-        <PageHeader title="Profile" description="Your public identity — shown on your store page and creator bio." />
+        <PageHeader back={<BackButton href="/dashboard/settings" label="Back to settings" />} title="Profile" description="Your public identity — shown on your store page and creator bio." />
         {Array.from({ length: 3 }).map((_, i) => (
           <Card key={i}>
             <div className="space-y-4">
@@ -354,6 +355,7 @@ export default function ProfileSettingsPage() {
     <>
       <div className="space-y-6 pb-12">
         <PageHeader
+          back={<BackButton href="/dashboard/settings" label="Back to settings" />}
           title="Profile"
           description="Your public identity — shown on your store page and creator bio."
           action={
