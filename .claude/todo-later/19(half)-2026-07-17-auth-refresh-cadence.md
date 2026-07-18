@@ -48,15 +48,22 @@ appear.
 (GET/HEAD) request once when OUR timeout aborts it — the dead-socket stall self-heals
 on a fresh connection and no TimeoutError reaches the console for single-stall cases.
 
-**Server-side amplification fixed 2026-07-18 (separate issue, same log noise):** the
-~55×-per-dashboard-visit `GET /auth/v1/user` (UA `node`) burst was `proxy.ts` calling
-`getUser()` per guarded request × Link prefetch fan-out. Now: local JWT verification
-via `getClaims()` (JWKS-cached) with `getUser()` fallback on expiry, + hover-gated
-prefetch for rare sidebar links. Spec:
+**Server-side amplification FIXED + VERIFIED 2026-07-18 (separate issue, same log
+noise):** the ~55×-per-dashboard-visit `GET /auth/v1/user` (UA `node`) burst was
+`proxy.ts` calling `getUser()` per guarded request × Link prefetch fan-out. Shipped
+(commit `d9dec56`): local JWT verification via `getClaims()` (JWKS-cached) with
+`getUser()` fallback on expiry, + hover-gated prefetch for rare sidebar links. Spec:
 `docs/superpowers/specs/2026-07-18-middleware-jwt-and-prefetch-design.md`.
-**Pre-req still on USER:** rotate the project to asymmetric signing keys (Dashboard →
-JWT Keys → standby ES256 → rotate) — until then getClaims falls back to network and
-nothing improves. The client-side 13s replay storm above remains OPEN and unrelated.
+The project WAS rotated to asymmetric ES256 signing keys the same day (kid
+`b12ea5b6-2cc4-46e5-94e6-6819e21c9c14`) and the fix verified in production auth logs:
+`GET /user` from digione.ai dropped **50/min → 1–2/min**, with the middleware's
+one-time JWKS fetch visible. Remaining `/user` calls are per-request `/api/*` route
+auth (by design).
+**⚠ NEVER revoke the legacy HS256 "previously used" key in Dashboard → JWT Keys:**
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_KEY` are legacy JWTs verified
+against it — revoking breaks every Supabase call until the app migrates to
+`sb_publishable_`/`sb_secret_` API keys (separate future task).
+The client-side 13s replay storm above remains OPEN and unrelated.
 
 ---
 

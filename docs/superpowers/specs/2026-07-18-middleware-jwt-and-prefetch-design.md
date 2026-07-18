@@ -7,10 +7,11 @@ tags: []
 # Middleware local JWT verification + sidebar prefetch tuning — Design
 
 **Date:** 2026-07-18
-**Status:** Approved
+**Status:** Shipped (commit `d9dec56`) + verified in production logs same day — `GET /user` 50/min → 1–2/min after ES256 key rotation
 **Related:** `.claude/todo-later/19(half)-2026-07-17-auth-refresh-cadence.md` (auth request-volume saga), `proxy.ts`, `.claude/rules/security-model.md`
 
 ## Problem
+
 
 Every request to a guarded path (`/dashboard`, `/account`) runs `supabase.auth.getUser()` in the middleware (`proxy.ts:95`) — a network round-trip to `/auth/v1/user`. Next.js prefetches every visible sidebar/TopBar `<Link>` on dashboard load, and each prefetch passes through the middleware. Observed result: **~55 server-side `GET /auth/v1/user` calls in ~6 seconds** for a single dashboard visit (Supabase API logs, 2026-07-18 13:08).
 
