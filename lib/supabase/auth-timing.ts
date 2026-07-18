@@ -16,6 +16,16 @@ export const AUTHJS_REFRESH_RETRY_CEILING_MS = 30_000;
 // well under a second even on slow 3G), so this only fires on a genuinely dead socket.
 export const AUTH_FETCH_TIMEOUT_MS = 12_000;
 
+// Lock-wait ceiling for every auth-lock waiter (getSession under EVERY data
+// query, signOut, setSession, …). Invariant: MUST exceed AUTH_FETCH_TIMEOUT_MS —
+// a single stalled fetch holds the lock for up to that long, and auth-js's 5s
+// default guaranteed every concurrent waiter threw ProcessLockAcquireTimeoutError
+// during any single stall (the recurring dev-overlay crash). At 15s, waiters
+// ride out a single stall; only a rare double-stall (~24s+) still times out,
+// and those paths degrade via current-user.ts. Kept below the 30s refresh
+// retry ceiling so a waiter can never outlast the worst-case hold.
+export const LOCK_ACQUIRE_TIMEOUT_MS = 15_000;
+
 // Data queries can be legitimately heavy (large lists, cold starts); give them more
 // headroom than auth so slow-network reads are not falsely aborted.
 export const DATA_FETCH_TIMEOUT_MS = 20_000;

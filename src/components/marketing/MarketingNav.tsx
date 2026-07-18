@@ -121,7 +121,13 @@ export default function MarketingNav() {
   }, [queryClient]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // A stalled request or busy auth lock must never leave the menu stuck —
+      // clear the local session regardless.
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+    }
     setProfileDropdownOpen(false);
     setMobileMenuOpen(false);
     setShowSignOutConfirm(false);

@@ -7,6 +7,7 @@ import {
   AUTH_FETCH_TIMEOUT_MS,
   DATA_FETCH_TIMEOUT_MS,
   AUTHJS_REFRESH_RETRY_CEILING_MS,
+  LOCK_ACQUIRE_TIMEOUT_MS,
 } from './auth-timing';
 
 describe('auth-timing: classification', () => {
@@ -32,6 +33,14 @@ describe('auth-timing: classification', () => {
     expect(AUTH_FETCH_TIMEOUT_MS).toBeGreaterThan(0);
     expect(AUTH_FETCH_TIMEOUT_MS).toBeLessThan(AUTHJS_REFRESH_RETRY_CEILING_MS);
     expect(DATA_FETCH_TIMEOUT_MS).toBeGreaterThanOrEqual(AUTH_FETCH_TIMEOUT_MS);
+  });
+
+  it('REGRESSION GUARD: lock waiters must be able to ride out a single stalled fetch', () => {
+    // 5s (auth-js default) < 12s single-stall hold guaranteed every waiter threw
+    // ProcessLockAcquireTimeoutError during any stall. The wait ceiling must sit
+    // strictly between one stall and the 30s worst-case refresh-retry hold.
+    expect(LOCK_ACQUIRE_TIMEOUT_MS).toBeGreaterThan(AUTH_FETCH_TIMEOUT_MS);
+    expect(LOCK_ACQUIRE_TIMEOUT_MS).toBeLessThan(AUTHJS_REFRESH_RETRY_CEILING_MS);
   });
 });
 

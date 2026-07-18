@@ -5,7 +5,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { processLock } from '@supabase/supabase-js';
 import type { Database } from '@/types/database.types';
-import { makeFetchWithTimeout } from '@/lib/supabase/auth-timing';
+import { makeFetchWithTimeout, LOCK_ACQUIRE_TIMEOUT_MS } from '@/lib/supabase/auth-timing';
 
 export function createClient() {
   return createBrowserClient<Database>(
@@ -19,10 +19,18 @@ export function createClient() {
       global: { fetch: makeFetchWithTimeout() },
       // In-memory processLock (per-tab) instead of auth-js's origin-wide navigator.locks,
       // which deadlocked in dev. Cross-tab auth state is synced via onAuthStateChange +
-      // BroadcastChannel (MarketingNav / useAuthSession). lockAcquireTimeout stays at the
-      // 5s default — recovery in lib/supabase/current-user.ts absorbs a stall rather than
-      // a longer freeze.
-      auth: { lock: processLock },
+      // BroadcastChannel (MarketingNav / useAuthSession). lockAcquireTimeout is raised
+      // above the single-stall fetch abort (12s) so lock waiters ride out a stall
+      // instead of throwing — see the invariant note in auth-timing.ts; recovery in
+      // lib/supabase/current-user.ts still absorbs the rare double-stall timeout.
+      // lockAcquireTimeout is runtime-supported by auth-js (types.d.ts declares
+      // it; GoTrueClient reads settings.lockAcquireTimeout) but @supabase/ssr's
+      // narrowed auth-option type omits it — the cast forwards it past the
+      // excess-property check without loosening anything else.
+      auth: {
+        lock: processLock,
+        lockAcquireTimeout: LOCK_ACQUIRE_TIMEOUT_MS,
+      } as NonNullable<NonNullable<Parameters<typeof createBrowserClient>[2]>['auth']>,
     },
   );
 }

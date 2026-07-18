@@ -140,7 +140,13 @@ export default function TopBar() {
   useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // A stalled request or busy auth lock must never strand the user on the
+      // dashboard — clear the local session and navigate regardless.
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+    }
     router.push('/login');
   };
 

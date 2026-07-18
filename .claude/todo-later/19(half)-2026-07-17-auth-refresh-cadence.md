@@ -66,6 +66,16 @@ the schedule site `.catch`es everything; and the repair order is now
 another persist, because purging without a successful rewrite deletes the only
 session cookie (storage would read as signed-out). 19 unit tests.
 
+**Root inconsistency fixed 2026-07-19:** the recurring
+`ProcessLockAcquireTimeoutError` overlays were guaranteed by 5s lock-wait < 12s
+single-stall hold — ANY stall made every lock waiter throw (incognito irrelevant).
+Fix: `LOCK_ACQUIRE_TIMEOUT_MS = 15_000` (`auth-timing.ts`, invariant
+regression-tested: 12s < 15s < 30s), wired via a documented cast in `client.ts`
+(@supabase/ssr's auth-option type omits it; auth-js supports it), + hardened
+signOut handlers (TopBar/MarketingNav: catch → local sign-out → navigate). Full
+explainer: `docs/reference/auth-timeouts-and-locks.md`. E2E-verified same day with
+a real session incl. tampered-token rejection (middleware 307, API 401).
+
 **Watch-item (unchanged):** per-tab `processLock` = zero cross-tab refresh
 serialization; revisit `navigatorLock`-steal only if "randomly logged out" reports
 appear.
