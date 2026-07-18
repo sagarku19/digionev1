@@ -34,19 +34,21 @@ How auth, authorization, and money integrity work in DigiOne. Read this before t
 2. User clicks the email link → `GET /api/auth/callback?code=...` exchanges code for session, promotes the signup-requested `user_metadata.role` into `app_metadata.role` via `auth.admin.updateUserById` + `refreshSession()`, then redirects to `?next=` (safe-redirect validated by `src/lib/safe-redirect.ts`) or `/dashboard` by default. On failure → `/login?error=...`.
 3. Every request hits `proxy.ts` (Next.js middleware), which:
    - Uses exact host matching (not substring) for custom-domain detection.
-   - Refreshes the session cookie.
-   - Reads `user.app_metadata.role` from the encrypted JWT (no DB hit).
+   - Verifies the JWT **locally** via `getClaims()` (signature check against the cached JWKS — zero network for live tokens); falls back to `getUser()` (session refresh + cookie write-back) only when local claims can't be produced (expired token, JWKS miss).
+   - Reads `app_metadata.role` from the verified claims (no DB hit) and gates via the pure helper `gateGuardedRoute` in `src/lib/shared/route-gate.ts`.
    - Redirects unauthenticated `/dashboard/*` to `/login?returnUrl=...` (`returnUrl` is also safe-redirect validated).
    - Redirects non-creator roles trying to access `/dashboard/*` to `/account/library`.
    - Redirects unauthenticated `/account/*` to `/login`.
 4. Inside Route Handlers, use `createClient()` from `lib/supabase/server.ts` and call `supabase.auth.getUser()` (not `getSession()` — see `.claude/rules/anti-patterns.md`).
 
-The middleware in `proxy.ts` runs a four-step fast-path before calling `getUser()`:
+The middleware in `proxy.ts` runs a four-step fast-path before touching auth:
 
 1. **Exact host match** for custom-domain rewrite — no Supabase client created.
 2. **Unguarded paths** (`/`, `/discover`, storefronts, marketing) return `NextResponse.next()` without touching Supabase.
 3. **Guarded paths** (`/dashboard`, `/account`) check for an `sb-` cookie first — no cookie → redirect immediately, no network call.
-4. **`getUser()`** runs only when an `sb-` cookie is present on a guarded path.
+4. **`getClaims()` local verification** runs only when an `sb-` cookie is present on a guarded path; `getUser()` fires only as its fallback (~once per user per token expiry, not per request).
+
+**Local-verify trade-off (accepted, 2026-07-18 spec):** the middleware can't see bans/session-revocations until the access token expires (≤1h lag). Defense-in-depth holds — every `/api/*` route still calls `getUser()` per request and all data access is RLS-gated; the middleware gate is a router, not the security boundary. Requires the Supabase project to be on **asymmetric JWT signing keys** — on the legacy HS256 secret, `getClaims()` internally degrades to a `getUser()` network call (old behavior, no harm). See `docs/superpowers/specs/2026-07-18-middleware-jwt-and-prefetch-design.md`.
 
 `/api/*` routes are excluded from the middleware matcher entirely — they do their own `getUser()` and return 401 inline.
 

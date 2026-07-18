@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { LogOut, User, Bell, Search, Sun, Moon, Settings, Sparkles, ExternalLink } from 'lucide-react';
+import HoverPrefetchLink from '@/components/dashboard/HoverPrefetchLink';
 import { useCreator } from '@/hooks/creator/useCreator';
 import { useNotifications } from '@/hooks/notifications/useNotifications';
 import { useProducts } from '@/hooks/products/useProducts';
@@ -180,7 +181,7 @@ export default function TopBar() {
         </div>
 
         {/* Notifications — desktop only */}
-        <Link
+        <HoverPrefetchLink
           href="/dashboard/notifications"
           className="relative h-8 px-3 rounded-[var(--radius-sm)] hidden lg:flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-muted)] border border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors"
         >
@@ -191,7 +192,7 @@ export default function TopBar() {
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
-        </Link>
+        </HoverPrefetchLink>
 
         {/* Divider — desktop only */}
         <div className="hidden lg:block w-px h-4 bg-[var(--border)] mx-1" />

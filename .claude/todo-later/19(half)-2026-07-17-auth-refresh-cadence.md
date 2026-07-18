@@ -48,6 +48,16 @@ appear.
 (GET/HEAD) request once when OUR timeout aborts it — the dead-socket stall self-heals
 on a fresh connection and no TimeoutError reaches the console for single-stall cases.
 
+**Server-side amplification fixed 2026-07-18 (separate issue, same log noise):** the
+~55×-per-dashboard-visit `GET /auth/v1/user` (UA `node`) burst was `proxy.ts` calling
+`getUser()` per guarded request × Link prefetch fan-out. Now: local JWT verification
+via `getClaims()` (JWKS-cached) with `getUser()` fallback on expiry, + hover-gated
+prefetch for rare sidebar links. Spec:
+`docs/superpowers/specs/2026-07-18-middleware-jwt-and-prefetch-design.md`.
+**Pre-req still on USER:** rotate the project to asymmetric signing keys (Dashboard →
+JWT Keys → standby ES256 → rotate) — until then getClaims falls back to network and
+nothing improves. The client-side 13s replay storm above remains OPEN and unrelated.
+
 ---
 
 Original note (kept for history):

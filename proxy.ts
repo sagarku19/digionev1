@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/types/database.types';
+import { gateGuardedRoute } from '@/lib/shared/route-gate';
 
 const GUARDED_PREFIXES = ['/dashboard', '/account'];
 
@@ -71,7 +72,13 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 4. Guarded path with a cookie — verify the JWT and refresh the session
+  // 4. Guarded path with a cookie — verify the JWT locally first (signature
+  //    check against the cached JWKS; zero network for live asymmetric tokens),
+  //    falling back to getUser() only when claims can't be produced locally
+  //    (expired token → refresh + cookie write-back, HS256 transition tokens,
+  //    JWKS fetch failure). Requires the project to be on asymmetric signing
+  //    keys — on the legacy HS256 secret getClaims() degrades to a getUser()
+  //    network call internally, i.e. exactly the old behavior.
   let supabaseResponse = NextResponse.next({ request: { headers: request.headers } });
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -92,29 +99,39 @@ export default async function proxy(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Server-controlled app_metadata only — user_metadata is client-editable.
+  let role: unknown;
+  let authenticated = false;
 
-  if (!user) {
-    url.pathname = '/login';
-    url.search = '';
-    url.searchParams.set('returnUrl', request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+  try {
+    const { data: claimsData } = await supabase.auth.getClaims();
+    if (claimsData?.claims) {
+      authenticated = true;
+      role = claimsData.claims.app_metadata?.role;
+    }
+  } catch {
+    // Local verification unavailable — the getUser() fallback decides.
   }
 
-  if (url.pathname.startsWith('/dashboard')) {
-    // Server-controlled app_metadata only — user_metadata is client-editable
-    const role = user.app_metadata?.role;
-    if (role !== 'creator' && role !== 'super_admin') {
-      url.pathname = '/account/library';
+  if (!authenticated) {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      url.pathname = '/login';
       url.search = '';
+      url.searchParams.set('returnUrl', request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
-    // Admin surfaces are super_admin-only (defense-in-depth on top of RLS + per-route DB role checks).
-    if (url.pathname.startsWith('/dashboard/admin') && role !== 'super_admin') {
-      url.pathname = '/dashboard';
-      url.search = '';
-      return NextResponse.redirect(url);
-    }
+
+    role = user.app_metadata?.role;
+  }
+
+  // Admin surfaces are super_admin-only (defense-in-depth on top of RLS + per-route DB role checks).
+  const decision = gateGuardedRoute(url.pathname, role);
+  if (decision.type === 'redirect') {
+    url.pathname = decision.pathname;
+    url.search = '';
+    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;

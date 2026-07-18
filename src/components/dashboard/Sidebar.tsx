@@ -40,11 +40,28 @@ import {
 import { useCreator } from "@/hooks/creator/useCreator";
 import { useNotifications } from "@/hooks/notifications/useNotifications";
 import { useAuthSession } from "@/hooks/auth/useAuthSession";
+import HoverPrefetchLink from "@/components/dashboard/HoverPrefetchLink";
 
 // ─── Types ───────────────────────────────────────────────────
 type NavChild = { label: string; href: string; icon: React.ElementType };
 type NavItem = NavChild & { children?: NavChild[] };
 type NavGroup = { id: string; group: string; items: NavItem[] };
+
+// Routes that keep Next's default viewport prefetch. Every other sidebar/menu
+// link prefetches only on hover or focus intent (HoverPrefetchLink), so a
+// single dashboard load doesn't fan out one prefetch request per link.
+const HOT_PREFETCH = new Set([
+  "/dashboard",
+  "/dashboard/products",
+  "/dashboard/sites",
+  "/dashboard/orders",
+  "/dashboard/customers",
+  "/dashboard/media",
+  "/dashboard/analytics",
+  "/dashboard/earnings",
+  "/dashboard/autodm",
+  "/dashboard/links",
+]);
 
 const NAV: NavGroup[] = [
   {
@@ -242,8 +259,10 @@ export default function Sidebar() {
     icon: React.ElementType;
     active: boolean;
     badge?: number;
-  }) => (
-    <Link
+  }) => {
+    const LinkComponent = HOT_PREFETCH.has(href) ? Link : HoverPrefetchLink;
+    return (
+    <LinkComponent
       href={href}
       onClick={close}
       className={`group relative flex items-center gap-3 pl-3 pr-3 py-[7px] rounded-[var(--radius-sm)] text-[13px] font-medium transition-all ${
@@ -268,8 +287,9 @@ export default function Sidebar() {
           {badge > 9 ? "9+" : badge}
         </span>
       ) : null}
-    </Link>
-  );
+    </LinkComponent>
+    );
+  };
 
   return (
     <>
@@ -395,7 +415,7 @@ export default function Sidebar() {
                               const ca =
                                 pathname?.startsWith(child.href) ?? false;
                               return (
-                                <Link
+                                <HoverPrefetchLink
                                   key={child.href}
                                   href={child.href}
                                   onClick={close}
@@ -409,7 +429,7 @@ export default function Sidebar() {
                                     className={`w-3.5 h-3.5 shrink-0 ${ca ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}
                                   />
                                   {child.label}
-                                </Link>
+                                </HoverPrefetchLink>
                               );
                             })}
                           </div>
@@ -550,7 +570,7 @@ export default function Sidebar() {
                     <p className="text-[10.5px] text-[var(--text-secondary)] leading-relaxed mb-2">
                       Unlock lower fees, priority support and more.
                     </p>
-                    <Link
+                    <HoverPrefetchLink
                       href="/dashboard/settings/subscription"
                       onClick={() => {
                         close();
@@ -559,11 +579,11 @@ export default function Sidebar() {
                       className="block w-full text-center py-1 bg-[var(--warning)] hover:opacity-90 text-[var(--text-on-brand)] rounded-md text-[11px] font-semibold transition"
                     >
                       Upgrade to Pro
-                    </Link>
+                    </HoverPrefetchLink>
                   </div>
                 </div>
                 <hr className="my-1 border-[var(--border)]" />
-                <Link
+                <HoverPrefetchLink
                   href="/dashboard/settings/profile"
                   onClick={() => {
                     close();
@@ -573,7 +593,7 @@ export default function Sidebar() {
                 >
                   <Settings className="w-4 h-4 text-[var(--text-secondary)]" />
                   Profile
-                </Link>
+                </HoverPrefetchLink>
                 {/* <Link
                   href="/dashboard/settings/library"
                   onClick={() => { close(); setProfileMenuOpen(false); }}
@@ -618,7 +638,7 @@ export default function Sidebar() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {QUICK_ACTIONS.map((action) => (
-                <Link
+                <HoverPrefetchLink
                   key={action.label}
                   href={action.href}
                   onClick={() => {
@@ -638,7 +658,7 @@ export default function Sidebar() {
                       {action.desc}
                     </p>
                   </div>
-                </Link>
+                </HoverPrefetchLink>
               ))}
             </div>
           </div>

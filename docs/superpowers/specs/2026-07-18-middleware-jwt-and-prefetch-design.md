@@ -53,11 +53,13 @@ Replace the unconditional `getUser()` with:
 - **Revocation lag ≤1h:** a banned/deleted user or revoked session passes the middleware until the access token expires. Defense-in-depth holds — every `/api/*` route still calls `getUser()` per request, and all data access is RLS-gated. The middleware gate is a router, not the security boundary.
 - **Role staleness:** not a regression. The buyer→creator upgrade flow already calls `refreshSession()` after `/api/account/upgrade-to-creator`, minting a token with the new role immediately.
 
-### Implementation notes / to verify while coding
+### Implementation notes (verified against installed auth-js, 2026-07-18)
 
-- Exact `getClaims()` return shape on supabase-js `^2.99.2` (`{ data: { claims }, error }`) and its behavior on an expired token (must return an error/null, not hang) — confirm against the installed version, not docs from memory.
-- Confirm `getClaims()` does **not** trigger a refresh itself; the fallback must be the only refresh path.
-- Middleware runs on the edge runtime — keep the helper and any imports WebCrypto/edge-compatible.
+- `getClaims()` returns `{ data: { claims, header, signature } | null, error }`; `claims` is `JwtPayload` with `app_metadata?: UserAppMetadata` — same type the current `getUser()` path reads.
+- **Finding:** `getClaims()` with no jwt argument calls `getSession()` internally, which auto-refreshes an expired session (network + cookie write-back through the ssr adapter). So on expiry the refresh usually happens *inside* `getClaims()` and the explicit `getUser()` fallback rarely fires — it remains as the safety net for thrown errors/null claims. Net behavior matches the design: one network call per expiry, zero for live tokens.
+- HS256 tokens (pre-rotation): `getClaims()` internally falls back to a `getUser()` network call — identical to old behavior, so shipping before key rotation is safe but improves nothing.
+- JWKS fetch failures surface as auth errors (`{ data: null, error }`); the middleware additionally try/catches and falls back to `getUser()`.
+- Middleware runs on the edge runtime — the gate helper (`src/lib/shared/route-gate.ts`) is a pure function with no Node-only imports.
 
 ## Part C — Sidebar/TopBar: hover-gated prefetch for rare links
 
