@@ -2,7 +2,8 @@
 // Dev-only auth telemetry, enabled via localStorage['digione.auth.debug'] = '1'.
 // The sanctioned exception to the no-console rule: every line is gated by the
 // flag, which is never set in production usage paths. Used to diagnose the
-// ~13s refresh-cadence anomaly (todo-later 19 — resolved: healthy hourly cadence, misread burst). Dump the buffer with
+// ~13s refresh replay storm (todo-later 19 — stale-session persistence; the
+// detect-and-repair fix lives in auth-repair.ts). Dump the buffer with
 // window.__authDebug().
 
 interface AuthDebugEntry {

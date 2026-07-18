@@ -11,6 +11,12 @@
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase/client';
 import { logAuthEvent } from '@/lib/supabase/auth-debug';
+import {
+  createSessionAdoptionGuard,
+  detectRefreshStorm,
+  storageKeyForUrl,
+  type AdoptionSession,
+} from '@/lib/supabase/auth-repair';
 
 export type AuthStatus = 'authenticated' | 'unauthenticated' | 'degraded';
 export interface AuthSnapshot {
@@ -104,6 +110,57 @@ export async function resolveAuthSnapshot(rawGetUser: RawGetUser): Promise<AuthS
   return { status: 'degraded', user: lastKnownUser };
 }
 
+// Replay-storm guard (todo-later 19): after every refresh/sign-in, verify the
+// session actually reached cookie storage; purge + re-persist on mismatch.
+// Deferred via setTimeout because auth-js fires these events while holding the
+// per-tab auth lock — calling setSession synchronously inside the callback
+// would deadlock it. Storm detection is telemetry only (3+ refreshes in 2 min).
+const STORM_WARN_COOLDOWN_MS = 120_000;
+let refreshTimestamps: number[] = [];
+let lastStormWarnAt = Number.NEGATIVE_INFINITY;
+let adoptionGuard: ((session: AdoptionSession) => Promise<unknown>) | null = null;
+
+function getAdoptionGuard(): ((session: AdoptionSession) => Promise<unknown>) | null {
+  if (adoptionGuard) return adoptionGuard;
+  const storageKey = storageKeyForUrl(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '');
+  if (!storageKey || typeof document === 'undefined') return null;
+  adoptionGuard = createSessionAdoptionGuard({
+    storageKey,
+    getCookieString: () => document.cookie,
+    purgeCookies: (names) => {
+      for (const name of names) {
+        document.cookie = `${name}=; Max-Age=0; path=/`;
+      }
+    },
+    persistSession: async (s) => {
+      await supabase.auth.setSession(s);
+    },
+    // The sanctioned exception to the no-console rule: fires at most once per
+    // cooldown window, only when storage is provably broken — this is the
+    // signal that ends the todo-19 investigation.
+    warn: (message) => console.warn(message),
+  });
+  return adoptionGuard;
+}
+
+function scheduleAdoptionCheck(session: AdoptionSession): void {
+  setTimeout(() => {
+    void getAdoptionGuard()?.(session);
+  }, 0);
+}
+
+function recordRefreshForStormTelemetry(): void {
+  const now = Date.now();
+  refreshTimestamps = refreshTimestamps.filter((t) => now - t <= STORM_WARN_COOLDOWN_MS);
+  refreshTimestamps.push(now);
+  if (detectRefreshStorm(refreshTimestamps, now) && now - lastStormWarnAt > STORM_WARN_COOLDOWN_MS) {
+    lastStormWarnAt = now;
+    console.warn(
+      '[auth-repair] refresh storm detected: 3+ token refreshes within 2 minutes — see todo-later 19',
+    );
+  }
+}
+
 // Keeps the cache fresh for free (refresh/sign-in events carry the user) and
 // clears it on definitive sign-out. Lazy so tests importing pure functions
 // never touch the real client.
@@ -116,6 +173,13 @@ function ensureAuthEventSubscription(): void {
       lastKnownUser = null;
     } else if (session?.user) {
       lastKnownUser = session.user;
+    }
+    if (event === 'TOKEN_REFRESHED') recordRefreshForStormTelemetry();
+    if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && session?.access_token && session.refresh_token) {
+      scheduleAdoptionCheck({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+      });
     }
     logAuthEvent(event, session?.expires_at ?? null);
   });

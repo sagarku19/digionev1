@@ -40,6 +40,22 @@ tick → stale `expires_at` → refresh → replay → forever.
 4. Avoid logging creator + buyer accounts into the same browser profile during testing
    (same storageKey → cookie thrash); use a separate profile/incognito for the buyer.
 
+**FIX SHIPPED 2026-07-18 (step 3 done):** `lib/supabase/auth-repair.ts` — after every
+`TOKEN_REFRESHED`/`SIGNED_IN`, verify the event session actually reached cookie
+storage (parses the `sb-…-auth-token` chunked/base64 cookie directly, no client
+call); on mismatch: purge the stale auth cookies → `setSession(event tokens)` →
+re-verify. 60s repair cooldown + single-flight; deferred out of the auth callback
+via `setTimeout` (the event fires while auth-js holds the per-tab lock — calling
+`setSession` inline would deadlock). Storm telemetry: 3+ refreshes in 2 min →
+one `console.warn` per window. Wired in `current-user.ts`
+`ensureAuthEventSubscription`; 16 unit tests in `auth-repair.test.ts`.
+This breaks the loop on its first iteration: the first storm tick repairs storage,
+so the next tick sees a healthy `expires_at`. Diagnosis steps 1–2 above are
+superseded (a fresh sign-out/in happened 2026-07-18 anyway); if the
+`[auth-repair]` warn ever fires in the console, that's the confirmation the
+stale-persistence hypothesis was right. Step 4 (separate browser profile for the
+buyer account) is still good hygiene.
+
 **Watch-item (unchanged):** per-tab `processLock` = zero cross-tab refresh
 serialization; revisit `navigatorLock`-steal only if "randomly logged out" reports
 appear.
