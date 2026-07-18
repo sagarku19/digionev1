@@ -110,6 +110,14 @@ export function detectRefreshStorm(timestampsMs: number[], nowMs: number): boole
   return recent.length >= STORM_THRESHOLD;
 }
 
+function isLockAcquireTimeout(err: unknown): boolean {
+  return (
+    !!err &&
+    typeof err === 'object' &&
+    (err as { isAcquireTimeout?: boolean }).isAcquireTimeout === true
+  );
+}
+
 export function createSessionAdoptionGuard(
   deps: AdoptionDeps,
 ): (session: AdoptionSession) => Promise<AdoptionResult> {
@@ -118,6 +126,12 @@ export function createSessionAdoptionGuard(
   let lastRepairAt = Number.NEGATIVE_INFINITY;
   let inFlight: Promise<AdoptionResult> | null = null;
 
+  // Ordering is load-bearing: persist FIRST, purge only as an escalation and
+  // always immediately followed by another persist. Purging without a
+  // successful rewrite deletes the only session cookie — the next storage
+  // read would look signed-out. setSession's own write path already replaces
+  // the base cookie and cleans stale chunks, so the purge is only for the
+  // exotic case where that cleanup itself failed.
   const run = async (session: AdoptionSession): Promise<AdoptionResult> => {
     const before = readPersistedSession(deps.getCookieString(), deps.storageKey);
     if (before.accessToken === session.access_token) return 'healthy';
@@ -125,10 +139,40 @@ export function createSessionAdoptionGuard(
     if (now() - lastRepairAt < REPAIR_COOLDOWN_MS) return 'skipped';
     lastRepairAt = now();
 
-    if (before.cookieNames.length > 0) deps.purgeCookies(before.cookieNames);
-    await deps.persistSession(session);
+    // setSession takes the per-tab auth lock — a stalled refresh can hold it
+    // past the 5s acquire timeout. That is contention, not corruption: skip
+    // quietly, un-stamp the cooldown so the next auth event retries.
+    try {
+      await deps.persistSession(session);
+    } catch (err) {
+      if (isLockAcquireTimeout(err)) {
+        lastRepairAt = Number.NEGATIVE_INFINITY;
+        return 'skipped';
+      }
+      warn('[auth-repair] session re-persist threw — cookie storage may stay stale until the next refresh');
+      return 'failed';
+    }
 
-    const after = readPersistedSession(deps.getCookieString(), deps.storageKey);
+    let after = readPersistedSession(deps.getCookieString(), deps.storageKey);
+    if (after.accessToken === session.access_token) {
+      warn(
+        '[auth-repair] refreshed session had not reached cookie storage — re-persisted (see todo-later 19)',
+      );
+      return 'repaired';
+    }
+
+    if (after.cookieNames.length > 0) deps.purgeCookies(after.cookieNames);
+    try {
+      await deps.persistSession(session);
+    } catch (err) {
+      if (isLockAcquireTimeout(err)) {
+        lastRepairAt = Number.NEGATIVE_INFINITY;
+        return 'skipped';
+      }
+      warn('[auth-repair] session re-persist threw after purge — a fresh sign-in may be needed');
+      return 'failed';
+    }
+    after = readPersistedSession(deps.getCookieString(), deps.storageKey);
     if (after.accessToken === session.access_token) {
       warn(
         '[auth-repair] refreshed session had not reached cookie storage — purged stale auth cookies and re-persisted (see todo-later 19)',

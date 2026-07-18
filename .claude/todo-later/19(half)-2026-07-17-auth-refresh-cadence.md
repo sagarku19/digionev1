@@ -56,6 +56,16 @@ superseded (a fresh sign-out/in happened 2026-07-18 anyway); if the
 stale-persistence hypothesis was right. Step 4 (separate browser profile for the
 buyer account) is still good hygiene.
 
+**Hardened 2026-07-19** after a dev-overlay `ProcessLockAcquireTimeoutError`: the
+guard's `setSession` takes the per-tab auth lock, and the deferred call had no
+rejection handler → unhandled rejection when the lock was busy (stalled-refresh
+family, saga ch. 3). Fixes: lock-acquire timeouts are treated as contention, not
+corruption (`'skipped'`, cooldown un-stamped so the next auth event retries);
+the schedule site `.catch`es everything; and the repair order is now
+**persist-first** — purge only as an escalation and always immediately followed by
+another persist, because purging without a successful rewrite deletes the only
+session cookie (storage would read as signed-out). 19 unit tests.
+
 **Watch-item (unchanged):** per-tab `processLock` = zero cross-tab refresh
 serialization; revisit `navigatorLock`-steal only if "randomly logged out" reports
 appear.

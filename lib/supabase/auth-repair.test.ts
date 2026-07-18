@@ -122,17 +122,37 @@ describe('createSessionAdoptionGuard', () => {
     expect(deps.persistSession).not.toHaveBeenCalled();
   });
 
-  it('purges and re-persists on mismatch, then verifies', async () => {
+  it('re-persists on mismatch WITHOUT purging when the write sticks', async () => {
     const deps = makeDeps();
     const guard = createSessionAdoptionGuard(deps);
     const result = await guard(session);
     expect(result).toBe('repaired');
-    expect(deps.purgeCookies).toHaveBeenCalledWith([KEY]);
     expect(deps.persistSession).toHaveBeenCalledWith(session);
+    expect(deps.purgeCookies).not.toHaveBeenCalled();
     expect(deps.warn).toHaveBeenCalled();
   });
 
-  it('reports failed when the rewrite still does not stick', async () => {
+  it('escalates to purge + second persist when the first write does not stick', async () => {
+    let cookie = `${KEY}=${sessionCookieValue('stale-token')}`;
+    let writes = 0;
+    const deps = makeDeps({
+      getCookieString: () => cookie,
+      persistSession: vi.fn(async (s: { access_token: string; refresh_token: string }) => {
+        writes += 1;
+        if (writes >= 2) cookie = `${KEY}=${sessionCookieValue(s.access_token)}`;
+      }),
+      purgeCookies: vi.fn(() => {
+        cookie = '';
+      }),
+    });
+    const guard = createSessionAdoptionGuard(deps);
+    const result = await guard(session);
+    expect(result).toBe('repaired');
+    expect(deps.purgeCookies).toHaveBeenCalledWith([KEY]);
+    expect(deps.persistSession).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports failed when both writes do not stick', async () => {
     const deps = makeDeps({
       persistSession: vi.fn(async () => {
         /* cookie unchanged — write silently failing */
@@ -142,6 +162,45 @@ describe('createSessionAdoptionGuard', () => {
     const result = await guard(session);
     expect(result).toBe('failed');
     expect(deps.warn).toHaveBeenCalled();
+  });
+
+  it('skips quietly on a lock-acquire timeout and allows an immediate retry', async () => {
+    let locked = true;
+    const deps = makeDeps({
+      persistSession: vi.fn(async () => {
+        if (locked) {
+          const err = new Error('Acquiring process lock timed out');
+          (err as unknown as { isAcquireTimeout: boolean }).isAcquireTimeout = true;
+          throw err;
+        }
+        return undefined;
+      }),
+    });
+    let cookie = `${KEY}=${sessionCookieValue('stale-token')}`;
+    deps.getCookieString = () => cookie;
+    const guard = createSessionAdoptionGuard(deps);
+    expect(await guard(session)).toBe('skipped');
+    expect(deps.warn).not.toHaveBeenCalled();
+    locked = false;
+    deps.persistSession = vi.fn(async (s: { access_token: string; refresh_token: string }) => {
+      cookie = `${KEY}=${sessionCookieValue(s.access_token)}`;
+    });
+    expect(await guard(session)).toBe('repaired');
+  });
+
+  it('reports failed (with warn) when persist throws a non-lock error, keeping the cooldown', async () => {
+    let t = 1_000_000;
+    const deps = makeDeps({
+      now: () => t,
+      persistSession: vi.fn(async () => {
+        throw new Error('boom');
+      }),
+    });
+    const guard = createSessionAdoptionGuard(deps);
+    expect(await guard(session)).toBe('failed');
+    expect(deps.warn).toHaveBeenCalled();
+    t += 10_000;
+    expect(await guard(session)).toBe('skipped');
   });
 
   it('skips when a repair ran inside the cooldown window', async () => {

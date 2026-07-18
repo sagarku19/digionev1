@@ -145,7 +145,10 @@ function getAdoptionGuard(): ((session: AdoptionSession) => Promise<unknown>) | 
 
 function scheduleAdoptionCheck(session: AdoptionSession): void {
   setTimeout(() => {
-    void getAdoptionGuard()?.(session);
+    // Never let a guard rejection become an unhandled promise (the dev overlay
+    // surfaced exactly that when setSession hit a busy auth lock). The guard
+    // handles its own meaningful failures; anything escaping it is best-effort.
+    getAdoptionGuard()?.(session).catch(() => undefined);
   }, 0);
 }
 
