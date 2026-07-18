@@ -7,6 +7,7 @@
 // is bound to (this creator, this product, the products bucket) — never fileId alone.
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { isUuid } from '@/lib/upload-validators';
@@ -39,11 +40,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ productI
     if (!isUuid(productId)) return json(reqId, { error: 'Invalid productId' }, 400);
 
     const cookieClient = await createClient();
-    const { data: { user } } = await cookieClient.auth.getUser();
-    if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
+    const identity = await getVerifiedIdentity(cookieClient);
+    if (!identity) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const serviceDb = createServiceClient();
-    const owned = await resolveOwnedProduct(serviceDb, user.id, productId);
+    const owned = await resolveOwnedProduct(serviceDb, identity.userId, productId);
     if ('error' in owned) return json(reqId, { error: owned.error }, owned.status);
 
     const cfg = resolveBucket('creator-content');
@@ -69,14 +70,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ produ
     if (!isUuid(productId)) return json(reqId, { error: 'Invalid productId' }, 400);
 
     const cookieClient = await createClient();
-    const { data: { user } } = await cookieClient.auth.getUser();
-    if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
+    const identity = await getVerifiedIdentity(cookieClient);
+    if (!identity) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const body = await req.json().catch(() => null) as { fileId?: unknown } | null;
     if (!body || !isUuid(body.fileId)) return json(reqId, { error: 'fileId required' }, 400);
 
     const serviceDb = createServiceClient();
-    const owned = await resolveOwnedProduct(serviceDb, user.id, productId);
+    const owned = await resolveOwnedProduct(serviceDb, identity.userId, productId);
     if ('error' in owned) return json(reqId, { error: owned.error }, owned.status);
 
     const cfg = resolveBucket('creator-content');

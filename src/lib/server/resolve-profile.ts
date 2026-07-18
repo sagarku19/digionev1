@@ -2,11 +2,15 @@
 // across the schema. Server-only (service role — RLS blocks cross-user reads).
 
 import { createServiceClient } from '@/lib/supabase/service';
+import { getCachedProfileId, setCachedProfileId } from '@/lib/server/identity-cache';
 
 export async function resolveProfileId(
   authUserId: string,
   email?: string | null
 ): Promise<string | null> {
+  const cached = getCachedProfileId(authUserId);
+  if (cached !== undefined) return cached;
+
   const db = createServiceClient();
 
   let publicUserId: string | null = null;
@@ -46,5 +50,7 @@ export async function resolveProfileId(
     return null;
   }
 
-  return profile?.id ?? null;
+  const profileId = profile?.id ?? null;
+  if (profileId) setCachedProfileId(authUserId, profileId);
+  return profileId;
 }

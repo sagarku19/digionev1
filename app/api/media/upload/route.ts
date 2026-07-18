@@ -5,6 +5,7 @@
 // files use the presigned path (/api/upload).
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { sanitizeFilename } from '@/lib/upload-validators';
@@ -25,8 +26,8 @@ export async function POST(req: Request) {
   const reqId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   try {
     const cookieClient = await createClient();
-    const { data: { user } } = await cookieClient.auth.getUser();
-    if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
+    const identity = await getVerifiedIdentity(cookieClient);
+    if (!identity) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const form = await req.formData().catch(() => null);
     if (!form) return json(reqId, { error: 'Expected multipart/form-data' }, 400);
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
     if (!safeName) return json(reqId, { error: 'Filename invalid' }, 400);
 
     const serviceDb = createServiceClient();
-    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, user.id);
+    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, identity.userId);
     if (!creatorId) return json(reqId, { error: 'Creator profile not found' }, 403);
 
     const input = Buffer.from(await file.arrayBuffer());

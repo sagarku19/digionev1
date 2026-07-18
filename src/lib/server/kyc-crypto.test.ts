@@ -29,7 +29,11 @@ describe('kyc-crypto', () => {
 
   it('throws when decrypting a tampered ciphertext', () => {
     const enc = encryptField('sensitive');
-    const tampered = enc.slice(0, -2) + (enc.endsWith('A') ? 'B' : 'A') + enc.slice(-1);
+    // Flip a char BEFORE the final base64 quantum: trailing chars carry unused
+    // padding bits, so a tail flip can decode to identical bytes and slip past
+    // GCM (this test used to flake). A mid-body char always alters real bits.
+    const i = enc.length - 6;
+    const tampered = enc.slice(0, i) + (enc[i] === 'A' ? 'B' : 'A') + enc.slice(i + 1);
     expect(() => decryptField(tampered)).toThrow();
   });
 

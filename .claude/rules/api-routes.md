@@ -854,7 +854,10 @@ Receives inbound Instagram events (comments, DMs, story mentions/replies). **Ret
 ## Conventions
 
 - All routes return JSON. Errors: `{ error: string }` with the appropriate status code.
-- Auth-required routes always use `await createClient()` from `lib/supabase/server.ts` + `supabase.auth.getUser()`. Never `getSession()` (see `.claude/rules/anti-patterns.md`).
+- Auth-required routes use `await createClient()` from `lib/supabase/server.ts`, then verify with one of two tiers (never `getSession()` — see `.claude/rules/anti-patterns.md`):
+  - **High-frequency routes** (media×5, upload×2, `products/[productId]/files`, `private/download`, `deliverables/[productId]`, `links` + `links/[id]`, `sites/create`) call `getVerifiedIdentity(client)` from `src/lib/server/auth-claims.ts` — local JWT signature check against a module-cached JWKS (zero network for live tokens), `getUser()` fallback on anything local verification can't settle.
+  - **Money/KYC/admin/account/checkout routes** stay on `supabase.auth.getUser()` — they authorize service-role writes where revocation freshness (bans, revoked sessions) matters more than a saved round-trip. Do not migrate these without a security review.
+- Creator-identity resolution (`resolveProfileId` / `resolveCreatorIdFromAuthUserId`) caches positive `authUserId → profiles.id` mappings per instance (`src/lib/server/identity-cache.ts`; the mapping is immutable, null is never cached).
 - Service-role writes must use `createServiceClient()` from `lib/supabase/service.ts`. Never import `createClient` from `@supabase/supabase-js` directly in `/api/*` route handlers.
 - Cashfree calls always go through `${CASHFREE_ENV}/orders` with `x-api-version: 2023-08-01`.
 - Cashfree return/notify URLs are built from `NEXT_PUBLIC_APP_URL` — never hardcode.

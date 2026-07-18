@@ -7,9 +7,15 @@ tags: []
 # Identity / profile-id resolution is re-fetched by every hook (not cached)
 
 **Status:** Option A SHIPPED 2026-07-18 (`getCreatorProfileId` memoized per verified
-`user.id` + concurrent dedup, 7 unit tests, `src/lib/getCreatorProfileId.ts`). Remaining:
-(1) manual log verification — restart `npm run dev`, browse dashboards, confirm the
-`auth/v1/user` + `users→profiles` calls drop to ~1/session; (2) optional Option B
+`user.id` + concurrent dedup, 7 unit tests, `src/lib/getCreatorProfileId.ts`).
+**Server-side half ALSO SHIPPED 2026-07-18 (second pass):** both server resolvers
+(`src/lib/server/resolve-profile.ts` and `lib/auth-resolve.ts`) now share a
+positive-only, bounded per-instance cache (`src/lib/server/identity-cache.ts`, 5k
+FIFO; null never cached — buyer→creator upgrade must be seen immediately), and 13
+high-frequency routes verify JWTs locally via `src/lib/server/auth-claims.ts`
+instead of per-request `getUser()` (see `security-model.md` → two-tier API auth).
+Remaining: (1) manual log verification — browse dashboards, confirm the
+`auth/v1/user` + `users→profiles` calls drop; (2) optional Option B
 (TanStack-query identity) only if identity becomes broader shared state.
 **Found:** 2026-07-17, while reviewing Supabase logs after the processLock-timeout fix.
 
@@ -44,9 +50,11 @@ from the 2026-07-17 auth work (see [[signin-timeout-saga]] chapter 3 and
 *concurrent* `getUser()` calls in one tick; it does NOT help sequential re-resolution
 across navigation, and it does NOT cache the `users→profiles` query at all.
 
-Not fixed by this (out of scope, separate): the **server-side** (`node` UA)
+~~Not fixed by this (out of scope, separate): the **server-side** (`node` UA)
 `/auth/v1/user` + `users`/`profiles` calls in route handlers / SSR are per-request by
-design and unaffected by any client cache.
+design and unaffected by any client cache.~~ **Fixed 2026-07-18 (second pass)** — see
+Status above: local JWT verification + per-instance identity cache on the hot routes;
+money/KYC/admin routes keep per-request `getUser()` by design.
 
 ## Recommended fix (pick one)
 

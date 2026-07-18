@@ -7,6 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { resolveBucket, storage } from '@/lib/storage';
@@ -36,8 +37,8 @@ export async function POST(req: Request) {
 
   try {
     const cookieClient = await createClient();
-    const { data: { user } } = await cookieClient.auth.getUser();
-    if (!user) {
+    const identity = await getVerifiedIdentity(cookieClient);
+    if (!identity) {
       return json(reqId, { error: 'Unauthorized' }, 401);
     }
 
@@ -63,9 +64,9 @@ export async function POST(req: Request) {
     }
 
     const serviceDb = createServiceClient();
-    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, user.id);
+    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, identity.userId);
     if (!creatorId) {
-      log('warn', reqId, 'profile_lookup_failed', { authId: user.id });
+      log('warn', reqId, 'profile_lookup_failed', { authId: identity.userId });
       return json(reqId, { error: 'Creator profile not found' }, 403);
     }
 

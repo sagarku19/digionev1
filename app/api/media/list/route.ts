@@ -4,6 +4,7 @@
 // Derivatives are excluded (per-placement). Both arrays are newest-first.
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { resolveBucket, publicUrlFor, storage } from '@/lib/storage';
@@ -20,11 +21,11 @@ export async function GET(req: Request) {
   const reqId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   try {
     const cookieClient = await createClient();
-    const { data: { user } } = await cookieClient.auth.getUser();
-    if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
+    const identity = await getVerifiedIdentity(cookieClient);
+    if (!identity) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const serviceDb = createServiceClient();
-    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, user.id);
+    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, identity.userId);
     if (!creatorId) return json(reqId, { error: 'Creator profile not found' }, 403);
 
     // ── Images: own media originals (public) ──

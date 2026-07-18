@@ -4,6 +4,7 @@
 // parent_file_id + crop. Optionally soft-deletes a replaced derivative.
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveCreatorIdFromAuthUserId } from '@/lib/auth-resolve';
 import { sanitizeFilename } from '@/lib/upload-validators';
@@ -34,8 +35,8 @@ export async function POST(req: Request) {
   const reqId = req.headers.get('x-request-id') ?? crypto.randomUUID();
   try {
     const cookieClient = await createClient();
-    const { data: { user } } = await cookieClient.auth.getUser();
-    if (!user) return json(reqId, { error: 'Unauthorized' }, 401);
+    const identity = await getVerifiedIdentity(cookieClient);
+    if (!identity) return json(reqId, { error: 'Unauthorized' }, 401);
 
     const body = await req.json().catch(() => null) as {
       sourceFileId?: unknown; sourceUrl?: unknown; crop?: unknown; kind?: unknown; replacesFileId?: unknown;
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
     const kind = typeof body.kind === 'string' ? body.kind : 'other';
 
     const serviceDb = createServiceClient();
-    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, user.id);
+    const creatorId = await resolveCreatorIdFromAuthUserId(serviceDb, identity.userId);
     if (!creatorId) return json(reqId, { error: 'Creator profile not found' }, 403);
 
     // Resolve the source bytes + a pointer for re-crop.

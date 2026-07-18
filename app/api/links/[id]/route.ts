@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveProfileId } from '@/lib/server/resolve-profile';
 import { isValidCode, normalizeCode } from '@/lib/server/shortlinks/code';
@@ -42,9 +43,9 @@ function appHostOf(appUrl?: string): string | undefined {
 
 async function authCreator(): Promise<{ creatorId: string } | NextResponse> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const creatorId = await resolveProfileId(user.id, user.email);
+  const identity = await getVerifiedIdentity(supabase);
+  if (!identity) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const creatorId = await resolveProfileId(identity.userId, identity.email);
   if (!creatorId) return NextResponse.json({ error: 'No creator profile' }, { status: 404 });
   return { creatorId };
 }

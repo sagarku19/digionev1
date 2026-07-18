@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveProfileId } from '@/lib/server/resolve-profile';
 import { rateLimitKey } from '@/lib/server/rate-limit';
@@ -53,10 +54,10 @@ async function generateUniqueCode(
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const identity = await getVerifiedIdentity(supabase);
+    if (!identity) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const creatorId = await resolveProfileId(user.id, user.email);
+    const creatorId = await resolveProfileId(identity.userId, identity.email);
     if (!creatorId) return NextResponse.json({ error: 'No creator profile' }, { status: 404 });
 
     if (!(await rateLimitKey(`links-create:${creatorId}`, { max: 30, windowSeconds: 60 }))) {

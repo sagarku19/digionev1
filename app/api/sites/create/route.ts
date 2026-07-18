@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveProfileId } from '@/lib/server/resolve-profile';
 
@@ -64,14 +65,14 @@ function sectionsFor(type: string) {
 export async function POST(req: NextRequest) {
   try {
     const authClient = await createClient();
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
+    const identity = await getVerifiedIdentity(authClient);
+    if (!identity) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const db = createServiceClient();
 
-    const profileId = await resolveProfileId(user.id, user.email);
+    const profileId = await resolveProfileId(identity.userId, identity.email);
     if (!profileId) {
       return NextResponse.json(
         { error: 'User record not found. Please complete your profile setup.' },

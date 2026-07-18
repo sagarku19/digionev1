@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getVerifiedIdentity } from '@/lib/server/auth-claims';
 import { createServiceClient } from '@/lib/supabase/service';
 import { isUuid } from '@/lib/upload-validators';
 import { resolveBucket, storage } from '@/lib/storage';
@@ -41,8 +42,8 @@ export async function GET(
     }
 
     const cookieClient = await createClient();
-    const { data: { user } } = await cookieClient.auth.getUser();
-    if (!user) {
+    const identity = await getVerifiedIdentity(cookieClient);
+    if (!identity) {
       return json(reqId, { error: 'Unauthorized' }, 401);
     }
 
@@ -56,13 +57,13 @@ export async function GET(
     const { data: accessRows } = await serviceDb
       .from('user_product_access')
       .select('id, created_at')
-      .eq('user_id', user.id)
+      .eq('user_id', identity.userId)
       .eq('product_id', productId)
       .order('created_at', { ascending: true })
       .limit(1);
     const access = accessRows?.[0];
     if (!access) {
-      log('warn', reqId, 'access_denied', { userId: user.id, productId });
+      log('warn', reqId, 'access_denied', { userId: identity.userId, productId });
       return json(reqId, { error: 'You do not have access to this product' }, 403);
     }
     // The buyer keeps files that were live at purchase: current files, plus any
