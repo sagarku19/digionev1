@@ -35,6 +35,10 @@
    ROOT DESIGN TOKENS — Light Theme (default for all pages)
    ================================================================ */
 :root {
+  /* Opt out of browser forced-dark (Edge/Chrome auto dark, mobile UAs) —
+     the app owns its own light/dark theming via the .dark class. */
+  color-scheme: light;
+
   /* Backgrounds */
   --bg-primary:   #ffffff;
   --bg-secondary: #fafafa;
@@ -159,6 +163,7 @@
    DARK THEME — Applied to .dark wrapper (dashboard only)
    ================================================================ */
 .dark {
+  color-scheme: dark;
   --bg-primary:   #0a0a0a;
   --bg-secondary: #111111;
   --bg-tertiary:  #1a1a1a;

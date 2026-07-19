@@ -32,6 +32,12 @@ export const metadata: Metadata = {
     template: "%s | DigiOne.ai",
   },
   description: "Built for Digital Creators.",
+  other: {
+    // Tell the Dark Reader extension not to rewrite our DOM — the app owns its
+    // own light/dark theming. Without this the extension mutates SVG fills and
+    // breaks React hydration on light pages.
+    "darkreader-lock": "true",
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
