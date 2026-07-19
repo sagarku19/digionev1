@@ -99,15 +99,15 @@ digionev1/
 │   ├── (buyer)/                  # Checkout and cart experience
 │   ├── dashboard/                # Authenticated creator CRM
 │   │   ├── analytics/
-│   │   ├── products/             # Product management + upsells
+│   │   ├── products/             # Product management
 │   │   ├── sites/                # Storefront builder
 │   │   ├── earnings/
 │   │   ├── customers/
 │   │   ├── orders/
-│   │   ├── marketing/            # Coupons, affiliates, leads, referrals
+│   │   ├── marketing/            # Coupons, affiliates, leads, referrals, services, community
 │   │   ├── integrations/         # Email, WhatsApp, Telegram, Google Sheets
 │   │   ├── settings/             # Profile, billing, subscription
-│   │   └── …                     # admin (payouts), autodm, help, media, notifications, payouts
+│   │   └── …                     # admin (payouts), autodm, help, links (short links), media, notifications, payouts
 │   ├── api/                      # Server-side route handlers — 14+ routes (partial list)
 │   │   ├── checkout/             # Cashfree payment creation
 │   │   ├── webhook/cashfree/     # Payment confirmation (source of truth)
