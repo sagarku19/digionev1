@@ -6,6 +6,8 @@ import { createBrowserClient } from '@supabase/ssr';
 import { processLock } from '@supabase/supabase-js';
 import type { Database } from '@/types/database.types';
 import { makeFetchWithTimeout, LOCK_ACQUIRE_TIMEOUT_MS } from '@/lib/supabase/auth-timing';
+// [auth-forensics] transparent lock instrumentation + browser-lifecycle capture; no-op unless the debug flag is set
+import { wrapLockWithForensics, installForensics, type LockFn } from '@/lib/supabase/auth-forensics';
 
 export function createClient() {
   return createBrowserClient<Database>(
@@ -28,7 +30,8 @@ export function createClient() {
       // narrowed auth-option type omits it — the cast forwards it past the
       // excess-property check without loosening anything else.
       auth: {
-        lock: processLock,
+        // [auth-forensics] wrapper delegates to processLock unchanged when disabled
+        lock: wrapLockWithForensics(processLock as LockFn),
         lockAcquireTimeout: LOCK_ACQUIRE_TIMEOUT_MS,
       } as NonNullable<NonNullable<Parameters<typeof createBrowserClient>[2]>['auth']>,
     },
@@ -36,3 +39,6 @@ export function createClient() {
 }
 
 export const supabase = createClient();
+
+// [auth-forensics] installs lifecycle listeners + PerformanceObserver + window hooks; no-op on the server and when disabled
+if (typeof window !== 'undefined') installForensics();

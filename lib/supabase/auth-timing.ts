@@ -6,6 +6,7 @@
 // per-tab auth lock instead of hanging the whole retry window.
 
 import { isAuthDebugEnabled, logAuthRequest } from './auth-debug';
+import { recordRequestStart, recordRequestSettle } from './auth-forensics'; // [auth-forensics] additive instrumentation only
 
 // auth-js caps a stalled refresh's retry loop at this. Exported so a regression test
 // can assert our fetch timeouts never drift above it. Mirror of
@@ -62,15 +63,16 @@ function resolveRequestMethod(input: RequestInfo | URL, init?: RequestInit): str
 export function makeFetchWithTimeout(baseFetch: typeof fetch = fetch): typeof fetch {
   return async (input, init) => {
     const url = resolveRequestUrl(input as RequestInfo | URL);
+    const method = resolveRequestMethod(input as RequestInfo | URL, init);
     const ms = timeoutForUrl(url);
-    const idempotent = ['GET', 'HEAD'].includes(resolveRequestMethod(input as RequestInfo | URL, init));
+    const idempotent = ['GET', 'HEAD'].includes(method);
     const debug = isAuthDebugEnabled() && isAuthEndpoint(url);
 
     type AttemptResult =
       | { ok: true; res: Response }
       | { ok: false; err: unknown; timedOut: boolean };
 
-    const runAttempt = async (): Promise<AttemptResult> => {
+    const runAttempt = async (attempt: number, retryReason: string | null): Promise<AttemptResult> => {
       const controller = new AbortController();
       let timedOut = false;
       const timer = setTimeout(() => {
@@ -81,22 +83,26 @@ export function makeFetchWithTimeout(baseFetch: typeof fetch = fetch): typeof fe
         ? AbortSignal.any([init.signal, controller.signal])
         : controller.signal;
       const startedAt = Date.now();
+      // [auth-forensics] record in-flight at start; patched on settle. No-op unless debug flag enabled.
+      const reqId = recordRequestStart({ href: url, method, attempt, retry: attempt > 1, retryReason });
       try {
         const res = await baseFetch(input, { ...init, signal });
         if (debug) logAuthRequest(url, Date.now() - startedAt, `status ${res.status}`);
+        recordRequestSettle(reqId, { aborted: false, timedOut: false, status: res.status, errorType: null });
         return { ok: true, res };
       } catch (err) {
         if (debug) logAuthRequest(url, Date.now() - startedAt, err instanceof Error ? err.name || 'error' : 'error');
+        recordRequestSettle(reqId, { aborted: !timedOut && (init?.signal?.aborted ?? false), timedOut, status: null, errorType: err instanceof Error ? err.name || 'error' : 'error' });
         return { ok: false, err, timedOut };
       } finally {
         clearTimeout(timer);
       }
     };
 
-    const first = await runAttempt();
+    const first = await runAttempt(1, null);
     if (first.ok) return first.res;
     if (first.timedOut && idempotent && !init?.signal?.aborted) {
-      const second = await runAttempt();
+      const second = await runAttempt(2, 'timeout');
       if (second.ok) return second.res;
       throw second.err;
     }

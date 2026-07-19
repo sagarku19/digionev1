@@ -17,6 +17,8 @@ import {
   storageKeyForUrl,
   type AdoptionSession,
 } from '@/lib/supabase/auth-repair';
+// [auth-forensics] additive event capture; no-op unless the debug flag is set
+import { recordAuthEvent, setAuthContext } from '@/lib/supabase/auth-forensics';
 
 export type AuthStatus = 'authenticated' | 'unauthenticated' | 'degraded';
 export interface AuthSnapshot {
@@ -185,15 +187,20 @@ function ensureAuthEventSubscription(): void {
       });
     }
     logAuthEvent(event, session?.expires_at ?? null);
+    // [auth-forensics] no-op unless the debug flag is set
+    recordAuthEvent(event, session?.expires_at ?? null, session?.access_token ?? null);
+    setAuthContext({ sessionExpiresAt: session?.expires_at ?? null });
   });
 }
 
-export const getAuthSnapshot: () => Promise<AuthSnapshot> = createSingleFlight<AuthSnapshot>(() => {
+export const getAuthSnapshot: () => Promise<AuthSnapshot> = createSingleFlight<AuthSnapshot>(async () => {
   ensureAuthEventSubscription();
-  return resolveAuthSnapshot(async () => {
+  const snapshot = await resolveAuthSnapshot(async () => {
     const { data, error } = await supabase.auth.getUser();
     return { user: data.user ?? null, error };
   });
+  setAuthContext({ status: snapshot.status }); // [auth-forensics] no-op unless the debug flag is set
+  return snapshot;
 });
 
 export async function getCurrentUser(): Promise<User | null> {
