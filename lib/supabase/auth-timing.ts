@@ -31,6 +31,37 @@ export const LOCK_ACQUIRE_TIMEOUT_MS = 15_000;
 // headroom than auth so slow-network reads are not falsely aborted.
 export const DATA_FETCH_TIMEOUT_MS = 20_000;
 
+// --- Lock acquire-timeout binding ------------------------------------------
+// A lock implementation compatible with auth-js's contract: (name, acquireTimeout, fn).
+export type AuthLockFn = <R>(name: string, acquireTimeout: number, fn: () => Promise<R>) => Promise<R>;
+
+// WHY THIS EXISTS — the `lockAcquireTimeout` option never reaches GoTrueClient.
+//
+// @supabase/supabase-js@2.99.2 `_initSupabaseAuthClient` (dist/index.cjs:499)
+// destructures a FIXED allowlist of auth options —
+//   { autoRefreshToken, persistSession, detectSessionInUrl, storage, userStorage,
+//     storageKey, flowType, lock, debug, throwOnError }
+// — and rebuilds the object it passes to the auth client from only those keys
+// (dist/index.cjs:504-519). `lock` is forwarded; `lockAcquireTimeout` is NOT.
+// So GoTrueClient falls back to its 5000ms default (GoTrueClient.js:28,134),
+// which is BELOW AUTH_FETCH_TIMEOUT_MS (12s): a single stalled auth fetch holds
+// the per-tab lock ~12s while every waiter's 5s ceiling elapses → every waiter
+// throws ProcessLockAcquireTimeoutError (locks.js:262-266 — the exact
+// "acquisition timed out after 5000ms" console message + the recurring crash).
+// @supabase/ssr forwards our option correctly (createBrowserClient.js:34 spreads
+// `...options?.auth`); supabase-js is the layer that drops it.
+//
+// The `lock` FUNCTION is forwarded, and GoTrueClient invokes it as
+// `lock(name, this.lockAcquireTimeout, fn)`. So we bind our ceiling into the lock
+// itself: ignore the (5000) value GoTrueClient hands in and substitute `ceilingMs`.
+// client.ts still passes `auth.lockAcquireTimeout` too, for forward-compat: if a
+// future supabase-js forwards the option, GoTrueClient will hand 15000 in here and
+// this override re-substitutes the same value — a harmless no-op.
+export function bindLockAcquireTimeout(baseLock: AuthLockFn, ceilingMs: number): AuthLockFn {
+  return <R>(name: string, _acquireTimeoutFromGoTrue: number, fn: () => Promise<R>): Promise<R> =>
+    baseLock(name, ceilingMs, fn);
+}
+
 export function resolveRequestUrl(input: RequestInfo | URL): string {
   if (typeof input === 'string') return input;
   if (input instanceof URL) return input.href;

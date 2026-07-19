@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createClient as createSupabaseClient, processLock } from '@supabase/supabase-js';
 import {
   isAuthEndpoint,
   resolveRequestUrl,
   timeoutForUrl,
   makeFetchWithTimeout,
+  bindLockAcquireTimeout,
+  type AuthLockFn,
   AUTH_FETCH_TIMEOUT_MS,
   DATA_FETCH_TIMEOUT_MS,
   AUTHJS_REFRESH_RETRY_CEILING_MS,
@@ -149,5 +152,89 @@ describe('auth-timing: makeFetchWithTimeout', () => {
     caller.abort(new Error('caller cancelled'));
     await expect(p).rejects.toBeTruthy();
     expect(baseFetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+// supabase-js@2.99.2 forwards the `lock` fn but DROPS `lockAcquireTimeout` (fixed
+// destructuring allowlist in _initSupabaseAuthClient), so GoTrueClient uses its 5000ms
+// default. bindLockAcquireTimeout restores the intended ceiling by binding it into the
+// lock fn itself. These guard that the effective timeout is 15s and cannot silently
+// regress to 5s. See the WHY block on bindLockAcquireTimeout in auth-timing.ts.
+describe('auth-timing: bindLockAcquireTimeout (works around supabase-js dropping the option)', () => {
+  it('effective acquire timeout is LOCK_ACQUIRE_TIMEOUT_MS (15000)', async () => {
+    const seen: number[] = [];
+    const baseLock: AuthLockFn = async (_name, acquireTimeout, fn) => {
+      seen.push(acquireTimeout);
+      return fn();
+    };
+    const bound = bindLockAcquireTimeout(baseLock, LOCK_ACQUIRE_TIMEOUT_MS);
+
+    // GoTrueClient hands in its (dropped-option) 5000 default; the base lock must see 15000.
+    const result = await bound('lock:sb-ref-auth-token', 5000, async () => 'value');
+
+    expect(result).toBe('value');
+    expect(LOCK_ACQUIRE_TIMEOUT_MS).toBe(15000);
+    expect(seen).toEqual([15000]);
+  });
+
+  it('CANNOT silently regress to the 5000ms default whatever GoTrueClient passes', async () => {
+    let effective = -1;
+    const baseLock: AuthLockFn = async (_name, acquireTimeout, fn) => {
+      effective = acquireTimeout;
+      return fn();
+    };
+    const bound = bindLockAcquireTimeout(baseLock, LOCK_ACQUIRE_TIMEOUT_MS);
+
+    // Every value GoTrueClient could realistically pass — the default, 0, negatives —
+    // is erased and replaced with the ceiling.
+    for (const passed of [5000, 0, -1, 7000]) {
+      effective = -1;
+      await bound('lock:x', passed, async () => undefined);
+      expect(effective).toBe(LOCK_ACQUIRE_TIMEOUT_MS);
+      expect(effective).not.toBe(5000);
+    }
+  });
+
+  it('stays correct after a future SDK upgrade that forwards 15000 itself (idempotent no-op)', async () => {
+    let effective = -1;
+    const baseLock: AuthLockFn = async (name, acquireTimeout, fn) => {
+      expect(name).toBe('lock:sb-ref');
+      effective = acquireTimeout;
+      return fn();
+    };
+    const bound = bindLockAcquireTimeout(baseLock, LOCK_ACQUIRE_TIMEOUT_MS);
+
+    // If supabase-js later forwards the option, GoTrueClient passes 15000 → still 15000.
+    const out = await bound('lock:sb-ref', LOCK_ACQUIRE_TIMEOUT_MS, async () => 42);
+
+    expect(out).toBe(42);
+    expect(effective).toBe(LOCK_ACQUIRE_TIMEOUT_MS);
+  });
+
+  it('propagates rejection from the wrapped lock (no swallowing)', async () => {
+    const baseLock: AuthLockFn = async () => {
+      throw new Error('acquire failed');
+    };
+    const bound = bindLockAcquireTimeout(baseLock, LOCK_ACQUIRE_TIMEOUT_MS);
+    await expect(bound('lock:x', 5000, async () => 'unused')).rejects.toThrow('acquire failed');
+  });
+
+  // CANARY — proves the upstream drop is real in the installed supabase-js, and will
+  // FAIL loudly if a future upgrade starts forwarding `lockAcquireTimeout`. If it fails,
+  // the bindLockAcquireTimeout override in client.ts can be reconsidered/removed.
+  it('CANARY: supabase-js still drops lockAcquireTimeout → GoTrueClient default stays 5000', () => {
+    const client = createSupabaseClient('https://canary.supabase.co', 'anon-key', {
+      auth: {
+        lock: processLock,
+        // Deliberately request 15000 the "obvious" way — this is what does NOT reach GoTrueClient.
+        lockAcquireTimeout: 15000,
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      } as NonNullable<Parameters<typeof createSupabaseClient>[2]>['auth'],
+    });
+    const effective = (client.auth as unknown as { lockAcquireTimeout: number }).lockAcquireTimeout;
+    expect(effective).toBe(5000);
+    expect(effective).not.toBe(15000);
   });
 });

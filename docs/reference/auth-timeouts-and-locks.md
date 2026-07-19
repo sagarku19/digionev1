@@ -68,6 +68,9 @@ out a single stall; the remaining error surfaces are wrapped.
 AUTH_FETCH_TIMEOUT_MS (12s)  <  LOCK_ACQUIRE_TIMEOUT_MS (15s)  <  RETRY_CEILING (30s)
 ```
 
+> ⚠️ The 15s ceiling is only real because of `bindLockAcquireTimeout` — see the next
+> section. Setting `auth.lockAcquireTimeout` alone does **nothing** on the installed SDK.
+
 - Lock waiters must outlast a **single** stall (12s) → no throw in the common case.
 - Lock waiters must NOT outlast the **worst-case** hold (~30s, a refresh retrying
   under the lock) → the rare double-stall still times out instead of freezing the
@@ -82,6 +85,50 @@ navigate), TanStack queryFns (rejections become query errors, never overlays).
 
 ---
 
+## The option that never arrived — `lockAcquireTimeout` is dropped by supabase-js (fixed 2026-07-19, Phase 5)
+
+For most of the timeline above, the "15s ceiling" **was dead config**. `client.ts` set
+`auth.lockAcquireTimeout = 15000`, TypeScript accepted it, but at runtime the client
+kept using auth-js's **5000ms** default. Proof from a real console:
+
+```
+@supabase/gotrue-js: Lock "lock:sb-…-auth-token" acquisition timed out after 5000ms.
+```
+
+That 5000 < the 12s fetch abort — exactly the "guarantee-of-crash" the 15s value was
+supposed to remove. So the lock-ceiling fix appeared to work (fewer stalls by luck)
+but never actually took effect.
+
+**Why the option vanished** — traced through the installed packages:
+
+| Layer | File:line | Behaviour |
+|---|---|---|
+| our client | `lib/supabase/client.ts` | passes `auth: { lock, lockAcquireTimeout: 15000 }` ✅ |
+| `@supabase/ssr@0.9.0` | `createBrowserClient.js:34` | spreads `...options?.auth` → both forwarded ✅ |
+| `@supabase/supabase-js@2.99.2` | `dist/index.cjs:499` | `_initSupabaseAuthClient({ …, lock, debug, throwOnError })` — a **fixed destructuring allowlist**; `lock` is in it, **`lockAcquireTimeout` is not** → rebuilt options object (`:504-519`) omits it ❌ **dropped here** |
+| `@supabase/auth-js@2.99.2` | `GoTrueClient.js:28,104,134` | `settings = { ...DEFAULT_OPTIONS, ...options }`; option now `undefined` → `this.lockAcquireTimeout = 5000` (default) |
+| `@supabase/auth-js@2.99.2` | `locks.js:262-266` | `processLock` fires its timer at 5000 and logs the message above |
+
+**The fix (smallest possible, no `node_modules` patch):** the `lock` *function* IS
+forwarded, and GoTrueClient calls it as `lock(name, this.lockAcquireTimeout, fn)`. So
+`bindLockAcquireTimeout` (`lib/supabase/auth-timing.ts`) wraps `processLock` to ignore
+the 5000 GoTrueClient passes in and substitute `LOCK_ACQUIRE_TIMEOUT_MS` (15000).
+`client.ts` still also passes `auth.lockAcquireTimeout` for forward-compat — if a
+future supabase-js starts forwarding it, the override becomes a harmless no-op.
+
+**Verify it's active (browser):** reproduce a stall (return after long idle, or the
+Cashfree → `/payment/status` redirect) and read the console — the message must now say
+**`after 15000ms`**, not `5000ms`. The number in that message is the exact value
+GoTrueClient handed to the lock, so `15000ms` proves the option reached the running
+client. Regression-tested in `auth-timing.test.ts` (`bindLockAcquireTimeout` suite +
+the `CANARY` that constructs a real supabase-js client and asserts the raw option is
+still dropped — it will fail loudly if a future upgrade forwards it).
+
+**This fix removes ONE contributing factor** (Family B: single-tab stall → lock
+acquire-timeout crash). It does **not** address the transport stall that starts the
+12s hold, nor the multi-tab/multi-account refresh replay storm (Family A). Those
+remain open — see the investigation doc's Phase 5 "Remaining issues".
+
 ## Timeline of causes and fixes (full history: memory `signin-timeout-saga`, todo-later 19)
 
 | Date | Problem | Fix |
@@ -93,17 +140,19 @@ navigate), TanStack queryFns (rejections become query errors, never overlays).
 | 07-18 | 13s refresh replay storm | session-adoption guard (`auth-repair.ts`) |
 | 07-19 | guard's `setSession` threw on busy lock (unhandled) | lock-timeout → quiet skip + retry; persist-first ordering |
 | 07-19 | **root inconsistency: 5s wait < 12s hold** | `LOCK_ACQUIRE_TIMEOUT_MS = 15s` + invariant test; sign-out handlers hardened |
+| 07-19 (Phase 5) | **the 15s value never reached the client — supabase-js dropped the option; runtime stayed 5s** | `bindLockAcquireTimeout` binds the ceiling into the forwarded `lock` fn; canary + regression tests |
 
 The 07-19 entries are the durable fix: earlier rounds protected individual callers
-(whack-a-mole); aligning the timing invariant removes the guarantee-of-crash for
-ALL waiters at once.
+(whack-a-mole); aligning the timing invariant removes the guarantee-of-crash for ALL
+waiters at once — but only after Phase 5 made the aligned value actually take effect.
 
 ## Verification (2026-07-19)
 
-- 337/337 unit tests (fake-timer simulations of stall/abort/retry/lock cases).
-- `tsc` clean — note: `@supabase/ssr`'s narrowed auth-options type omits
-  `lockAcquireTimeout`; `client.ts` forwards it with a documented cast (auth-js
-  declares and reads the option — verified in the installed package).
+- Auth suite green (`npx vitest run lib/supabase/` → 68/68 as of Phase 5).
+- `tsc` clean. Correction to the earlier note here: the documented cast in `client.ts`
+  only satisfies the **compiler** — at runtime `@supabase/supabase-js@2.99.2` drops
+  `lockAcquireTimeout` entirely (see the "option that never arrived" section above).
+  The value is enforced by `bindLockAcquireTimeout`, not by the option/cast.
 - HTTP smoke against the running app: `/login` 200, `/dashboard` without session →
   307 `/login?returnUrl=…`, `/api/media/list` without session → 401, public pages 200.
 - What only a human/browser can still observe: absence of overlay errors across a

@@ -7,7 +7,7 @@ tags: []
 # Investigation — Browser-Only Supabase Auth Instability
 
 - **Date:** 2026-07-19
-- **Status:** FORENSICS SHIPPED + REVIEWED + HARDENED (Phase 4 → 4.1). The 3 review-blocking correctness fixes are DONE (in-flight request records, monotonic clock, TAO-aware correlation); tests 63/63, tsc + lint clean. Correlation now **never emits a definitive/phase-specific networking finding from unavailable cross-origin data** — networking caps at `strong` + recommends NetLog. Residual limits (transport ground truth, cross-tab, SSR sync) require NetLog / server telemetry. Phase 1 §10 (`navigator.locks`) retracted. Root cause still isolated, not confirmed. No production behavior changed.
+- **Status:** FORENSICS SHIPPED + REVIEWED + HARDENED (Phase 4 → 4.1), then **Phase 5 shipped a real fix** (`bindLockAcquireTimeout`). The 3 review-blocking correctness fixes are DONE (in-flight request records, monotonic clock, TAO-aware correlation); tests 68/68, tsc + lint clean. Correlation now **never emits a definitive/phase-specific networking finding from unavailable cross-origin data** — networking caps at `strong` + recommends NetLog. **Phase 5 confirmed & fixed Family B's runtime trigger:** the `lockAcquireTimeout=15000` set in `client.ts` was silently dropped by supabase-js and the running client used the 5000ms default; now bound into the forwarded `lock` fn. Residual limits (transport ground truth, cross-tab, SSR sync) require NetLog / server telemetry. Phase 1 §10 (`navigator.locks`) retracted. Family A (replay storm) + the transport stall remain open. Behavior change is now intentional and scoped (lock ceiling 5s→15s at runtime).
 - **Method:** Read-only, first-principles investigation (systematic-debugging discipline). Every claim cites the code or production log it rests on.
 - **Symptoms in scope:** browser-only `TimeoutError: Supabase request timed out` and `ProcessLockAcquireTimeoutError`; ~13s refresh replay storm. Same Supabase project + accounts work on mobile.
 
@@ -480,3 +480,58 @@ The three review-blocking correctness fixes. Not a feature expansion; no new dat
 - Hard lock↔request linkage → still temporal (`caller` is the partial aid).
 
 Deliberately unaddressed per "only these three changes": B4, B6–B10.
+
+---
+---
+
+# Phase 5 — The dropped option: verified + fixed (2026-07-19)
+
+Triggered by a live console capture: `@supabase/gotrue-js: Lock "lock:sb-…-auth-token" acquisition timed out after **5000ms**` + `ProcessLockAcquireTimeoutError` + `TimeoutError: Supabase request timed out`. The **5000ms** disproves the prior assumption that the 15s ceiling was in effect. This phase independently re-traced the call chain, found where the option is lost, and shipped the smallest workaround. No architecture redesign.
+
+## Verification — where `lockAcquireTimeout` is lost (each step read in the installed package)
+
+| Layer | File:line (installed) | What it does with the option |
+|---|---|---|
+| our client | `lib/supabase/client.ts:32-38` | sends `auth: { lock, lockAcquireTimeout: 15000 }` — **present** |
+| `@supabase/ssr@0.9.0` | `createBrowserClient.js:33-34` | `auth: { ...options?.auth, … }` → spreads it into supabase-js — **forwarded** |
+| `@supabase/supabase-js@2.99.2` | `dist/index.cjs:499` | `_initSupabaseAuthClient({ autoRefreshToken, persistSession, detectSessionInUrl, storage, userStorage, storageKey, flowType, lock, debug, throwOnError })` — **fixed allowlist; `lock` kept, `lockAcquireTimeout` absent** |
+| ″ | `dist/index.cjs:504-519` | rebuilds `new SupabaseAuthClient({ … })` from only those names — **option gone** |
+| `@supabase/auth-js@2.99.2` | `GoTrueClient.js:28` | `DEFAULT_OPTIONS.lockAcquireTimeout = 5000` |
+| ″ | `GoTrueClient.js:104,134` | `settings = {...DEFAULT_OPTIONS, ...options}`; `this.lockAcquireTimeout = settings.lockAcquireTimeout` → **5000** (option was undefined) |
+| ″ | `GoTrueClient.js:129-137,1300` | `this.lock = settings.lock` (**our fn survives**); calls `this.lock(name, this.lockAcquireTimeout=5000, fn)` |
+| ″ | `locks.js:262-266` | `processLock` timer at `acquireTimeout` → logs `after 5000ms` + throws `ProcessLockAcquireTimeoutError` |
+
+The forensics lock wrapper (`auth-forensics.ts:299-327`) forwards `acquireTimeout` unchanged, so it faithfully passed 5000 — downstream of the bug, not a cause. **Correction to earlier phases:** the reference doc previously claimed the TS cast made the option "runtime-supported… verified in the installed package." That was wrong — the cast satisfies the *compiler* only; supabase-js drops the value one layer above GoTrueClient. Everything else in the trace held.
+
+Consequence: the 07-19 lock-ceiling raise (todo-19) and its invariant test were correct in *intent* but **never took effect at runtime** — the client always used 5000ms. This is why the crash kept recurring ("fine for some time, but again").
+
+## Fix (shipped)
+
+`lock` **is** forwarded, so bind the ceiling into it. New pure helper `bindLockAcquireTimeout(baseLock, ceilingMs)` in `auth-timing.ts` returns a lock that ignores the timeout GoTrueClient passes and substitutes `LOCK_ACQUIRE_TIMEOUT_MS`. `client.ts` now wraps `processLock` with it (forensics wrapper stays outermost). The `auth.lockAcquireTimeout` option is kept for forward-compat (harmless no-op if a future SDK forwards it). No `node_modules` patch, no dependency/version change.
+
+- **Files:** `lib/supabase/auth-timing.ts` (+helper), `lib/supabase/client.ts` (use it + corrected comment), `lib/supabase/auth-timing.test.ts` (+5 tests), `docs/reference/auth-timeouts-and-locks.md`.
+- **Tests:** effective timeout = 15000; cannot regress to 5000 for any GoTrueClient-passed value; idempotent if a future SDK passes 15000; rejection propagates; **CANARY** builds a real supabase-js client and asserts `client.auth.lockAcquireTimeout === 5000` (fails loudly when upstream starts forwarding → signal to drop the override).
+- **Verified:** `npx vitest run lib/supabase/` 68/68 · `tsc --noEmit` clean · `eslint` clean on touched files.
+
+## Manual runtime verification
+
+1. `localStorage['digione.auth.debug']='1'`, reload.
+2. Reproduce a stall (long idle return, sleep/resume, or Cashfree→`/payment/status` redirect).
+3. Read the console. **Before:** `acquisition timed out after 5000ms`. **After:** `after 15000ms`. The interpolated number is exactly the value GoTrueClient handed the lock (`locks.js:262`), so `15000ms` proves our value reached the running client. Optionally `window.__authDebugReport()` → lock events show `waitMs` up to ~15000, not ~5000.
+
+## Remaining issues (NOT fixed here — listed, not touched)
+
+This fix removes **one contributing factor**: Family B, the single-tab *stall → lock acquire-timeout crash*. It does **not** fully explain or resolve the browser instability. Still open:
+
+1. **The transport stall itself** (why an `/auth/v1/*` request hangs ~12s: HTTP/2 dead-socket/GOAWAY zombie reuse after idle/sleep/redirect, Windows 10s idle-socket timer). Root of the *hold*; only bounded (12s abort + GET retry), not eliminated. Ground truth needs NetLog (M1/M3, still user-run). At 15s the lock now *rides out* one such stall instead of crashing — but the stall still degrades UX.
+2. **Family A — refresh replay storm** (~13s cadence, multi-tab/multi-account cookie thrash + chunked-cookie stale read-back). Independent of the lock timeout; `auth-repair.ts` still compensates it. Single-account repro still owed.
+3. **Access-token TTL** (dashboard value, user-run) — possible baseline amplifier.
+4. **`navigator.locks` decision** — still `processLock`; unchanged, out of scope.
+
+Net: the recurring hard **crash** (unhandled `ProcessLockAcquireTimeoutError` during a single stall) should now be gone; a stall can still surface the softer `TimeoutError` telemetry and, in multi-tab/multi-account sessions, the replay storm.
+
+## Open items for reviewer (updated)
+
+- [ ] Confirm the console message reads `after 15000ms` on the next real stall (the one-line proof the fix is live).
+- [ ] NetLog capture of a stall (Family B transport root) — still the only path to socket/GOAWAY ground truth.
+- [ ] Single-account clean-profile repro for Family A (storm) — grades whether `auth-repair.ts` is load-bearing or defensive.

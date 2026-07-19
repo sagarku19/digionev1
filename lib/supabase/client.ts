@@ -5,7 +5,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { processLock } from '@supabase/supabase-js';
 import type { Database } from '@/types/database.types';
-import { makeFetchWithTimeout, LOCK_ACQUIRE_TIMEOUT_MS } from '@/lib/supabase/auth-timing';
+import { makeFetchWithTimeout, LOCK_ACQUIRE_TIMEOUT_MS, bindLockAcquireTimeout, type AuthLockFn } from '@/lib/supabase/auth-timing';
 // [auth-forensics] transparent lock instrumentation + browser-lifecycle capture; no-op unless the debug flag is set
 import { wrapLockWithForensics, installForensics, type LockFn } from '@/lib/supabase/auth-forensics';
 
@@ -21,17 +21,22 @@ export function createClient() {
       global: { fetch: makeFetchWithTimeout() },
       // In-memory processLock (per-tab) instead of auth-js's origin-wide navigator.locks,
       // which deadlocked in dev. Cross-tab auth state is synced via onAuthStateChange +
-      // BroadcastChannel (MarketingNav / useAuthSession). lockAcquireTimeout is raised
-      // above the single-stall fetch abort (12s) so lock waiters ride out a stall
-      // instead of throwing — see the invariant note in auth-timing.ts; recovery in
+      // BroadcastChannel (MarketingNav / useAuthSession). The lock wait ceiling is raised
+      // above the single-stall fetch abort (12s) so waiters ride out a stall instead of
+      // throwing — see the invariant note in auth-timing.ts; recovery in
       // lib/supabase/current-user.ts still absorbs the rare double-stall timeout.
-      // lockAcquireTimeout is runtime-supported by auth-js (types.d.ts declares
-      // it; GoTrueClient reads settings.lockAcquireTimeout) but @supabase/ssr's
-      // narrowed auth-option type omits it — the cast forwards it past the
-      // excess-property check without loosening anything else.
+      //
+      // IMPORTANT: the `lockAcquireTimeout` option below is DROPPED at runtime by
+      // @supabase/supabase-js@2.99.2 (`_initSupabaseAuthClient` forwards a fixed
+      // allowlist that includes `lock` but not `lockAcquireTimeout`), so GoTrueClient
+      // would fall back to its 5000ms default. `bindLockAcquireTimeout` compensates by
+      // binding the 15s ceiling into the lock FUNCTION (which IS forwarded). The option
+      // is kept for forward-compat. Full trace: bindLockAcquireTimeout in auth-timing.ts.
       auth: {
-        // [auth-forensics] wrapper delegates to processLock unchanged when disabled
-        lock: wrapLockWithForensics(processLock as LockFn),
+        // [auth-forensics] wrapper delegates to the bound processLock unchanged when disabled
+        lock: wrapLockWithForensics(
+          bindLockAcquireTimeout(processLock as AuthLockFn, LOCK_ACQUIRE_TIMEOUT_MS) as LockFn,
+        ),
         lockAcquireTimeout: LOCK_ACQUIRE_TIMEOUT_MS,
       } as NonNullable<NonNullable<Parameters<typeof createBrowserClient>[2]>['auth']>,
     },
