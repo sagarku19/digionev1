@@ -1,0 +1,616 @@
+{
+  "generatedAt": 1784532973768,
+  "timeOrigin": 1784532951000.4,
+  "enabled": true,
+  "counts": {
+    "requests": 5,
+    "authEvents": 2,
+    "lockEvents": 24,
+    "lifecycle": 2,
+    "resources": 3,
+    "envSnapshots": 0
+  },
+  "requests": [
+    {
+      "id": "req2",
+      "path": "/auth/v1/token?grant_type=refresh_token",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/auth/v1/token?grant_type=refresh_token",
+      "method": "POST",
+      "isAuth": true,
+      "attempt": 1,
+      "retry": false,
+      "retryReason": null,
+      "startedAt": 689.5,
+      "startedAtWall": 1784532951689,
+      "finishedAt": 2400,
+      "durationMs": 1710.5,
+      "inFlight": false,
+      "aborted": false,
+      "timedOut": false,
+      "status": 200,
+      "errorType": null
+    },
+    {
+      "id": "req10",
+      "path": "/auth/v1/user",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/auth/v1/user",
+      "method": "GET",
+      "isAuth": true,
+      "attempt": 1,
+      "retry": false,
+      "retryReason": null,
+      "startedAt": 2406,
+      "startedAtWall": 1784532953406,
+      "finishedAt": 2823.9000000059605,
+      "durationMs": 417.90000000596046,
+      "inFlight": false,
+      "aborted": false,
+      "timedOut": false,
+      "status": 200,
+      "errorType": null
+    },
+    {
+      "id": "req13",
+      "path": "/rest/v1/users",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/rest/v1/users?select=id%2Cprofiles%28full_name%2Cavatar_url%29&auth_provider_id=eq.a4d603d2-1822-4d97-8405-59276a2d8f58",
+      "method": "GET",
+      "isAuth": false,
+      "attempt": 1,
+      "retry": false,
+      "retryReason": null,
+      "startedAt": 2827.5,
+      "startedAtWall": 1784532953827,
+      "finishedAt": 3623.5,
+      "durationMs": 796,
+      "inFlight": false,
+      "aborted": false,
+      "timedOut": false,
+      "status": 200,
+      "errorType": null
+    },
+    {
+      "id": "req16",
+      "path": "/auth/v1/user",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/auth/v1/user",
+      "method": "GET",
+      "isAuth": true,
+      "attempt": 1,
+      "retry": false,
+      "retryReason": null,
+      "startedAt": 3633.9000000059605,
+      "startedAtWall": 1784532954634,
+      "finishedAt": 3865,
+      "durationMs": 231.09999999403954,
+      "inFlight": false,
+      "aborted": false,
+      "timedOut": false,
+      "status": 200,
+      "errorType": null
+    },
+    {
+      "id": "req18",
+      "path": "/rest/v1/users",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/rest/v1/users?select=role&auth_provider_id=eq.a4d603d2-1822-4d97-8405-59276a2d8f58",
+      "method": "GET",
+      "isAuth": false,
+      "attempt": 1,
+      "retry": false,
+      "retryReason": null,
+      "startedAt": 3865.6000000089407,
+      "startedAtWall": 1784532954865,
+      "finishedAt": 4170.4000000059605,
+      "durationMs": 304.79999999701977,
+      "inFlight": false,
+      "aborted": false,
+      "timedOut": false,
+      "status": 200,
+      "errorType": null
+    }
+  ],
+  "authEvents": [
+    {
+      "id": "auth4",
+      "event": "TOKEN_REFRESHED",
+      "at": 2402.300000011921,
+      "sessionExpiresAt": 1784536557,
+      "accessTokenTail": "HFi4CA"
+    },
+    {
+      "id": "auth9",
+      "event": "INITIAL_SESSION",
+      "at": 2404.800000011921,
+      "sessionExpiresAt": 1784536557,
+      "accessTokenTail": "HFi4CA"
+    }
+  ],
+  "lockEvents": [
+    {
+      "id": "lock1",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 684.6000000089407,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock1",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 685.5,
+      "waitMs": 1.2999999970197678,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock1",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2402.5,
+      "waitMs": 1.2999999970197678,
+      "holdMs": 1716.9000000059605,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock5",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2402.5,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock6",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2402.6000000089407,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock7",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2403.1000000089407,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock8",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2403.1000000089407,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock5",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2403.1000000089407,
+      "waitMs": 0.6000000089406967,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock5",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2403.300000011921,
+      "waitMs": 0.6000000089406967,
+      "holdMs": 0.20000000298023224,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock6",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2404.2000000029802,
+      "waitMs": 1.7000000029802322,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock6",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2404.300000011921,
+      "waitMs": 1.7000000029802322,
+      "holdMs": 0.10000000894069672,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock7",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2404.800000011921,
+      "waitMs": 2.2000000029802322,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock7",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2825,
+      "waitMs": 2.2000000029802322,
+      "holdMs": 420.19999998807907,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock8",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2825,
+      "waitMs": 421.8999999910593,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock8",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2825.2000000029802,
+      "waitMs": 421.8999999910593,
+      "holdMs": 0.20000000298023224,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock12",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2826.800000011921,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock12",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2826.9000000059605,
+      "waitMs": 0.20000000298023224,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock12",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 2827.5,
+      "waitMs": 0.20000000298023224,
+      "holdMs": 0.5999999940395355,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock15",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 3633.5,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock15",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 3633.5,
+      "waitMs": 0.09999999403953552,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock15",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 3865.1000000089407,
+      "waitMs": 0.09999999403953552,
+      "holdMs": 231.6000000089407,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock17",
+      "phase": "requested",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 3865.4000000059605,
+      "waitMs": null,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock17",
+      "phase": "granted",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 3865.4000000059605,
+      "waitMs": 0.09999999403953552,
+      "holdMs": null,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    },
+    {
+      "id": "lock17",
+      "phase": "released",
+      "name": "lock:sb-qcendfisvyjnwmefruba-auth-token",
+      "at": 3865.5,
+      "waitMs": 0.09999999403953552,
+      "holdMs": 0.09999999403953552,
+      "caller": "at rE.lock (https://www.digione.ai/_next/static/chunks/c43e0c36f8c2bf9e.js:55:2655)"
+    }
+  ],
+  "lifecycle": [
+    {
+      "id": "life3",
+      "kind": "pageshow",
+      "at": 950.4000000059605,
+      "detail": null
+    },
+    {
+      "id": "life20",
+      "kind": "blur",
+      "at": 12051.90000000596,
+      "detail": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "res11",
+      "path": "/auth/v1/token",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/auth/v1/token?grant_type=refresh_token",
+      "startedAt": 690.2000000029802,
+      "responseEndMs": 2399.2000000029802,
+      "taoRestricted": true,
+      "dnsMs": 0,
+      "tcpMs": 0,
+      "tlsMs": 0,
+      "ttfbMs": 0,
+      "downloadMs": 0,
+      "totalMs": 1709,
+      "protocol": "",
+      "reused": null,
+      "transferSize": 0,
+      "responseStatus": 200
+    },
+    {
+      "id": "res14",
+      "path": "/auth/v1/user",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/auth/v1/user",
+      "startedAt": 2406.1000000089407,
+      "responseEndMs": 2823.4000000059605,
+      "taoRestricted": true,
+      "dnsMs": 0,
+      "tcpMs": 0,
+      "tlsMs": 0,
+      "ttfbMs": 0,
+      "downloadMs": 0,
+      "totalMs": 417.29999999701977,
+      "protocol": "",
+      "reused": null,
+      "transferSize": 0,
+      "responseStatus": 200
+    },
+    {
+      "id": "res19",
+      "path": "/auth/v1/user",
+      "href": "https://qcendfisvyjnwmefruba.supabase.co/auth/v1/user",
+      "startedAt": 3634,
+      "responseEndMs": 3864.4000000059605,
+      "taoRestricted": true,
+      "dnsMs": 0,
+      "tcpMs": 0,
+      "tlsMs": 0,
+      "ttfbMs": 0,
+      "downloadMs": 0,
+      "totalMs": 230.40000000596046,
+      "protocol": "",
+      "reused": null,
+      "transferSize": 0,
+      "responseStatus": 200
+    }
+  ],
+  "envSnapshots": [],
+  "timeline": [
+    {
+      "at": 684.6000000089407,
+      "kind": "lock",
+      "id": "lock1",
+      "label": "lock:requested"
+    },
+    {
+      "at": 685.5,
+      "kind": "lock",
+      "id": "lock1",
+      "label": "lock:granted wait=1.2999999970197678ms"
+    },
+    {
+      "at": 689.5,
+      "kind": "request",
+      "id": "req2",
+      "label": "POST /auth/v1/token?grant_type=refresh_token → 200 1711ms"
+    },
+    {
+      "at": 950.4000000059605,
+      "kind": "lifecycle",
+      "id": "life3",
+      "label": "pageshow"
+    },
+    {
+      "at": 2402.300000011921,
+      "kind": "auth",
+      "id": "auth4",
+      "label": "TOKEN_REFRESHED exp=1784536557 tok…HFi4CA"
+    },
+    {
+      "at": 2402.5,
+      "kind": "lock",
+      "id": "lock1",
+      "label": "lock:released wait=1.2999999970197678ms hold=1716.9000000059605ms"
+    },
+    {
+      "at": 2402.5,
+      "kind": "lock",
+      "id": "lock5",
+      "label": "lock:requested"
+    },
+    {
+      "at": 2402.6000000089407,
+      "kind": "lock",
+      "id": "lock6",
+      "label": "lock:requested"
+    },
+    {
+      "at": 2403.1000000089407,
+      "kind": "lock",
+      "id": "lock7",
+      "label": "lock:requested"
+    },
+    {
+      "at": 2403.1000000089407,
+      "kind": "lock",
+      "id": "lock8",
+      "label": "lock:requested"
+    },
+    {
+      "at": 2403.1000000089407,
+      "kind": "lock",
+      "id": "lock5",
+      "label": "lock:granted wait=0.6000000089406967ms"
+    },
+    {
+      "at": 2403.300000011921,
+      "kind": "lock",
+      "id": "lock5",
+      "label": "lock:released wait=0.6000000089406967ms hold=0.20000000298023224ms"
+    },
+    {
+      "at": 2404.2000000029802,
+      "kind": "lock",
+      "id": "lock6",
+      "label": "lock:granted wait=1.7000000029802322ms"
+    },
+    {
+      "at": 2404.300000011921,
+      "kind": "lock",
+      "id": "lock6",
+      "label": "lock:released wait=1.7000000029802322ms hold=0.10000000894069672ms"
+    },
+    {
+      "at": 2404.800000011921,
+      "kind": "auth",
+      "id": "auth9",
+      "label": "INITIAL_SESSION exp=1784536557 tok…HFi4CA"
+    },
+    {
+      "at": 2404.800000011921,
+      "kind": "lock",
+      "id": "lock7",
+      "label": "lock:granted wait=2.2000000029802322ms"
+    },
+    {
+      "at": 2406,
+      "kind": "request",
+      "id": "req10",
+      "label": "GET /auth/v1/user → 200 418ms"
+    },
+    {
+      "at": 2825,
+      "kind": "lock",
+      "id": "lock7",
+      "label": "lock:released wait=2.2000000029802322ms hold=420.19999998807907ms"
+    },
+    {
+      "at": 2825,
+      "kind": "lock",
+      "id": "lock8",
+      "label": "lock:granted wait=421.8999999910593ms"
+    },
+    {
+      "at": 2825.2000000029802,
+      "kind": "lock",
+      "id": "lock8",
+      "label": "lock:released wait=421.8999999910593ms hold=0.20000000298023224ms"
+    },
+    {
+      "at": 2826.800000011921,
+      "kind": "lock",
+      "id": "lock12",
+      "label": "lock:requested"
+    },
+    {
+      "at": 2826.9000000059605,
+      "kind": "lock",
+      "id": "lock12",
+      "label": "lock:granted wait=0.20000000298023224ms"
+    },
+    {
+      "at": 2827.5,
+      "kind": "request",
+      "id": "req13",
+      "label": "GET /rest/v1/users → 200 796ms"
+    },
+    {
+      "at": 2827.5,
+      "kind": "lock",
+      "id": "lock12",
+      "label": "lock:released wait=0.20000000298023224ms hold=0.5999999940395355ms"
+    },
+    {
+      "at": 3633.5,
+      "kind": "lock",
+      "id": "lock15",
+      "label": "lock:requested"
+    },
+    {
+      "at": 3633.5,
+      "kind": "lock",
+      "id": "lock15",
+      "label": "lock:granted wait=0.09999999403953552ms"
+    },
+    {
+      "at": 3633.9000000059605,
+      "kind": "request",
+      "id": "req16",
+      "label": "GET /auth/v1/user → 200 231ms"
+    },
+    {
+      "at": 3865.1000000089407,
+      "kind": "lock",
+      "id": "lock15",
+      "label": "lock:released wait=0.09999999403953552ms hold=231.6000000089407ms"
+    },
+    {
+      "at": 3865.4000000059605,
+      "kind": "lock",
+      "id": "lock17",
+      "label": "lock:requested"
+    },
+    {
+      "at": 3865.4000000059605,
+      "kind": "lock",
+      "id": "lock17",
+      "label": "lock:granted wait=0.09999999403953552ms"
+    },
+    {
+      "at": 3865.5,
+      "kind": "lock",
+      "id": "lock17",
+      "label": "lock:released wait=0.09999999403953552ms hold=0.09999999403953552ms"
+    },
+    {
+      "at": 3865.6000000089407,
+      "kind": "request",
+      "id": "req18",
+      "label": "GET /rest/v1/users → 200 305ms"
+    },
+    {
+      "at": 12051.90000000596,
+      "kind": "lifecycle",
+      "id": "life20",
+      "label": "blur"
+    }
+  ],
+  "findings": []
+}

@@ -535,3 +535,265 @@ Net: the recurring hard **crash** (unhandled `ProcessLockAcquireTimeoutError` du
 - [ ] Confirm the console message reads `after 15000ms` on the next real stall (the one-line proof the fix is live).
 - [ ] NetLog capture of a stall (Family B transport root) — still the only path to socket/GOAWAY ground truth.
 - [ ] Single-account clean-profile repro for Family A (storm) — grades whether `auth-repair.ts` is load-bearing or defensive.
+
+---
+---
+
+# Phase 6 — Live console capture (2026-07-19)
+
+A real dashboard-load capture (debug flag on). Recorded for later — **no code
+changed this pass**. Two net-new facts; the rest confirms prior phases.
+
+## The capture
+
+```
+[auth-debug] event INITIAL_SESSION expires_in=3599s
+[auth-debug] request /auth/v1/user → status 200 (430ms)      ← first call OK
+[auth-debug] request /auth/v1/user → TimeoutError (12005ms)  ┐ attempt+retry
+[auth-debug] request /auth/v1/user → TimeoutError (12000ms)  ┘ BOTH stall 12s
+  TimeoutError: Supabase request timed out  (… _getUser → getUser → useProducts)
+useProducts fetch error: TimeoutError: Supabase request timed out
+[auth-debug] request /auth/v1/user → TimeoutError (12001ms)  ┐
+[auth-debug] request /auth/v1/user → TimeoutError (12017ms)  ┘
+useProducts fetch error: AuthUnavailableError: Auth temporarily unreachable — will retry
+[auth-debug] request /auth/v1/user → TimeoutError (12005ms)  ┐
+[auth-debug] request /auth/v1/user → TimeoutError (12014ms)  ┘
+useProducts fetch error: AuthUnavailableError: Auth temporarily unreachable — will retry
+[auth-debug] request /auth/v1/user → status 200 (532ms)      ← self-recovers
+[auth-debug] request /auth/v1/user → status 200 (537ms)
+[auth-debug] request /auth/v1/user → status 200 (333ms)
+```
+
+Shape: one healthy call → ~60–72s where every `/auth/v1/user` aborts at exactly
+12s (in attempt+retry pairs) → clears on its own. This is the raw transport
+stall (`AUTH_FETCH_TIMEOUT_MS` firing), not a code exception.
+
+## What it RESOLVES / ADVANCES
+
+1. **Access-token TTL = 3600s — confirmed** (`expires_in=3599s`). Answers the
+   "user must check the dashboard TTL" open item repeated in Phases 1/3/5 + §9.
+   TTL is fine; **not** the Family-A amplifier. Short-TTL ruled out.
+
+2. **No lock error this time.** Zero `ProcessLockAcquireTimeoutError`, zero
+   "acquisition timed out after 5000/15000ms". ⇒ the Phase-5
+   `bindLockAcquireTimeout` fix is holding and **Family B (the lock-acquire
+   crash) did not fire**. What remains is purely the transport stall the lock
+   ceiling was designed to ride out — and it did (degraded, no crash).
+
+3. **The idempotent-GET retry did NOT self-heal.** `/auth/v1/user` is a GET, so
+   `makeFetchWithTimeout` retries once "on a fresh connection" — but the retry
+   (2nd 12s abort of each pair) ALSO timed out for the whole ~60s window. New
+   signal:
+   - **Falsifies simple "dead pooled socket reuse"** (Phase-1/3 H1 plain form)
+     for this episode — a genuinely fresh socket wouldn't be the dead pooled one.
+   - **Strengthens "silently-dead HTTP/2 session"** (Phase-2 candidate #2 /
+     Phase-3 H1 multiplexed form): with H2, Chrome multiplexes every request to
+     `*.supabase.co` over ONE session and reassigns new requests (incl. our
+     retry) to the SAME zombie session until it tears it down (~60s) → matches
+     "retry doesn't heal + everything clears at once." Alt: a ~60s network blip /
+     edge unreachability that also blocks new connections.
+   - The `auth-timing.ts` comment that the GET retry "resolves the common stall
+     invisibly" is **empirically false for this episode**. Against a dead H2
+     session the retry is futile (fetch exposes no socket-freshness control).
+     Not harmful, just not helping here.
+
+## The amplifier (why the console is a wall of `/auth/v1/user`)
+
+`useProducts` (and every dashboard data hook) → `getCreatorProfileId()` →
+`getAuthSnapshot()` → `supabase.auth.getUser()`, which **always** does a network
+`GET /auth/v1/user` (unlike `getSession()`/`getClaims()`). So every data query
+gates on a network auth round-trip (adds 330–530ms even healthy — see the 200s);
+when the H2 session is a zombie, ALL hooks stall together and TanStack retry/
+backoff on the retryable `AuthUnavailableError` multiplies the `/auth/v1/user`
+volume. `getAuthSnapshot` single-flight dedupes *concurrent* calls, not the
+sequential retry stream.
+
+## Next steps (options — architecture call still deferred pending NetLog)
+
+- **NetLog capture during a stall** (`chrome://net-export`): still the only
+  ground truth for GOAWAY / dead-socket / H2-session reuse. Now narrowed to
+  "dead H2 session reuse" vs "new-connection-level block" — look for
+  `HTTP2_SESSION_RECV_GOAWAY` + `SOCKET_POOL_STALLED_MAX_SOCKETS_PER_GROUP` +
+  a timestamp gap. (user-run)
+- **H2-multiplex discriminator:** during a stall, does a REST query that skips
+  `getUser` (`supabase.from(...).select()`) also hang in the same window? Yes ⇒
+  one dead H2 session shared by auth+data. Here `useProducts` died at the
+  `getUser` precheck, so the REST call itself wasn't observed.
+- **Structural fix candidate (security review needed):** the client re-validates
+  identity via a network `getUser()` on every query, while `proxy.ts` already
+  trusts local `getClaims()` (zero network). Moving the client common path to a
+  cached session / `getClaims()` makes data queries immune to the transport
+  stall — but trades away the ≤1h revocation freshness the tri-state `degraded`
+  design deliberately keeps. This is the deferred architecture decision, not a
+  drive-by.
+- **Minor:** the GET retry could add a small delay or be accepted as ineffective
+  against a dead H2 session. Low priority.
+
+## Bottom line
+
+Nothing new broke. The crash class (Family B) is gone; this is the known-open
+transport stall (Phase-5 "remaining issues" #1) degrading gracefully (tri-state
+`degraded` + retryable error, self-recovered in ~60s). Net-new keepers: **TTL is
+confirmed 3600s**, and **the GET retry does not heal a sustained stall** (points
+at dead-H2-session reuse, not a single dead socket). Next real step is the NetLog
+capture before any lock/architecture move.
+
+## Open items for reviewer (updated)
+
+- [x] Access-token TTL value → **3600s, confirmed** (`expires_in=3599s`)
+- [ ] NetLog capture of one stall (dead-H2-session vs new-connection block)
+- [ ] H2-multiplex discriminator: do REST queries stall in the same window?
+- [ ] Decide on the client `getClaims()`/cached-session move (needs security review)
+
+---
+---
+
+# Phase 7 — First forensics capture + server-side rotation check (2026-07-20)
+
+Analyzed `auth-forensics-2026-07-20T07-36-13-768Z.json` (production,
+`www.digione.ai`, ~23s window starting at a fresh page load 07:35:51Z) and
+cross-checked `auth.refresh_tokens` / `auth.sessions` via SQL. **No code
+changed — no active issue found in either dataset.**
+
+## Client capture — clean
+
+- `findings: []` — the correlation engine flagged nothing.
+- All 5 requests 200: page-load refresh POST (1711ms), `GET /auth/v1/user`
+  ×2 (418ms, 231ms), REST profile/role ×2 (796ms, 305ms). Zero timeouts.
+- All 24 lock events healthy: max wait **422ms**, max hold **1717ms** (the
+  refresh POST) — nowhere near the 15s ceiling; every `granted` has a
+  `released` (no orphans). Phase-5 `bindLockAcquireTimeout` confirmed live
+  and unstressed in production.
+- Session adoption WORKED: one `TOKEN_REFRESHED` then `INITIAL_SESSION` with
+  the **same access-token tail** (`…HFi4CA`) and advancing expiry — the
+  refreshed session reached cookie storage. No storm in-window.
+- All resource entries `taoRestricted: true` as the Phase-4 review predicted —
+  phase timing for `*.supabase.co` is blind in-browser; NetLog remains the
+  only transport ground truth.
+
+## Server-side rotation — clean (Family A NOT occurring on 2026-07-20)
+
+SQL over `auth.refresh_tokens` for the account: mints at 2026-07-19 21:37 →
+2026-07-20 05:20 (gap 7h43m) → 07:35:57 (gap 2h16m; = this capture's refresh),
+each predecessor properly `revoked` on rotation, `tokens_minted_today = 2`.
+One mint per real refresh, hours apart — **textbook-healthy rotation, zero
+replay storm**, in sharp contrast to the todo-19 logs (13s cadence). Note:
+`auth.sessions` shows **5 active sessions** for the user — the multi-session
+precondition exists, yet no thrash. Grades Family A further toward
+"rare/multi-account-specific"; `auth-repair.ts` stays defensive.
+
+## Operational caveat — this capture almost certainly missed any stall
+
+The forensics buffers are **in-memory, per page load**. This report's window
+opens at a fresh page load and spans ~23s of healthy startup. If a stall
+happened earlier that morning and the page was reloaded before downloading,
+the evidence was wiped. **Capture protocol for next time: when the hang
+happens, do NOT reload — immediately run `window.__authDebugDownload()` in
+the same page session.**
+
+## Verdict
+
+Nothing to fix from this evidence. The crash class (Family B) remains gone;
+rotation/adoption (Family A) is healthy today; the intermittent transport
+stall simply did not occur in the captured window. Waiting for a capture (or
+NetLog) taken *during* a stall is the correct next move.
+
+## Open items for reviewer (updated)
+
+- [x] First forensics report analyzed → clean; engine + capture pipeline work end-to-end in prod
+- [x] Server-side storm check for 2026-07-20 → healthy (1 mint/refresh, hours apart, proper revocation)
+- [x] NetLog captured → analyzed in Phase 8 (transport is QUIC/HTTP3 — hypothesis space re-graded)
+- [ ] Next capture must be taken during a stall, same page session, no reload (`window.__authDebugDownload()`)
+- [ ] Decide on the client `getClaims()`/cached-session move (needs security review) — unchanged
+
+---
+---
+
+# Phase 8 — NetLog analysis: the transport is QUIC/HTTP3, not HTTP/2 (2026-07-20)
+
+Analyzed `logs/chrome-net-export-log.json` (74-min window, 07:05:45→08:19:50Z,
+132,994 events) + `logs/auth-forensics-2026-07-20T08-20-08-984Z.json` (20-min
+window, 92 requests). **No code changed. The stall did not reproduce in either
+capture** — but the NetLog settles the transport question and re-grades the
+leading hypothesis.
+
+## Both captures are healthy baselines
+
+- Forensics: 92/92 requests 200 (incl. 25× `GET /auth/v1/user` — the amplifier
+  at work during normal dashboard browsing), `findings: []`, max lock wait
+  <1s, no storm (single token `…_wjEfQ` across all 5 events; the extra
+  `SIGNED_IN`s are auth-js visibility re-emissions, not refreshes). Window
+  included a logout + fresh password login at 08:00:11–19.
+- NetLog: every supabase `URL_REQUEST` completed; slowest auth request 1669ms
+  (cold-connection notifications-poll cycles); no request >5s anywhere.
+
+## THE finding — Chrome talks to `*.supabase.co` over QUIC (HTTP/3)
+
+Ground truth from the NetLog:
+
+- **8 QUIC_SESSIONs to supabase, ZERO HTTP2_SESSIONs.** Every request binds
+  via `QUIC_SESSION_POOL_USE_EXISTING_SESSION`; a parallel TCP/SSL backup job
+  starts on a 200ms delay and is `CANCELLED` when QUIC wins (classic Alt-Svc /
+  DNS-HTTPS race — the resolver cache carries `supported_protocol_alpns` for
+  h3). The 3 SSL_CONNECT_JOBs are these losing backup probes.
+- QUIC sessions **idle-close after ~29s** of no activity (`quic_error 25`,
+  `"No recent network activity after 29s"`, `from_peer: false`) — normal
+  client-side housekeeping. Every ~2-min notifications poll therefore runs on
+  a **fresh QUIC session** (~0.8–1.7s vs ~250ms warm).
+- One `QUIC_SESSION_RST_STREAM_FRAME_RECEIVED` per session — always stream 15
+  (server-initiated unidirectional), same offset 26, error 0x103: a benign
+  per-session server behavior (GREASE-style uni-stream reset). No request was
+  affected. **Not a fault.**
+- No GOAWAY, no `SOCKET_POOL_STALLED`, no migration/blackhole events
+  in-window — consistent with "no stall occurred."
+
+## Hypothesis re-grade (supersedes the Phase-3 confidence matrix)
+
+| Hypothesis | Was | Now | Why |
+|---|---|---|---|
+| H1 HTTP/2 dead-socket / GOAWAY zombie reuse | 40% (leading) | **~eliminated** | there are no H2 sessions to supabase in this browser; the Windows 10s idle-socket timer story targeted TCP pools |
+| H6 QUIC/HTTP3 | 5% | **leading** | transport proven QUIC; QUIC's canonical failure mode fits the symptoms *better* than H2 ever did (below) |
+| H4 extension/AV/VPN (UDP interference) | 10% | up slightly | UDP throttling/blocking is a known QUIC-specific intermittent |
+| Others (H2 cookie, H3 lock-orphan) | — | unchanged | Phase-7 adoption + rotation evidence keeps them low |
+
+**Why QUIC-blackhole explains the Phase-6 console capture better than H2 did:**
+a QUIC session is UDP state; after sleep/resume, network-path change, or NAT
+rebinding, the session can be **silently blackholed** — Chrome keeps
+retransmitting on it until its own detection gives up, and during that window
+**new requests still bind to the same pooled zombie session**
+(`QUIC_SESSION_POOL_USE_EXISTING_SESSION`). That is exactly why the
+idempotent-GET retry never healed the ~60s outage (each retry rejoined the
+same dead session), why ALL auth requests failed together, and why recovery
+was sudden and total (session finally torn down → next request got a fresh
+session / TCP fallback). The H2-zombie story required an explanation for the
+failed retry; the QUIC story predicts it.
+
+## Discriminator (cheap, user-run) — the next decisive step
+
+Disable QUIC in Chrome (`chrome://flags/#enable-quic` → Disabled, relaunch)
+and browse normally for a few days. Everything falls back to HTTP/2-over-TCP:
+
+- Stall **never recurs** → QUIC-blackhole confirmed as the transport root; the
+  "fix" is an environment/transport fact, and the app's existing bounds
+  (12s abort + tri-state degraded) are the correct and sufficient mitigation.
+- Stall **recurs on TCP** → transport-agnostic → re-open the cookie/lock
+  families with the (now-hardened) forensics capture taken mid-stall.
+
+Alternative if flags are undesirable: keep QUIC on and capture NetLog +
+forensics **during** a real stall (same page session, no reload).
+
+## Why there is still no code fix to make
+
+The web platform exposes no control over connection pooling/transport from
+`fetch` — the app cannot force a fresh QUIC session, evict a zombie, or opt
+out of h3. The existing layers (12s abort freeing the lock, bounded retry,
+tri-state `degraded`, 15s lock ceiling) are precisely the right userland
+mitigation for a transport-layer blackhole. Waiting for the discriminator is
+the correct move; adding more layers now would be another symptomatic patch.
+
+## Open items for reviewer (updated)
+
+- [x] NetLog analyzed → transport = QUIC/H3; H1 (H2 GOAWAY) effectively eliminated; H6 promoted to leading
+- [x] QUIC disabled by user **2026-07-20** → observation window open. Verify it took: DevTools → Network → Protocol column shows `h2` (not `h3`) for `supabase.co`. Keep the debug flag on; if a stall happens, `window.__authDebugDownload()` in the same page session, NO reload. A week of stall-free TCP browsing ≈ QUIC-blackhole confirmed.
+- [ ] If it recurs: mid-stall forensics capture (no reload) + NetLog → re-open cookie/lock families
+- [ ] Decide on the client `getClaims()`/cached-session move (independent perf/architecture item; needs security review)
