@@ -1,0 +1,85 @@
+name: CI
+
+# Runs on direct pushes to main AND on every pull request.
+# Four independent, parallel gates using only tools already in the repo
+# (ESLint, TypeScript, Vitest, next build) — no new dependencies, no cost.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer commit on the same ref cancels an in-flight run for it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: ESLint (advisory)
+    runs-on: ubuntu-latest
+    # ADVISORY-ONLY for now: the repo has ~95 pre-existing lint errors (mostly
+    # @typescript-eslint/no-explicit-any in the data hooks). This job reports
+    # them but does NOT fail the run. Once the backlog is cleared, delete the
+    # `continue-on-error` line below to make lint a hard gate.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    name: TypeScript (tsc --noEmit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  test:
+    name: Vitest (unit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # The unit suite is hermetic — vitest.config.ts injects its own dummy
+      # env (Supabase URL/anon key, KYC key). No repo secrets required.
+      - run: npm run test
+
+  build:
+    name: Build (next build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          # lib/supabase/client.ts creates the browser client at module load
+          # (`export const supabase = createClient()`), and createBrowserClient
+          # throws on empty URL/key — so the build needs NON-EMPTY public vars.
+          # These fall back to harmless placeholders; if you add the real values
+          # as GitHub repo secrets (Settings → Secrets → Actions), the build uses
+          # those instead. Never put SERVICE keys or Cashfree secrets here — the
+          # build only needs public (NEXT_PUBLIC_*) values.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
+          NEXT_PUBLIC_ROOT_DOMAIN: ${{ secrets.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000' }}
+          NEXT_PUBLIC_SHORTLINK_DOMAIN: ${{ secrets.NEXT_PUBLIC_SHORTLINK_DOMAIN || 'linkln.me' }}
+          NEXT_PUBLIC_R2_MEDIA_URL: ${{ secrets.NEXT_PUBLIC_R2_MEDIA_URL || 'https://media.example.com' }}
+          NEXT_PUBLIC_R2_BUCKET_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_R2_BUCKET_PUBLIC_URL || 'https://assets.example.com' }}

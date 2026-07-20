@@ -1,0 +1,25 @@
+# Dependabot — automated dependency updates + vulnerability PRs.
+# Free on private repos. Its PRs flow through the CI workflow above.
+version: 2
+updates:
+  # npm dependencies (next, sharp, @aws-sdk/*, @supabase/*, cashfree, etc.)
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    # Batch low-risk minor/patch bumps into one PR to avoid noise; majors
+    # come as individual PRs so breaking changes get reviewed on their own.
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Keep the GitHub Actions used in workflows/ up to date too.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, github-actions]

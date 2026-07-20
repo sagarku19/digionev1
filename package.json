@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "update-types": "npx supabase gen types typescript --project-id qcendfisvyjnwmefruba > types/database.types.ts",
