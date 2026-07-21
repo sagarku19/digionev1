@@ -17,17 +17,22 @@
 /test-results/
 /playwright-report/
 /playwright/.cache/
+/playwright/.auth/
 /blob-report/
 
 # next.js
 /.next/
 /out/
+.turbo
 
 # production
 /build
 
-# misc
+# misc — OS / OneDrive artifacts (this repo lives under OneDrive on Windows)
 .DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 *.pem
 
 # debug
