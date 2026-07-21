@@ -105,7 +105,7 @@ export default function Storefronts() {
     <SectionShell
       index="01"
       route="/dashboard/sites"
-      title="Four storefronts. One dashboard."
+      title="Many storefronts. One dashboard."
       sub="Pick the surface that matches how you sell — or run all four. Every site pulls from the same products, orders, and balance."
       tone="white"
     >
