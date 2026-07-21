@@ -2,10 +2,9 @@ import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { rateLimit } from '@/lib/server/rate-limit';
 
-const supabase = createServiceClient();
-
 export async function GET(req: Request) {
   try {
+    const supabase = createServiceClient();
     if (!(await rateLimit(req, 'products-search', { max: 30, windowSeconds: 60 }))) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
