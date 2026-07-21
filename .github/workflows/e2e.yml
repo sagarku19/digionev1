@@ -34,7 +34,7 @@ jobs:
       E2E_FREE_PRODUCT_PATH: ${{ secrets.E2E_FREE_PRODUCT_PATH }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
