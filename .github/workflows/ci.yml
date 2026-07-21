@@ -15,13 +15,11 @@ concurrency:
 
 jobs:
   lint:
-    name: ESLint (advisory)
+    name: ESLint
     runs-on: ubuntu-latest
-    # ADVISORY-ONLY for now: the repo has ~95 pre-existing lint errors (mostly
-    # @typescript-eslint/no-explicit-any in the data hooks). This job reports
-    # them but does NOT fail the run. Once the backlog is cleared, delete the
-    # `continue-on-error` line below to make lint a hard gate.
-    continue-on-error: true
+    # Hard gate: the pre-existing no-explicit-any backlog was cleared to zero
+    # errors (the remaining ~86 @next/next/no-img-element items are warnings and
+    # do not fail `eslint`). Any NEW ESLint error now blocks the PR.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
