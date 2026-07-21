@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { DigiOneLogo } from '@/src/components/assets/DigiOneLogo';
-import { Menu, X, LayoutDashboard, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine, Store } from 'lucide-react';
+import { Menu, X, LayoutDashboard, LogOut, Compass, Users, ArrowRight, User, BookOpen, Sparkles, Receipt, PenLine, Store, Link2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { getCurrentUser } from '@/lib/supabase/current-user';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,6 +25,13 @@ const navLinks = [
   { label: 'Pricing', href: '/pricing', icon: Receipt },
   { label: 'Blog', href: '/blog', icon: PenLine },
 ];
+
+// linkln.me — the short-link product, rendered in its own brand script face
+// (Succulent). It's an external destination (the branded short-link site), so
+// it navigates out to the real domain, not an internal route.
+const BRAND_FONT = "'Succulent', cursive";
+const SHORTLINK_DOMAIN = process.env.NEXT_PUBLIC_SHORTLINK_DOMAIN || 'linkln.me';
+const LINKLN_URL = `https://${SHORTLINK_DOMAIN}`;
 
 export default function MarketingNav() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -152,6 +159,13 @@ export default function MarketingNav() {
 
   return (
     <>
+      {/* linkln.me brand script face (Succulent). `precedence` makes React 19
+          float this stylesheet into <head>; without it the <link> lingers in
+          the body and mobile browsers render the fallback cursive instead. */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Succulent&display=swap" rel="stylesheet" precedence="default" />
+
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           navHidden && !profileDropdownOpen ? '-translate-y-full' : 'translate-y-0'
@@ -213,6 +227,19 @@ export default function MarketingNav() {
                   </Link>
                 );
               })}
+
+              {/* linkln.me — external, in its brand script face */}
+              <a
+                href={LINKLN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onMouseEnter={moveHoverPill}
+                aria-label="linkln.me — the link shortener"
+                style={{ fontFamily: BRAND_FONT }}
+                className="relative px-3 py-2 leading-none text-[18px] text-[#16130F]/80 hover:text-[#16130F] transition-colors duration-200"
+              >
+                linkln<span className="text-[#E83A2E]">.me</span>
+              </a>
             </div>
             )}
 
@@ -416,6 +443,26 @@ export default function MarketingNav() {
                   <span className="font-ledger ml-auto text-[10px] text-black/25">{String(i + 1).padStart(2, '0')}</span>
                 </Link>
               ))}
+
+              {/* linkln.me — external, in its brand script face */}
+              <a
+                href={LINKLN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-black/[0.03] active:bg-black/[0.05] transition-all duration-300"
+                style={{
+                  opacity: mobileMenuOpen ? 1 : 0,
+                  transform: mobileMenuOpen ? 'translateY(0)' : 'translateY(12px)',
+                  transition: `opacity 0.35s ease ${120 + navLinks.length * 55}ms, transform 0.35s cubic-bezier(0.16,1,0.3,1) ${120 + navLinks.length * 55}ms`,
+                }}
+              >
+                <Link2 className="w-4.5 h-4.5 text-black/35 shrink-0" strokeWidth={1.8} />
+                <span className="text-[22px] leading-none text-[#16130F]" style={{ fontFamily: BRAND_FONT }}>
+                  linkln<span className="text-[#E83A2E]">.me</span>
+                </span>
+                <span className="font-ledger ml-auto text-[10px] text-black/25">{String(navLinks.length + 1).padStart(2, '0')}</span>
+              </a>
             </div>
 
             {/* Account links (logged in) */}

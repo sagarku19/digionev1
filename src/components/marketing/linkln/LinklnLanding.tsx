@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { Link2, Copy, Check, QrCode, Download, MousePointerClick, Loader2 } from 'lucide-react';
+import { Link2, Copy, Check, QrCode, Download, MousePointerClick, Loader2, BarChart3, Globe, Lock, Zap, ChevronDown, ArrowRight } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 
 const INPUT =
@@ -22,6 +23,21 @@ const CHIPS = ['Click analytics', 'QR codes', 'Geo & device targeting', 'Passwor
 // Brand script face. Succulent isn't in next/font/google's known list, so it's
 // loaded via a Google Fonts <link> (hoisted to <head> by Next) and applied inline.
 const BRAND_FONT = "'Succulent', cursive";
+
+const FEATURES: { icon: LucideIcon; tag: string; title: string; body: string }[] = [
+  { icon: BarChart3, tag: 'analytics', title: 'Click analytics', body: 'Every tap is logged — geo, device, referrer and time. See what’s working the moment it happens.' },
+  { icon: QrCode, tag: 'qr', title: 'QR codes', body: 'Every short link doubles as a crisp, downloadable QR. Print it, sticker it, ship it.' },
+  { icon: Globe, tag: 'targeting', title: 'Geo & device targeting', body: 'Send India to one page and desktop to another — one link, the right destination for everyone.' },
+  { icon: Lock, tag: 'control', title: 'Password & expiry', body: 'Lock a link behind a password, or auto-expire it after a set date or number of clicks.' },
+  { icon: Link2, tag: 'branded', title: 'Your branded domain', body: 'Links live on linkln.me — clean, trusted and yours, not a throwaway shortener.' },
+  { icon: Zap, tag: 'redirects', title: 'Smart redirects', body: 'Max-click caps, default fallbacks and rich social-preview cards, all handled for you.' },
+];
+
+const STEPS: { n: string; title: string; body: string }[] = [
+  { n: '01', title: 'Paste any long link', body: 'Drop in a messy URL — UTM tags, tracking params and all.' },
+  { n: '02', title: 'Get a branded link + QR', body: 'linkln.me hands back a short, on-brand link and a matching QR code.' },
+  { n: '03', title: 'Watch the clicks roll in', body: 'Every click is tracked live, with geo, device and referrer breakdowns.' },
+];
 
 function CopyButton({ onCopy, copied, compact = false }: { onCopy: () => void; copied: boolean; compact?: boolean }) {
   return (
@@ -129,12 +145,17 @@ export default function LinklnLanding({ appUrl, shortDomain }: { appUrl: string;
   };
 
   return (
-    <main className="relative min-h-screen bg-white overflow-hidden flex flex-col px-6 sm:px-10 py-5 selection:bg-[#E83A2E]/15">
-      {/* Brand script font (Succulent) — hoisted to <head> by Next */}
+    <main className="relative bg-white overflow-x-hidden selection:bg-[#E83A2E]/15">
+      {/* Brand script font (Succulent). The `precedence` prop is what makes
+          React 19 float this stylesheet into <head>; without it the <link>
+          stays in the body and mobile browsers fall back to the generic
+          cursive face — which is why the header rendered in the wrong font. */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link href="https://fonts.googleapis.com/css2?family=Succulent&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Succulent&display=swap" rel="stylesheet" precedence="default" />
 
+      {/* ============================= HERO ============================= */}
+      <section className="relative min-h-[100svh] flex flex-col px-6 sm:px-10 py-5">
       {/* Graph-paper field */}
       <div
         aria-hidden="true"
@@ -356,9 +377,9 @@ export default function LinklnLanding({ appUrl, shortDomain }: { appUrl: string;
             </div>
           </div>
 
-          {/* Floating QR card */}
-          <div className="ln-float absolute -right-5 -top-5 rounded-xl border border-black/[0.08] bg-white p-2.5 shadow-[0_18px_44px_-24px_rgba(22,19,15,0.45)]">
-            <QRCodeCanvas value={`https://${shortDomain}`} size={58} level="M" includeMargin={false} fgColor="#16130F" />
+          {/* QR — pinned, no card, no background */}
+          <div className="absolute -right-5 -top-5">
+            <QRCodeCanvas value={`https://${shortDomain}`} size={58} level="M" includeMargin={false} fgColor="#16130F" bgColor="transparent" />
           </div>
 
           {/* Floating click toast */}
@@ -399,21 +420,208 @@ export default function LinklnLanding({ appUrl, shortDomain }: { appUrl: string;
           </span>
         </div>
 
-        {/* Powered by — always the last element, always still */}
-        <div className="mt-6 flex justify-center">
-          <a
-            href={appUrl}
-            className={`inline-flex items-center gap-2.5 rounded-full border border-black/[0.08] bg-[#FAF8F6] pl-3.5 pr-4 py-1.5 hover:border-black/[0.18] hover:bg-white transition-colors ${FOCUS_RING}`}
-          >
-            <span className="font-ledger text-[9px] tracking-[0.16em] text-black/40 uppercase">Powered by</span>
-            <span aria-hidden="true" className="w-px h-3 bg-black/[0.12]" />
-            <span className="text-[13.5px] font-bold tracking-tight text-[#16130F]">
-              DigiOne
-              <span className="font-ledger text-[8px] text-[#E83A2E] font-semibold ml-0.5 align-super">.ai</span>
-            </span>
-          </a>
+        {/* Scroll cue — the story continues below the fold */}
+        <div className="mt-8 hidden sm:flex flex-col items-center gap-1.5 text-black/30">
+          <span className="font-ledger text-[9px] uppercase tracking-[0.18em]">More about {shortDomain}</span>
+          <ChevronDown className="w-4 h-4 ln-float" strokeWidth={1.8} />
         </div>
       </div>
+      </section>
+      {/* /HERO */}
+
+      {/* ===================== SECTION 1 · Features (dim) ===================== */}
+      <section className="relative bg-[#FAF8F6]">
+        <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
+        <div className="max-w-5xl mx-auto px-6 sm:px-10 lg:px-14 py-16 sm:py-24">
+          <Reveal>
+            <div className="flex items-center gap-3">
+              <span className="font-ledger text-[11px] font-semibold text-[#E83A2E]">{'>>'}</span>
+              <span className="font-ledger text-[10px] uppercase tracking-[0.18em] text-black/35">What you get</span>
+              <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
+              <span className="font-ledger text-[10px] uppercase tracking-[0.16em] text-black/30">/features</span>
+            </div>
+            <h2 className="mt-5 max-w-2xl text-[28px] sm:text-[38px] lg:text-[40px] font-bold tracking-[-0.03em] leading-[1.08] text-[#16130F]">
+              Not just shorter. <span className="text-[#E83A2E]">A control panel for every link.</span>
+            </h2>
+            <p className="mt-3 max-w-xl text-[15px] sm:text-[16px] font-medium text-black/50 leading-relaxed">
+              {shortDomain} turns one paste into a branded link, a QR code and a live analytics feed — the same short-link engine that powers DigiOne creators.
+            </p>
+          </Reveal>
+
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-black/[0.07]">
+            {FEATURES.map((f, i) => (
+              <Reveal key={f.title} delay={i * 60} className="h-full">
+                <div className="group h-full border-r border-b border-black/[0.07] p-6 hover:bg-white transition-colors">
+                  <div className="flex items-center gap-2.5 mb-3.5">
+                    <span className="w-9 h-9 rounded-lg bg-white border border-black/[0.06] flex items-center justify-center group-hover:border-[#E83A2E]/25 transition-colors">
+                      <f.icon className="w-4.5 h-4.5 text-[#16130F]" strokeWidth={1.8} />
+                    </span>
+                    <span className="font-ledger text-[9px] uppercase tracking-[0.16em] text-black/30">{'>>'}&nbsp;{f.tag}</span>
+                  </div>
+                  <h3 className="text-[17px] font-bold tracking-[-0.02em] text-[#16130F]">{f.title}</h3>
+                  <p className="mt-1.5 text-[14px] font-medium text-black/50 leading-relaxed">{f.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===================== SECTION 2 · How it works (light) ===================== */}
+      <section className="relative bg-white">
+        <div aria-hidden="true" className="h-px w-full bg-black/[0.07]" />
+        <div className="max-w-5xl mx-auto px-6 sm:px-10 lg:px-14 py-16 sm:py-24">
+          <Reveal>
+            <div className="flex items-center gap-3">
+              <span className="font-ledger text-[11px] font-semibold text-[#E83A2E]">{'>>'}</span>
+              <span className="font-ledger text-[10px] uppercase tracking-[0.18em] text-black/35">How it works</span>
+              <span aria-hidden="true" className="h-px flex-1 bg-black/[0.07]" />
+              <span className="font-ledger text-[10px] uppercase tracking-[0.16em] text-black/30">/three-steps</span>
+            </div>
+            <h2 className="mt-5 max-w-2xl text-[28px] sm:text-[38px] lg:text-[40px] font-bold tracking-[-0.03em] leading-[1.08] text-[#16130F]">
+              From messy URL to tracked link. <span className="text-[#E83A2E]">In seconds.</span>
+            </h2>
+          </Reveal>
+
+          <div className="relative mt-12">
+            {/* connector — marching dashes reading left→right as "flow" */}
+            <svg aria-hidden="true" className="hidden lg:block absolute left-0 right-0 top-6 w-full h-2" viewBox="0 0 1000 8" preserveAspectRatio="none">
+              <line x1="60" y1="4" x2="940" y2="4" stroke="rgba(22,19,15,0.14)" strokeWidth="1.5" strokeDasharray="6 7" className="ln-dash" />
+            </svg>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-6">
+              {STEPS.map((s, i) => (
+                <Reveal key={s.n} delay={i * 90}>
+                  <div className="relative">
+                    <span className="relative z-10 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#16130F] text-white font-ledger text-[14px] font-semibold">
+                      {s.n}
+                    </span>
+                    <h3 className="mt-4 text-[18px] font-bold tracking-[-0.02em] text-[#16130F]">{s.title}</h3>
+                    <p className="mt-1.5 max-w-xs text-[14px] font-medium text-black/50 leading-relaxed">{s.body}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+
+          <Reveal delay={120}>
+            <a href={createUrl} className={`group mt-12 inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[14px] transition-colors duration-200 ${FOCUS_RING}`}>
+              Create your first link
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+            </a>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ===================== FOOTER · ink close ===================== */}
+      <footer className="relative bg-[#16130F] text-white overflow-hidden">
+        {/* graph paper on ink */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 0%, #000 0%, transparent 100%)',
+            maskImage: 'radial-gradient(ellipse 80% 70% at 50% 0%, #000 0%, transparent 100%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 50% 60% at 85% 0%, rgba(232,58,46,0.14) 0%, transparent 55%)' }}
+        />
+
+        <div className="relative max-w-5xl mx-auto px-6 sm:px-10 lg:px-14 py-14">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+            {/* Powered by — left, borderless, prominent */}
+            <a
+              href={appUrl}
+              aria-label="Powered by DigiOne.ai"
+              className={`group flex flex-col items-start gap-2 hover:opacity-90 transition-opacity rounded-sm ${FOCUS_RING}`}
+            >
+              <span className="font-ledger text-[9px] tracking-[0.2em] text-white/40 uppercase">Powered by</span>
+              <span className="text-[38px] sm:text-[44px] font-bold tracking-tight text-white leading-none">
+                DigiOne
+                <span className="font-ledger text-[16px] text-[#FF6B5C] font-semibold ml-0.5 align-super">.ai</span>
+              </span>
+            </a>
+
+            {/* Brand + quick links — right of the row, left-aligned text */}
+            <div>
+              <span className="inline-flex items-center gap-2">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9.5 7.5H7a4.5 4.5 0 0 0 0 9h2.5" stroke="#fff" strokeWidth="2.1" />
+                  <path d="M14.5 7.5H17a4.5 4.5 0 0 1 0 9h-2.5" stroke="#fff" strokeWidth="2.1" />
+                  <path d="M8.5 12h7" stroke="#FF6B5C" strokeWidth="2.1" />
+                </svg>
+                <span className="text-[26px] leading-none text-white" style={{ fontFamily: BRAND_FONT }}>
+                  {brand}
+                  <span className="text-[#FF6B5C]">.{tld}</span>
+                </span>
+              </span>
+              <p className="mt-3 max-w-xs text-[13.5px] font-medium text-white/55 leading-relaxed">
+                The branded link shortener — analytics, QR codes and smart targeting built in.
+              </p>
+              <div className="mt-5 flex items-center gap-5">
+                <a href={createUrl} className={`font-ledger text-[11px] uppercase tracking-[0.14em] text-white/55 hover:text-white transition-colors ${FOCUS_RING}`}>
+                  Create a link
+                </a>
+                <a href={appUrl} className={`font-ledger text-[11px] uppercase tracking-[0.14em] text-white/55 hover:text-white transition-colors ${FOCUS_RING}`}>
+                  All of DigiOne
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Legal line */}
+          <div className="mt-12 pt-6 border-t border-white/[0.09] flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-ledger text-[10px] uppercase tracking-[0.16em] text-white/35">© {new Date().getFullYear()} {shortDomain}</p>
+            <p className="font-ledger text-[10px] uppercase tracking-[0.16em] text-white/35">© {new Date().getFullYear()} DigiOne.ai · All rights reserved</p>
+          </div>
+        </div>
+      </footer>
     </main>
+  );
+}
+
+function Reveal({
+  children,
+  className = '',
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setShown(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ${
+        shown ? 'opacity-100 translate-y-0' : 'motion-safe:opacity-0 motion-safe:translate-y-4'
+      } ${className}`}
+    >
+      {children}
+    </div>
   );
 }
