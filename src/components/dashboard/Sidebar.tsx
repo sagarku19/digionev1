@@ -198,7 +198,13 @@ export default function Sidebar() {
   useEffect(() => {
     if (isOpen) {
       setVisible(true);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   useEffect(() => {
