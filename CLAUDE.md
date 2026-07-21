@@ -37,6 +37,8 @@ DigiOne is a creator monetization platform. Creators sign up, build a storefront
 | PDF generation | @react-pdf/renderer (server-side invoices + tax statements) |
 | Email | Resend (transactional — buyer purchase confirmations) |
 | QR codes | qrcode.react (site-editor share/QR modal) |
+| Testing | Vitest (unit + DB-backed integration) · Playwright (E2E: smoke, auth-stall repro, perf) — see `docs/reference/testing.md` |
+| CI | GitHub Actions — `ci.yml` (lint · typecheck · test · build) + `e2e.yml` (Playwright) + Dependabot |
 
 ---
 
@@ -63,6 +65,7 @@ Files in `.claude/rules/` are **auto-loaded by Claude Code** on every session.
 | `docs/reference/dashboard-map.md` | Starting ANY `app/dashboard/**` task — read this first instead of globbing pages |
 | `docs/reference/storefront-map.md` | Starting ANY storefront task (`app/(storefront)/**`, `src/components/storefront/**`) — read this first |
 | `docs/reference/dashboard-guides.md` | Adding/editing an in-dashboard Guide, or changing a guided page's workflow (Products, Sites, Short Links, Marketing/*) — keep `guides/content.ts` in sync |
+| `docs/reference/testing.md` | Writing or running any test — Vitest (unit/integration) or Playwright (E2E); adding an e2e spec; the auth-stall reproduction; enabling the secret-gated login/checkout flows; the CI + E2E GitHub workflows |
 
 ## Deferred Work — `.claude/todo-later/`
 
@@ -131,7 +134,10 @@ digionev1/
 │   └── stores/                   # Zustand stores (useBuyerAuth)
 ├── types/
 │   └── database.types.ts         # Supabase schema types — source of truth
-└── supabase/                     # Config and migrations
+├── supabase/                     # Config and migrations
+├── e2e/                          # Playwright E2E specs (smoke · auth-stall repro · perf) — see docs/reference/testing.md
+├── playwright.config.ts          # Playwright config (chromium + mobile-chrome projects)
+└── .github/                      # CI: workflows/ci.yml, workflows/e2e.yml, dependabot.yml
 ```
 
 ---
@@ -254,7 +260,10 @@ Never short-circuit this. Never confirm payments client-side.
 npm run dev          # Dev server → http://localhost:3000
 npm run build        # Production build
 npm run lint         # ESLint
+npm run typecheck    # tsc --noEmit (strict type check — CI gate)
 npm run test         # Vitest unit tests
 npm run test:integration # DB-backed money-path integration suite
+npm run e2e          # Playwright E2E (smoke + secret-gated flows) — see docs/reference/testing.md
+npm run e2e:ui       # Playwright interactive UI mode
 npm run update-types # Regenerate Supabase types from schema
 ```
