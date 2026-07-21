@@ -423,6 +423,30 @@ export default function MarketingNav() {
               </div>
             )}
 
+            {/* Account + Dashboard — placed above Explore */}
+            {!isAuthLoading && isLoggedIn && (
+              <div className="mb-4">
+                {isBuyer ? (
+                  <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#E83A2E] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
+                    <Store className="w-4 h-4" /> Become a creator
+                  </Link>
+                ) : (
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#E83A2E] hover:bg-[#C92F24] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
+                    <LayoutDashboard className="w-4 h-4" /> Dashboard
+                  </Link>
+                )}
+                <p className="font-ledger px-3 mb-1.5 mt-4 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Account</p>
+                <div className="space-y-0.5">
+                  <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold text-black/65 hover:bg-black/[0.03] transition-colors">
+                    <User className="w-4 h-4 text-black/35 shrink-0" /> Profile
+                  </Link>
+                  <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold text-black/65 hover:bg-black/[0.03] transition-colors">
+                    <BookOpen className="w-4 h-4 text-black/35 shrink-0" /> Library
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {/* Nav links */}
             <p className="font-ledger px-3 mb-1.5 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Explore</p>
             <div className="space-y-0.5 mb-4">
@@ -465,19 +489,6 @@ export default function MarketingNav() {
               </a>
             </div>
 
-            {/* Account links (logged in) */}
-            {!isAuthLoading && isLoggedIn && (
-              <div className="space-y-0.5 mb-4 pt-4 border-t border-black/[0.06]">
-                <p className="font-ledger px-3 mb-1.5 text-[9px] font-medium text-black/35 uppercase tracking-[0.18em]">Account</p>
-                <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold text-black/65 hover:bg-black/[0.03] transition-colors">
-                  <User className="w-4 h-4 text-black/35 shrink-0" /> Profile
-                </Link>
-                <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold text-black/65 hover:bg-black/[0.03] transition-colors">
-                  <BookOpen className="w-4 h-4 text-black/35 shrink-0" /> Library
-                </Link>
-              </div>
-            )}
-
             {/* CTA buttons */}
             <div
               className="mt-auto pt-4 border-t border-black/[0.06] flex flex-col gap-2.5"
@@ -489,15 +500,6 @@ export default function MarketingNav() {
             >
               {isAuthLoading ? null : isLoggedIn ? (
                 <>
-                  {isBuyer ? (
-                    <Link href="/account/library" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#E83A2E] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
-                      <Store className="w-4 h-4" /> Become a creator
-                    </Link>
-                  ) : (
-                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 text-[14px] font-semibold bg-[#16130F] text-white rounded-lg py-3.5 active:scale-[0.98] transition-all">
-                      <LayoutDashboard className="w-4 h-4" /> Dashboard
-                    </Link>
-                  )}
                   <button onClick={() => setShowSignOutConfirm(true)} className="w-full flex items-center justify-center gap-2 text-[14px] font-semibold text-[#E83A2E] py-3 active:scale-[0.98] transition-all">
                     <LogOut className="w-4 h-4" /> Sign out
                   </button>
