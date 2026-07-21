@@ -15,6 +15,12 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    # TypeScript 7.x is the new native (Go) compiler — a breaking major on a
+    # preview toolchain that our Next 16 / TS-5 stack isn't ready for. Stay on 5.x
+    # (minor/patch still flow through). Revisit when the toolchain supports TS 7.
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # Keep the GitHub Actions used in workflows/ up to date too.
   - package-ecosystem: github-actions
