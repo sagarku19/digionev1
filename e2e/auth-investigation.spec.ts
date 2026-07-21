@@ -95,6 +95,14 @@ test.describe('auth stall investigation', () => {
     const startedAt = Date.now();
     await page.getByRole('button', { name: /^log in$/i }).click();
 
+    // 4b. Progressive-feedback fix: within ~9s the UI must stop showing a frozen
+    //     "Logging in…" and reassure the user it's still working (button flips to
+    //     "Reconnecting…" + a "slow connection, retrying" note) — not a dead spinner.
+    await expect(page.getByRole('button', { name: /reconnecting/i })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText(/retrying on a fresh connection/i)).toBeVisible();
+
     // 5. The mitigation must surface a clear, retryable error — not spin forever.
     await expect(
       page.getByText(/could not reach the sign-in server|check your connection|timed out/i),

@@ -30,6 +30,7 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [slowSignIn, setSlowSignIn] = useState(false);
 
   const loginMutation = useLoginMutation();
   const loading = loginMutation.isPending || redirecting;
@@ -72,6 +73,19 @@ function LoginContent() {
       );
     })();
   }, [sessionLoading, isLoggedIn, searchParams]);
+
+  // While a sign-in is pending, reassure the user if it runs long. The browser
+  // client aborts a stalled auth fetch at 12s and signInWithRetry tries once more
+  // on a fresh connection, so a dead-socket sign-in can take ~25s — without this
+  // the user stares at a frozen "Logging in…" the whole time.
+  useEffect(() => {
+    if (!loginMutation.isPending) {
+      setSlowSignIn(false);
+      return;
+    }
+    const timer = setTimeout(() => setSlowSignIn(true), 9_000);
+    return () => clearTimeout(timer);
+  }, [loginMutation.isPending]);
 
   // Uses window.location.href instead of router.push so the navigation does a
   // full reload. router.push relies on the in-page Next router and can silently
@@ -220,12 +234,19 @@ function LoginContent() {
           </div>
         )}
 
+        {loading && slowSignIn && !error && (
+          <div className="flex items-center gap-2.5 px-4 py-3 rounded-lg bg-[#16130F]/[0.03] border border-black/[0.08] text-[13px] text-black/60 font-medium">
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-black/15 border-t-[#16130F] animate-spin shrink-0" />
+            Slow connection — retrying on a fresh connection. This can take a few more seconds…
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading || googleLoading}
           className="w-full py-3 px-4 bg-[#E83A2E] hover:bg-[#C92F24] text-white font-semibold text-[14px] rounded-lg transition-colors duration-200 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
         >
-          {loading ? 'Logging in…' : 'Log in'}
+          {loading ? (slowSignIn ? 'Reconnecting…' : 'Logging in…') : 'Log in'}
         </button>
       </form>
 
