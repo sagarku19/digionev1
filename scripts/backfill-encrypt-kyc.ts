@@ -4,6 +4,7 @@
 // Run: npx tsx scripts/backfill-encrypt-kyc.ts   (requires KYC_ENCRYPTION_KEY + SUPABASE_SERVICE_KEY in env)
 import { createServiceClient } from '../lib/supabase/service';
 import { encryptField, isEncrypted, last4 } from '../src/lib/server/kyc-crypto';
+import type { Database } from '../types/database.types';
 
 async function main() {
   const db = createServiceClient();
@@ -34,7 +35,7 @@ async function main() {
       patch.upi_id_enc = encryptField(row.upi_id_enc);
     }
     if (Object.keys(patch).length === 0) continue;
-    const { error: upErr } = await db.from('creator_kyc').update(patch).eq('creator_id', row.creator_id);
+    const { error: upErr } = await db.from('creator_kyc').update(patch as Database['public']['Tables']['creator_kyc']['Update']).eq('creator_id', row.creator_id);
     if (upErr) throw upErr;
     updated++;
   }

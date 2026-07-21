@@ -10,6 +10,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import type { Database } from '@/types/database.types';
 import { getSitePublicPath, getSiteDisplayUrl } from '@/lib/site-urls';
 import { useEditorHistory } from '@/hooks/site-editor/useEditorHistory';
 import { useUnsavedChanges } from '@/hooks/site-editor/useUnsavedChanges';
@@ -700,7 +701,7 @@ export default function EditLinkInBioPage() {
       await saveDesignTokens(siteId, palette, site?.creator_id);
 
       // Slug + published status
-      const siteUpdates: Record<string, any> = { is_active: isPublished };
+      const siteUpdates: Database['public']['Tables']['sites']['Update'] = { is_active: isPublished };
       if (slug && slug !== originalSlug) {
         siteUpdates.slug = slug;
         setOriginalSlug(slug);

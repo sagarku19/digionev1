@@ -11,6 +11,7 @@ import { validateDestinationUrl } from '@/lib/server/shortlinks/url-safety';
 import { getShortlinkDomain } from '@/lib/shared/shortlink';
 import { hashPassword } from '@/lib/server/shortlinks/password';
 import { sanitizePhase2Fields } from '@/lib/server/shortlinks/link-input';
+import type { Database } from '@/types/database.types';
 
 interface PatchBody {
   destination_url?: string;
@@ -100,7 +101,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const { data, error } = await db
       .from('linksh_links')
-      .update(patch)
+      .update(patch as Database['public']['Tables']['linksh_links']['Update'])
       .eq('id', id)
       .eq('creator_id', auth.creatorId)
       .select()
