@@ -1,4 +1,7 @@
 ﻿'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any --
+   Editor-internal jsonb block-metadata casts. Deferred "site-edit editor-internal
+   any" work in .claude/todo-later/7. */
 
 import React from 'react';
 import { Plus, X, GripVertical, Type, Image, Code, Minus, Heading1, Play, MousePointerClick, Space, Quote, ChevronUp, ChevronDown } from 'lucide-react';

@@ -1,5 +1,5 @@
 // Community posts + reactions for the dashboard. Loader aggregates per-post reaction count + my-reaction flag.
-// DB tables: community_posts, community_reactions (both missing from database.types.ts)
+// DB tables: community_posts, community_reactions
 // Query keys: ['community','posts'], invalidated on every mutation
 "use client";
 
@@ -31,29 +31,32 @@ export function useCommunity() {
       try {
         const creatorId = await getCreatorProfileId();
 
-        const { data: postsData, error: postsErr } = await (supabase as any)
+        const { data: postsData, error: postsErr } = await supabase
           .from('community_posts')
           .select('*, profiles(full_name, avatar_url)')
           .order('is_pinned', { ascending: false })
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(50)
+          .returns<RawPost[]>();
         if (postsErr) throw postsErr;
 
-        const { data: myReactionRows } = await (supabase as any)
+        const { data: myReactionRows } = await supabase
           .from('community_reactions')
           .select('post_id')
-          .eq('creator_id', creatorId);
-        const mySet = new Set<string>(((myReactionRows ?? []) as RawReaction[]).map((r) => r.post_id));
+          .eq('creator_id', creatorId)
+          .returns<RawReaction[]>();
+        const mySet = new Set<string>((myReactionRows ?? []).map((r) => r.post_id));
 
-        const { data: allReactionRows } = await (supabase as any)
+        const { data: allReactionRows } = await supabase
           .from('community_reactions')
-          .select('post_id');
+          .select('post_id')
+          .returns<RawReaction[]>();
         const countMap: Record<string, number> = {};
-        for (const r of ((allReactionRows ?? []) as RawReaction[])) {
+        for (const r of (allReactionRows ?? [])) {
           countMap[r.post_id] = (countMap[r.post_id] || 0) + 1;
         }
 
-        const posts: CommunityPost[] = ((postsData ?? []) as RawPost[]).map((p) => ({
+        const posts: CommunityPost[] = (postsData ?? []).map((p) => ({
           ...p,
           reaction_count: countMap[p.id] || 0,
           my_reaction: mySet.has(p.id),
@@ -73,7 +76,7 @@ export function useCommunity() {
   const createPost = useMutation({
     mutationFn: async (payload: { content: string; category: string }) => {
       if (!creatorId) throw new Error('creator not loaded');
-      const { error } = await (supabase as any).from('community_posts').insert({
+      const { error } = await supabase.from('community_posts').insert({
         creator_id: creatorId,
         content: payload.content,
         category: payload.category,
@@ -86,7 +89,7 @@ export function useCommunity() {
 
   const deletePost = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('community_posts').delete().eq('id', id);
+      const { error } = await supabase.from('community_posts').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -96,11 +99,11 @@ export function useCommunity() {
     mutationFn: async ({ postId, hasReacted }: { postId: string; hasReacted: boolean }) => {
       if (!creatorId) throw new Error('creator not loaded');
       if (hasReacted) {
-        const { error } = await (supabase as any).from('community_reactions')
+        const { error } = await supabase.from('community_reactions')
           .delete().eq('post_id', postId).eq('creator_id', creatorId);
         if (error) throw error;
       } else {
-        const { error } = await (supabase as any).from('community_reactions')
+        const { error } = await supabase.from('community_reactions')
           .insert({ post_id: postId, creator_id: creatorId, reaction: 'like' });
         if (error) throw error;
       }

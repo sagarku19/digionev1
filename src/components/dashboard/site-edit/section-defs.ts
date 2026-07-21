@@ -160,17 +160,17 @@ export type Section = {
 };
 
 // ─── Nested key helpers ───────────────────────────────────────
-export function getNestedValue(obj: any, path: string): unknown {
-  return path.split('.').reduce((o: any, k) => o?.[k], obj);
+export function getNestedValue(obj: unknown, path: string): unknown {
+  return path.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | null | undefined)?.[k], obj);
 }
 
-export function setNestedValue(obj: any, path: string, value: unknown): any {
+export function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown): Record<string, unknown> {
   const keys = path.split('.');
   const result = { ...obj };
-  let cur: any = result;
+  let cur: Record<string, unknown> = result;
   for (let i = 0; i < keys.length - 1; i++) {
-    cur[keys[i]] = { ...(cur[keys[i]] ?? {}) };
-    cur = cur[keys[i]];
+    cur[keys[i]] = { ...((cur[keys[i]] as Record<string, unknown>) ?? {}) };
+    cur = cur[keys[i]] as Record<string, unknown>;
   }
   cur[keys[keys.length - 1]] = value;
   return result;

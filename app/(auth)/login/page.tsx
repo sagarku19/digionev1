@@ -80,6 +80,7 @@ function LoginContent() {
   // the user stares at a frozen "Logging in…" the whole time.
   useEffect(() => {
     if (!loginMutation.isPending) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSlowSignIn(false);
       return;
     }

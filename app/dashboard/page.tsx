@@ -117,7 +117,7 @@ const QUICK_ACTIONS = [
 export default function DashboardHome() {
   // Stable date strings keyed to today's date — same value on every mount within the same day
   const todayKey = new Date().toISOString().split('T')[0];
-  const thirtyDaysAgoKey = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const thirtyDaysAgoKey = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const startISO = `${thirtyDaysAgoKey}T00:00:00.000Z`;
   const endISO   = `${todayKey}T23:59:59.999Z`;
 

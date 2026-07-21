@@ -72,5 +72,9 @@ export type ContentBlock = {
   id: string;
   type: 'text' | 'heading' | 'image' | 'iframe' | 'divider' | 'html' | 'video' | 'button' | 'spacer' | 'quote';
   content: string;
+  // Heterogeneous per-block jsonb bag (each block type stores its own keys);
+  // a precise type is a discriminated union across block types. Kept `any` with
+  // this documented reason per CLAUDE.md.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 };

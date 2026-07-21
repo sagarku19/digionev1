@@ -14,6 +14,11 @@ export type BioLink = {
   style_variant: string;
   is_visible: boolean;
   sort_order: number;
+  // Heterogeneous per-block jsonb bag — each block editor reads its own keys
+  // (strings/booleans/arrays). A precise type is a discriminated union across all
+  // block types (tracked in .claude/todo-later/9); kept `any` with this documented
+  // reason per CLAUDE.md rather than casting at ~60 call sites.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: any;
 };
 

@@ -1,4 +1,8 @@
 ﻿"use client";
+/* eslint-disable react-hooks/static-components --
+   NavLink is a local leaf-link component that closes over `close`; extracting it to
+   module scope would thread props through ~15 call sites. Documented exception to the
+   React-Compiler rule (this project doesn't use the compiler). */
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
@@ -197,6 +201,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisible(true);
       document.body.style.overflow = "hidden";
     } else {

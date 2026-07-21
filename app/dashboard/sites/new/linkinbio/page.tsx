@@ -20,11 +20,15 @@ function useSlugCheck(slug: string) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // Debounced async slug validation — these status updates are the effect's
+    // whole purpose (idle/invalid on input, then async available/taken).
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!slug) { setStatus('idle'); return; }
     if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) || slug.length < 3) {
       setStatus('invalid'); return;
     }
     setStatus('checking');
+    /* eslint-enable react-hooks/set-state-in-effect */
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
       try {

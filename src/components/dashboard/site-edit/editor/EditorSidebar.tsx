@@ -199,10 +199,9 @@ export default function EditorSidebar({
 
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-2.5">
         {(() => {
-          let lastGroup = 'main';
-          return items.map((it) => {
-            const newGroup = it.group !== 'main' && it.group !== lastGroup;
-            lastGroup = it.group;
+          return items.map((it, idx) => {
+            const prevGroup = idx > 0 ? items[idx - 1].group : 'main';
+            const newGroup = it.group !== 'main' && it.group !== prevGroup;
             const heading = it.groupLabel ?? (it.group === 'tools' ? 'Tools' : it.group);
             return (
               <Fragment key={it.id}>

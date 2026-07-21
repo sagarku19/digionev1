@@ -2,6 +2,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase/client';
 import { getCurrentUser } from '@/lib/supabase/current-user';
+import type { Database } from '@/types/database.types';
+
+type LeadRow = Database['public']['Tables']['lead_form']['Row'] & {
+  forms: { title: string | null; description: string | null } | null;
+};
 
 export function useGuestLeads(filterSiteId?: string) {
   const { data: leads = [], isLoading, error } = useQuery({
@@ -35,11 +40,12 @@ export function useGuestLeads(filterSiteId?: string) {
         .from('lead_form')
         .select('*, forms(title, description)')
         .in('site_id', siteIds)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .returns<LeadRow[]>();
 
       if (error) throw error;
 
-      return (data ?? []).map((lead: any) => ({
+      return (data ?? []).map((lead) => ({
         ...lead,
         sites: sitesMap[lead.site_id] || null,
       }));

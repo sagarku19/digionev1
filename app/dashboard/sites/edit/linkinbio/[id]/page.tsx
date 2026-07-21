@@ -1,4 +1,9 @@
 ﻿'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any --
+   Editor-internal jsonb-config casts (theme/layout/settings/seo/content/style bags
+   read with arbitrary keys, then assigned to typed state via `??` defaults). Typing
+   them properly is the deferred "site-edit editor-internal any" work in
+   .claude/todo-later/7; Record<string,unknown> breaks the typed state setters. */
 // Edit page: Link in Bio — custom split-screen editor.
 // Mini sidebar + Left panel (header + tabs + editor) + Right panel (preview).
 

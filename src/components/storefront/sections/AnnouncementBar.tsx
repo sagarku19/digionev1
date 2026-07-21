@@ -24,6 +24,8 @@ export default function AnnouncementBar({ settings }: { settings: Record<string,
 
   useEffect(() => {
     const dismissed = localStorage.getItem(`announcement-${barId}`);
+    // SSR-safe: dismissal state lives in localStorage, readable only after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!dismissed) setVisible(true);
   }, [barId]);
 

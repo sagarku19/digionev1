@@ -19,7 +19,7 @@ export interface DataTableProps<T> {
   emptyState?: React.ReactNode;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
   pageSize = 10,
@@ -41,12 +41,12 @@ export function DataTable<T extends Record<string, any>>({
 
   if (sortConfig) {
     processedData.sort((a, b) => {
-      const aVal = a[sortConfig.key];
-      const bVal = b[sortConfig.key];
+      const aVal = a[sortConfig.key] as string | number | null;
+      const bVal = b[sortConfig.key] as string | number | null;
       if (aVal === null) return 1;
       if (bVal === null) return -1;
-      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      if ((aVal as number) < (bVal as number)) return sortConfig.direction === 'asc' ? -1 : 1;
+      if ((aVal as number) > (bVal as number)) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
   }

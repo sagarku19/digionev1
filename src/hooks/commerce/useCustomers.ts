@@ -23,14 +23,15 @@ export function useCustomers() {
       const profileId = await getCreatorProfileId();
 
       // Primary: query by creator_id (fast path for new orders)
-      let { data: orders, error } = await supabase
+      const primary = await supabase
         .from('orders')
         .select('customer_email, customer_name, customer_phone, total_amount, created_at')
-        .eq('creator_id' as any, profileId)
+        .eq('creator_id', profileId)
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (primary.error) throw primary.error;
+      let orders = primary.data;
 
       // Fallback: find orders via products owned by this creator (handles null creator_id orders)
       if (!orders || orders.length === 0) {
@@ -41,12 +42,12 @@ export function useCustomers() {
 
         const productIds = (products ?? []).map(p => p.id);
         if (productIds.length > 0) {
-          const { data: items } = await (supabase as any)
+          const { data: items } = await supabase
             .from('order_items')
             .select('order_id')
             .in('product_id', productIds);
 
-          const orderIds = [...new Set((items ?? []).map((i: any) => i.order_id))] as string[];
+          const orderIds = [...new Set((items ?? []).map((i) => i.order_id))] as string[];
           if (orderIds.length > 0) {
             const { data: fallbackOrders, error: fbErr } = await supabase
               .from('orders')

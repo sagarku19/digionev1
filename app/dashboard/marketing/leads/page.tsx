@@ -194,7 +194,7 @@ export default function LeadsPage() {
             <div className="divide-y divide-[var(--border-subtle)]">
               {filtered.map((lead) => (
                 <div key={lead.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[var(--surface-hover)] transition group">
-                  <Avatar name={lead.full_name} email={lead.email} />
+                  <Avatar name={lead.full_name ?? undefined} email={lead.email ?? undefined} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{lead.full_name || '—'}</p>
                     <p className="text-xs text-[var(--text-tertiary)] truncate">{lead.email || lead.mobile || '—'}</p>
@@ -216,7 +216,7 @@ export default function LeadsPage() {
                   )}
                   <div className="hidden xl:flex items-center gap-1 text-xs text-[var(--text-tertiary)] shrink-0">
                     <Clock className="w-3 h-3" />
-                    {new Date(lead.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                    {new Date(lead.created_at ?? '').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                   </div>
                   {lead.other && Object.keys(lead.other).length > 0 && (
                     <div className="hidden xl:block text-xs text-[var(--text-tertiary)] max-w-[160px] truncate">
@@ -243,7 +243,7 @@ export default function LeadsPage() {
                   {items.map((lead) => (
                     <div key={lead.id} className="flex items-center gap-4 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-lg)] px-5 py-3.5 hover:border-[var(--border-strong)] transition">
                       <div className="relative">
-                        <Avatar name={lead.full_name} email={lead.email} />
+                        <Avatar name={lead.full_name ?? undefined} email={lead.email ?? undefined} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-[var(--text-primary)]">{lead.full_name || '—'}</p>
@@ -260,7 +260,7 @@ export default function LeadsPage() {
                           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--info-bg)] text-[var(--info)]">{lead.sites.slug}</span>
                         )}
                         <span className="text-xs text-[var(--text-tertiary)]">
-                          {new Date(lead.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(lead.created_at ?? '').toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                     </div>

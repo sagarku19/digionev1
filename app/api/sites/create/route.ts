@@ -53,7 +53,7 @@ const DEFAULT_SECTIONS_PAYMENT = [
   { id: crypto.randomUUID(), type: 'trust_badges', sort_order: 1, is_visible: true, settings: {} },
 ];
 
-const DEFAULT_SECTIONS_LINKINBIO: any[] = [];
+const DEFAULT_SECTIONS_LINKINBIO: { id: string; type: string; sort_order: number; is_visible: boolean; settings: Record<string, unknown> }[] = [];
 
 function sectionsFor(type: string) {
   if (type === 'single')    return DEFAULT_SECTIONS_SINGLE;
@@ -187,7 +187,7 @@ async function createSite(
     });
     if (ssErr) console.error('[sites/create] site_singlepage insert error:', ssErr.message);
   } else if (site_type === 'linkinbio') {
-    const { error: slErr } = await db.from('linkinbio_pages' as any).insert({
+    const { error: slErr } = await db.from('linkinbio_pages').insert({
       site_id: siteId,
       display_name: title,
       bio: description ?? null,
@@ -195,7 +195,7 @@ async function createSite(
       layout: { style: 'classic' },
       seo: { title: title, description: description ?? '' },
       settings: { showWatermark: true, showShareButton: true, socialLinks: [] },
-    } as any);
+    });
     if (slErr) console.error('[sites/create] linkinbio_pages insert error:', slErr.message, slErr.details, slErr.hint, slErr.code);
   }
 

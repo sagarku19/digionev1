@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     if (error) throw error;
 
     return NextResponse.json({ results: data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Search failed' }, { status: 500 });
   }
 }

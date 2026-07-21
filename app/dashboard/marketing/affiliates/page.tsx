@@ -267,7 +267,7 @@ export default function AffiliatesPage() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Affiliate's User ID</label>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Affiliate&apos;s User ID</label>
                 <input type="text" required autoFocus value={affiliateUserId} onChange={e => setAffiliateUserId(e.target.value)}
                   placeholder="Paste their DigiOne user ID" className={INPUT} />
                 <p className="text-xs text-[var(--text-tertiary)] mt-1.5">The affiliate must have a DigiOne account. Ask them to share their User ID from profile settings.</p>

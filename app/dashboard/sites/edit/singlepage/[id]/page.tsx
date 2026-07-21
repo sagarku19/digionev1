@@ -1,4 +1,8 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any --
+   Editor-internal jsonb-config casts (section/block bags read with arbitrary keys,
+   assigned to typed state via `??` defaults). Deferred "site-edit editor-internal
+   any" work in .claude/todo-later/7; Record<string,unknown> breaks the setters. */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';

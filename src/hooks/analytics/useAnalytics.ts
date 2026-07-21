@@ -16,7 +16,19 @@ export type ProductStat = {
   sales: number;
 };
 
-const EMPTY = { totalRevenue: 0, totalSales: 0, orders: [] as any[], topProducts: [] as ProductStat[], prevRevenue: 0, prevSales: 0 };
+type AnalyticsOrder = {
+  id: string;
+  total_amount: number;
+  created_at: string;
+  status: string;
+  order_items: {
+    price_at_purchase: number;
+    product_id: string;
+    products: { id: string; name: string; thumbnail_url: string | null } | null;
+  }[];
+};
+
+const EMPTY = { totalRevenue: 0, totalSales: 0, orders: [] as AnalyticsOrder[], topProducts: [] as ProductStat[], prevRevenue: 0, prevSales: 0 };
 
 export function useAnalytics(dateRange: { start: string, end: string }) {
   const { data: stats, isLoading, error } = useQuery({
@@ -36,35 +48,36 @@ export function useAnalytics(dateRange: { start: string, end: string }) {
       if (productIds.length === 0) return EMPTY;
 
       // Step 2: get order_ids that contain those products
-      const { data: orderItemRows, error: itemsError } = await (supabase as any)
+      const { data: orderItemRows, error: itemsError } = await supabase
         .from('order_items')
         .select('order_id')
         .in('product_id', productIds);
 
       if (itemsError) throw itemsError;
-      const orderIds = [...new Set((orderItemRows ?? []).map((i: any) => i.order_id as string))];
+      const orderIds = [...new Set((orderItemRows ?? []).map((i) => i.order_id))];
       if (orderIds.length === 0) return EMPTY;
 
       // Step 3: fetch those orders within the date range
-      const { data: orders, error: ordersError } = await (supabase
+      const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select(`
           id, total_amount, created_at, status,
           order_items(price_at_purchase, product_id, products(id, name, thumbnail_url))
-        `) as any)
+        `)
         .in('id', orderIds)
         .gte('created_at', dateRange.start)
         .lte('created_at', dateRange.end)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .returns<AnalyticsOrder[]>();
 
       if (ordersError) throw ordersError;
 
-      const allOrders = (orders ?? []) as any[];
+      const allOrders = orders ?? [];
 
       // Only 'completed' counts as revenue (schema: pending|completed|failed|refunded|cancelled)
       const successfulOrders = allOrders.filter(o => o.status === 'completed');
 
-      const totalRevenue = successfulOrders.reduce((acc: number, o: any) => acc + (Number(o.total_amount) || 0), 0);
+      const totalRevenue = successfulOrders.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
       const totalSales = successfulOrders.length;
 
       // Build top products from completed orders
@@ -96,15 +109,15 @@ export function useAnalytics(dateRange: { start: string, end: string }) {
       const prevStart = new Date(startMs - rangeMs).toISOString();
       const prevEnd   = new Date(startMs).toISOString();
 
-      const { data: prevOrders } = await (supabase
+      const { data: prevOrders } = await supabase
         .from('orders')
-        .select('total_amount, status') as any)
+        .select('total_amount, status')
         .in('id', orderIds)
         .gte('created_at', prevStart)
         .lte('created_at', prevEnd);
 
-      const prevSuccessful = ((prevOrders ?? []) as any[]).filter((o: any) => o.status === 'completed');
-      const prevRevenue = prevSuccessful.reduce((acc: number, o: any) => acc + (Number(o.total_amount) || 0), 0);
+      const prevSuccessful = (prevOrders ?? []).filter((o) => o.status === 'completed');
+      const prevRevenue = prevSuccessful.reduce((acc, o) => acc + (Number(o.total_amount) || 0), 0);
       const prevSales   = prevSuccessful.length;
 
       return { totalRevenue, totalSales, orders: allOrders, topProducts, prevRevenue, prevSales };

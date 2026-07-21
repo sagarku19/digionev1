@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { getSiteDisplayUrl, getSitePublicPath } from '@/lib/site-urls';
+import { getSiteDisplayUrl, getSitePublicPath, type SiteUrlInfo } from '@/lib/site-urls';
 import {
   Globe, Copy, ExternalLink, AlertTriangle, RefreshCw,
   Trash2, EyeOff, Loader2, CheckCircle2, XCircle,
@@ -53,7 +53,7 @@ export default function SettingsPanel({
   showSlug = true,
 }: {
   siteId: string;
-  site: any;
+  site: (SiteUrlInfo & { is_active?: boolean | null; ssl_status?: string | null }) | null;
   displayTitle: string;
   data: SettingsData;
   onChange: (data: SettingsData) => void;

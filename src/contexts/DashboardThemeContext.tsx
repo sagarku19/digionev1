@@ -23,6 +23,9 @@ export function DashboardThemeProvider({ children }: { children: React.ReactNode
       stored = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       localStorage.setItem('dashboard-theme', stored);
     }
+    // SSR-safe: the persisted theme lives in localStorage and can only be read on
+    // the client after mount, not during render. (Documented rule exception.)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(stored);
   }, []);
 

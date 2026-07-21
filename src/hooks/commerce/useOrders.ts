@@ -31,7 +31,7 @@ export function useOrders(limit = 100) {
 
       // Try creator_id column first (requires migration).
       // Fall back to finding orders via products owned by this creator.
-      const { data, error } = await (supabase
+      const { data, error } = await supabase
         .from('orders')
         .select(`
           id, status, total_amount,
@@ -39,13 +39,14 @@ export function useOrders(limit = 100) {
           gateway_order_id, gateway_payment_id,
           payment_verified_at, created_at,
           order_items(price_at_purchase, products(name, thumbnail_url, creator_id))
-        `) as any)
+        `)
         .eq('creator_id', profileId)
         .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(limit)
+        .returns<Order[]>();
 
       // creator_id column exists and returned results — use them
-      if (!error && data && (data as any[]).length > 0) return data as Order[];
+      if (!error && data && data.length > 0) return data;
 
       // ── Fallback: join via order_items → products → creator ──
       const { data: products } = await supabase
@@ -57,15 +58,15 @@ export function useOrders(limit = 100) {
       if (productIds.length === 0) return [];
 
       // Get order_ids that contain this creator's products
-      const { data: items } = await (supabase as any)
+      const { data: items } = await supabase
         .from('order_items')
         .select('order_id')
         .in('product_id', productIds);
 
-      const orderIds = [...new Set((items ?? []).map((i: any) => i.order_id))];
+      const orderIds = [...new Set((items ?? []).map((i) => i.order_id))];
       if (orderIds.length === 0) return [];
 
-      const { data: fallbackOrders, error: fallbackError } = await (supabase
+      const { data: fallbackOrders, error: fallbackError } = await supabase
         .from('orders')
         .select(`
           id, status, total_amount,
@@ -73,13 +74,14 @@ export function useOrders(limit = 100) {
           gateway_order_id, gateway_payment_id,
           created_at,
           order_items(price_at_purchase, products(name, thumbnail_url))
-        `) as any)
+        `)
         .in('id', orderIds)
         .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(limit)
+        .returns<Order[]>();
 
       if (fallbackError) throw fallbackError;
-      return (fallbackOrders as Order[]) ?? [];
+      return fallbackOrders ?? [];
     },
   });
 

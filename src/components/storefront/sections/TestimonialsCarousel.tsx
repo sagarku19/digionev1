@@ -37,7 +37,7 @@ export default function TestimonialsCarousel({ settings }: { settings: Record<st
                 ))}
               </div>
               <p className="text-[--creator-text] italic mb-8 relative leading-relaxed">
-                "{t.text}"
+                &ldquo;{t.text}&rdquo;
               </p>
               <div className="mt-auto flex flex-col text-center">
                 <span className="font-bold text-[--creator-text]">{t.name}</span>
