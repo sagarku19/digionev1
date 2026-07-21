@@ -27,9 +27,10 @@ const navLinks = [
 ];
 
 // linkln.me — the short-link product, rendered in its own brand script face
-// (Succulent). It's an external destination (the branded short-link site), so
-// it navigates out to the real domain, not an internal route.
-const BRAND_FONT = "'Succulent', cursive";
+// (Cookie, self-hosted via next/font in app/layout.tsx → --font-wordmark).
+// It's an external destination (the branded short-link site), so it opens in a
+// new tab, not an internal route.
+const BRAND_FONT = "var(--font-wordmark), cursive";
 const SHORTLINK_DOMAIN = process.env.NEXT_PUBLIC_SHORTLINK_DOMAIN || 'linkln.me';
 const LINKLN_URL = `https://${SHORTLINK_DOMAIN}`;
 
@@ -159,13 +160,6 @@ export default function MarketingNav() {
 
   return (
     <>
-      {/* linkln.me brand script face (Succulent). `precedence` makes React 19
-          float this stylesheet into <head>; without it the <link> lingers in
-          the body and mobile browsers render the fallback cursive instead. */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link href="https://fonts.googleapis.com/css2?family=Succulent&display=swap" rel="stylesheet" precedence="default" />
-
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           navHidden && !profileDropdownOpen ? '-translate-y-full' : 'translate-y-0'

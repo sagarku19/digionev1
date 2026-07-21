@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Bricolage_Grotesque, IBM_Plex_Mono } from "next/font/google";
+import { Inter, Bricolage_Grotesque, IBM_Plex_Mono, Cookie } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -19,6 +19,18 @@ const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-plex-mono",
+  display: "swap",
+});
+
+// linkln.me brand wordmark (Cookie). Self-hosted via next/font (like the fonts
+// above) so it renders on every device. Exposed as --font-wordmark so swapping
+// the wordmark font later only touches this file. (The old "Succulent" wasn't a
+// hosted webfont — it only rendered where installed locally and fell back to
+// cursive on mobile.)
+const cookie = Cookie({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-wordmark",
   display: "swap",
 });
 
@@ -74,7 +86,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${bricolage.variable} ${plexMono.variable}`}
+      className={`${inter.variable} ${bricolage.variable} ${plexMono.variable} ${cookie.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased font-sans">

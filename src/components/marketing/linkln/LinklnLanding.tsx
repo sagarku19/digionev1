@@ -20,9 +20,9 @@ function genCode(len = 6) {
 
 const CHIPS = ['Click analytics', 'QR codes', 'Geo & device targeting', 'Password & expiry'];
 
-// Brand script face. Succulent isn't in next/font/google's known list, so it's
-// loaded via a Google Fonts <link> (hoisted to <head> by Next) and applied inline.
-const BRAND_FONT = "'Succulent', cursive";
+// Brand script face — Cookie, self-hosted via next/font in app/layout.tsx
+// (exposed as --font-wordmark), so the wordmark renders on every device.
+const BRAND_FONT = "var(--font-wordmark), cursive";
 
 const FEATURES: { icon: LucideIcon; tag: string; title: string; body: string }[] = [
   { icon: BarChart3, tag: 'analytics', title: 'Click analytics', body: 'Every tap is logged — geo, device, referrer and time. See what’s working the moment it happens.' },
@@ -146,14 +146,6 @@ export default function LinklnLanding({ appUrl, shortDomain }: { appUrl: string;
 
   return (
     <main className="relative bg-white overflow-x-hidden selection:bg-[#E83A2E]/15">
-      {/* Brand script font (Succulent). The `precedence` prop is what makes
-          React 19 float this stylesheet into <head>; without it the <link>
-          stays in the body and mobile browsers fall back to the generic
-          cursive face — which is why the header rendered in the wrong font. */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link href="https://fonts.googleapis.com/css2?family=Succulent&display=swap" rel="stylesheet" precedence="default" />
-
       {/* ============================= HERO ============================= */}
       <section className="relative min-h-[100svh] flex flex-col px-6 sm:px-10 py-5">
       {/* Graph-paper field */}
