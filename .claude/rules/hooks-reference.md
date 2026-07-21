@@ -17,7 +17,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `admin/` | `usePayoutQueue` (super-admin payout queue) |
 | `auth/` | `useAuthSession`, `useLoginMutation` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`), `useSubscription` + `useSubscriptionPlans` (`useSubscription.ts`), `useKycDocuments` |
-| `products/` | `useProducts`, `useProductPage`, `useStoreProducts`, `useProductFiles` |
+| `products/` | `useProducts`, `useStoreProducts`, `useProductFiles` |
 | `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useOrderEarnings` (`['orders','earnings']` — per-order gross+fee map from `transaction_ledger` sale rows), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices`, `useShortLinks` |
@@ -53,7 +53,6 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useAnalytics(dateRange)` | Analytics data for a `{ start, end }` date range |
 | `useCoupons()` | Coupon management |
 | `useAffiliates()` | Affiliate program data |
-| `useProductPage(creatorId, slug)` | Single published product by slug — used on product pages |
 | `useStoreProducts(creatorId)` | All published products for a creator's storefront |
 | `useAbTests()` | `{ tests }` — A/B tests for the logged-in creator; resolves `profiles.id` and selects `products(name)` |
 | `useLibrary()` | Logged-in buyer's purchased products — reads user_product_access (RLS SELECT-own) joined to products; snapshot columns + `snapshot_metadata` keep deleted products accessible; returns `links[]` — the live product's links **merged** with the purchased `snapshot_metadata` (`mergeAccessLinks`: live wins per label, removed links retained, edits update in place) so a purchased link never disappears. Files minted on demand via `GET /api/deliverables/[productId]` (archive-aware: keeps files removed after purchase). See `src/lib/shared/access-links.ts` + `src/components/store/DeliveryLinks.tsx` |
@@ -94,7 +93,6 @@ All keys follow `[domain, kind, ...ids]`. Use these exact keys when invalidating
 | `useNotifications()` | `['notifications','list']` (polls every 120 s) |
 | `useOrders()` | `['orders','list']` |
 | `useOrderRefundInfo(orderId)` | `['orders','refund-info', orderId]` (sale-ledger fee + prior refunds for the refund preview) |
-| `useProductPage(creatorId, slug)` | `['products','page', creatorId, slug]` |
 | `useProducts()` | `['products','list']` / `['products','detail', id]` / `['products','trash']` (also `trashedProducts`, `restoreProduct`, `permanentlyDeleteProduct`) |
 | `useSites()` | `['sites','list']` / `['sites','trash']` (also `trashedSites`, `restoreSite`, `permanentlyDeleteSite`) |
 | `useStorefront(slug)` | `['storefront','detail', slug]` |
