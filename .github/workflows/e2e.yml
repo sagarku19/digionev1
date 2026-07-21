@@ -1,0 +1,54 @@
+name: E2E
+
+# Playwright end-to-end smoke suite. Separate from ci.yml because it's slower
+# (browser + full build + server boot). Runs on pushes to main and every PR.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright (smoke)
+    runs-on: ubuntu-latest
+    # Public NEXT_PUBLIC_* placeholders shared by the build and the runtime
+    # server. Non-empty so createBrowserClient doesn't throw; real values (as
+    # repo secrets) are used when present. NEVER put server secrets here.
+    # Optional: add E2E_USER_EMAIL / E2E_USER_PASSWORD (a throwaway test creator)
+    # and E2E_FREE_PRODUCT_PATH as repo secrets to switch on the real login /
+    # free-order flows — they stay skipped otherwise.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
+      NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
+      NEXT_PUBLIC_ROOT_DOMAIN: ${{ secrets.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000' }}
+      NEXT_PUBLIC_SHORTLINK_DOMAIN: ${{ secrets.NEXT_PUBLIC_SHORTLINK_DOMAIN || 'linkln.me' }}
+      NEXT_PUBLIC_R2_MEDIA_URL: ${{ secrets.NEXT_PUBLIC_R2_MEDIA_URL || 'https://media.example.com' }}
+      NEXT_PUBLIC_R2_BUCKET_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_R2_BUCKET_PUBLIC_URL || 'https://assets.example.com' }}
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+      E2E_FREE_PRODUCT_PATH: ${{ secrets.E2E_FREE_PRODUCT_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Build
+        run: npm run build
+      - name: Run E2E (Playwright boots `next start`)
+        run: npm run e2e
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

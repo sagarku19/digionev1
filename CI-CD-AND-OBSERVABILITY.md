@@ -18,8 +18,8 @@ setup notes tuned to our stack (Next.js 16 App Router · TypeScript · Supabase 
 
 ## TL;DR
 
-- **Already in the repo:** ESLint, TypeScript (`tsc`), Vitest (unit + a DB-backed integration suite).
-- **Not yet set up:** everything else — there is **no `.github/` CI at all** today.
+- **Already in the repo:** ESLint, TypeScript (`tsc`), Vitest (unit + a DB-backed integration suite), a `.github/` CI (`ci.yml` — lint/typecheck/test/build), Dependabot, and a **Playwright smoke suite** (`e2e.yml`).
+- **Not yet set up:** the runtime + deeper-scan tools — Sentry, PostHog, Better Stack, Semgrep, OWASP ZAP, Lighthouse CI, k6, CodeQL.
 - **The shape of a mature pipeline:** cheap/fast checks gate every PR; heavier scans run on merge or
   on a schedule; runtime tools (monitoring, analytics, DAST) watch production after deploy.
 - **If you adopt only 10 tools** (the shortlist at the end): Playwright · Vitest · Sentry · PostHog ·
@@ -113,7 +113,7 @@ balance credits, refund proportional-fee reversal, ledger `record_hash` determin
 bound and needs a test Supabase project + secrets, so it's slower and not fully hermetic).
 **Cost:** free, MIT/OSS.
 
-### 4. Playwright — *not set up*
+### 4. Playwright — *set up (smoke suite: `e2e/` + `.github/workflows/e2e.yml`)*
 
 **What it is:** Microsoft's browser-automation / end-to-end testing framework. Drives a real
 Chromium/Firefox/WebKit browser through user flows and asserts on the result.
@@ -389,8 +389,10 @@ Sequenced by **value-per-hour-of-setup**, and by "protect the money first":
 2. **Dependabot** → one `dependabot.yml` file. Free, private-repo-safe, catches CVEs. *(30 min)*
 3. **Sentry** → protect the money path from silent failures. Free tier. *(a day, incl. source maps +
    PII scrubbing)*
-4. **Playwright smoke suite** → the free-order checkout path + creator signup + login (guards the auth
-   saga). *(1–2 days)*
+4. ✅ **Playwright smoke suite** → *done* — `@playwright/test` + `playwright.config.ts` + `e2e/`
+   (public-route smoke on desktop **and** mobile Chrome) + `.github/workflows/e2e.yml`. The real
+   login + free-order-checkout flows are scaffolded (`e2e/auth.spec.ts`, `e2e/checkout-free.spec.ts`)
+   but **skip** until `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` / `E2E_FREE_PRODUCT_PATH` are provided.
 5. **Better Stack** → uptime + webhook + cron heartbeats. Free. *(2 hrs)*
 6. **Semgrep** → community rulesets first, then port `anti-patterns.md` / `security-model.md` into
    custom rules. *(1 day + ongoing)*
