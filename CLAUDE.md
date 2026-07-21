@@ -2,6 +2,8 @@
 
 You are working on **DigiOne**, a SaaS platform for Indian creators to sell digital products, manage storefronts, and grow their audience. Read this entire file before every session. These rules are non-negotiable.
 
+> **Resuming after a break or a killed terminal?** Read **`WORKLOG.md`** first (local, **git-ignored** — create it if absent) — it has the current state (branch, unpushed commits, in-flight work, immediate next steps) plus a dated session log. Update it freely after each chunk of work; it's intentionally untracked, so no commits needed.
+
 ---
 
 ## What DigiOne Is
