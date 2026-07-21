@@ -1,7 +1,6 @@
 import Hero from "@/components/marketing/sections/Hero";
 import ProductShowcase from "@/components/marketing/sections/ProductShowcase";
 import Storefronts from "@/components/marketing/sections/Storefronts";
-import ProductIndex from "@/components/marketing/sections/ProductIndex";
 import ConnectedGraph from "@/components/marketing/sections/ConnectedGraph";
 import MoneyRail from "@/components/marketing/sections/MoneyRail";
 import Automation from "@/components/marketing/sections/Automation";

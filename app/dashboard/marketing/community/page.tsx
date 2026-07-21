@@ -9,7 +9,7 @@ import { useCreator } from '@/hooks/creator/useCreator';
 import { useCommunity, type CommunityPost } from '@/hooks/marketing/useCommunity';
 import {
   MessageCircle, Send, ThumbsUp, Pin, Share2,
-  X, Loader2, AlertCircle, Zap, ChevronRight,
+  Loader2, AlertCircle, Zap, ChevronRight,
   ExternalLink, Trash2, TrendingUp,
 } from 'lucide-react';
 
@@ -66,7 +66,6 @@ export default function CommunityPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const userName   = profile?.full_name || 'Creator';
-  const userInitials = userName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
   const avatarUrl  = profile?.avatar_url;
 
   const handlePost = async (e: React.FormEvent) => {

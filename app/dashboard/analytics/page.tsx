@@ -8,7 +8,7 @@ import { KpiGrid } from '@/components/ui/KpiGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import {
-  TrendingUp, TrendingDown, ShoppingCart, DollarSign,
+  TrendingUp, ShoppingCart, DollarSign,
   BarChart2, Package, ArrowUpRight, ArrowDownRight, Minus
 } from 'lucide-react';
 import {

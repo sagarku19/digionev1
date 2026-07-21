@@ -6,7 +6,7 @@ import { GuideButton } from '@/components/dashboard/guides/GuideButton';
 import { useMarketingStats } from '@/hooks/marketing/useMarketingStats';
 import {
   Ticket, Users, Share2, Calendar, Megaphone,
-  ChevronRight, TrendingUp, ArrowUpRight, Zap,
+  TrendingUp, ArrowUpRight, Zap,
   MessageCircle, BarChart3, Target, Sparkles,
 } from 'lucide-react';
 

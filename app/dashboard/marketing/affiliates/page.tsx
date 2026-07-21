@@ -26,7 +26,6 @@ function CopyButton({ text, label = 'Copy link' }: { text: string; label?: strin
 
 function CommissionSlider({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   const pct = Math.min(value, 80);
-  const color = pct <= 20 ? 'bg-[var(--success)]' : pct <= 40 ? 'bg-[var(--brand)]' : pct <= 60 ? 'bg-[var(--warning)]' : 'bg-[var(--danger)]';
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
