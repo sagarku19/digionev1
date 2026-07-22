@@ -20,7 +20,7 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 | `products/` | `useProducts`, `useStoreProducts`, `useProductFiles` |
 | `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useOrderEarnings` (`['orders','earnings']` — per-order gross+fee map from `transaction_ledger` sale rows), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
-| `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity`, `useServices`, `useShortLinks` |
+| `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity` (+ `useMyCommunity`, `usePublicCommunity`), `useServices`, `useShortLinks` |
 | `analytics/` | `useAnalytics` |
 | `notifications/` | `useNotifications` |
 | `instaauto/` | `useInstaAccount`, `useInstaAutomations`, `useInstaLeads`, `useInstaMessages`, `useInstaAnalytics` (Instagram Auto DM — see `/dashboard/autodm`) |
@@ -62,7 +62,10 @@ This lets `queryClient.invalidateQueries({ queryKey: ['products'] })` clear a wh
 | `useProfile(creatorId?)` | composes both — for consumers that need read + write |
 | `useServices()` | `{ services, bookings, createService, updateService, deleteService, toggleActive, updateBookingStatus }` |
 | `useReferrals()` | `{ codes, redemptions, createCode, toggleActive, deleteCode }` |
-| `useCommunity()` | `{ posts, creatorId, createPost, deletePost, toggleReaction }` |
+| `useCommunity()` | `{ posts, creatorId, isLoading, createPost, updatePost, deletePost }` — dashboard feed CRUD; each post carries a denormalised `like_count` (read-only here). Key `['community','posts']` |
+| `useMyCommunity()` | `{ community, isLoading, updateCommunity, isUpdating }` — the caller's `communities` row (public name, unique `@username`, bio, `show_avatar` image/icon toggle, up to 4 `socials`); auto-provisions one on first read; `updateCommunity` edits all of those (maps unique-violation → "username taken"). Key `['community','mine']` |
+| `usePublicCommunity(handle)` | `{ community, profile, posts } \| null` — public reader for `/community/[handle]`; `handle` is a community `username` OR a creator profile id. Read-only. Key `['community','public', handle]` |
+| `useLikeCommunityPost()` | mutation `{ postId, delta: 1 \| -1 }` → new `like_count` — anon-safe public like via the `increment_community_post_like` SECURITY DEFINER RPC (client dedupes with localStorage). Used by the `/community/[handle]` LikeButton |
 | `useMarketingStats()` | `{ stats, isLoading }` — aggregated marketing dashboard counts |
 | `useSiteEditQuery(siteId, { include })` | site + selected related tables (`'main' \| 'nav' \| 'tokens' \| 'sections' \| 'assignments'`) |
 | `useSiteEditMutations(siteId)` | `{ savePaymentConfig, isSavingPayment }` |

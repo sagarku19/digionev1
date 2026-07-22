@@ -148,6 +148,50 @@ export type Database = {
           },
         ]
       }
+      communities: {
+        Row: {
+          bio: string | null
+          created_at: string
+          creator_id: string
+          id: string
+          name: string
+          show_avatar: boolean
+          socials: Json
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          creator_id: string
+          id?: string
+          name: string
+          show_avatar?: boolean
+          socials?: Json
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          creator_id?: string
+          id?: string
+          name?: string
+          show_avatar?: boolean
+          socials?: Json
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communities_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_posts: {
         Row: {
           category: string
@@ -156,6 +200,7 @@ export type Database = {
           creator_id: string
           id: string
           is_pinned: boolean
+          like_count: number
           updated_at: string
         }
         Insert: {
@@ -165,6 +210,7 @@ export type Database = {
           creator_id: string
           id?: string
           is_pinned?: boolean
+          like_count?: number
           updated_at?: string
         }
         Update: {
@@ -174,6 +220,7 @@ export type Database = {
           creator_id?: string
           id?: string
           is_pinned?: boolean
+          like_count?: number
           updated_at?: string
         }
         Relationships: [
@@ -4403,6 +4450,10 @@ export type Database = {
       gst_registration_required: {
         Args: { p_creator_id: string }
         Returns: boolean
+      }
+      increment_community_post_like: {
+        Args: { p_delta: number; p_post_id: string }
+        Returns: number
       }
       increment_coupon_uses: {
         Args: { p_coupon_id: string }

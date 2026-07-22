@@ -12,6 +12,16 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Community profile page — staggered entrance (delay set inline). */
+@keyframes cmRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cm-rise { animation: cmRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .cm-rise { animation: none; }
+}
+
 /* Ledger mono — marketing pages: indices, routes, metrics, microcopy */
 .font-ledger {
   font-family: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;

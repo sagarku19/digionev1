@@ -201,6 +201,7 @@ export const GUIDES: Record<GuideKey, Guide> = {
       'Post consistently to stay top-of-mind between launches.',
       'Tease launches here before they go live to build anticipation.',
       'Ask questions — engagement compounds when people reply.',
+      'Set your community name and @handle under Edit, then share your public page — anyone can view it without signing in.',
     ],
   },
 };
