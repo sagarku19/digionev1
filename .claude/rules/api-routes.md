@@ -18,8 +18,11 @@ Every route under `app/api/`. Source-of-truth for what auth each one expects, wh
 | POST | `/api/account/upgrade-to-creator` | cookie session | server + service role | `auth.users` (`app_metadata.role`), `users.role`, `profiles` |
 | POST | `/api/checkout/create` | none (buyer derived from cookie session when present) | server (identity) + service role | `orders`, `order_items`, `guest_entitlements` (free guest orders) |
 | POST | `/api/checkout/payment-link` | none | service role | `payment_requests`, `payment_submissions` |
-| POST | `/api/refunds/create` | cookie session | server + service role | `refunds`, `wallet_frozen_logs`, `creator_balances.frozen_balance` (via `begin_refund`); Cashfree PG refund create |
-| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access`; `refunds` + `settle_refund` (REFUND_STATUS_WEBHOOK); purchase email (Resend, non-fatal) |
+| POST | `/api/refunds/request` | cookie session (creator, owner-scoped) | server + service role | creator files a refund request (required reason) → `refund_requests` + FREEZES clawback via `create_refund_request` (`wallet_frozen_logs`, `creator_balances.frozen_balance`); no gateway call. Replaces the removed `/api/refunds/create`. |
+| POST | `/api/admin/refunds/[id]/approve` | cookie session (super_admin, DB role re-read) | server + service role | runs the real refund engine (`initiateRefund` → `begin_refund` → Cashfree), then `approve_refund_request` releases the request-time hold + links the refund |
+| POST | `/api/admin/refunds/[id]/reject` | cookie session (super_admin, DB role re-read) | server + service role | `reject_refund_request` — releases the request-time hold, records the admin reason; no gateway call |
+| POST | `/api/orders/[orderId]/resend-email` | cookie session (creator, owner-scoped) | server + service role | re-sends the purchase-confirmation ("access link") email + records `orders.confirmation_email_*`; completed orders only; 10/min profile-keyed |
+| POST | `/api/webhook/cashfree` | HMAC signature | service role | `orders`, `creator_balances`, `transaction_ledger`, `notifications`, `user_product_access`; `refunds` + `settle_refund` (REFUND_STATUS_WEBHOOK); purchase email (Resend, non-fatal, recorded to `orders.confirmation_email_*`) |
 | POST | `/api/webhook/cashfree-payout` | Cashfree Payouts signature (HMAC) | service role | `settle_payout` (success/failed); `TRANSFER_REVERSED` → `settle_payout('failed')` in-flight / `reverse_settled_payout` post-success; separate from `/api/webhook/cashfree` (PG webhook) |
 | POST | `/api/coupons/validate` | none | service role | — |
 | POST | `/api/leads` | none | service role | `lead_form` |
@@ -190,12 +193,25 @@ data.payment.cf_payment_id     → stored as gateway_payment_id
 3. Insert `transaction_ledger` row with `record_hash = sha256(orderId + ':' + cf_payment_id)` (UNIQUE constraint — replay-safe).
 4. Insert `notifications` row for the creator.
 5. Grant `user_product_access` rows for logged-in buyers (idempotent UNIQUE on `(order_id, product_id)`).
-5b. Send the buyer purchase-confirmation email via Resend (`src/lib/server/email.ts`) — non-fatal, logged and swallowed; skipped when `RESEND_API_KEY`/`EMAIL_FROM` are unset.
+5b. Send the buyer purchase-confirmation ("access link") email via `sendAndRecordOrderConfirmation` (`src/lib/server/order-email.ts` → `src/lib/server/email.ts`) — non-fatal (never throws). The outcome is **recorded** on `orders.confirmation_email_{status,to,sent_at,error}` (`sent` | `failed` | `skipped`; `skipped`/`email_not_configured` when `RESEND_API_KEY`/`EMAIL_FROM` are unset) so the Orders drawer can show delivery status and the resend route can update it.
 6. Redeem coupon via `increment_coupon_uses` RPC if coupon was applied.
 
 **On `FAILED` / `USER_DROPPED`:** `orders.status = 'failed'` (or `payment_submissions.payment_status = 'failed'` for `pl_` orders).
 
 **Idempotency:** the atomic claim (`WHERE status='pending'`) is the guard — zero rows updated means already processed, returns `200 { received: true }` without re-processing.
+
+---
+
+## Orders
+
+### `POST /api/orders/[orderId]/resend-email` (creator, owner-scoped)
+
+Re-sends the purchase-confirmation ("access link") email for one of the creator's own **completed** orders and records the outcome. Calls the shared `sendAndRecordOrderConfirmation` (`src/lib/server/order-email.ts`), the same builder+sender+recorder the fulfillment path uses, so the drawer's delivery status updates in place.
+
+**Guards in order:** valid `orderId` (400) → cookie session via `getUser()` (401) → `resolveProfileId` (404) → 10/min profile-keyed rate limit (429) → order exists (404) → `order.creator_id === profileId` (403) → `order.status === 'completed'` (409).
+
+**Success:** `{ ok: true, status: 'sent' }`.
+**Errors:** `400`, `401`, `403`, `404`, `409` (not completed), `422` (send skipped — e.g. no recipient / email not configured), `429`, `502` (send failed), `500`. Every outcome (including failures) is persisted to `orders.confirmation_email_{status,to,sent_at,error}`.
 
 ---
 
@@ -308,21 +324,27 @@ Creates a `sites` row plus all required sub-tables for the given site type.
 
 ## Money
 
-### `POST /api/refunds/create` (auth required)
+### `POST /api/refunds/request` (creator, owner-scoped)
 
-Creator refunds one of their own completed orders. Freeze-then-settle: `begin_refund` (atomic RPC) holds the net clawback in `creator_balances.frozen_balance` and records a `processing` `refunds` row **before** any gateway call; the Cashfree PG refund is then created. Terminal settlement (reverse balances, ledger debit, order flip, access revoke) happens later via the `REFUND_STATUS_WEBHOOK` on `/api/webhook/cashfree` or `scripts/refund-admin.ts sync`.
+Creators no longer self-refund. This files a **refund request** (with a required reason) on one of the creator's own completed orders and **freezes the clawback immediately** via `create_refund_request` (reconcile-safe: `wallet_frozen_logs` + `creator_balances.frozen_balance`, mirroring `begin_refund`'s math) — **no gateway call**. A super_admin later approves or rejects. This route **replaces** the removed `/api/refunds/create` (creators can no longer initiate a gateway refund directly). See `docs/reference/admin-dashboard.md` for the full flow.
 
 ```json
-// Request  (amount omitted = full remaining; min ₹1)
-{ "orderId": "uuid", "amount": 400, "reason": "string?" }
+// Request  (amount omitted = full remaining; min ₹1; reason required)
+{ "orderId": "uuid", "amount": 400, "reason": "why the refund" }
 
 // Success
-{ "success": true, "refund": { "refundId": "uuid", "merchantRefundId": "rfnd_…", "amount": 400, "feeReversed": 40, "netClawback": 360, "creatorId": "uuid" } }
+{ "success": true, "request": { "requestId": "uuid", "amount": 400, "netClawback": 360 } }
 ```
 
-**Guards in order:** auth (401) → creator profile resolved (404) → 5/min **profile-keyed** rate limit (429) → order exists + belongs to caller (404/403) → `begin_refund` state checks. Fee reversal is proportional (the platform returns its fee on the refunded portion); the completing refund takes the exact fee remainder so a fully refunded order nets to zero.
+**Guards in order:** auth (401) → valid orderId + non-empty reason (400) → creator profile resolved (404) → 5/min **profile-keyed** rate limit (429) → order exists + belongs to caller (404/403) → `create_refund_request` checks (order completed/paid, sale ledger present, remaining amount, **one pending request per order** via `uq_refund_requests_one_pending_per_order`, no in-flight refund). Fee reversal is proportional. **Errors:** `400`, `401`, `403`, `404`, `409` (invalid state / already a pending request / refund in flight), `429`, `500`.
 
-**Errors:** `400` (invalid orderId/amount, over-refund past remaining), `401` (no session), `403` (not your order), `404` (no profile / order not found), `409` (invalid state — order not completed/paid, **missing sale ledger row**, or a refund already `processing` for this order), `429` (rate limit), `502` (gateway rejected — the freeze is released immediately, safe to retry), `500`.
+### `POST /api/admin/refunds/[id]/approve` (super_admin only)
+
+Approves a pending `refund_requests` row. DB role re-read (JWT not trusted). Runs the real refund engine (`initiateRefund` → `begin_refund` places its own hold + Cashfree PG refund create), then `approve_refund_request` releases the request-time hold and links `refund_id` — **hold-before-release** so it's never under-frozen; if the gateway rejects, the request stays pending (safe to retry). Terminal settlement still arrives via the `REFUND_STATUS_WEBHOOK` on `/api/webhook/cashfree`. **Errors:** `400`, `401`, `403` (not super_admin), `404` (request not found), `409` (not pending), `502` (gateway rejected), `500`.
+
+### `POST /api/admin/refunds/[id]/reject` (super_admin only)
+
+Rejects a pending request via `reject_refund_request` — releases the request-time hold and records the admin reason. No gateway call, no money leaves. Body: `{ "reason": "string?" }`. **Errors:** `400`, `401`, `403`, `409` (not found / not pending), `500`.
 
 ---
 

@@ -86,6 +86,18 @@ describe.skipIf(!hasCreds())('fulfillment — money credit + idempotency', () =>
     expect(access).toHaveLength(1);
     expect(access![0].product_name).toBeTruthy();
 
+    // Confirmation-email outcome is recorded on the order. The integration setup
+    // strips the Resend creds, so the send is 'skipped' — but the recipient and
+    // reason are still persisted (the visibility the dashboard drawer relies on).
+    const { data: emailed } = await world.db
+      .from('orders')
+      .select('confirmation_email_status, confirmation_email_to, confirmation_email_error')
+      .eq('id', orderId)
+      .single();
+    expect(emailed?.confirmation_email_status).toBe('skipped');
+    expect(emailed?.confirmation_email_to).toBe(buyer.email);
+    expect(emailed?.confirmation_email_error).toBe('email_not_configured');
+
     // ── Replay: the atomic claim makes a second fulfillment a no-op ──
     const replay = await fulfillOrder(orderId, { gatewayPaymentId: cfPaymentId });
     expect(replay).toEqual({ fulfilled: false, alreadyFulfilled: true });
@@ -136,6 +148,51 @@ describe.skipIf(!hasCreds())('fulfillment — money credit + idempotency', () =>
       .select('*', { count: 'exact', head: true })
       .eq('order_id', orderId);
     expect(accessCount).toBe(0);
+  });
+
+  // Reproduces the reported case: logged in as account A, but the buyer typed a
+  // DIFFERENT email at checkout. Access must go to the logged-in account; the
+  // confirmation email must be addressed to the typed email — and recorded.
+  it('logged-in buyer who changes the checkout email: access → their account, email → the typed address', async () => {
+    const creator = await world.createUser('creator');
+    const buyer = await world.createUser('buyer');
+    await world.setKyc(creator.profileId, { panLast4: '4242' });
+    const productId = await world.createProduct(creator.profileId, { price: 300 });
+    const typedEmail = `typed-${world.runId}-${crypto.randomUUID().slice(0, 6)}@example.test`;
+    const { orderId } = await world.createPendingOrder({
+      creatorId: creator.profileId,
+      productId,
+      price: 300,
+      buyerUserId: buyer.authId, // logged in as this account
+      email: typedEmail,         // but typed a different email at checkout
+    });
+
+    await fulfillOrder(orderId, { gatewayPaymentId: `cfpay_${world.runId}_chg` });
+
+    // Access granted to the logged-in account, not the typed email.
+    const { data: access } = await world.db
+      .from('user_product_access')
+      .select('user_id')
+      .eq('order_id', orderId);
+    expect(access).toHaveLength(1);
+    expect(access![0].user_id).toBe(buyer.authId);
+
+    // No guest entitlement (the buyer was logged in).
+    const { count: guestCount } = await world.db
+      .from('guest_entitlements')
+      .select('*', { count: 'exact', head: true })
+      .eq('order_id', orderId);
+    expect(guestCount).toBe(0);
+
+    // Confirmation email is addressed to the TYPED email; outcome recorded
+    // ('skipped' because the integration setup strips the Resend creds).
+    const { data: order } = await world.db
+      .from('orders')
+      .select('confirmation_email_status, confirmation_email_to')
+      .eq('id', orderId)
+      .single();
+    expect(order?.confirmation_email_to).toBe(typedEmail);
+    expect(order?.confirmation_email_status).toBe('skipped');
   });
 
   it('a free order (total 0) credits nothing and still grants access (no sale ledger row for ₹0)', async () => {

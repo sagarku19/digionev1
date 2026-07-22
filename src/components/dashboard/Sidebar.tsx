@@ -38,6 +38,7 @@ import {
   Sparkles,
   ShieldCheck,
   Link2,
+  RotateCcw,
 } from "lucide-react";
 import { useCreator } from "@/hooks/creator/useCreator";
 import { useNotifications } from "@/hooks/notifications/useNotifications";
@@ -472,6 +473,12 @@ export default function Sidebar() {
                   label="Payouts · Admin"
                   icon={ShieldCheck}
                   active={isActive("/dashboard/admin/payouts")}
+                />
+                <NavLink
+                  href="/dashboard/admin/refunds"
+                  label="Refunds · Admin"
+                  icon={RotateCcw}
+                  active={isActive("/dashboard/admin/refunds")}
                 />
               </div>
             </div>

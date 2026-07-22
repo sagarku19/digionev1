@@ -2,7 +2,7 @@
 // Orders dashboard — all orders for this creator with detail drawer.
 
 import React, { useState, useMemo } from 'react';
-import { useOrders, useRefundOrder, useOrderRefundInfo, type Order } from '@/hooks/commerce/useOrders';
+import { useOrders, useRequestRefund, useOrderRefundInfo, useOrderRefundRequest, useResendOrderEmail, type Order } from '@/hooks/commerce/useOrders';
 import { useEarnings } from '@/hooks/commerce/useEarnings';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -12,6 +12,7 @@ import {
   ShoppingBag, CheckCircle2, XCircle, Clock, Search,
   ChevronRight, X, Package, Mail, Phone, Calendar,
   Download, TrendingUp, RotateCcw, FileDown, FileText, Copy, Check,
+  RefreshCw, AlertCircle,
 } from 'lucide-react';
 import { formatINR } from '@/lib/format';
 import { computeRefundSplit } from '@/lib/shared/refund-math';
@@ -105,7 +106,8 @@ function StatusBadge({ status }: { status: string }) {
 
 function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) {
   const { data: info, isLoading } = useOrderRefundInfo(order.id);
-  const refundOrder = useRefundOrder();
+  const { data: existingReq, isLoading: reqLoading } = useOrderRefundRequest(order.id);
+  const requestRefund = useRequestRefund();
   const { creatorBalances } = useEarnings();
   const availableBal = creatorBalances?.available_balance ?? 0;
   const [amountStr, setAmountStr] = useState('');
@@ -116,6 +118,8 @@ function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) 
   const total = Number(order.total_amount);
   const remaining = info ? Math.round((total - info.priorAmount) * 100) / 100 : total;
   const amount = amountStr === '' ? remaining : Number(amountStr);
+
+  const pendingReq = existingReq?.status === 'pending' ? existingReq : null;
 
   let preview: { netClawback: number; feeReversed: number } | null = null;
   let previewError = '';
@@ -128,8 +132,9 @@ function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) 
   }
 
   const insufficientBalance = !!preview && preview.netClawback > availableBal;
+  const reasonMissing = reason.trim().length === 0;
 
-  const blocked = isLoading || !info?.hasLedger || info?.hasProcessing || remaining < 1;
+  const blocked = isLoading || reqLoading || !info?.hasLedger || info?.hasProcessing || remaining < 1;
   const blockedMessage = !isLoading && info
     ? !info.hasLedger
       ? 'This order is missing its sale record — contact support to refund it.'
@@ -143,24 +148,38 @@ function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) 
   const submit = async () => {
     setError('');
     try {
-      await refundOrder.mutateAsync({
+      await requestRefund.mutateAsync({
         orderId: order.id,
         ...(amountStr === '' ? {} : { amount }),
-        ...(reason.trim() ? { reason: reason.trim() } : {}),
+        reason: reason.trim(),
       });
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Refund failed.');
+      setError(e instanceof Error ? e.message : 'Refund request failed.');
     }
   };
 
   return (
     <div className="border-t border-[var(--border)] bg-[var(--surface-muted)] p-4 space-y-3">
-      <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Refund this order</p>
-      {blocked ? (
-        <p className="text-sm text-[var(--text-secondary)]">{isLoading ? 'Loading…' : blockedMessage}</p>
+      <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Request a refund</p>
+      {pendingReq ? (
+        <div className="rounded-[var(--radius-md)] border border-[var(--warning)]/30 bg-[var(--warning-bg)] p-3 space-y-1">
+          <p className="text-sm font-semibold text-[var(--warning)]">Refund requested — awaiting review</p>
+          <p className="text-xs text-[var(--text-secondary)]">
+            {formatINR(Number(pendingReq.amount))} requested. A DigiOne admin will approve or decline it. The amount is
+            held from your balance until then.
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)] italic">“{pendingReq.reason}”</p>
+        </div>
+      ) : blocked ? (
+        <p className="text-sm text-[var(--text-secondary)]">{isLoading || reqLoading ? 'Loading…' : blockedMessage}</p>
       ) : (
         <>
+          {existingReq?.status === 'rejected' && (
+            <p className="text-xs text-[var(--danger)]">
+              A previous request was declined{existingReq.review_reason ? `: “${existingReq.review_reason}”` : ''}. You can request again.
+            </p>
+          )}
           <div>
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">
               Amount (max {formatINR(remaining)})
@@ -176,19 +195,19 @@ function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Reason (optional)</label>
-            <input
-              type="text"
+            <label className="block text-sm font-medium text-[var(--text-primary)] mb-1.5">Reason for refund (required)</label>
+            <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Why is this being refunded?"
-              className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow"
+              rows={2}
+              placeholder="Why should this order be refunded? The admin reviews this."
+              className="w-full px-3 py-2 text-sm border border-[var(--border)] rounded-[var(--radius-md)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-[var(--border-strong)] focus:shadow-[var(--focus-ring)] transition-shadow resize-none"
             />
           </div>
           {preview && (
             <p className="text-xs text-[var(--text-secondary)]">
-              <span className="font-semibold text-[var(--danger)]">{formatINR(preview.netClawback)}</span> will be
-              deducted from your balance. The {formatINR(preview.feeReversed)} platform fee on this portion is returned.
+              <span className="font-semibold text-[var(--danger)]">{formatINR(preview.netClawback)}</span> will be held
+              from your balance on request, and deducted once an admin approves. The {formatINR(preview.feeReversed)} platform fee on this portion is returned.
             </p>
           )}
           {insufficientBalance && preview && (
@@ -200,22 +219,93 @@ function RefundPanel({ order, onClose }: { order: Order; onClose: () => void }) 
           {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
           <button
             onClick={() => setConfirmOpen(true)}
-            disabled={!preview || insufficientBalance || refundOrder.isPending}
+            disabled={!preview || insufficientBalance || reasonMissing || requestRefund.isPending}
             className="w-full py-2.5 bg-[var(--danger)] hover:opacity-90 text-[var(--text-on-brand)] font-semibold rounded-[var(--radius-sm)] transition text-sm disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
           >
-            {refundOrder.isPending ? 'Processing…' : `Refund ${Number.isFinite(amount) ? formatINR(amount) : ''}`}
+            {requestRefund.isPending ? 'Submitting…' : `Request refund ${Number.isFinite(amount) ? formatINR(amount) : ''}`}
           </button>
           <ConfirmDialog
             isOpen={confirmOpen}
             onClose={() => setConfirmOpen(false)}
             onConfirm={submit}
-            title="Refund this order?"
-            description={`The buyer gets ${Number.isFinite(amount) ? formatINR(amount) : ''} back to their original payment method (5–7 days). ${preview ? `${formatINR(preview.netClawback)} will be deducted from your balance and held until the refund completes.` : ''} This cannot be undone.`}
-            confirmLabel="Refund"
+            title="Request this refund?"
+            description={`This sends a refund request for ${Number.isFinite(amount) ? formatINR(amount) : ''} to a DigiOne admin. ${preview ? `${formatINR(preview.netClawback)} is held from your balance now and deducted only if the admin approves.` : ''} The buyer is refunded once it's approved.`}
+            confirmLabel="Send request"
             isDestructive
           />
         </>
       )}
+    </div>
+  );
+}
+
+function humanizeEmailReason(reason: string): string {
+  switch (reason) {
+    case 'email_not_configured': return 'email isn’t configured on the server';
+    case 'no_recipient_email':   return 'no email address on this order';
+    case 'no_items':             return 'no products on this order';
+    case 'order_not_found':      return 'order record not found';
+    default:                     return reason;
+  }
+}
+
+// "Access link email" tracker + resend control — shows whether the purchase
+// confirmation (with the buyer's access links) actually went out, and lets the
+// creator re-send it. Backed by orders.confirmation_email_*.
+function ConfirmationEmailStatus({ order }: { order: Order }) {
+  const resend = useResendOrderEmail();
+  const [err, setErr] = useState('');
+
+  const status = order.confirmation_email_status;
+  const to = order.confirmation_email_to;
+  // Once the access email has been confirmed sent, don't offer to send it again —
+  // only expose the action when it hasn't gone out (failed / skipped / not recorded).
+  const canResend = order.status === 'completed' && status !== 'sent';
+
+  const onResend = async () => {
+    setErr('');
+    try {
+      await resend.mutateAsync(order.id);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'Resend failed.');
+    }
+  };
+
+  let icon: React.ReactNode;
+  let text: React.ReactNode;
+  if (status === 'sent') {
+    icon = <CheckCircle2 className="w-4 h-4 text-[var(--success)]" />;
+    text = <>Sent{to ? <> to <span className="font-medium text-[var(--text-primary)] break-all">{to}</span></> : null}{order.confirmation_email_sent_at ? <span className="text-[var(--text-tertiary)]"> · {timeAgo(order.confirmation_email_sent_at)}</span> : null}</>;
+  } else if (status === 'failed') {
+    icon = <AlertCircle className="w-4 h-4 text-[var(--danger)]" />;
+    text = <>Delivery failed{order.confirmation_email_error ? <span className="text-[var(--text-tertiary)]"> · {order.confirmation_email_error}</span> : null}</>;
+  } else if (status === 'skipped') {
+    icon = <AlertCircle className="w-4 h-4 text-[var(--warning)]" />;
+    text = <>Not sent — {humanizeEmailReason(order.confirmation_email_error ?? 'skipped')}</>;
+  } else {
+    icon = <Mail className="w-4 h-4 text-[var(--text-tertiary)]" />;
+    text = <span className="text-[var(--text-tertiary)]">No delivery recorded yet.</span>;
+  }
+
+  return (
+    <div className="pt-3 mt-1 border-t border-[var(--border)] space-y-2">
+      <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-tertiary)]">Access link email</p>
+      <div className="flex items-start gap-2.5 text-sm text-[var(--text-secondary)]">
+        <span className="shrink-0 mt-0.5">{icon}</span>
+        <span className="min-w-0">{text}</span>
+      </div>
+      {canResend && (
+        <button
+          onClick={onResend}
+          disabled={resend.isPending}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--brand)] hover:underline disabled:opacity-50 focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)] rounded"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${resend.isPending ? 'animate-spin' : ''}`} />
+          {resend.isPending ? 'Sending…' : 'Send access email'}
+        </button>
+      )}
+      {err && <p className="text-xs text-[var(--danger)]">{err}</p>}
+      {resend.isSuccess && !err && <p className="text-xs text-[var(--success)]">Access email sent.</p>}
     </div>
   );
 }
@@ -248,7 +338,10 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
           </button>
         </div>
 
-        <div className="p-6 space-y-6 flex-1">
+        <div
+          className={`p-6 space-y-6 flex-1 transition-[filter] duration-200 ${showRefund ? 'blur-sm pointer-events-none select-none' : ''}`}
+          aria-hidden={showRefund}
+        >
           {/* Status + Amount */}
           <div className="flex items-center justify-between">
             <StatusBadge status={order.status} />
@@ -280,6 +373,7 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
                 </div>
               )}
             </div>
+            <ConfirmationEmailStatus order={order} />
           </div>
 
           {/* Products */}
@@ -390,7 +484,7 @@ function OrderDrawer({ order, onClose }: { order: Order; onClose: () => void }) 
                   className="flex items-center justify-center gap-2 w-full py-2.5 border border-[var(--danger)]/30 text-[var(--danger)] hover:bg-[var(--danger-bg)] font-semibold rounded-[var(--radius-sm)] transition text-sm focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  {showRefund ? 'Hide refund' : 'Refund order'}
+                  {showRefund ? 'Hide' : 'Request refund'}
                 </button>
               )}
             </div>
@@ -660,8 +754,14 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Detail drawer */}
-      {selected && <OrderDrawer order={selected} onClose={() => setSelected(null)} />}
+      {/* Detail drawer — read the live row from the list so it reflects refetches
+          (e.g. the confirmation-email status after a resend), not the click-time snapshot. */}
+      {selected && (
+        <OrderDrawer
+          order={orders.find(o => o.id === selected.id) ?? selected}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }

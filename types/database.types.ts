@@ -2370,6 +2370,10 @@ export type Database = {
       }
       orders: {
         Row: {
+          confirmation_email_error: string | null
+          confirmation_email_sent_at: string | null
+          confirmation_email_status: string | null
+          confirmation_email_to: string | null
           created_at: string
           creator_id: string | null
           customer_email: string | null
@@ -2391,6 +2395,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          confirmation_email_error?: string | null
+          confirmation_email_sent_at?: string | null
+          confirmation_email_status?: string | null
+          confirmation_email_to?: string | null
           created_at?: string
           creator_id?: string | null
           customer_email?: string | null
@@ -2412,6 +2420,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          confirmation_email_error?: string | null
+          confirmation_email_sent_at?: string | null
+          confirmation_email_status?: string | null
+          confirmation_email_to?: string | null
           created_at?: string
           creator_id?: string | null
           customer_email?: string | null
@@ -2827,6 +2839,86 @@ export type Database = {
             columns: ["owner_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refund_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          creator_id: string
+          fee_reversed: number
+          frozen_log_id: string | null
+          id: string
+          net_clawback: number
+          order_id: string
+          reason: string
+          refund_id: string | null
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          creator_id: string
+          fee_reversed?: number
+          frozen_log_id?: string | null
+          id?: string
+          net_clawback: number
+          order_id: string
+          reason: string
+          refund_id?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          creator_id?: string
+          fee_reversed?: number
+          frozen_log_id?: string | null
+          id?: string
+          net_clawback?: number
+          order_id?: string
+          reason?: string
+          refund_id?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_requests_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_frozen_log_id_fkey"
+            columns: ["frozen_log_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_frozen_logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_refund_id_fkey"
+            columns: ["refund_id"]
+            isOneToOne: false
+            referencedRelation: "refunds"
             referencedColumns: ["id"]
           },
         ]
@@ -4404,6 +4496,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_refund_request: {
+        Args: { p_refund_id: string; p_request_id: string; p_reviewer: string }
+        Returns: boolean
+      }
       begin_payout_tax: {
         Args: { p_creator_id: string; p_payout_id: string }
         Returns: Json
@@ -4421,6 +4517,15 @@ export type Database = {
       check_rate_limit: {
         Args: { p_key: string; p_max: number; p_window_seconds: number }
         Returns: boolean
+      }
+      create_refund_request: {
+        Args: {
+          p_amount?: number
+          p_creator_id?: string
+          p_order_id: string
+          p_reason?: string
+        }
+        Returns: Json
       }
       credit_creator_balance: {
         Args: {
@@ -4587,6 +4692,10 @@ export type Database = {
           p_submission_id?: string
         }
         Returns: string
+      }
+      reject_refund_request: {
+        Args: { p_reason?: string; p_request_id: string; p_reviewer: string }
+        Returns: boolean
       }
       release_frozen_funds: {
         Args: { p_log_id: string; p_note?: string }

@@ -14,11 +14,11 @@ Hooks live in domain subfolders under `src/hooks/` — import with the full path
 
 | Subfolder | Hooks |
 |---|---|
-| `admin/` | `usePayoutQueue` (super-admin payout queue) |
+| `admin/` | `usePayoutQueue` (super-admin payout queue), `useRefundRequests` (super-admin refund-request queue: `approve`/`reject` → `/api/admin/refunds/[id]/*`) |
 | `auth/` | `useAuthSession`, `useLoginMutation` |
 | `creator/` | `useCreator`, `useProfile` (`useProfileQuery`/`useProfileMutations`), `useSubscription` + `useSubscriptionPlans` (`useSubscription.ts`), `useKycDocuments` |
 | `products/` | `useProducts`, `useStoreProducts`, `useProductFiles` |
-| `commerce/` | `useOrders` (+ `useRefundOrder`, `useOrderRefundInfo`), `useOrderEarnings` (`['orders','earnings']` — per-order gross+fee map from `transaction_ledger` sale rows), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
+| `commerce/` | `useOrders` (+ `useRequestRefund`, `useOrderRefundInfo`, `useOrderRefundRequest`, `useResendOrderEmail`), `useOrderEarnings` (`['orders','earnings']` — per-order gross+fee map from `transaction_ledger` sale rows), `useCustomers`, `useEarnings`, `useCart` (+ `useCartTotal`), `useLibrary`, `useTax` (`usePayoutTaxPreview`, `useTaxSummary`, `useAddGstin`), `useInvoices` (`useDownloadSaleInvoice`, `useDownloadCommissionInvoice`, `useCommissionMonths`), `useStatements` (`useDownloadAnnualStatement`, `useStatementYears`) |
 | `storage/` | `useMyMedia`, `useOwnAssets` + `useDigioneStock` (both in `useMediaLibrary`) |
 | `marketing/` | `useCoupons`, `useAffiliates`, `useReferrals`, `useMarketingStats`, `useGuestLeads`, `useAbTests`, `useCommunity` (+ `useMyCommunity`, `usePublicCommunity`), `useServices`, `useShortLinks` |
 | `analytics/` | `useAnalytics` |

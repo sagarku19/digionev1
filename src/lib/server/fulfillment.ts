@@ -9,9 +9,7 @@ import { getPlatformFeeRate } from './platform-fee';
 import { computeReferralCommission } from './referrals';
 import { recordGuestEntitlement } from './entitlements';
 import { normalizeEmail } from '@/lib/shared/email';
-import { buildAccessLinks } from '@/lib/shared/access-links';
-import { resolveBucket } from '@/lib/storage/buckets';
-import { sendPurchaseConfirmation } from './email';
+import { sendAndRecordOrderConfirmation } from './order-email';
 
 export interface FulfillResult {
   fulfilled: boolean;
@@ -161,68 +159,12 @@ export async function fulfillOrder(
         });
       }
     }
-
-    // 4b. Purchase-confirmation email (Resend) — logged and swallowed;
-    // fulfillment never fails on email. Product orders only.
-    if (recipientEmail && (items?.length ?? 0) > 0) {
-      try {
-        // Which purchased products ship downloadable files? One query over
-        // storage_files (same bucket + not-deleted filter the deliverables route
-        // uses) so the email can flag files alongside the access links.
-        const productIds = (items ?? [])
-          .map((item) => {
-            const product = Array.isArray(item.products) ? item.products[0] : item.products;
-            return product?.id ?? item.product_id;
-          })
-          .filter((id): id is string => !!id);
-        const productsWithFiles = new Set<string>();
-        if (productIds.length > 0) {
-          try {
-            const { data: fileRows } = await db
-              .from('storage_files')
-              .select('product_id')
-              .eq('bucket', resolveBucket('creator-content').name)
-              .in('product_id', productIds)
-              .is('deleted_at', null);
-            for (const row of fileRows ?? []) {
-              if (row.product_id) productsWithFiles.add(row.product_id);
-            }
-          } catch (fileErr) {
-            console.error('[fulfillment] file-detection for email failed for order', orderId, fileErr instanceof Error ? fileErr.message : fileErr);
-          }
-        }
-
-        await sendPurchaseConfirmation({
-          to: recipientEmail,
-          customerName: claimed.customer_name ?? 'there',
-          orderId,
-          totalAmount: total,
-          discountAmount: typeof metadata.discount_amount === 'number' ? metadata.discount_amount : 0,
-          isGuest: !buyerUserId,
-          appUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
-          items: (items ?? []).map((item) => {
-            const product = Array.isArray(item.products) ? item.products[0] : item.products;
-            const pid = product?.id ?? item.product_id ?? '';
-            return {
-              name: product?.name ?? 'Product',
-              price: Number(item.price_at_purchase) || 0,
-              links: buildAccessLinks({
-                postPurchaseUrl: product?.post_purchase_url,
-                accessLinks: product?.access_links,
-              }),
-              hasFiles: pid ? productsWithFiles.has(pid) : false,
-            };
-          }),
-        });
-      } catch (emailErr) {
-        console.error(
-          '[fulfillment] purchase email failed for order',
-          orderId,
-          emailErr instanceof Error ? emailErr.message : String(emailErr)
-        );
-      }
-    }
   }
+
+  // 4b. Purchase-confirmation ("access link") email. Builds, sends, and records the
+  // outcome on orders.confirmation_email_* so the dashboard can show delivery status.
+  // Self-gates on recipient + items; never throws — fulfillment never fails on email.
+  await sendAndRecordOrderConfirmation(orderId);
 
   // 5. Coupon redemption
   const couponId = typeof metadata.coupon_id === 'string' ? metadata.coupon_id : null;

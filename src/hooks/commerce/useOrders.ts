@@ -16,6 +16,10 @@ export type Order = {
   gateway_order_id: string | null;
   gateway_payment_id: string | null;
   payment_verified_at: string | null;
+  confirmation_email_status: string | null;
+  confirmation_email_to: string | null;
+  confirmation_email_sent_at: string | null;
+  confirmation_email_error: string | null;
   created_at: string;
   order_items: {
     price_at_purchase: number;
@@ -38,6 +42,7 @@ export function useOrders(limit = 100) {
           customer_name, customer_email, customer_phone,
           gateway_order_id, gateway_payment_id,
           payment_verified_at, created_at,
+          confirmation_email_status, confirmation_email_to, confirmation_email_sent_at, confirmation_email_error,
           order_items(price_at_purchase, products(name, thumbnail_url, creator_id))
         `)
         .eq('creator_id', profileId)
@@ -72,7 +77,8 @@ export function useOrders(limit = 100) {
           id, status, total_amount,
           customer_name, customer_email, customer_phone,
           gateway_order_id, gateway_payment_id,
-          created_at,
+          payment_verified_at, created_at,
+          confirmation_email_status, confirmation_email_to, confirmation_email_sent_at, confirmation_email_error,
           order_items(price_at_purchase, products(name, thumbnail_url))
         `)
         .in('id', orderIds)
@@ -88,22 +94,72 @@ export function useOrders(limit = 100) {
   return { orders, isLoading, error };
 }
 
-export function useRefundOrder() {
+export type RefundRequest = {
+  id: string;
+  order_id: string;
+  amount: number;
+  net_clawback: number;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  review_reason: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+};
+
+// Creator files a refund request (with a required reason). It freezes the clawback and
+// goes to a super_admin for approval — creators no longer refund directly.
+export function useRequestRefund() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { orderId: string; amount?: number; reason?: string }) => {
-      const res = await fetch('/api/refunds/create', {
+    mutationFn: async (input: { orderId: string; amount?: number; reason: string }) => {
+      const res = await fetch('/api/refunds/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Refund failed.');
-      return data as { success: true; refund: { refundId: string; amount: number; netClawback: number } };
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Refund request failed.');
+      return data as { success: true; request: { requestId: string; amount: number; netClawback: number } };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['earnings'] });
+    },
+  });
+}
+
+// The latest refund request for an order (RLS select-own) — drives the drawer's
+// "Refund requested — awaiting review" / "rejected" state.
+export function useOrderRefundRequest(orderId: string | null) {
+  return useQuery({
+    queryKey: ['orders', 'refund-request', orderId],
+    enabled: !!orderId,
+    queryFn: async (): Promise<RefundRequest | null> => {
+      const { data, error } = await supabase
+        .from('refund_requests')
+        .select('id, order_id, amount, net_clawback, reason, status, review_reason, created_at, reviewed_at')
+        .eq('order_id', orderId!)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return (data?.[0] as RefundRequest | undefined) ?? null;
+    },
+  });
+}
+
+// Re-sends the purchase-confirmation ("access link") email for a completed order
+// and refreshes the list so the drawer shows the new delivery status.
+export function useResendOrderEmail() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      const res = await fetch(`/api/orders/${orderId}/resend-email`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? 'Resend failed.');
+      return data as { ok: true; status: string };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
     },
   });
 }

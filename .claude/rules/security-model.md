@@ -88,6 +88,7 @@ Tables you should not touch without understanding their RLS:
 | `transaction_ledger` | Creator reads their own. **Writes: service role only, with `record_hash` for audit.** |
 | `creator_payouts` | Creator reads/inserts their own. |
 | `refunds` | Creator reads their own. **Writes: service role only** (begin_refund/settle_refund RPCs). |
+| `refund_requests` | Creator reads their own (SELECT-own) + super_admin reads all (`is_super_admin()`). **Writes: service role only** (create_refund_request / approve_refund_request / reject_refund_request RPCs). Creators no longer self-refund — they file a request that freezes the clawback; a super_admin approves (runs the refund engine) or rejects (releases the hold). See `docs/reference/admin-dashboard.md`. |
 | `wallet_frozen_logs` | Creator reads their own. **Writes: service role only** (freeze/release RPCs). |
 | `user_product_access` | Buyer reads their own rows (`user_id = auth.uid()`) — the library read model. **Writes: service role only** (fulfillment grants + guest-entitlement claims). |
 | `creator_kyc` | Creator **reads** their own (SELECT-own); **no client writes** — all writes go through service-role `POST /api/kyc/submit` (forces `status='pending'`, never accepts `*_verified` from the client; encrypts PAN/bank/UPI via `kyc-crypto`). Admin verification flips `status`/`*_verified` server-side. Payout API checks `status === 'verified'`. |

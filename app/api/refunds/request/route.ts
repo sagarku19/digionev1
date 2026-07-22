@@ -1,16 +1,24 @@
+// POST /api/refunds/request
+// Creator files a refund request (with a required reason) on one of their own completed
+// orders. The clawback is frozen immediately; a super_admin approves/rejects it. This
+// REPLACES the old creator self-serve /api/refunds/create — creators can no longer
+// initiate a gateway refund directly.
+
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { resolveProfileId } from '@/lib/server/resolve-profile';
 import { rateLimitKey } from '@/lib/server/rate-limit';
-import { initiateRefund, RefundError } from '@/lib/server/refunds';
+import { createRefundRequest, RefundRequestError } from '@/lib/server/refund-requests';
 
 const ERROR_STATUS: Record<string, number> = {
   not_found: 404,
+  not_owner: 403,
   invalid_state: 409,
   over_refund: 400,
   missing_ledger: 409,
-  gateway: 502,
+  reason_required: 400,
+  already_pending: 409,
   internal: 500,
 };
 
@@ -35,14 +43,17 @@ export async function POST(req: Request) {
     if (amount != null && (!Number.isFinite(amount) || amount < 1)) {
       return NextResponse.json({ error: 'Refund amount must be at least ₹1.' }, { status: 400 });
     }
-    const reason = typeof body.reason === 'string' ? body.reason.slice(0, 500) : null;
+    const reason = typeof body.reason === 'string' ? body.reason.trim().slice(0, 500) : '';
+    if (!reason) {
+      return NextResponse.json({ error: 'Please add a reason for the refund.' }, { status: 400 });
+    }
 
     const profileId = await resolveProfileId(user.id, user.email);
     if (!profileId) {
       return NextResponse.json({ error: 'Creator profile not found.' }, { status: 404 });
     }
 
-    const allowed = await rateLimitKey(`refund:${profileId}`, { max: 5, windowSeconds: 60 });
+    const allowed = await rateLimitKey(`refund-request:${profileId}`, { max: 5, windowSeconds: 60 });
     if (!allowed) {
       return NextResponse.json({ error: 'Too many refund requests. Try again in a minute.' }, { status: 429 });
     }
@@ -55,23 +66,16 @@ export async function POST(req: Request) {
       .maybeSingle();
     if (!order) return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
     if (order.creator_id !== profileId) {
-      return NextResponse.json({ error: 'You can only refund your own orders.' }, { status: 403 });
+      return NextResponse.json({ error: 'You can only request refunds on your own orders.' }, { status: 403 });
     }
 
-    const refund = await initiateRefund(db, {
-      orderId,
-      amount,
-      reason,
-      initiatedBy: 'creator',
-      initiatorId: profileId,
-    });
-
-    return NextResponse.json({ success: true, refund });
+    const request = await createRefundRequest(db, { orderId, amount, reason, creatorId: profileId });
+    return NextResponse.json({ success: true, request });
   } catch (e) {
-    if (e instanceof RefundError) {
+    if (e instanceof RefundRequestError) {
       return NextResponse.json({ error: e.message }, { status: ERROR_STATUS[e.code] ?? 500 });
     }
-    console.error('[refunds/create]', e);
+    console.error('[refunds/request]', e);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

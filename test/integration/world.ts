@@ -307,6 +307,8 @@ export class World {
     };
 
     if (this.orderIds.length) {
+      // refund_requests FK → orders/refunds/wallet_frozen_logs, so clear it first.
+      await swallow(db.from('refund_requests').delete().in('order_id', this.orderIds));
       await swallow(db.from('transaction_ledger').delete().in('order_id', this.orderIds));
       await swallow(db.from('tax_transactions').delete().in('order_id', this.orderIds));
       await swallow(db.from('user_product_access').delete().in('order_id', this.orderIds));
@@ -315,6 +317,7 @@ export class World {
       await swallow(db.from('order_items').delete().in('order_id', this.orderIds));
     }
     if (this.profileIds.length) {
+      await swallow(db.from('refund_requests').delete().in('creator_id', this.profileIds));
       await swallow(db.from('transaction_ledger').delete().in('creator_id', this.profileIds));
       await swallow(db.from('tax_transactions').delete().in('creator_id', this.profileIds));
       await swallow(db.from('wallet_frozen_logs').delete().in('creator_id', this.profileIds));
