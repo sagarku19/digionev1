@@ -1,7 +1,10 @@
 'use client';
-import { ArrowLeft, ChevronsLeft, Undo2, Redo2, ChevronDown, Check } from 'lucide-react';
+import { ChevronsLeft, Undo2, Redo2, ChevronDown, Check } from 'lucide-react';
 import { useState, useRef, Fragment, type ElementType } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import { DigiOneLogo, DigiOneLogoDark } from '@/src/components/assets/DigiOneLogo';
+import { BackButton } from '@/components/dashboard/BackButton';
 import { useSites } from '@/hooks/sites/useSites';
 
 export type SidebarItem = {
@@ -133,16 +136,29 @@ export default function EditorSidebar({
 
   return (
     <div className={`${width} hidden shrink-0 flex-col border-r border-[var(--border)] bg-[var(--sidebar-bg)] transition-all duration-200 lg:flex`}>
-      {/* header: back + site title + type label */}
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-[var(--border)] px-2.5">
-        <button
-          onClick={onBack}
-          aria-label="Back to sites"
-          className="shrink-0 rounded-[var(--radius-md)] p-1.5 text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+      {/* brand bar: back-to-sites + DigiOne logo (mirrors the dashboard sidebar) */}
+      <div className={`flex shrink-0 items-center gap-2 border-b border-[var(--border)] ${collapsed ? 'flex-col px-2 py-3' : 'h-[52px] px-2'}`}>
+        <BackButton onClick={onBack} label="Back to sites" />
+        <Link
+          href="/dashboard"
+          aria-label="DigiOne dashboard"
+          title="DigiOne dashboard"
+          className="group flex min-w-0 items-center gap-2 rounded-[var(--radius-sm)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
         >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        {!collapsed && (
+          <DigiOneLogo width={26} height={26} className="block shrink-0 transition-transform group-hover:scale-105 dark:hidden" />
+          <DigiOneLogoDark width={26} height={26} className="hidden shrink-0 transition-transform group-hover:scale-105 dark:block" />
+          {!collapsed && (
+            <span className="truncate text-[16px] font-bold tracking-tight text-[var(--text-primary)]">
+              DigiOne
+              <sup className="relative -top-1.5 ml-0.5 text-[9px] font-medium text-[var(--text-secondary)]">.ai</sup>
+            </span>
+          )}
+        </Link>
+      </div>
+
+      {/* page switcher (expanded only) */}
+      {!collapsed && (
+        <div className="flex shrink-0 items-center border-b border-[var(--border)] px-2 py-2.5">
           <div
             onMouseEnter={openMenu}
             onMouseLeave={scheduleClose}
@@ -153,13 +169,14 @@ export default function EditorSidebar({
               title="Switch page"
               aria-haspopup="listbox"
               aria-expanded={menuOpen}
-              className="flex w-full items-center gap-1.5 rounded-[var(--radius-md)] px-1.5 py-1 text-left transition-colors hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
+              className="flex w-full items-center gap-2 rounded-[var(--radius-md)] py-1 pr-1.5 text-left transition-colors hover:bg-[var(--surface-hover)] focus-visible:outline-none focus-visible:shadow-[var(--focus-ring)]"
             >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-muted)] text-[var(--text-secondary)]">
+                <TypeIcon className="h-5 w-5" />
+              </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-[var(--text-primary)]">{title}</p>
-                <p className="flex items-center gap-1 text-[11px] font-medium text-[var(--text-tertiary)]">
-                  <TypeIcon className="h-3 w-3" /> {typeLabel}
-                </p>
+                <p className="truncate text-sm font-semibold leading-tight text-[var(--text-primary)]">{title}</p>
+                <p className="truncate text-[11px] font-medium text-[var(--text-tertiary)]">{typeLabel}</p>
               </div>
               <ChevronDown className={`h-4 w-4 shrink-0 text-[var(--text-tertiary)] transition-transform ${menuOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -194,8 +211,8 @@ export default function EditorSidebar({
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-2.5">
         {(() => {
