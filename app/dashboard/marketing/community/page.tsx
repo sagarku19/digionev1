@@ -55,6 +55,7 @@ function timeAgo(dateStr: string) {
 function Avatar({ name, url, size = 'md' }: { name: string; url?: string | null; size?: 'sm' | 'md' }) {
   const letter = name[0].toUpperCase();
   const sz = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
+  // eslint-disable-next-line @next/next/no-img-element
   if (url) return <img src={url} alt={name} className={`${sz} rounded-full object-cover shrink-0`} />;
   return (
     <div className={`${sz} rounded-full bg-[var(--brand)] flex items-center justify-center shrink-0 text-[var(--text-on-brand)] font-bold`}>
