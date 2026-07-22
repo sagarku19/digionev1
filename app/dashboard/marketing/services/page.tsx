@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GuideButton } from '@/components/dashboard/guides/GuideButton';
-import { useServices, type Service, type Booking } from '@/hooks/marketing/useServices';
+import { useServices, type Service } from '@/hooks/marketing/useServices';
 import {
   Video, Briefcase, FileSearch, Plus, X, Trash2, ToggleLeft, ToggleRight,
   AlertCircle, Loader2, Calendar, Users, IndianRupee, Clock, CheckCircle2,

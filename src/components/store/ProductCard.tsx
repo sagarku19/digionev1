@@ -16,7 +16,7 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({
-  id, creatorSlug, title, slug, coverImage, price, compareAtPrice, averageRating, reviewCount, type
+  creatorSlug, title, slug, coverImage, price, compareAtPrice, averageRating, reviewCount, type
 }: ProductCardProps) {
   return (
     <Link href={`/${creatorSlug}/${slug}`} className="group flex flex-col bg-[var(--surface-color)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">

@@ -7,7 +7,7 @@ import { useMarketingStats } from '@/hooks/marketing/useMarketingStats';
 import {
   Ticket, Users, Share2, Calendar, Megaphone,
   TrendingUp, ArrowUpRight, Zap,
-  MessageCircle, BarChart3, Target, Sparkles,
+  MessageCircle, Target, Sparkles,
 } from 'lucide-react';
 
 export default function MarketingPage() {

@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import React from 'react';
-import { Share2, Plus, X, Globe, Instagram, Twitter, Youtube, Linkedin, Github, Music, MessageCircle, Send, Phone, AtSign } from 'lucide-react';
+import { Share2, Plus, X, Globe, Instagram, Twitter, Youtube, Linkedin, Github, Music, MessageCircle, Send, AtSign } from 'lucide-react';
 import type { SinglePageContentData } from './singlepage-types';
 import { INPUT, SectionCard } from './_shared';
 

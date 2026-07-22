@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   DigiOneLogo,
   DigiOneLogoDark,
@@ -21,10 +21,8 @@ import {
   Settings,
   Menu,
   X,
-  ChevronRight,
   ChevronDown,
   Users,
-  Bell,
   Ticket,
   BookOpen,
   Network,
@@ -190,7 +188,6 @@ const QUICK_ACTIONS: {
 // ─── Sidebar ─────────────────────────────────────────────────
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(

@@ -4,7 +4,7 @@
    any" work in .claude/todo-later/7. */
 
 import React from 'react';
-import { Plus, X, GripVertical, Type, Image, Code, Minus, Heading1, Play, MousePointerClick, Space, Quote, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, Type, Image, Code, Minus, Heading1, Play, MousePointerClick, Space, Quote, ChevronUp, ChevronDown } from 'lucide-react';
 import type { SinglePageContentData, ContentBlock } from './singlepage-types';
 import { INPUT, FieldLabel, SectionCard } from './_shared';
 

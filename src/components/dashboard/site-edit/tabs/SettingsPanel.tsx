@@ -64,7 +64,6 @@ export default function SettingsPanel({
   const [deleteConfirm, setDeleteConfirm] = useState('');
 
   const slugStatus = useSlugCheck(data.slug, data.originalSlug, site?.site_type ?? 'main');
-  const isActive = site?.is_active !== false;
 
   const set = <K extends keyof SettingsData>(key: K, val: SettingsData[K]) =>
     onChange({ ...data, [key]: val });
